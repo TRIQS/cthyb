@@ -19,15 +19,15 @@ set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 # Details of the krylov code
 option(Krylov_Debug "Enable extended debugging output in Krylov solver" OFF)
 option(Krylov_Stats "Enable statistics collection in Krylov solver" OFF)
-mark_as_advanced(Krylov_Debug)
-mark_as_advanced(Krylov_Stats)
+#mark_as_advanced(Krylov_Debug)
+#mark_as_advanced(Krylov_Stats)
 
 if(Krylov_Debug)
-add_definitions(-DKRYLOV_DEBUG)
+ add_definitions(-DKRYLOV_DEBUG)
 endif(Krylov_Debug)
 
 if(Krylov_Stats)
-add_definitions(-DKRYLOV_STATS)
+ add_definitions(-DKRYLOV_STATS)
 endif(Krylov_Stats)
 
 # Compile C++ code

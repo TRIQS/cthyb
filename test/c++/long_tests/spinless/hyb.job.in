@@ -1,0 +1,11 @@
+#!/bin/sh
+#$ -S /bin/sh
+#$ -N spinless.hyb
+#$ -pe mpi @hyb_ncpus@
+#$ -q amd
+#$ -cwd
+
+reference_pytriqs=@reference_triqs@/bin/pytriqs
+pushd @CMAKE_CURRENT_BINARY_DIR@
+mpirun -machinefile $TMPDIR/machines -np @hyb_ncpus@ ./spinless.hyb.py > hyb.log
+popd

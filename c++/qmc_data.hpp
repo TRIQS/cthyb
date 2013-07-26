@@ -91,23 +91,12 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    {
     for (auto const& bl : delta.mesh()) dets.push_back(det_manip::det_manip<delta_block_adaptor>(delta_block_adaptor(delta[bl]),100));
     
-    std::string kbs = p["krylov_boundary_states"];
-    if(kbs == "MC")
-        config.reset_boundary_block_states(sosp);
-    else if(kbs == "all")
-        config.fill_boundary_block_states(sosp);
-    else if(kbs == "cutoff")
-        config.fill_boundary_block_states(sosp,p["krylov_prob_cutoff"]);
+    if(p["krylov_bs_use_cutoff"])
+        config.fill_boundary_block_states(sosp,p["krylov_bs_prob_cutoff"]);
     else
-        TRIQS_RUNTIME_ERROR << "Unknown krylov_boundary_states mode " << kbs;
+        config.reset_boundary_block_states(sosp);
     
     trace = atomic_corr();
-    
-    for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
-        for(std::size_t n = 0; n < config.boundary_block_states_ids[nsp].size(); ++n){
-            std::cout << nsp << " : " << config.boundary_block_states_ids[nsp][n] << std::endl;
-        }
-    }
    }
 
   qmc_data (qmc_data const &) = default;

@@ -21,7 +21,16 @@
 #include "ctqmc.hpp"
 #include <triqs/utility/callbacks.hpp>
 
+
+#include "move_insert.hpp"
+#include "move_remove.hpp"
+#include "move_change_boundary_state.hpp"
 #include "measure_z.hpp"
+#include "measure_g.hpp"
+
+#ifdef KRYLOV_STATS
+#include "measure_boundary_state.hpp"
+#endif
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
@@ -32,10 +41,11 @@ parameters ctqmc::apply_defaults(parameters const& p)
     pdef.optional
         ("krylov_max_dim", krylov_params::default_max_dim, " unsigned int ")
         ("krylov_min_beta_threshold", krylov_params::default_min_beta_threshold, " double ")
-        ("krylov_boundary_states", std::string("MC"), " string ")
-        ("krylov_prob_cutoff", 1e-8, " double ")
+        ("krylov_bs_use_cutoff", false, " bool ")
+        ("krylov_bs_prob_cutoff", 1e-8, " double ") // put to <= 0 to include all boundary states.
 #ifdef KRYLOV_STATS
         ("krylov_stats_file", std::string("krylov.stats.dat"), " string ")
+        ("krylov_bs_stats_file", std::string("krylov.boundary_states.dat"), " string ")
 #endif
     ;
     
@@ -56,8 +66,7 @@ void ctqmc::solve() {
      qmc.add_move(move_remove_c_cdag(n, data, qmc.rng()), "Remove Delta_" + delta_names[n]);
    }
    
-   std::string kbs = params["krylov_boundary_states"];
-   if(kbs == std::string("MC")){
+   if(!params["krylov_bs_use_cutoff"]){
         qmc.add_move(move_change_boundary_state(data, qmc.rng()), "Change the boundary state");
    }
    
@@ -66,6 +75,11 @@ void ctqmc::solve() {
    for(size_t n = 0; n < G_tau.domain().size(); ++n){
      qmc.add_measure(measure_g(n, G_tau[n], data), "G measure (" + G_tau.domain().names()[n] + ")");
    }
+#ifdef KRYLOV_STATS
+   if(!params["krylov_bs_use_cutoff"]){
+       qmc.add_measure(measure_boundary_state(data, params["krylov_bs_stats_file"]), "Boundary state statistics");
+   }
+#endif
 
    // run!! The empty configuration has sign = 1
    qmc.start(1.0, triqs::utility::clock_callback(params["max_time"]));

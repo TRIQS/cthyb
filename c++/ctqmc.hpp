@@ -28,11 +28,6 @@
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/utility/callbacks.hpp>
 
-#include "measure_z.hpp"
-#include "measure_g.hpp"
-#include "move_insert.hpp"
-#include "move_remove.hpp"
-#include "move_change_boundary_state.hpp"
 #include "operator.hpp"
 #include "qmc_data.hpp"
 

@@ -19,8 +19,6 @@ using triqs::gf::imfreq;
 using triqs::gf::make_gf;
 using triqs::gf::Fermion;
 
-#include <boost/lexical_cast.hpp>
-
 int main(int argc, char* argv[]) {
 
   std::cout << "Welcome to the Krylov solver\n";
@@ -51,9 +49,9 @@ int main(int argc, char* argv[]) {
   p["Verbosity"] = 3;
   p["Length_Cycle"] = 50;
   p["N_Warmup_Cycles"] = 50;
-  p["N_Cycles"] = 1000;
-  p["krylov_boundary_states"] = "MC";
-  p["krylov_prob_cutoff"] = 1e-6;
+  p["N_Cycles"] = 500;
+  p["krylov_bs_use_cutoff"] = true;
+  p["krylov_bs_prob_cutoff"] = .0;
 
   // basis of operators to use  
   fundamental_operator_set<int, const char *> fops;

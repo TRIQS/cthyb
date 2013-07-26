@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
   p["Length_Cycle"] = 50;
   p["N_Warmup_Cycles"] = 50;
   p["N_Cycles"] = 3000;
+  p["krylov_bs_use_cutoff"] = true;
+  p["krylov_bs_prob_cutoff"] = .0;
 
   // define operators
   auto H = U*n("0")*n("1") - mu*(n("0")+n("1")) - t*c_dag("0")*c("1") - t*c_dag("1")*c("0");

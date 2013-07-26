@@ -20,8 +20,6 @@ using triqs::gf::imtime;
 using triqs::gf::make_gf;
 using triqs::gf::Fermion;
 
-#include <boost/lexical_cast.hpp>
-
 int main(int argc, char* argv[]) {
 
   std::cout << "Welcome to the Krylov solver\n";
@@ -52,6 +50,8 @@ int main(int argc, char* argv[]) {
   p["Length_Cycle"] = 50;
   p["N_Warmup_Cycles"] = 10;
   p["N_Cycles"] = 5000;
+  p["krylov_bs_use_cutoff"] = true;
+  p["krylov_bs_prob_cutoff"] = .0;
   
   // define operators
   auto H = U*n("up")*n("down") + (-mu+h)*n("up") + (-mu-h)*n("down");

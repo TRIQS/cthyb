@@ -22,8 +22,8 @@
 #define TRIQS_CTQMC_KRYLOV_QMC_DATA_H
 
 #include "./atomic_correlators_worker.hpp"
-#include <triqs/gf/block.hpp>
-#include <triqs/gf/imtime.hpp>
+#include <triqs/gfs/block.hpp>
+#include <triqs/gfs/imtime.hpp>
 #include <triqs/det_manip/det_manip.hpp>
 #include <triqs/h5.hpp>
 #include <triqs/utility/serialization.hpp>
@@ -44,8 +44,8 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   typedef atomic_correlators_worker::result_t trace_t;
 
   /// The hybridization Delta.
-  typedef gf::gf_view<gf::block_index,gf::gf<gf::imtime>> delta_t;
-  typedef gf::gf_view<gf::imtime> delta_block_t;
+  typedef gfs::gf_view<gfs::block_index,gfs::gf<gfs::imtime>> delta_t;
+  typedef gfs::gf_view<gfs::imtime> delta_block_t;
   delta_t const delta;
 
   /// This callable object adapts the Delta function for the call of the det.

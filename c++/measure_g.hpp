@@ -28,15 +28,15 @@
 #include <functional>
 #include <boost/mpi/collectives.hpp>
 
-#include <triqs/gf/block.hpp>
-#include <triqs/gf/imtime.hpp>
+#include <triqs/gfs/block.hpp>
+#include <triqs/gfs/imtime.hpp>
 
 #include "measure_z.hpp"
 #include "qmc_data.hpp"
 
-using triqs::gf::gf_view;
-using triqs::gf::block_index;
-using triqs::gf::imtime;
+using triqs::gfs::gf_view;
+using triqs::gfs::block_index;
+using triqs::gfs::imtime;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
@@ -82,7 +82,7 @@ struct measure_g : measure_z {
         
         // Need a copy, because all_reduce wants default-constructible types
         auto g_tau_copy = triqs::make_clone(g_tau);
-        boost::mpi::all_reduce(c,g_tau_copy,g_tau_copy,std::plus<triqs::gf::gf<imtime>>());
+        boost::mpi::all_reduce(c,g_tau_copy,g_tau_copy,std::plus<triqs::gfs::gf<imtime>>());
         g_tau = g_tau_copy / (-real(measure_z::z) * data.config.beta() * g_tau_copy.mesh().delta());
     }
   

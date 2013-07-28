@@ -13,11 +13,11 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using triqs::utility::parameters;
-using triqs::gf::gf;
-using triqs::gf::imfreq;
-using triqs::gf::imfreq;
-using triqs::gf::make_gf;
-using triqs::gf::Fermion;
+using triqs::gfs::gf;
+using triqs::gfs::imfreq;
+using triqs::gfs::imfreq;
+using triqs::gfs::make_gf;
+using triqs::gfs::Fermion;
 
 int main(int argc, char* argv[]) {
 
@@ -144,8 +144,8 @@ int main(int argc, char* argv[]) {
       }
   }
   
-  Delta()[0] = triqs::gf::lazy_inverse_fourier(delta_w);
-  Delta()[1] = triqs::gf::lazy_inverse_fourier(delta_w);
+  Delta()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
+  Delta()[1] = triqs::gfs::lazy_inverse_fourier(delta_w);
 
   // Construct CTQMC solver
   ctqmc krylov_ctqmc(p, H, qn, fops, my_map, G, Delta);

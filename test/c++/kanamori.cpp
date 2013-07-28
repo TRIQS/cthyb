@@ -13,11 +13,11 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using triqs::utility::parameters;
-using triqs::gf::gf;
-using triqs::gf::imfreq;
-using triqs::gf::imfreq;
-using triqs::gf::make_gf;
-using triqs::gf::Fermion;
+using triqs::gfs::gf;
+using triqs::gfs::imfreq;
+using triqs::gfs::imfreq;
+using triqs::gfs::make_gf;
+using triqs::gfs::Fermion;
 
 int main(int argc, char* argv[]) {
 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
   delta_w(om_) << V / (om_ - epsilon) + V / (om_ + epsilon);
 
   for (int o = 0; o < 2*num_orbitals; ++o){
-    Delta()[o] = triqs::gf::lazy_inverse_fourier(delta_w);
+    Delta()[o] = triqs::gfs::lazy_inverse_fourier(delta_w);
   }
 
   // Construct CTQMC solver

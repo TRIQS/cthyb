@@ -23,8 +23,8 @@
 
 #include <triqs/utility/first_include.hpp>
 #include <triqs/parameters.hpp>
-#include <triqs/gf/block.hpp>
-#include <triqs/gf/imtime.hpp>
+#include <triqs/gfs/block.hpp>
+#include <triqs/gfs/imtime.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/utility/callbacks.hpp>
 
@@ -35,10 +35,10 @@ using triqs::utility::parameters;
 using triqs::utility::parameter_defaults;
 using triqs::utility::many_body_operator;
 using triqs::mc_tools::mc_generic;
-using triqs::gf::gf_view;
-using triqs::gf::gf;
-using triqs::gf::block_index;
-using triqs::gf::imtime;
+using triqs::gfs::gf_view;
+using triqs::gfs::gf;
+using triqs::gfs::block_index;
+using triqs::gfs::imtime;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
@@ -50,7 +50,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   
   public:
 
-  typedef gf_view<block_index, gf::gf<imtime>> imtime_gf_t;
+  typedef gf_view<block_index, gfs::gf<imtime>> imtime_gf_t;
 
   template<typename ...IndexType>
   ctqmc (

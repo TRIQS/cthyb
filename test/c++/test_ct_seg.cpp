@@ -30,8 +30,8 @@ namespace triqs { namespace applications { namespace impurity_solvers { namespac
 
  //using namespace gf; //?
  // THIS IS UGLY ! 
- using triqs::gf::gf; using triqs::gf::gf_view; using triqs::gf::imtime; using triqs::gf::block;
- using triqs::gf::make_gf; using triqs::gf::Fermion; using triqs::gf::Boson; using triqs::gf::half_bins;
+ using triqs::gfs::gf; using triqs::gfs::gf_view; using triqs::gfs::imtime; using triqs::gfs::block;
+ using triqs::gfs::make_gf; using triqs::gfs::Fermion; using triqs::gfs::Boson; using triqs::gfs::half_bins;
 
 }}}}
 
@@ -251,18 +251,18 @@ void test_qmc_data(){
  arrays::matrix<double> U(2,2);U(0,0)=0.;U(1,1)=0.0;U(0,1)=1.0;U(1,0)=1.0;
  arrays::vector<double> mu(2);mu()=.5;
 
- auto delta_block = triqs::gf::make_gf<triqs::gf::imtime> (beta_, triqs::gf::Fermion, arrays::make_shape(1,1));
+ auto delta_block = triqs::gfs::make_gf<triqs::gfs::imtime> (beta_, triqs::gfs::Fermion, arrays::make_shape(1,1));
  triqs::clef::placeholder<0> tau_;
  delta_block(tau_) << (-.5);//works
  //delta_block(tau_) << (-.5)+(tau_*(beta_-tau_));//works but wrong tail...
  //delta_block(tau_) << (-.5)*(exp(-1.0*tau_)+exp(-1.0*beta_+tau_));//does not work
- std::vector<triqs::gf::gf_view<triqs::gf::imtime> >  D; 
+ std::vector<triqs::gfs::gf_view<triqs::gfs::imtime> >  D; 
  D.push_back(delta_block); D.push_back(delta_block); 
 
- auto Delta = triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imtime>> (D);
+ auto Delta = triqs::gfs::make_gf_view<triqs::gfs::block<triqs::gfs::imtime>> (D);
  bool dynamical_U_=false;
- triqs::gf::gf<triqs::gf::imtime> K_ ;//empty
- auto J_perp = triqs::gf::make_gf<triqs::gf::imtime> (beta_, triqs::gf::Boson, arrays::make_shape(1,1));
+ triqs::gfs::gf<triqs::gfs::imtime> K_ ;//empty
+ auto J_perp = triqs::gfs::make_gf<triqs::gfs::imtime> (beta_, triqs::gfs::Boson, arrays::make_shape(1,1));
  J_perp(tau_) << (-.5);
  qmc_data data(n_flavor_, beta_, U, mu, Delta, dynamical_U_, K_, J_perp); 
 
@@ -345,20 +345,20 @@ void test_solver(int argc, char ** argv){
   param["U"] = U;
 
   //preparing hybridization function
-  auto delta_block = triqs::gf::make_gf<triqs::gf::imtime> (beta_, triqs::gf::Fermion, arrays::make_shape(1,1));
+  auto delta_block = triqs::gfs::make_gf<triqs::gfs::imtime> (beta_, triqs::gfs::Fermion, arrays::make_shape(1,1));
   triqs::clef::placeholder<0> tau_;
   delta_block(tau_) << (-.5);//works
   //delta_block(tau_) << (-.5)+(tau_*(beta_-tau_));//works but wrong tail...
   //delta_block(tau_) << (-.5)*(exp(-1.0*tau_)+exp(-1.0*beta_+tau_));//does not work
-  std::vector<triqs::gf::gf_view<triqs::gf::imtime> >  D; 
+  std::vector<triqs::gfs::gf_view<triqs::gfs::imtime> >  D; 
   D.push_back(delta_block); D.push_back(delta_block); 
 
   auto sha1 = arrays::make_shape(1,1);      //fermionic quantities
   std::vector<std::string> block_names;
   block_names.push_back("up");
   block_names.push_back("dn");
-  auto Delta = make_gf<triqs::gf::block<triqs::gf::imtime>>(block_names, make_gf<triqs::gf::imtime>(beta_, triqs::gf::Fermion, sha1, 10000, triqs::gf::half_bins) );
-  Delta = triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imtime>> (D);
+  auto Delta = make_gf<triqs::gfs::block<triqs::gfs::imtime>>(block_names, make_gf<triqs::gfs::imtime>(beta_, triqs::gfs::Fermion, sha1, 10000, triqs::gfs::half_bins) );
+  Delta = triqs::gfs::make_gf_view<triqs::gfs::block<triqs::gfs::imtime>> (D);
   //solver.deltat_view() = Delta;//crashes
   //param["deltat"]=Delta;//causes segfault
 

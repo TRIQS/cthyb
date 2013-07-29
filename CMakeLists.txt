@@ -11,7 +11,7 @@ enable_testing()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Load TRIQS, including all predefined variables from TRIQS installation
-find_package(TRIQS)
+find_package(TRIQS REQUIRED)
 
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})

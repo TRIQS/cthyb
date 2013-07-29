@@ -1,11 +1,11 @@
 #include "./ctqmc.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
-#include <triqs/gf/local/fourier_matsubara.hpp>
+#include <triqs/gfs/local/fourier_matsubara.hpp>
 #include <triqs/parameters.hpp>
-#include <triqs/gf/block.hpp>
-#include <triqs/gf/imtime.hpp>
-#include <triqs/gf/imfreq.hpp>
+#include <triqs/gfs/block.hpp>
+#include <triqs/gfs/imtime.hpp>
+#include <triqs/gfs/imfreq.hpp>
 
 using namespace triqs::app::impurity_solvers::ctqmc_krylov;
 using triqs::utility::many_body_operator;

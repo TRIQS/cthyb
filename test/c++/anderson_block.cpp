@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "./ctqmc_krylov.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -40,16 +40,17 @@ int main(int argc, char* argv[]) {
   double V = 1.0;
   double epsilon = 2.3;
 
-  // Put in the class
   parameters p;
   p["beta"] = beta;
-  p["max_time"] = -1;
   p["Random_Generator_Name"] = "";
   p["Random_Seed"] = 123 * rank + 567;
+  p["Max_Time"] = -1;
   p["Verbosity"] = 3;
   p["Length_Cycle"] = 50;
   p["N_Warmup_Cycles"] = 10;
   p["N_Cycles"] = 5000;
+  p["n_tau_delta"] = 1000;
+  p["n_tau_g"] = 1000;
   p["krylov_bs_use_cutoff"] = true;
   p["krylov_bs_prob_cutoff"] = .0;
   
@@ -63,44 +64,31 @@ int main(int argc, char* argv[]) {
   fundamental_operator_set<const char *> fops;
   fops.add_operator("up");
   fops.add_operator("down");
-
-  // map indices --> pair of ints
-  std::map<std::tuple<const char *>, std::pair<int,int>> my_map;
-
-  // decide wether g has a block structure
-  int dim_block, n_blocks;
-  std::vector<std::string> block_names;
-  my_map[std::make_tuple("up")] = std::make_pair(0,0);
-  my_map[std::make_tuple("down")] = std::make_pair(1,0);
-  block_names.push_back("up");
-  block_names.push_back("down");
-  dim_block = 1;
-  n_blocks = 2;
-
-  // Green's functions
-  auto sha = triqs::arrays::make_shape(dim_block,dim_block);
-  auto Delta = make_gf<block_index, gf<imtime>>(block_names, make_gf<imtime>(beta, Fermion, sha, 1000) );
-  auto G = make_gf<block_index, gf<imtime>>(block_names, make_gf<imtime>(beta, Fermion, sha, 1000) );
+ 
+  // block structure of GF
+  std::vector<block_desc_t<const char *>> block_structure;
+  block_structure.push_back({"up",{std::make_tuple("up")}});
+  block_structure.push_back({"down",{std::make_tuple("down")}});
+  
+  // Construct CTQMC solver
+  ctqmc_krylov solver(p, H, qn, fops, block_structure);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_w = make_gf<imfreq>(beta, Fermion, sha);
-  delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);
-  for (int i=0; i<n_blocks; i++) Delta()[i] = triqs::gfs::lazy_inverse_fourier(delta_w);
-
-  // Construct CTQMC solver
-  ctqmc krylov_ctqmc(p, H, qn, fops, my_map, G, Delta);
+  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(1,1));
+  delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
+  for (int bl=0; bl<2; ++bl) solver.deltat_view()[bl] = triqs::gfs::lazy_inverse_fourier(delta_w);
   
   // Solve!
-  krylov_ctqmc.solve();
+  solver.solve(p);
   
   // Save the results
   if(rank==0){
     H5::H5File G_file("anderson_block.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_up",G[0]);
-    h5_write(G_file,"G_down",G[1]);
+    h5_write(G_file,"G_up",solver.gt_view()[0]);
+    h5_write(G_file,"G_down",solver.gt_view()[1]);
   }
-
+  
   return 0;
 
 }

@@ -43,11 +43,9 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   // the trace type
   typedef atomic_correlators_worker::result_t trace_t;
 
-  /// The hybridization Delta.
-  typedef gfs::gf_view<gfs::block_index,gfs::gf<gfs::imtime>> delta_t;
   typedef gfs::gf_view<gfs::imtime> delta_block_t;
-  delta_t const delta;
-
+  typedef gfs::gf_view<gfs::block_index,gfs::gf<gfs::imtime>> delta_t;
+  
   /// This callable object adapts the Delta function for the call of the det.
   struct delta_block_adaptor {
 
@@ -76,7 +74,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   trace_t trace;
 
   // construction and the basics stuff. value semantics, except = ?
-  qmc_data(utility::parameters const& p, delta_t const & delta, sorted_spaces const & sosp):
+  qmc_data(utility::parameters const& p, sorted_spaces const & sosp, const delta_t delta):
    config (p["beta"]),
    sosp(sosp),
    atomic_corr (config, sosp,
@@ -86,29 +84,27 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
      krylov_params({p["krylov_max_dim"],p["krylov_min_beta_threshold"]})
 #endif
    ),
-   delta(delta),
    current_sign(1), old_sign(1)
-   {
-    for (auto const& bl : delta.mesh()) dets.push_back(det_manip::det_manip<delta_block_adaptor>(delta_block_adaptor(delta[bl]),100));
-    
+   {    
     if(p["krylov_bs_use_cutoff"])
         config.fill_boundary_block_states(sosp,p["krylov_bs_prob_cutoff"]);
     else
         config.reset_boundary_block_states(sosp);
     
     trace = atomic_corr();
+    
+    dets.clear();
+      for (auto const& bl : delta.mesh())
+          dets.push_back(det_manip::det_manip<delta_block_adaptor>(delta_block_adaptor(delta[bl]),100));
    }
 
   qmc_data (qmc_data const &) = default;
   qmc_data & operator =(qmc_data const & ) = delete;
-
-  std::size_t delta_size() { return delta.domain().size(); }
-  std::size_t delta_block_size(int block_index) { return delta[block_index].data().shape()[1]; }
   
   void update_sign() {
 
     int s =0;
-    size_t num_blocks = delta_size();
+    size_t num_blocks = dets.size();
     vector<int> n_op_with_a_equal_to(num_blocks,0),
                 n_ndag_op_with_a_equal_to(num_blocks,0);
 

@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "./ctqmc_krylov.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -67,6 +67,8 @@ int main(int argc, char* argv[]) {
   p["Length_Cycle"] = 50;
   p["N_Warmup_Cycles"] = 50;
   p["N_Cycles"] = 500;
+  p["n_tau_delta"] = 1000;
+  p["n_tau_g"] = 1000;
   p["krylov_bs_use_cutoff"] = true;
   p["krylov_bs_prob_cutoff"] = .0;
 
@@ -75,6 +77,15 @@ int main(int argc, char* argv[]) {
   for(int o = 0; o < num_orbitals; ++o){
       fops.add_operator(o,"up");
       fops.add_operator(o,"down");
+  }
+  
+  // block structure of GF
+  std::vector<block_desc_t<int, const char *>> block_structure;
+  block_structure.push_back({"up",{}});
+  block_structure.push_back({"down",{}});
+  for(int o = 0; o < num_orbitals; ++o){
+      block_structure[0].indices.push_back(std::make_tuple(o,"up"));
+      block_structure[1].indices.push_back(std::make_tuple(o,"down"));
   }
 
   // Hamiltonian
@@ -107,31 +118,18 @@ int main(int argc, char* argv[]) {
   }
 
   // quantum numbers
-  std::vector<many_body_operator<double,int, const char*>> qn;
+  std::vector<many_body_operator<double,int,const char*>> qn;
   qn.resize(2);
   for(int o = 0; o < num_orbitals; ++o){
     qn[0] += n(o,"up");
     qn[1] += n(o,"down");
   }
+
+  // Construct CTQMC solver
+  ctqmc_krylov solver(p, H, qn, fops, block_structure);
   
-  // map indices --> pair of ints
-  std::map<std::tuple<int,const char *>, std::pair<int,int>> my_map;
-  for(int o = 0; o < num_orbitals; ++o){
-      my_map[std::make_tuple(o,"up")] = std::make_pair(0,o);
-      my_map[std::make_tuple(o,"down")] = std::make_pair(1,o);
-  }
-
-  // Green's functions
-  std::vector<std::string> block_names;
-  block_names.push_back("up");
-  block_names.push_back("down");
-  auto sha1 = triqs::arrays::make_shape(num_orbitals,num_orbitals);
-
-  auto Delta = make_gf<block_index, gf<imtime>>(block_names, make_gf<imtime>(beta, Fermion, sha1, 1000) );
-  auto G = make_gf<block_index, gf<imtime>>(block_names, make_gf<imtime>(beta, Fermion, sha1, 1000) );
-
   // Set hybridization function
-  auto delta_w = make_gf<imfreq>(beta, Fermion, sha1);
+  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(num_orbitals,num_orbitals));
     
   auto w_mesh = delta_w.mesh();
   for(std::size_t w_index = 0; w_index < w_mesh.size(); ++w_index){
@@ -143,21 +141,17 @@ int main(int argc, char* argv[]) {
           m = _conj(V[j]) * m * V[j];
       }
   }
-  
-  Delta()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
-  Delta()[1] = triqs::gfs::lazy_inverse_fourier(delta_w);
-
-  // Construct CTQMC solver
-  ctqmc krylov_ctqmc(p, H, qn, fops, my_map, G, Delta);
+  solver.deltat_view()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
+  solver.deltat_view()[1] = triqs::gfs::lazy_inverse_fourier(delta_w);
   
   // Solve!
-  krylov_ctqmc.solve();
+  solver.solve(p);
   
   // Save the results
   if(rank==0){
     H5::H5File G_file("kanamori_offdiag_qn.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_up",G[0]);
-    h5_write(G_file,"G_down",G[1]);
+    h5_write(G_file,"G_up",solver.gt_view()[0]);
+    h5_write(G_file,"G_down",solver.gt_view()[1]);
   }
 
   return 0;

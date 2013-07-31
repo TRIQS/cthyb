@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "./ctqmc_krylov.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -45,10 +45,13 @@ int main(int argc, char* argv[]) {
   p["max_time"] = -1;
   p["Random_Generator_Name"] = "";
   p["Random_Seed"] = 123 * rank + 567;
+  p["Max_Time"] = -1;
   p["Verbosity"] = 3;
   p["Length_Cycle"] = 50;
   p["N_Warmup_Cycles"] = 50;
   p["N_Cycles"] = 3000;
+  p["n_tau_delta"] = 1000;
+  p["n_tau_g"] = 1000;
   p["krylov_bs_use_cutoff"] = true;
   p["krylov_bs_prob_cutoff"] = .0;
 
@@ -63,22 +66,18 @@ int main(int argc, char* argv[]) {
   fops.add_operator("0");
   fops.add_operator("1");
 
-  // map indices --> pair of ints
-  std::map<std::tuple<const char *>, std::pair<int,int>> my_map;
-  my_map[std::make_tuple("0")] = std::make_pair(0,0);
-  my_map[std::make_tuple("1")] = std::make_pair(0,1);
-
-  // Green's functions
-  std::vector<std::string> block_names;
-  block_names.push_back("tot");
-  auto sha1 = triqs::arrays::make_shape(2,2);
-
-  auto Delta = make_gf<block_index, gf<imtime>>(block_names, make_gf<imtime>(beta, Fermion, sha1, 1000) );
-  auto G = make_gf<block_index, gf<imtime>>(block_names, make_gf<imtime>(beta, Fermion, sha1, 1000) );
+  // block structure of GF
+  std::vector<block_desc_t<const char *>> block_structure;
+  block_structure.push_back({"tot",
+      {std::make_tuple("0"),std::make_tuple("1")}}
+  );
+ 
+  // Construct CTQMC solver
+  ctqmc_krylov solver(p, H, qn, fops, block_structure);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_w = make_gf<imfreq>(beta, Fermion, sha1);
+  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(2,2));
   auto d00 = slice_target(delta_w, triqs::arrays::range(0,1), triqs::arrays::range(0,1));
   auto d11 = slice_target(delta_w, triqs::arrays::range(1,2), triqs::arrays::range(1,2));
   auto d01 = slice_target(delta_w, triqs::arrays::range(0,1), triqs::arrays::range(1,2));
@@ -87,19 +86,15 @@ int main(int argc, char* argv[]) {
   d11(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d01(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d10(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
-
-  Delta()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
-
-  // Construct CTQMC solver
-  ctqmc krylov_ctqmc(p, H, qn, fops, my_map, G, Delta);
+  solver.deltat_view()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
   
   // Solve!
-  krylov_ctqmc.solve();
+  solver.solve(p);
   
   // Save the results
   if(rank==0){
     H5::H5File G_file("spinless.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_tau",G[0]);
+    h5_write(G_file,"G_tau",solver.gt_view()[0]);
   }
 
   return 0;

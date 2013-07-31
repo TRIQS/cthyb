@@ -45,10 +45,10 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   public:
   //----------------------------------
 
-  move_remove_c_cdag(int block_index, qmc_data & data, mc_tools::random_generator & rng):
+  move_remove_c_cdag(int block_index, int block_size, qmc_data & data, mc_tools::random_generator & rng):
    data(data), config(data.config), rng(rng),
    block_index(block_index),
-   block_size(data.delta_block_size(block_index))
+   block_size(block_size)
   {}
 
   //----------------

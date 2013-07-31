@@ -1,13 +1,10 @@
 # load triqs helper to set up tests
 find_package(TriqsTest)
 
-if (${TRIQS_WITH_PYTHON_SUPPORT})
- #add_subdirectory(python)
-endif()
+triqs_add_rpath_for_cxx_code()
+link_libraries(cthyb_krylov ${TRIQS_LIBRARY_ALL} )
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
-link_libraries (cthyb_krylov ${TRIQS_LIBRARY_ALL} )
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
- 
 # Simple tests
 add_executable( hilbert_test  ${CMAKE_CURRENT_SOURCE_DIR}/hilbert_test.cpp )
 add_executable( operator_test  ${CMAKE_CURRENT_SOURCE_DIR}/operator_test.cpp )

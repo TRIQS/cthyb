@@ -22,7 +22,10 @@
 #ifndef TRIQS_CTQMC_SORTED_SPACES
 #define TRIQS_CTQMC_SORTED_SPACES
 
+#include <string>
 #include <vector>
+#include <map>
+#include <tuple>
 #include <memory>
 #include <limits>
 #include <algorithm> 
@@ -55,12 +58,18 @@ struct lt_dbl {
   }
 };
 
-
 /*
   This class is used to divide the full Hilbert space into smaller
   subspaces using the quantum numbers.
 
 */
+
+template<typename ...IndexType>
+struct block_desc_t {
+    std::string name;
+    std::vector<std::tuple<IndexType...>> indices;
+};
+
 class sorted_spaces {
 
   public:
@@ -73,15 +82,23 @@ class sorted_spaces {
   typedef double quantum_number_t;
 
   template<typename ...IndexType>
-  sorted_spaces(utility::many_body_operator<double,IndexType...> const & h_,
-                std::vector<utility::many_body_operator<double,IndexType...>> const & qn_vector,
-                fundamental_operator_set<IndexType...> const & fops,
-                std::map<std::tuple<IndexType...>, std::pair<int,int>> const & indices_to_ints):
+  sorted_spaces(utility::many_body_operator<double,IndexType...> const& h_,
+                std::vector<utility::many_body_operator<double,IndexType...>> const& qn_vector,
+                fundamental_operator_set<IndexType...> const& fops,
+                std::vector<block_desc_t<IndexType...>> const& block_structure):
     n_blocks(0), hamilt(h_, fops),
     creation_operators(fops.n_operators()), destruction_operators(fops.n_operators()),
     creation_map(fops.n_operators()), destruction_map(fops.n_operators()),
     creation_connection(fops.n_operators()), destruction_connection(fops.n_operators()) {
 
+    std::map<std::tuple<IndexType...>, std::pair<int,int>> indices_to_ints;
+    for(int bl=0; bl<block_structure.size(); ++bl){
+        auto const& indices = block_structure[bl].indices;
+        for(int i=0; i<indices.size(); ++i){
+            indices_to_ints[indices[i]] = std::make_pair(bl,i);
+        }
+    }
+        
     // create the map pair<int,int> --> int identifying operators
     for (auto const & ind_tuple: fops) {
       int_pair_to_n[ indices_to_ints.at(ind_tuple.first) ] = ind_tuple.second;

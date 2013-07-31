@@ -29,13 +29,13 @@ int main() {
   fops.add_operator("up");
   fops.add_operator("down");
 
-  // map indices --> pair of ints
-  std::map<std::tuple<const char *>, std::pair<int,int>> my_map;
-  my_map[std::make_tuple("up")] = std::make_pair(0,0);
-  my_map[std::make_tuple("down")] = std::make_pair(1,0);
+  // Block structure
+  std::vector<block_desc_t<const char *>> block_structure;
+  block_structure.push_back({"up",{std::make_tuple("up")}});
+  block_structure.push_back({"down",{std::make_tuple("down")}});
 
   // divide the full Hilbert space
-  sorted_spaces ss(H, qn_list, fops, my_map);
+  sorted_spaces ss(H, qn_list, fops, block_structure);
   std::cout << ss << std::endl;
 
   // get a state in sub Hilbert space 0

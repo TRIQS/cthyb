@@ -1,0 +1,112 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2013 by I. Krivenko, M. Ferrero, O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+#ifndef TRIQS_CTQMC_KRYLOV_HPP
+#define TRIQS_CTQMC_KRYLOV_HPP
+
+#include <triqs/utility/first_include.hpp>
+#include <triqs/parameters.hpp>
+#include <triqs/gfs/imtime.hpp>
+#include <triqs/gfs/imfreq.hpp>
+#include <triqs/gfs/block.hpp>
+#include <triqs/mc_tools/mc_generic.hpp>
+#include <triqs/utility/callbacks.hpp>
+#include <boost/mpi/communicator.hpp>
+
+#include "operator.hpp"
+#include "qmc_data.hpp"
+
+#include <vector>
+
+using namespace triqs::gfs;
+using namespace triqs::utility;
+using triqs::arrays::make_shape;
+
+namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+
+ class ctqmc_krylov {
+
+  typedef std::complex<double> mc_sign_type;
+
+  //Green's function containers
+  
+  //imaginary-time Green's functions
+  gf<block_index,gf<imtime>> deltat;
+  gf<block_index,gf<imtime>> gt;
+  
+  //specify all required and optional parameters and generate help from them
+  parameter_defaults constructor_defaults() const;
+  parameter_defaults solve_defaults() const; 
+  void help() const;
+  
+  // define the communicator, here MPI_COMM_WORLD
+  boost::mpi::communicator c;
+  
+  // Information about the atomic problem
+  sorted_spaces sosp;
+  
+  public:
+      
+  template<typename ...IndexType>
+  using real_operator_t = many_body_operator<double, IndexType...>;
+        
+  template<typename ...IndexType>
+  ctqmc_krylov(
+      parameters p_in,
+      real_operator_t<IndexType...> const& h_loc,
+      std::vector<real_operator_t<IndexType...>> const& quantum_numbers,
+      fundamental_operator_set<IndexType...> const& fops,
+      std::vector<block_desc_t<IndexType...>> const& block_structure
+  ) :
+      sosp(h_loc,quantum_numbers,fops,block_structure)
+  {
+      p_in.update(constructor_defaults());
+      auto const& params = p_in;
+      
+      std::vector<std::string> block_names;
+      std::vector<gf<imtime>> deltat_blocks;
+      std::vector<gf<imtime>> gt_blocks;
+      
+      for(auto const& block : block_structure){
+          block_names.push_back(block.name);
+        
+          auto shape = make_shape(block.indices.size(),block.indices.size());
+          
+          deltat_blocks.push_back(make_gf<imtime>(params["beta"], Fermion, shape, params["n_tau_delta"], half_bins));    
+          gt_blocks.push_back(make_gf<imtime>(params["beta"], Fermion, shape, params["n_tau_g"], half_bins));
+      }
+      
+      deltat = make_gf<block_index,gf<imtime>>(block_names, deltat_blocks);
+      gt = make_gf<block_index,gf<imtime>>(block_names, gt_blocks);
+  }
+      
+  void solve(parameters p_in);
+  
+  //input containers
+  gf_view<block_index,gf<imtime>> deltat_view() const { return deltat; }
+  
+  //imaginary-time measurements
+  gf_view<block_index,gf<imtime>> gt_view() const { return gt; }
+
+};
+
+}}}}
+
+#endif

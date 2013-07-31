@@ -48,10 +48,10 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   public :
   //-----------------------------------------------
 
-  move_insert_c_cdag(int block_index, qmc_data & data, mc_tools::random_generator & rng, bool record_histograms):
+  move_insert_c_cdag(int block_index, int block_size, qmc_data & data, mc_tools::random_generator & rng, bool record_histograms):
    data(data), config(data.config), rng(rng),
    block_index(block_index),
-   block_size(data.delta_block_size(block_index)),
+   block_size(block_size),
    record_histograms(record_histograms),
    histo_length_proposed (0,config.beta()),
    histo_length_accepted (0,config.beta())

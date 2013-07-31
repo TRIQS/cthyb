@@ -46,11 +46,11 @@ struct measure_g : measure_z {
     typedef std::complex<double> mc_sign_type;
     
     qmc_data const& data;
-    gf_view<imtime> & g_tau;
+    gf_view<imtime> g_tau;
     int a_level;
     const double beta;
     
-    measure_g(int a_level, gf_view<imtime> & g_tau, qmc_data const& data) :
+    measure_g(int a_level, gf_view<imtime> g_tau, qmc_data const& data) :
         data(data), g_tau(g_tau), a_level(a_level),
         beta(data.config.beta()) {}
 

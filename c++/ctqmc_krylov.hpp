@@ -50,12 +50,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   //imaginary-time Green's functions
   gf<block_index,gf<imtime>> deltat;
   gf<block_index,gf<imtime>> gt;
-  
-  //specify all required and optional parameters and generate help from them
-  parameter_defaults constructor_defaults() const;
-  parameter_defaults solve_defaults() const; 
-  void help() const;
-  
+    
   // define the communicator, here MPI_COMM_WORLD
   boost::mpi::communicator c;
   
@@ -104,6 +99,11 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   
   //imaginary-time measurements
   gf_view<block_index,gf<imtime>> gt_view() const { return gt; }
+  
+  //specify all required and optional parameters and generate help from them
+  parameter_defaults constructor_defaults() const;
+  parameter_defaults solve_defaults() const; 
+  void help() const;
 
 };
 

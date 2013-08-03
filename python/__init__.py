@@ -24,7 +24,6 @@ DOC
 
 """
 from many_body_operator import Operator
-#from ctqmc_hyb_matrix import Solver
+from ctqmc_hyb_krylov import Solver
 
-#__all__ = ['Operator', 'Solver']
-__all__ = ['Operator']
+__all__ = ['Operator', 'Solver']

@@ -56,52 +56,52 @@ int main(int argc, char* argv[]) {
   p["krylov_bs_prob_cutoff"] = .0;
   
   // basis of operators to use  
-  fundamental_operator_set<int, const char *> fops;
+  fundamental_operator_set<const char *,int> fops;
   for(int o = 0; o < num_orbitals; ++o){
-      fops.add_operator(o,"up");
-      fops.add_operator(o,"down");
+      fops.add_operator("up",o);
+      fops.add_operator("down",o);
   }
 
   // block structure of GF
-  std::vector<block_desc_t<int,const char *>> block_structure;
+  std::vector<block_desc_t<const char *,int>> block_structure;
   for(int o = 0; o < num_orbitals; ++o){
     std::stringstream bup; bup << "up-" << o;
-    block_structure.push_back({bup.str(),{std::make_tuple(o,"up")}});
+    block_structure.push_back({bup.str(),{std::make_tuple("up",o)}});
   }
   for(int o = 0; o < num_orbitals; ++o){
     std::stringstream bdown; bdown << "down-" << o;
-    block_structure.push_back({bdown.str(),{std::make_tuple(o,"down")}});
+    block_structure.push_back({bdown.str(),{std::make_tuple("down",o)}});
   }
     
   // Hamiltonian
-  many_body_operator<double,int,const char*> H;
+  many_body_operator<double,const char*,int> H;
   for(int o = 0; o < num_orbitals; ++o){
-      H += -mu*(n(o,"up") + n(o,"down"));
+      H += -mu*(n("up",o) + n("down",o));
   }
   for(int o = 0; o < num_orbitals; ++o){
-      H += U *n(o,"up")*n(o,"down");
+      H += U *n("up",o)*n("down",o);
   }
   for(int o1 = 0; o1 < num_orbitals; ++o1)
   for(int o2 = 0; o2 < num_orbitals; ++o2){
       if(o1==o2) continue;
-      H += (U-2*J)*n(o1,"up")*n(o2,"down");
+      H += (U-2*J)*n("up",o1)*n("down",o2);
   }
   for(int o1 = 0; o1 < num_orbitals; ++o1)
   for(int o2 = 0; o2 < num_orbitals; ++o2){
       if(o2>=o1) continue;
-      H += (U-3*J)*n(o1,"up")*n(o2,"up");
-      H += (U-3*J)*n(o1,"down")*n(o2,"down");
+      H += (U-3*J)*n("up",o1)*n("up",o2);
+      H += (U-3*J)*n("down",o1)*n("down",o2);
   }
   
   for(int o1 = 0; o1 < num_orbitals; ++o1)
   for(int o2 = 0; o2 < num_orbitals; ++o2){
       if(o1==o2) continue;
-      H += -J*c_dag(o1,"up")*c_dag(o1,"down")*c(o2,"up")*c(o2,"down");
-      H += -J*c_dag(o1,"up")*c_dag(o2,"down")*c(o2,"up")*c(o1,"down");
+      H += -J*c_dag("up",o1)*c_dag("down",o1)*c("up",o2)*c("down",o2);
+      H += -J*c_dag("up",o1)*c_dag("down",o2)*c("up",o2)*c("down",o1);
   }
 
   // quantum numbers
-  std::vector<many_body_operator<double,int,const char*>> qn;
+  std::vector<many_body_operator<double,const char*,int>> qn;
 
   // Construct CTQMC solver
   ctqmc_krylov solver(p, H, qn, fops, block_structure);
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
   auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(1,1));
-  delta_w(om_) << V / (om_ - epsilon) + V / (om_ + epsilon);  
+  delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
   for (int o = 0; o < 2*num_orbitals; ++o){
     solver.deltat_view()[o] = triqs::gfs::lazy_inverse_fourier(delta_w);
   }

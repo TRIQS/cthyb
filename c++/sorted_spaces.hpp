@@ -43,6 +43,7 @@
 #include "state.hpp"
 
 using namespace triqs::arrays;
+using std::string;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 

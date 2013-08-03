@@ -29,4 +29,4 @@ cdef class Operator:
     """
     Many-body operator
     """
-    cdef many_body_operator[double,string,string] * _c
+    cdef many_body_operator[double,string,string] _c

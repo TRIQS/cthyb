@@ -40,6 +40,4 @@ x - y = -1*C^+(1) + 1*C(0)
 N^3:
 N = 1*C^+(dn)C(dn) + 1*C^+(up)C(up)
 N^3 = 1*C^+(dn)C(dn) + 1*C^+(up)C(up) + 6*C^+(dn)C^+(up)C(up)C(dn)
-
-Text-serialized form of N^3: 
-22 serialization::archive 10 0 0 0 0 3 0 0 0 0 0 2 0 0 0 1 0 0 2 dn 0 2 dn 1 2 0 1 2 up 0 2 up 1 4 0 1 2 dn 1 2 up 0 2 up 0 2 dn 6
+New N^3 = 1*C^+(dn)C(dn) + 1*C^+(up)C(up) + 6*C^+(dn)C^+(up)C(up)C(dn)

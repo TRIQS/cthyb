@@ -23,6 +23,7 @@
 #include <iostream>
 #include <vector>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <sstream>
 
 #include "./operator.hpp"
@@ -90,8 +91,12 @@ int main(int argc, char **argv)
     std::stringstream ss;
     boost::archive::text_oarchive oa(ss);
     oa & N3;
-    std::cout << std::endl << "Text-serialized form of N^3: " << std::endl;
-    std::cout << ss.str() << std::endl;
 
+    boost::archive::text_iarchive ia(ss);
+    many_body_operator<double,std::string> new_N3;
+    ia & new_N3;
+    
+    std::cout << "New N^3 = " << new_N3 << std::endl; 
+    
     return 0;
 }

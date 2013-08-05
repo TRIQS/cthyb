@@ -1,6 +1,6 @@
-add_library(cthyb_krylov ctqmc_krylov.cpp)
-target_link_libraries (cthyb_krylov ${TRIQS_LIBRARY_ALL})
+add_library(cthyb_krylov_c ctqmc_krylov.cpp)
+target_link_libraries(cthyb_krylov_c ${TRIQS_LIBRARY_ALL})
 include_directories(${TRIQS_INCLUDE_ALL})
-triqs_set_rpath_for_target(cthyb_krylov)
+triqs_set_rpath_for_target(cthyb_krylov_c)
 
-install(TARGETS cthyb_krylov DESTINATION lib)
+install(TARGETS cthyb_krylov_c DESTINATION lib)

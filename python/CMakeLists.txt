@@ -14,7 +14,7 @@ execute_process(COMMAND ln -fs ${CMAKE_CURRENT_BINARY_DIR}/many_body_operator.so
 
 # Build a cython module for the solver
 triqs_cython_module(ctqmc_hyb_krylov ctqmc_hyb_krylov ${python_destination})
-target_link_libraries(ctqmc_hyb_krylov ${TRIQS_LIBRARY_ALL} cthyb_krylov)
+target_link_libraries(ctqmc_hyb_krylov ${TRIQS_LIBRARY_ALL} cthyb_krylov_c)
 include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_SOURCE_DIR})
 triqs_set_rpath_for_target(ctqmc_hyb_krylov)
 

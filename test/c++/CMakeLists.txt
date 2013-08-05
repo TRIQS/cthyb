@@ -2,7 +2,7 @@
 find_package(TriqsTest)
 
 triqs_add_rpath_for_cxx_code()
-link_libraries(cthyb_krylov ${TRIQS_LIBRARY_ALL})
+link_libraries(cthyb_krylov_c ${TRIQS_LIBRARY_ALL})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests

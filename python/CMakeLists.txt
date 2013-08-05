@@ -4,6 +4,8 @@ set(python_destination applications/impurity_solvers/cthyb_krylov)
 # make a local pytriqs copy
 triqs_prepare_local_pytriqs_merged_with_my_python(${python_destination})
 
+triqs_add_rpath_for_cxx_code()
+
 # Build a cython module for many_body_operator
 triqs_cython_module(many_body_operator many_body_operator ${python_destination})
 target_link_libraries(many_body_operator ${TRIQS_LIBRARY_ALL})

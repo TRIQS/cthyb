@@ -16,10 +16,6 @@ find_package(TRIQS REQUIRED)
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
-# Set correct options for RPATH
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 # Details of the krylov code
 option(Krylov_Debug "Enable extended debugging output in Krylov solver" OFF)
 option(Krylov_Stats "Enable statistics collection in Krylov solver" OFF)

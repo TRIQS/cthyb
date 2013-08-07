@@ -5,6 +5,7 @@ set(python_destination applications/impurity_solvers/cthyb_krylov)
 triqs_prepare_local_pytriqs_merged_with_my_python(${python_destination})
 
 # Build a cython module for the solver
+triqs_add_rpath_for_cxx_code()
 triqs_cython_module(ctqmc_hyb_krylov ctqmc_hyb_krylov ${python_destination})
 target_link_libraries(ctqmc_hyb_krylov ${TRIQS_LIBRARY_ALL} cthyb_krylov_c)
 include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_SOURCE_DIR})

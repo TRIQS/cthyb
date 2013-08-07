@@ -3,11 +3,12 @@ from libcpp.vector cimport vector
 from libcpp.utility cimport pair
 from pytriqs.gf.local.gf cimport *
 from pytriqs.parameters.parameters cimport *
-from many_body_operator cimport *
 
 import numpy
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
+
+include "many_body_operator.pyx"
 
 ctypedef many_body_operator[double,string,string] operator_c
 

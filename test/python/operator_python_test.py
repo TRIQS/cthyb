@@ -1,6 +1,6 @@
 #!/bin/env python
 
-from pytriqs.applications.impurity_solvers.cthyb_krylov.many_body_operator import *
+from pytriqs.applications.impurity_solvers.cthyb_krylov import *
 import itertools
 
 C_list = [C(1,0),C(2,0),C(3,0)]

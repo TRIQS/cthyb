@@ -207,8 +207,11 @@ class sorted_spaces {
 
     }
     
+    // Compute energy levels and eigenvectors of the local Hamiltonian
     compute_eigensystems();
-
+    
+    // Shift the ground state energy of the local Hamiltonian to zero.
+    hamilt = imperative_operator<partial_hilbert_space, false>(h_-get_gs_energy(), fops);
   }
 
   // get Hamiltonian

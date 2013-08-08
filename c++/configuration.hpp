@@ -74,17 +74,26 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
               
       // Fill boundary_block_states with states which have significant weights
       boundary_block_states_ids.resize(sosp.n_subspaces());
+      std::size_t total_states = 0;
       for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
           auto const& eigensystem = sosp.get_eigensystems()[nsp];
           for(size_t n=0; n<eigensystem.eigenvalues.size(); ++n){
               if(prob_tolerance == 0){
                   boundary_block_states_ids[nsp].push_back(n);
+                  total_states++;
                   continue;
               }
               double prob = exp(-beta_*(eigensystem.eigenvalues[n]-sosp.get_gs_energy()))/z;
-              if(prob>prob_tolerance) boundary_block_states_ids[nsp].push_back(n);
+              if(prob>prob_tolerance){
+                  boundary_block_states_ids[nsp].push_back(n);
+                  total_states++;
+              }
           }
       }
+      
+#ifdef KRYLOV_DEBUG
+    std::cerr << total_states << " states will be used in the outer trace summation." << std::endl;
+#endif
   }
 
   double beta() const {return beta_;}

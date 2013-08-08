@@ -152,9 +152,9 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 #ifdef KRYLOV_DEBUG
    std::size_t sizee = data.dets[block_index].size();
    std::cerr << "Det x: " << std::endl;
-   for(std::size_t i = 0; i < sizee; ++i) std::cout << i << " -> " << data.dets[block_index].get_x(i).first << std::endl;
+   for(std::size_t i = 0; i < sizee; ++i) std::cerr << i << " -> " << data.dets[block_index].get_x(i).first << std::endl;
    std::cerr << "Det y: " << std::endl;
-   for(std::size_t i = 0; i < sizee; ++i) std::cout << i << " -> " << data.dets[block_index].get_y(i).first << std::endl;
+   for(std::size_t i = 0; i < sizee; ++i) std::cerr << i << " -> " << data.dets[block_index].get_y(i).first << std::endl;
 
    std::cerr << "Sign correction: " << data.current_sign / data.old_sign << std::endl;
    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;

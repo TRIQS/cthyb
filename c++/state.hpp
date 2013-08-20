@@ -97,6 +97,14 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
       assert(st.hs!=nullptr);
       return st.hs->dimension();
     }
+    
+    friend state make_zero_state(state const & st)
+    {
+        assert(st.hs!=nullptr);
+        state zero_st(*st.hs);
+        zero_st.amplitudes().clean();
+        return zero_st;
+    }
 
     data_t & operator()(std::size_t i) { return ampli[i]; }
 
@@ -237,6 +245,14 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	 return st.hs->dimension();
 	}
 
+	friend state make_zero_state(state const & st)
+    {
+        assert(st.hs!=nullptr);
+        state zero_st(*st.hs);
+        zero_st.amplitudes()() = 0;
+        return zero_st;
+    }
+	
 	// full access to amplitudes
 	amplitude_t const & amplitudes() const { return ampli; }
 	amplitude_t & amplitudes() { return ampli; }

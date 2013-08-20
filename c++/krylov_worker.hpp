@@ -161,10 +161,7 @@ template <typename OperatorType, typename StateType>
     template<typename KrylovCoeffs>
     StateType krylov_2_fock(KrylovCoeffs const& phi)
     {
-        //StateType fock_state(basisstates[0].size());
-        StateType st(res_vector); 
-        //StateType st(res_vector.get_hilbert());
-        //st() = 0;
+        StateType st = make_zero_state(res_vector); 
         for(std::size_t i = 0; i < phi.size(); ++i)
             st += phi(i) * basisstates[i];  
         return st;

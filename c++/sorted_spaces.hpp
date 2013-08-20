@@ -59,18 +59,17 @@ struct lt_dbl {
   }
 };
 
-/*
-  This class is used to divide the full Hilbert space into smaller
-  subspaces using the quantum numbers.
-
-*/
-
 template<typename ...IndexType>
 struct block_desc_t {
     std::string name;
     std::vector<std::tuple<IndexType...>> indices;
 };
 
+/*
+  This class is used to divide the full Hilbert space into smaller
+  subspaces using the quantum numbers.
+
+*/
 class sorted_spaces {
 
   public:
@@ -78,6 +77,7 @@ class sorted_spaces {
   struct eigensystem_t {
       vector<double> eigenvalues;
       std::vector<state<partial_hilbert_space,false>> eigenstates;
+      matrix<double> unitary_matrix; // H = U * \Lambda * U^+
   };
       
   typedef double quantum_number_t;
@@ -290,14 +290,14 @@ class sorted_spaces {
             auto f_state = hamilt(i_state);
             h_matrix(range(),i)  = f_state.amplitudes();
          }
-         
          linalg::eigenelements_worker<matrix_view<double>,true> ew(h_matrix);
+
          ew.invoke();
          eigensystem.eigenvalues = ew.values();
+         eigensystem.unitary_matrix = h_matrix.transpose();
          gs_energy = std::min(gs_energy,*std::min_element(eigensystem.eigenvalues.begin(), eigensystem.eigenvalues.end()));
          
          eigensystem.eigenstates.reserve(sp.dimension());
-         
          for(std::size_t e=0; e<sp.dimension(); ++e){
             eigensystem.eigenstates.emplace_back(sp);
             eigensystem.eigenstates.back().amplitudes() = h_matrix(e,range());

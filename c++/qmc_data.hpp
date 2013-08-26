@@ -79,9 +79,9 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    sosp(sosp),
    atomic_corr (config, sosp,
 #ifdef KRYLOV_STATS
-     krylov_params({p["krylov_max_dim"],p["krylov_min_beta_threshold"],p["krylov_stats_file"]})
+     krylov_params({p["krylov_gs_energy_convergence"],p["krylov_stats_file"]})
 #else
-     krylov_params({p["krylov_max_dim"],p["krylov_min_beta_threshold"]})
+     krylov_params({p["krylov_gs_energy_convergence"]})
 #endif
    ),
    current_sign(1), old_sign(1)

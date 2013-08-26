@@ -21,15 +21,9 @@
 #ifndef TRIQS_CTQMC_KRYLOV_EXP_H_HPP
 #define TRIQS_CTQMC_KRYLOV_EXP_H_HPP
 
-#include <tuple>
-#include <algorithm>
-
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/blas_lapack/stev.hpp>
 #include "krylov_worker.hpp"
 
 using namespace triqs::arrays;
-using triqs::arrays::blas::tridiag_worker;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
@@ -51,25 +45,19 @@ public:
     state_type operator()(state_type const& initial_state, double dtau)
     {
         scalar_type initial_state_norm  = std::sqrt(dotc(initial_state,initial_state));
-        auto melements = kw(initial_state/initial_state_norm);
-    
-        std::size_t krylov_dim = std::get<0>(melements).size();
-        auto tdw = tridiag_worker(2*krylov_dim);
-    
-        // Diagonalize
-        tdw(std::get<0>(melements),std::get<1>(melements));
-        auto eigenvalues = tdw.values();
+        kw(initial_state/initial_state_norm);
+
+        auto eigenvalues = kw.values();
+        std::size_t krylov_dim = eigenvalues.size();
         
         matrix<scalar_type> krylov_exp(krylov_dim,krylov_dim);
         krylov_exp() = 0;
         for(std::size_t n = 0; n < krylov_dim; ++n)
             krylov_exp(n,n) = exp(-dtau*eigenvalues(n));
-    
-        // FIXME: Hermitian adjoint instead of transpose?
-        krylov_exp = tdw.vectors().transpose() * krylov_exp * tdw.vectors();
-            
-        auto krylov_coeffs = initial_state_norm * krylov_exp(ellipsis(),0);
         
+        krylov_exp = kw.vectors().transpose() * krylov_exp * kw.vectors();
+        auto krylov_coeffs = initial_state_norm * krylov_exp(ellipsis(),0);
+   
         return kw.krylov_2_fock(krylov_coeffs);
     }
 };

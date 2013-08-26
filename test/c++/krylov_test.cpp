@@ -84,19 +84,17 @@ int main() {
     psi0[4](4) = 1.0/sqrt(3.0);
         
 #ifdef KRYLOV_STATS
-    krylov_params kp({10,1e-10,"krylov.stats.dat"});
+    krylov_params kp({1e-10,"krylov.stats.dat"});
 #else
-    krylov_params kp({10,1e-10});
+    krylov_params kp({1e-10});
 #endif
     
     krylov_worker<decltype(H), vector<double>> kw(H,kp);
     
-    std::vector<double> alpha, beta;
     for(int n = 0; n < 5; ++n){ 
-        std::tie(alpha,beta) = kw(psi0[n]);
         // Check dimensions of Krylov's subspaces
-        if(alpha.size() != n+1 || beta.size() != n) return -1;
-        kw.reset();
+        kw(psi0[n]);
+        if(kw.values().size() != n+1) return -1;
     }
 
     // Final vectors psi (reference)

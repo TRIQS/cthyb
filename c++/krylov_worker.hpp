@@ -22,30 +22,31 @@
 #ifndef TRIQS_CTQMC_KRYLOV_KRYLOV_WORKER_HPP
 #define TRIQS_CTQMC_KRYLOV_KRYLOV_WORKER_HPP
 #include <vector>
-#include <limits>
 #include <complex>
 #include <tuple>
+
+#include <triqs/arrays.hpp>
+#include <triqs/arrays/blas_lapack/stev.hpp>
 
 #ifdef KRYLOV_STATS
 #include "statistics.hpp"
 #endif
 
+using triqs::arrays::blas::tridiag_worker;
+
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
 struct krylov_params {
         
-    std::size_t max_dim;
-    double min_beta_threshold;
+    double gs_energy_convergence;
 #ifdef KRYLOV_STATS
     std::string stats_file;
 #endif
     
-    static const std::size_t default_max_dim;
-    static const double default_min_beta_threshold;
+    static const double default_gs_energy_convergence;
 };
 
-const std::size_t krylov_params::default_max_dim = std::numeric_limits<std::size_t>::max();
-const double krylov_params::default_min_beta_threshold = 1e-7;
+const double krylov_params::default_gs_energy_convergence = 1e-10;
     
 template <typename OperatorType, typename StateType>
     class krylov_worker {
@@ -53,9 +54,6 @@ template <typename OperatorType, typename StateType>
     OperatorType const& H;
 
     typedef typename StateType::value_type scalar_type;
-
-    std::vector<scalar_type> alpha;   // diagonal matrix elements
-    std::vector<scalar_type> beta;    // subdiagonal matrix elements
    
     // Krylov basis states
     // H \approx V * T * V^+
@@ -67,15 +65,20 @@ template <typename OperatorType, typename StateType>
     // | beta[0]     alpha[1]    beta[1]     ... |
     // | 0           beta[1]     alpha[2]    ... |
     // |             ...                         |
-      
+
+    std::vector<scalar_type> alpha;   // diagonal matrix elements
+    std::vector<scalar_type> beta;    // subdiagonal matrix elements
+    
     // Temporaries
     StateType res_vector;
-    scalar_type last_beta;
             
     static constexpr unsigned int reserved_krylov_dim = 5;
     
     // Adjustable parameters of the algorithm
     krylov_params kp;
+    
+    // Tridiagonal matrix diagonalizer
+    tridiag_worker tdw;
     
 #ifdef KRYLOV_STATS
     krylov_stats_collector stats;
@@ -95,19 +98,35 @@ template <typename OperatorType, typename StateType>
     std::unordered_map<std::pair<std::size_t,std::size_t>, std::size_t, dims_hash> dims_stats;
 #endif
     
+    // Returns the only matrix element of the 1x1 Krylov-projected matrix
+    double first_iteration(StateType const& initial_state)
+    {
+        basisstates.push_back(initial_state);
+        res_vector = H(basisstates.back());
+        alpha.push_back(dotc(initial_state,res_vector));
+        res_vector -= alpha.back() * initial_state;
+        
+        return alpha.back();
+    }
+    
     // Calculates the next state in Krylov's basis.
     // Returns false if the previous state was an eigenstate of H
-    void advance()
-    {           
-        basisstates.push_back(res_vector/last_beta);
+    bool advance()
+    {
+        double new_beta = std::sqrt(dotc(res_vector,res_vector));
+        // We don't really want to divide by zero
+        if(std::abs(new_beta) < kp.gs_energy_convergence) return false;
+        
+        beta.push_back(new_beta);
+        basisstates.push_back(res_vector/new_beta);
         // try optimisation : if ok, use assign delegation to maintain genericty
-	//res_vector.amplitudes()()=0; H.apply(basisstates.back(),res_vector);
+        //res_vector.amplitudes()()=0; H.apply(basisstates.back(),res_vector);
         res_vector = H(basisstates.back());
         alpha.push_back(dotc(basisstates.back(),res_vector));
         res_vector -= alpha.back() * basisstates.back();
-        if(beta.size() > 0) res_vector -= last_beta * basisstates[basisstates.size()-2];
-        last_beta = std::sqrt(dotc(res_vector,res_vector));
-        beta.push_back(last_beta);
+        res_vector -= beta.back() * basisstates[basisstates.size()-2];
+    
+        return true;
     }
     
     public :
@@ -115,7 +134,7 @@ template <typename OperatorType, typename StateType>
     typedef StateType state_type;
         
     krylov_worker(OperatorType const& H, krylov_params kp) :
-        H(H), kp(kp)
+        H(H), kp(kp), tdw(reserved_krylov_dim)
 #ifdef KRYLOV_STATS
         , stats(kp.stats_file)
 #endif
@@ -132,24 +151,28 @@ template <typename OperatorType, typename StateType>
                         std::vector<scalar_type> const&> melements_t;
     
     // initial_state MUST be of norm 1
-    melements_t operator()(StateType const& initial_state)
+    void operator()(StateType const& initial_state)
     {        
-        std::size_t space_dim = get_space_dim(initial_state);
-        std::size_t max_dim = std::min(space_dim, kp.max_dim);
         reset();
-        
-        last_beta = 1.0;
-        res_vector = initial_state;
 
-        while(alpha.size() < max_dim && std::abs(last_beta) > kp.min_beta_threshold) advance();
-        if(beta.size() != 0) beta.pop_back();
+        // First iteration
+        double gs_energy = first_iteration(initial_state);
+        tdw(alpha,beta);    // FIXME: no need to call this... but otherwise tdw.values() can not be called
+        
+        while(advance()){
+            tdw(alpha,beta);
+            if(std::abs(tdw.values()[0] - gs_energy) < kp.gs_energy_convergence) break;
+            gs_energy = tdw.values()[0];
+        }
 
 #ifdef KRYLOV_STATS
-        stats(space_dim,alpha.size());
+        stats(get_space_dim(initial_state),alpha.size());
 #endif
-        
-        return std::make_tuple(std::cref(alpha), std::cref(beta));
     }
+    
+    // Access eigenvalues and eigenvectors of the Krylov-projected operator
+    arrays::vector_view<double> values() const { return tdw.values();}
+    arrays::matrix_view<double> vectors() const { return tdw.vectors();}
 
     void reset()
     {

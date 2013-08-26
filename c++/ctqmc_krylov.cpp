@@ -112,8 +112,7 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
    ("measure_gt", bool(true), "Whether to measure G(tau)")
    ("krylov_bs_use_cutoff", bool(false), " bool ")
    ("krylov_bs_prob_cutoff", double(1e-8), " double ") // put negative to include all boundary states.
-   ("krylov_max_dim", krylov_params::default_max_dim, " unsigned int ")
-   ("krylov_min_beta_threshold", krylov_params::default_min_beta_threshold, " double ")
+   ("krylov_gs_energy_convergence", krylov_params::default_gs_energy_convergence, " double ")
 #ifdef KRYLOV_STATS
    ("krylov_stats_file", std::string("krylov.stats.dat"), " string ")
    ("krylov_bs_stats_file", std::string("krylov.boundary_states.dat"), " string ")

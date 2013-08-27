@@ -211,6 +211,7 @@ class sorted_spaces {
     compute_eigensystems();
     
     // Shift the ground state energy of the local Hamiltonian to zero.
+    for(auto & eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
     hamilt = imperative_operator<partial_hilbert_space, false>(h_-get_gs_energy(), fops);
   }
 

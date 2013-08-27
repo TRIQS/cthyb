@@ -48,8 +48,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   // the state
   typedef state<partial_hilbert_space,false> state_t;
   
-  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t, true> exp_h_krylov;
-  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t, false> exp_h_matrix;
+  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t> exp_h;
 
   std::vector<result_t> partial_traces; // the contribution of one block at the boundary
   result_t full_trace;
@@ -62,7 +61,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   atomic_correlators_worker(configuration & c, sorted_spaces const & sosp_, krylov_params kp, std::size_t small_matrix_size) :
     config(&c),
     sosp(sosp_),
-    exp_h_krylov(sosp.hamiltonian(), kp), exp_h_matrix(),
+    exp_h(sosp.hamiltonian(), sosp, kp, small_matrix_size),
     partial_traces(sosp.n_subspaces(),0),
     small_matrix_size(small_matrix_size)
   {
@@ -103,9 +102,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
        
      // do the first exp
      double dtau = ( _begin == _end ? config->beta() : double(_begin->first)); 
-     state_t psi = eigenstates.size() > small_matrix_size ?
-                   exp_h_krylov (psi0, dtau) :
-                   exp_h_matrix (psi0, dtau, eigensystem);
+     state_t psi = exp_h(psi0, dtau);
      
      for (auto it = _begin; it != _end;) { // do nothing if no operator
 
@@ -119,12 +116,8 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
         // apply exponential. 
         double tau1 = double(it->first);
         ++it; 
-        dtau = (it == _end ? config->beta() : double(it->first)) - tau1;  assert(dtau >0);
-        
-        auto const& psi_space = psi.get_hilbert();
-        psi = psi_space.dimension() > small_matrix_size ?
-              exp_h_krylov (psi, dtau) :
-              exp_h_matrix (psi, dtau, sosp.get_eigensystems()[psi_space.get_index()]);
+        dtau = (it == _end ? config->beta() : double(it->first)) - tau1;  assert(dtau >0);        
+        psi = exp_h (psi, dtau);
      }
      
      trace += dotc(psi0,psi);

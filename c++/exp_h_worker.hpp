@@ -28,18 +28,18 @@ using namespace triqs::arrays;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
-template<typename HamiltonianType, typename StateType, bool UseKrylov = true>
-class exp_h_worker {};
-
-// Use Krylov subspace projection to calculate \exp(-\tau*H)
 template<typename HamiltonianType, typename StateType>
-class exp_h_worker<HamiltonianType, StateType, true> {
+class exp_h_worker {
     
     krylov_worker<HamiltonianType,StateType> kw;
+    sorted_spaces sosp;
+    
+    std::size_t small_matrix_size;
     
 public:
     
-    exp_h_worker(HamiltonianType const& H, krylov_params kp) : kw(H,kp) {};
+    exp_h_worker(HamiltonianType const& H, sorted_spaces const& sosp, krylov_params kp, std::size_t small_matrix_size) :
+        kw(H,kp), sosp(sosp), small_matrix_size(small_matrix_size) {};
     exp_h_worker(exp_h_worker const&) = default;
     exp_h_worker& operator=(exp_h_worker const&) = delete;
     
@@ -48,55 +48,46 @@ public:
     
     state_type operator()(state_type const& initial_state, double dtau)
     {
-        scalar_type initial_state_norm  = std::sqrt(dotc(initial_state,initial_state));
-        kw(initial_state/initial_state_norm);
+        auto const& space = initial_state.get_hilbert();
+        std::size_t space_dim = space.dimension();
+        
+        if(space_dim > small_matrix_size){
+        
+            scalar_type initial_state_norm  = std::sqrt(dotc(initial_state,initial_state));
+            kw(initial_state/initial_state_norm);
 
-        auto eigenvalues = kw.values();
-        std::size_t krylov_dim = eigenvalues.size();
+            auto eigenvalues = kw.values();
+            std::size_t krylov_dim = eigenvalues.size();
         
-        matrix<scalar_type> krylov_exp(krylov_dim,krylov_dim);
-        krylov_exp() = 0;
-        for(std::size_t n = 0; n < krylov_dim; ++n)
-            krylov_exp(n,n) = exp(-dtau*eigenvalues(n));
+            matrix<scalar_type> krylov_exp(krylov_dim,krylov_dim);
+            krylov_exp() = 0;
+            for(std::size_t n = 0; n < krylov_dim; ++n)
+                krylov_exp(n,n) = exp(-dtau*eigenvalues(n));
         
-        krylov_exp = kw.vectors().transpose() * krylov_exp * kw.vectors();
-        auto krylov_coeffs = initial_state_norm * krylov_exp(ellipsis(),0);
+            krylov_exp = kw.vectors().transpose() * krylov_exp * kw.vectors();
+            auto krylov_coeffs = initial_state_norm * krylov_exp(ellipsis(),0);
    
-        return kw.krylov_2_fock(krylov_coeffs);
-    }
-};
+            return kw.krylov_2_fock(krylov_coeffs);
+            
+        } else {
+            
+            auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
+            auto const& eigenvalues = eigensystem.eigenvalues;
+            auto const& unitary_matrix = eigensystem.unitary_matrix;
+        
+            matrix<scalar_type> matrix_exp(space_dim,space_dim);
+            matrix_exp() = 0;
+            for(std::size_t n = 0; n < space_dim; ++n)
+                matrix_exp(n,n) = exp(-dtau*(eigensystem.eigenvalues(n)));
+        
+            matrix_exp = unitary_matrix * matrix_exp * unitary_matrix.transpose();
 
-// Use direct matrix-matrix multiplication to calculate \exp(-\tau*H)
-template<typename HamiltonianType, typename StateType>
-class exp_h_worker<HamiltonianType, StateType, false> {
-    
-public:
-    
-    exp_h_worker() {};
-    exp_h_worker(exp_h_worker const&) = default;
-    exp_h_worker& operator=(exp_h_worker const&) = delete;
-    
-    typedef StateType state_type;
-    typedef typename state_type::value_type scalar_type;
+            StateType st = make_zero_state(initial_state);
+            // FIXME: not supposed to work with the map-based version of state...
+            st.amplitudes() = matrix_exp * initial_state.amplitudes();
         
-    state_type operator()(state_type const& initial_state, double dtau, sorted_spaces::eigensystem_t const& eigensystem)
-    {
-        auto const& eigenvalues = eigensystem.eigenvalues;
-        auto const& unitary_matrix = eigensystem.unitary_matrix;
-        std::size_t dim = eigenvalues.size();
-        
-        matrix<scalar_type> matrix_exp(dim,dim);
-        matrix_exp() = 0;
-        for(std::size_t n = 0; n < dim; ++n)
-            matrix_exp(n,n) = exp(-dtau*(eigensystem.eigenvalues(n)));
-        
-        matrix_exp = unitary_matrix * matrix_exp * unitary_matrix.transpose();
-
-        StateType st = make_zero_state(initial_state);
-        // FIXME: not supposed to work with the map-based version of state...
-        st.amplitudes() = matrix_exp * initial_state.amplitudes();
-        
-        return st;
+            return st;
+        }
     }
 };
     

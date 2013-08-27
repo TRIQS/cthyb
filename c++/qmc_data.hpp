@@ -79,10 +79,11 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    sosp(sosp),
    atomic_corr (config, sosp,
 #ifdef KRYLOV_STATS
-     krylov_params({p["krylov_gs_energy_convergence"],p["krylov_stats_file"]})
+     krylov_params({p["krylov_gs_energy_convergence"],p["krylov_stats_file"]}),
 #else
-     krylov_params({p["krylov_gs_energy_convergence"]})
+     krylov_params({p["krylov_gs_energy_convergence"]}),
 #endif
+     p["krylov_small_matrix_size"]
    ),
    current_sign(1), old_sign(1)
    {    

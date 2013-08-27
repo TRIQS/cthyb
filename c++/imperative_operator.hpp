@@ -213,7 +213,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
        auto sign_is_minus = parity_number_of_bits((f2 & d_count_mask) ^ (f3 & dag_count_mask) );
 
        // update state vector in target Hilbert space
-       auto ind = target_st.get_hilbert().get_index(f3);
+       auto ind = target_st.get_hilbert().get_state_index(f3);
        target_st(ind) += amplitude* coef * (sign_is_minus ? -1.0 : 1.0);
       });
 
@@ -310,7 +310,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
        sign = 1-2*(sign%2);
 
        // update state vector in target Hilbert space
-       auto ind = target_st.get_hilbert().get_index(newf);
+       auto ind = target_st.get_hilbert().get_state_index(newf);
        target_st(ind) += a.amplitude* all_terms[i].coeff * sign;
       }
      }

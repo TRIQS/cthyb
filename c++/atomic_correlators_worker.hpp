@@ -48,18 +48,23 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   // the state
   typedef state<partial_hilbert_space,false> state_t;
   
-  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t> exp_h;
+  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t, true> exp_h_krylov;
+  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t, false> exp_h_matrix;
 
   std::vector<result_t> partial_traces; // the contribution of one block at the boundary
-  result_t full_trace; 
+  result_t full_trace;
+  
+  // The minimal size of a matrix to be treated with exp_h_matrix
+  std::size_t small_matrix_size;
   
   public : 
       
-  atomic_correlators_worker(configuration & c, sorted_spaces const & sosp_, krylov_params kp) :
+  atomic_correlators_worker(configuration & c, sorted_spaces const & sosp_, krylov_params kp, std::size_t small_matrix_size) :
     config(&c),
     sosp(sosp_),
-    exp_h(sosp.hamiltonian(), kp),
-    partial_traces(sosp.n_subspaces(),0)
+    exp_h_krylov(sosp.hamiltonian(), kp), exp_h_matrix(),
+    partial_traces(sosp.n_subspaces(),0),
+    small_matrix_size(small_matrix_size)
   {
   }
 
@@ -87,15 +92,21 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
    result_t trace = 0;
    
-   auto const& eigenstates = sosp.get_eigensystems()[bl].eigenstates;
+   auto const& eigensystem = sosp.get_eigensystems()[bl];
+   auto const& eigenstates = eigensystem.eigenstates;
+   
+   // DEBUG
+   bool use_krylov_worker = eigenstates.size() > small_matrix_size;
    
    for(std::size_t psi0_id : config->boundary_block_states_ids[bl]) {
      state_t const& psi0 = eigenstates[psi0_id];
        
      // do the first exp
      double dtau = ( _begin == _end ? config->beta() : double(_begin->first)); 
-     state_t psi = exp_h (psi0, dtau);
-
+     state_t psi = eigenstates.size() > small_matrix_size ?
+                   exp_h_krylov (psi0, dtau) :
+                   exp_h_matrix (psi0, dtau, eigensystem);
+     
      for (auto it = _begin; it != _end;) { // do nothing if no operator
 
         // apply operator 
@@ -109,7 +120,11 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
         double tau1 = double(it->first);
         ++it; 
         dtau = (it == _end ? config->beta() : double(it->first)) - tau1;  assert(dtau >0);
-        psi = exp_h (psi, dtau);
+        
+        auto const& psi_space = psi.get_hilbert();
+        psi = psi_space.dimension() > small_matrix_size ?
+              exp_h_krylov (psi, dtau) :
+              exp_h_matrix (psi, dtau, sosp.get_eigensystems()[psi_space.get_index()]);
      }
      
      trace += dotc(psi0,psi);

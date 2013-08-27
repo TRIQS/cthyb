@@ -113,6 +113,7 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
    ("krylov_bs_use_cutoff", bool(false), " bool ")
    ("krylov_bs_prob_cutoff", double(1e-8), " double ") // put negative to include all boundary states.
    ("krylov_gs_energy_convergence", krylov_params::default_gs_energy_convergence, " double ")
+   ("krylov_small_matrix_size", int(10), " unsigned int ")
 #ifdef KRYLOV_STATS
    ("krylov_stats_file", std::string("krylov.stats.dat"), " string ")
    ("krylov_bs_stats_file", std::string("krylov.boundary_states.dat"), " string ")

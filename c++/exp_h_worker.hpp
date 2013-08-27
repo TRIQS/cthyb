@@ -22,16 +22,20 @@
 #define TRIQS_CTQMC_KRYLOV_EXP_H_HPP
 
 #include "krylov_worker.hpp"
+#include "sorted_spaces.hpp"
 
 using namespace triqs::arrays;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
+template<typename HamiltonianType, typename StateType, bool UseKrylov = true>
+class exp_h_worker {};
+
+// Use Krylov subspace projection to calculate \exp(-\tau*H)
 template<typename HamiltonianType, typename StateType>
-class exp_h_worker {
+class exp_h_worker<HamiltonianType, StateType, true> {
     
-    typedef krylov_worker<HamiltonianType,StateType> kw_type;
-    kw_type kw;
+    krylov_worker<HamiltonianType,StateType> kw;
     
 public:
     
@@ -59,6 +63,40 @@ public:
         auto krylov_coeffs = initial_state_norm * krylov_exp(ellipsis(),0);
    
         return kw.krylov_2_fock(krylov_coeffs);
+    }
+};
+
+// Use direct matrix-matrix multiplication to calculate \exp(-\tau*H)
+template<typename HamiltonianType, typename StateType>
+class exp_h_worker<HamiltonianType, StateType, false> {
+    
+public:
+    
+    exp_h_worker() {};
+    exp_h_worker(exp_h_worker const&) = default;
+    exp_h_worker& operator=(exp_h_worker const&) = delete;
+    
+    typedef StateType state_type;
+    typedef typename state_type::value_type scalar_type;
+        
+    state_type operator()(state_type const& initial_state, double dtau, sorted_spaces::eigensystem_t const& eigensystem)
+    {
+        auto const& eigenvalues = eigensystem.eigenvalues;
+        auto const& unitary_matrix = eigensystem.unitary_matrix;
+        std::size_t dim = eigenvalues.size();
+        
+        matrix<scalar_type> matrix_exp(dim,dim);
+        matrix_exp() = 0;
+        for(std::size_t n = 0; n < dim; ++n)
+            matrix_exp(n,n) = exp(-dtau*(eigensystem.eigenvalues(n)));
+        
+        matrix_exp = unitary_matrix * matrix_exp * unitary_matrix.transpose();
+
+        StateType st = make_zero_state(initial_state);
+        // FIXME: not supposed to work with the map-based version of state...
+        st.amplitudes() = matrix_exp * initial_state.amplitudes();
+        
+        return st;
     }
 };
     

@@ -69,7 +69,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
       double z = 0;
       for(auto const& es : sosp.get_eigensystems())
           for(auto e : es.eigenvalues){
-              z += exp(-beta_*(e-sosp.get_gs_energy()));
+              z += exp(-beta_*e);
           }
               
       // Fill boundary_block_states with states which have significant weights
@@ -78,7 +78,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
       for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
           auto const& eigensystem = sosp.get_eigensystems()[nsp];
           for(size_t n=0; n<eigensystem.eigenvalues.size(); ++n){
-              double prob = exp(-beta_*(eigensystem.eigenvalues[n]-sosp.get_gs_energy()))/z;
+              double prob = exp(-beta_*eigensystem.eigenvalues[n])/z;
               if(prob>prob_tolerance){
                   boundary_block_states_ids[nsp].push_back(n);
                   total_states++;

@@ -186,7 +186,7 @@ template <typename OperatorType, typename StateType>
     {
         StateType st = make_zero_state(res_vector); 
         for(std::size_t i = 0; i < phi.size(); ++i)
-            st += phi(i) * basisstates[i];  
+            st += phi(i) * basisstates[i];
         return st;
     }
     

@@ -60,7 +60,7 @@ class partial_hilbert_space {
   // return the state for a given index
   fock_state get_fock_state(size_t i) const { return fock_states[i]; }
   
-  size_t get_index() { return index; };
+  size_t get_index() const { return index; };
 
   private:
       

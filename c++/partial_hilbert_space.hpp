@@ -50,7 +50,7 @@ class partial_hilbert_space {
   size_t dimension() const { return fock_states.size(); }
 
   // find the index of a given state
-  size_t get_index(fock_state f) const { 
+  size_t get_state_index(fock_state f) const { 
    
    //std::cout << fock_to_index_v[f] << " "<< fock_to_index.find(f)->second<<std::endl;
    return fock_to_index_v[f];
@@ -58,10 +58,10 @@ class partial_hilbert_space {
   }
 
   // return the state for a given index
-  fock_state get_fock(size_t i) const { return fock_states[i]; }
+  fock_state get_fock_state(size_t i) const { return fock_states[i]; }
 
   private:
-
+      
   // the list of all fock states
   std::vector<fock_state> fock_states;
 

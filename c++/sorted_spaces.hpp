@@ -120,7 +120,7 @@ class sorted_spaces {
     for (size_t r=0; r<full_hs.dimension(); ++r) {
 
       // fock_state corresponding to r
-      fock_state fs = full_hs.get_fock(r);
+      fock_state fs = full_hs.get_fock_state(r);
 
       // the state we'll act on
       state<complete_hilbert_space, true> s(full_hs);

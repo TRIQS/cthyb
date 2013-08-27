@@ -43,8 +43,8 @@ int main() {
 
   complete_hilbert_space h(f1);
   std::cout << "dim = " << h.dimension() << std::endl;
-  std::cout << "fock state for index 120 = " << h.get_fock(120) << std::endl;
-  std::cout << "index of fock state 120 = " << h.get_index(h.get_fock(120)) << std::endl;
+  std::cout << "fock state for index 120 = " << h.get_fock_state(120) << std::endl;
+  std::cout << "index of fock state 120 = " << h.get_state_index(h.get_fock_state(120)) << std::endl;
   complete_hilbert_space h2;
   h2 = h;
   std::cout << "dim = " << h.dimension() << std::endl;
@@ -54,7 +54,7 @@ int main() {
   
   complete_hilbert_space h3(f3);
   
-  fock_state fs1 = h3.get_fock(10);
+  fock_state fs1 = h3.get_fock_state(10);
   std::cout << fs1 << std::endl;
   fock_state fs2 = fs1;
   std::cout << fs2 << std::endl;
@@ -120,16 +120,16 @@ int main() {
   complete_hilbert_space h4(f4);
   
   partial_hilbert_space phs0;
-  phs0.add_basis_fock(h4.get_fock(0)); // 000
-  phs0.add_basis_fock(h4.get_fock(1)); // 001
-  phs0.add_basis_fock(h4.get_fock(2)); // 010
-  phs0.add_basis_fock(h4.get_fock(3)); // 011
+  phs0.add_basis_fock(h4.get_fock_state(0)); // 000
+  phs0.add_basis_fock(h4.get_fock_state(1)); // 001
+  phs0.add_basis_fock(h4.get_fock_state(2)); // 010
+  phs0.add_basis_fock(h4.get_fock_state(3)); // 011
 
   partial_hilbert_space phs1;
-  phs1.add_basis_fock(h4.get_fock(4)); // 100
-  phs1.add_basis_fock(h4.get_fock(5)); // 101
-  phs1.add_basis_fock(h4.get_fock(6)); // 110
-  phs1.add_basis_fock(h4.get_fock(7)); // 111
+  phs1.add_basis_fock(h4.get_fock_state(4)); // 100
+  phs1.add_basis_fock(h4.get_fock_state(5)); // 101
+  phs1.add_basis_fock(h4.get_fock_state(6)); // 110
+  phs1.add_basis_fock(h4.get_fock_state(7)); // 111
 
   std::unordered_map<const partial_hilbert_space*, const partial_hilbert_space*> Cdagmap;
   Cdagmap[&phs0] = &phs1;

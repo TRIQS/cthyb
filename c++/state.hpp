@@ -102,7 +102,6 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
     {
         assert(st.hs!=nullptr);
         state zero_st(*st.hs);
-        zero_st.amplitudes().clean();
         return zero_st;
     }
 
@@ -125,7 +124,7 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
       void increment() { ++it; }
       //void decrement() { --it; }
       bool equal(const_iterator const & other) const { return(other.it == it); }
-      deref_struct dereference() const { return {it->first, st->get_hilbert().get_fock(it->first), it->second}; }
+      deref_struct dereference() const { return {it->first, st->get_hilbert().get_fock_state(it->first), it->second}; }
     };
     const_iterator begin() const { return const_iterator(ampli.begin(), this); }
     const_iterator end() const { return const_iterator(ampli.end(), this); }
@@ -171,7 +170,7 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
 
     friend std::ostream& operator<<(std::ostream& os, state const& s) {
       for(amplitude_t::const_reference a : s.ampli){
-        os << " +(" << a.second << ")" << s.hs->get_fock(a.first);
+        os << " +(" << a.second << ")" << s.hs->get_fock_state(a.first);
       }
       return os;
     }
@@ -195,7 +194,7 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
 // Lambda (fs, amplitude)
 template<typename HilbertSpace, typename Lambda>
 void foreach (state<HilbertSpace, true> const & st, Lambda l) { 
- for ( auto const & p : st.amplitudes() ) l( st.get_hilbert().get_fock(p.first) , p.second);
+ for ( auto const & p : st.amplitudes() ) l( st.get_hilbert().get_fock_state(p.first) , p.second);
 } 
 
 
@@ -276,7 +275,7 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	  void increment() { ++p; }
 	  void decrement() { --p; }
 	  bool equal(const_iterator const & other) const { return(other.p == p); }
-	  deref_struct dereference() const { return {p, st->get_hilbert().get_fock(p), st->ampli[p]}; }
+	  deref_struct dereference() const { return {p, st->get_hilbert().get_fock_state(p), st->ampli[p]}; }
 	};
 	const_iterator begin() const { return const_iterator(0, this); }
 	const_iterator end() const { return const_iterator(ampli.size(), this); }
@@ -286,7 +285,7 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	 for(int i=0; i<s.n_amplitudes(); ++i) {
       auto ampl = s(i);
       if(std::abs(ampl)<1e-10) continue;
-	  os << " +(" << ampl << ")" << "|" << s.hs->get_fock(i) << ">";
+	  os << " +(" << ampl << ")" << "|" << s.hs->get_fock_state(i) << ">";
 	 }
 	 return os;
 	}
@@ -331,7 +330,7 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 template<typename HilbertSpace, typename Lambda>
 void foreach (state<HilbertSpace, false> const & st, Lambda l) { 
  const auto L = st.amplitudes().size();
- for (size_t i =0; i<L; ++i) l(st.get_hilbert().get_fock(i), st.amplitudes()[i]);
+ for (size_t i =0; i<L; ++i) l(st.get_hilbert().get_fock_state(i), st.amplitudes()[i]);
 } 
 
 

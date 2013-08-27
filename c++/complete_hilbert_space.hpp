@@ -50,13 +50,13 @@ class complete_hilbert_space {
   size_t dimension() const { return dim; }
 
   // find the index of a given fock state
-  size_t get_index(fock_state const & f) const {
+  size_t get_state_index(fock_state const & f) const {
     if (f >= dim) TRIQS_RUNTIME_ERROR << "this index is too big";
     return f;
   }
 
   // return the i^th basis element as a fock state
-  fock_state get_fock(size_t i) const {
+  fock_state get_fock_state(size_t i) const {
     if (i >= dim) TRIQS_RUNTIME_ERROR << "this fock state doesn't exist (index too big)";
     return fock_state(i);
   }

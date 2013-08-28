@@ -1,6 +1,6 @@
 #!/bin/env python
 
-stats_filename = "krylov.stats.dat"
+stats_filename = "dims.stats.dat"
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -24,6 +24,10 @@
 #include "krylov_worker.hpp"
 #include "sorted_spaces.hpp"
 
+#ifdef KRYLOV_STATS
+#include "statistics.hpp"
+#endif
+
 using namespace triqs::arrays;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
@@ -36,10 +40,21 @@ class exp_h_worker {
     
     std::size_t small_matrix_size;
     
+#ifdef KRYLOV_STATS
+    dims_stats_collector stats;
+#endif
+    
 public:
     
-    exp_h_worker(HamiltonianType const& H, sorted_spaces const& sosp, krylov_params kp, std::size_t small_matrix_size) :
-        kw(H,kp), sosp(sosp), small_matrix_size(small_matrix_size) {};
+    exp_h_worker(HamiltonianType const& H, sorted_spaces const& sosp, double gs_energy_convergence, std::size_t small_matrix_size) :
+        kw(H,gs_energy_convergence),
+        sosp(sosp),
+        small_matrix_size(small_matrix_size)
+#ifdef KRYLOV_STATS
+        ,stats(DIMS_STATS_FILE)
+#endif
+    {}
+
     exp_h_worker(exp_h_worker const&) = default;
     exp_h_worker& operator=(exp_h_worker const&) = delete;
     
@@ -58,7 +73,11 @@ public:
 
             auto eigenvalues = kw.values();
             std::size_t krylov_dim = eigenvalues.size();
-        
+
+#ifdef KRYLOV_STATS
+            stats(space_dim,krylov_dim);
+#endif
+            
             matrix<scalar_type> krylov_exp(krylov_dim,krylov_dim);
             krylov_exp() = 0;
             for(std::size_t n = 0; n < krylov_dim; ++n)
@@ -70,6 +89,10 @@ public:
             return kw.krylov_2_fock(krylov_coeffs);
             
         } else {
+
+#ifdef KRYLOV_STATS
+            stats(space_dim,space_dim);
+#endif
             
             auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
             auto const& eigenvalues = eigensystem.eigenvalues;
@@ -89,6 +112,14 @@ public:
             return st;
         }
     }
+    
+#ifdef KRYLOV_STATS
+    ~exp_h_worker()
+    {        
+        stats.dump();
+    }
+#endif
+
 };
     
 }}}}

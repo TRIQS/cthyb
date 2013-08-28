@@ -30,7 +30,7 @@
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
     
-struct krylov_stats_collector {
+struct dims_stats_collector {
     
     // Hash a pair of natural numbers (n,m)
     // n = 1, 2, ...
@@ -48,7 +48,7 @@ struct krylov_stats_collector {
     
 public:
     
-    explicit krylov_stats_collector(std::string const& stats_file) : dims_stats(), stats_file(stats_file) {}
+    explicit dims_stats_collector(std::string const& stats_file) : dims_stats(), stats_file(stats_file) {}
     
     void operator()(std::size_t n, std::size_t m, unsigned long count = 1)
     {
@@ -83,7 +83,7 @@ public:
         
         if(write_file){
             std::ofstream file(stats_file);
-            file << "# space_dim\tkrylov_dim\tcount" << std::endl;
+            file << "# space_dim\teffective_dim\tcount" << std::endl;
             for(auto const& s : dims_stats)
                 file << s.first.first << '\t' << s.first.second << '\t' << s.second << std::endl;
             file.close();

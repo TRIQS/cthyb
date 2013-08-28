@@ -86,7 +86,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
           }
       }
       
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
     std::cerr << total_states << " states will be used in the outer trace summation." << std::endl;
 #endif
   }

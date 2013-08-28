@@ -17,18 +17,20 @@ find_package(TRIQS REQUIRED)
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
 # Details of the krylov code
-option(Krylov_Debug "Enable extended debugging output in Krylov solver" OFF)
-option(Krylov_Stats "Enable statistics collection in Krylov solver" OFF)
-#mark_as_advanced(Krylov_Debug)
-#mark_as_advanced(Krylov_Stats)
+option(Extended_Debug "Enable extended debugging output" OFF)
+option(Stats "Enable statistics collection" OFF)
 
-if(Krylov_Debug)
- add_definitions(-DKRYLOV_DEBUG)
-endif(Krylov_Debug)
+if(Extended_Debug)
+ add_definitions(-DEXT_DEBUG)
+endif(Extended_Debug)
 
-if(Krylov_Stats)
+if(Stats)
  add_definitions(-DKRYLOV_STATS)
-endif(Krylov_Stats)
+ set(Dims_Stats_File "dims.stats.dat" CACHE STRING "Statistics file: subspace dimensions")
+ set(Boundary_Stats_File "boundary_states.stats.dat" CACHE STRING "Statistics file: boundary states")
+ add_definitions(-DDIMS_STATS_FILE=\"${Dims_Stats_File}\")
+ add_definitions(-DBOUNDARY_STATS_FILE=\"${Boundary_Stats_File}\")
+endif(Stats)
 
 # Compile C++ code
 add_subdirectory(c++)

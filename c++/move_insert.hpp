@@ -61,7 +61,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   mc_weight_type attempt() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
    std::cerr << "* Attempt for move_insert_c_cdag (block " << block_index << ")" << std::endl;
    std::cerr << "* Configuration before:" << std::endl;
@@ -78,7 +78,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    time_pt tau1 = time_pt::random (rng, config.beta(),config.beta());
    time_pt tau2 = time_pt::random (rng, config.beta(),config.beta());
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* Proposing to insert:" << std::endl;
    std::cerr << "Cdag(" << op1.block_index << "," << op1.inner_index << ")";
    std::cerr << " at " << tau1 << std::endl;
@@ -122,7 +122,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    mc_weight_type p = trace_ratio * det_ratio;
    double t_ratio = std::pow(block_size* config.beta() / double(det.size()+1), 2);
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "Trace ratio: " << trace_ratio << '\t';
    std::cerr << "Det ratio: " << det_ratio << '\t';
    std::cerr << "Prefactor: " << t_ratio << '\t';
@@ -138,7 +138,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   mc_weight_type accept() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* The move is accepted" << std::endl;
 #endif
 
@@ -149,7 +149,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    data.update_sign();
    data.trace = new_trace;
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::size_t sizee = data.dets[block_index].size();
    std::cerr << "Det x: " << std::endl;
    for(std::size_t i = 0; i < sizee; ++i) std::cerr << i << " -> " << data.dets[block_index].get_x(i).first << std::endl;
@@ -167,7 +167,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   void reject() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* The move is rejected" << std::endl;
    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 #endif

@@ -54,7 +54,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   mc_weight_type attempt()
   {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
    std::cerr << "* Attempt for move_change_boundary_state" << std::endl;
    std::cerr << "* Configuration before:" << std::endl;
@@ -64,7 +64,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
     // Select a subspace
     subspace_index = rng(data.sosp.n_subspaces());
         
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* Proposing to change the boundry state in subspace " << subspace_index << std::endl;
 #endif
 
@@ -76,7 +76,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
     new_trace = data.atomic_corr(subspace_index);
     auto ratio = new_trace/data.trace;
     
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "Trace ratio: " << ratio << '\t';
    std::cerr << "Weight: " << ratio << std::endl;
    std::cerr << "* Configuration after: " << std::endl;
@@ -90,7 +90,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   mc_weight_type accept() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
     std::cerr << "* The move is accepted" << std::endl;
     std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 #endif      
@@ -104,7 +104,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   void reject()
   {
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* The move is rejected" << std::endl;
    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 #endif

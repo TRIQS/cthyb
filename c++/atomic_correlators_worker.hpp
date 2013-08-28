@@ -58,10 +58,11 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   
   public : 
       
-  atomic_correlators_worker(configuration & c, sorted_spaces const & sosp_, krylov_params kp, std::size_t small_matrix_size) :
+  atomic_correlators_worker(configuration & c, sorted_spaces const & sosp_,
+                            double gs_energy_convergence, std::size_t small_matrix_size) :
     config(&c),
     sosp(sosp_),
-    exp_h(sosp.hamiltonian(), sosp, kp, small_matrix_size),
+    exp_h(sosp.hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
     partial_traces(sosp.n_subspaces(),0),
     small_matrix_size(small_matrix_size)
   {

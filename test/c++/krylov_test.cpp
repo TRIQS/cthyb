@@ -82,14 +82,8 @@ int main() {
     psi0[4](2) = 1.0/sqrt(5.0);
     psi0[4](3) = 2.0/sqrt(15.0);
     psi0[4](4) = 1.0/sqrt(3.0);
-        
-#ifdef KRYLOV_STATS
-    krylov_params kp({1e-10,"krylov.stats.dat"});
-#else
-    krylov_params kp({1e-10});
-#endif
     
-    krylov_worker<decltype(H), vector<double>> kw(H,kp);
+    krylov_worker<decltype(H), vector<double>> kw(H,1e-10);
     
     for(int n = 0; n < 5; ++n){ 
         // Check dimensions of Krylov's subspaces

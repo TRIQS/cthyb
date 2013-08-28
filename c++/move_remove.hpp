@@ -67,7 +67,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   mc_weight_type attempt() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
    std::cerr << "* Attempt for move_remove_c_cdag (block " << block_index << ")" << std::endl;
    std::cerr << "* Configuration before:" << std::endl;
@@ -82,13 +82,13 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    // the -det_size +1 is to move backward, to compare with V1 : REMOVE THIS ?
    int det_size = det.size();
    if (det_size==0){
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
     std::cerr << "* Nothing to remove!" << std::endl;
 #endif
        return 0;
    }
    int num_c_dag = rng(det_size), num_c = rng(det_size);
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* Proposing to remove: ";
    std::cerr << num_c_dag << "-th Cdag(" << block_index << ",...), ";
    std::cerr << num_c << "-th C(" << block_index << ",...)" << std::endl; 
@@ -104,7 +104,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    mc_weight_type p = trace_ratio * det_ratio;
    double t_ratio = std::pow(block_size* config.beta() / double(det_size), 2);
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "Trace ratio: " << trace_ratio << '\t';
    std::cerr << "Det ratio: " << det_ratio << '\t';
    std::cerr << "Prefactor: " << t_ratio << '\t';
@@ -120,7 +120,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   mc_weight_type accept() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* The move is accepted" << std::endl;
 #endif   
 
@@ -130,7 +130,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    data.update_sign();
    data.trace = new_trace;
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "Sign correction: " << data.current_sign / data.old_sign << std::endl;
    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 #endif
@@ -142,7 +142,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   void reject() {
 
-#ifdef KRYLOV_DEBUG
+#ifdef EXT_DEBUG
    std::cerr << "* The move is rejected" << std::endl;
    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 #endif

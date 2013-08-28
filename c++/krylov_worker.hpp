@@ -28,25 +28,9 @@
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/stev.hpp>
 
-#ifdef KRYLOV_STATS
-#include "statistics.hpp"
-#endif
-
 using triqs::arrays::blas::tridiag_worker;
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
-
-struct krylov_params {
-        
-    double gs_energy_convergence;
-#ifdef KRYLOV_STATS
-    std::string stats_file;
-#endif
-    
-    static const double default_gs_energy_convergence;
-};
-
-const double krylov_params::default_gs_energy_convergence = 1e-10;
     
 template <typename OperatorType, typename StateType>
     class krylov_worker {
@@ -75,28 +59,10 @@ template <typename OperatorType, typename StateType>
     static constexpr unsigned int reserved_krylov_dim = 5;
     
     // Adjustable parameters of the algorithm
-    krylov_params kp;
+    double gs_energy_convergence;
     
     // Tridiagonal matrix diagonalizer
     tridiag_worker tdw;
-    
-#ifdef KRYLOV_STATS
-    krylov_stats_collector stats;
-#endif
-
-#ifdef KRYLOV_STATS
-    // Hash a pair of natural numbers (n,m)
-    // n = 1, 2, ...
-    // m = 1, 2, ..., n
-    struct dims_hash {
-        std::size_t operator()(std::pair<std::size_t,std::size_t> const& n_m) const
-        {
-            return n_m.first*(n_m.first-1)/2 + n_m.second - 1;
-        }
-    };
-    
-    std::unordered_map<std::pair<std::size_t,std::size_t>, std::size_t, dims_hash> dims_stats;
-#endif
     
     // Returns the only matrix element of the 1x1 Krylov-projected matrix
     double first_iteration(StateType const& initial_state)
@@ -115,7 +81,7 @@ template <typename OperatorType, typename StateType>
     {
         double new_beta = std::sqrt(dotc(res_vector,res_vector));
         // We don't really want to divide by zero
-        if(std::abs(new_beta) < kp.gs_energy_convergence) return false;
+        if(std::abs(new_beta) < gs_energy_convergence) return false;
         
         beta.push_back(new_beta);
         basisstates.push_back(res_vector/new_beta);
@@ -133,11 +99,9 @@ template <typename OperatorType, typename StateType>
 
     typedef StateType state_type;
         
-    krylov_worker(OperatorType const& H, krylov_params kp) :
-        H(H), kp(kp), tdw(reserved_krylov_dim)
-#ifdef KRYLOV_STATS
-        , stats(kp.stats_file)
-#endif
+    krylov_worker(OperatorType const& H, double gs_energy_convergence = 1e-10) :
+        H(H), gs_energy_convergence(gs_energy_convergence),
+        tdw(reserved_krylov_dim)
     {
         alpha.reserve(reserved_krylov_dim);
         beta.reserve(reserved_krylov_dim-1);
@@ -161,13 +125,9 @@ template <typename OperatorType, typename StateType>
         
         while(advance()){
             tdw(alpha,beta);
-            if(std::abs(tdw.values()[0] - gs_energy) < kp.gs_energy_convergence) break;
+            if(std::abs(tdw.values()[0] - gs_energy) < gs_energy_convergence) break;
             gs_energy = tdw.values()[0];
         }
-
-#ifdef KRYLOV_STATS
-        stats(get_space_dim(initial_state),alpha.size());
-#endif
     }
     
     // Access eigenvalues and eigenvectors of the Krylov-projected operator
@@ -189,13 +149,6 @@ template <typename OperatorType, typename StateType>
             st += phi(i) * basisstates[i];
         return st;
     }
-    
-#ifdef KRYLOV_STATS
-    ~krylov_worker()
-    {        
-        stats.dump();
-    }
-#endif
     
   };
 

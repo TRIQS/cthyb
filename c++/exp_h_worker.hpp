@@ -35,10 +35,17 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 template<typename HamiltonianType, typename StateType>
 class exp_h_worker {
     
+    typedef StateType state_type;
+    typedef typename state_type::value_type scalar_type;
+    
     krylov_worker<HamiltonianType,StateType> kw;
     sorted_spaces sosp;
     
     std::size_t small_matrix_size;
+    
+    // Temporary matrices 
+    matrix<scalar_type> matrix_exp;
+    matrix<scalar_type> krylov_exp;
     
 #ifdef KRYLOV_STATS
     dims_stats_collector stats;
@@ -53,14 +60,20 @@ public:
 #ifdef KRYLOV_STATS
         ,stats(DIMS_STATS_FILE)
 #endif
-    {}
+    {
+        std::size_t max_subspace_dim = 0;
+        for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp)
+            max_subspace_dim = std::max(max_subspace_dim,sosp.subspace(nsp).dimension());
+
+        small_matrix_size = std::min(small_matrix_size,max_subspace_dim);
+        
+        matrix_exp.resize(small_matrix_size,small_matrix_size);
+        krylov_exp.resize(max_subspace_dim,max_subspace_dim);
+    }
 
     exp_h_worker(exp_h_worker const&) = default;
     exp_h_worker& operator=(exp_h_worker const&) = delete;
-    
-    typedef StateType state_type;
-    typedef typename state_type::value_type scalar_type;
-    
+        
     state_type operator()(state_type const& initial_state, double dtau)
     {
         auto const& space = initial_state.get_hilbert();
@@ -77,14 +90,14 @@ public:
 #ifdef KRYLOV_STATS
             stats(space_dim,krylov_dim);
 #endif
+            auto all = range(0,krylov_dim);
             
-            matrix<scalar_type> krylov_exp(krylov_dim,krylov_dim);
-            krylov_exp() = 0;
+            krylov_exp(all,all) = 0;
             for(std::size_t n = 0; n < krylov_dim; ++n)
                 krylov_exp(n,n) = exp(-dtau*eigenvalues(n));
         
-            krylov_exp = kw.vectors().transpose() * krylov_exp * kw.vectors();
-            auto krylov_coeffs = initial_state_norm * krylov_exp(ellipsis(),0);
+            krylov_exp(all,all) = kw.vectors().transpose() * krylov_exp(all,all) * kw.vectors();
+            auto krylov_coeffs = initial_state_norm * krylov_exp(all,0);
    
             return kw.krylov_2_fock(krylov_coeffs);
             
@@ -98,16 +111,17 @@ public:
             auto const& eigenvalues = eigensystem.eigenvalues;
             auto const& unitary_matrix = eigensystem.unitary_matrix;
         
-            matrix<scalar_type> matrix_exp(space_dim,space_dim);
-            matrix_exp() = 0;
+            auto all = range(0,space_dim);
+            
+            matrix_exp(all,all) = 0;
             for(std::size_t n = 0; n < space_dim; ++n)
                 matrix_exp(n,n) = exp(-dtau*(eigensystem.eigenvalues(n)));
         
-            matrix_exp = unitary_matrix * matrix_exp * unitary_matrix.transpose();
+            matrix_exp(all,all) = unitary_matrix * matrix_exp(all,all) * unitary_matrix.transpose();
 
             StateType st = make_zero_state(initial_state);
             // FIXME: not supposed to work with the map-based version of state...
-            st.amplitudes() = matrix_exp * initial_state.amplitudes();
+            st.amplitudes() = matrix_exp(all,all) * initial_state.amplitudes();
         
             return st;
         }

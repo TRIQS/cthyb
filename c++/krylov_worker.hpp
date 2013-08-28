@@ -22,8 +22,6 @@
 #ifndef TRIQS_CTQMC_KRYLOV_KRYLOV_WORKER_HPP
 #define TRIQS_CTQMC_KRYLOV_KRYLOV_WORKER_HPP
 #include <vector>
-#include <complex>
-#include <tuple>
 
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/stev.hpp>

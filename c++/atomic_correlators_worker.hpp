@@ -63,7 +63,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
     config(&c),
     sosp(sosp_),
     exp_h(sosp.hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
-    partial_traces(sosp.n_subspaces(),0),
+    partial_traces(c.boundary_block_states_ids.size(),0),
     small_matrix_size(small_matrix_size)
   {
   }
@@ -71,61 +71,53 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   // recompute and return the full trace
   result_t operator()() {
     full_trace = 0;
-    for (int i=0; i <sosp.n_subspaces(); ++i) {
-      partial_traces[i] = compute_for_one_boundary_block(i);
+    for (int i=0; i < partial_traces.size(); ++i) {
+      partial_traces[i] = compute_for_one_boundary_state(i);
       full_trace += partial_traces[i];
     }
     return full_trace;
   }
   
   // return the full trace, but recompute only one partial contribution
-  result_t operator()(size_t bl) {
-      full_trace -= partial_traces[bl];
-      partial_traces[bl] = compute_for_one_boundary_block(bl);
-      full_trace += partial_traces[bl];
+  result_t operator()(size_t n) {
+      full_trace -= partial_traces[n];
+      partial_traces[n] = compute_for_one_boundary_state(n);
+      full_trace += partial_traces[n];
       return full_trace;
   }
   
-  result_t compute_for_one_boundary_block (size_t bl) {
+  result_t compute_for_one_boundary_state(size_t n) {
    auto _begin = config->oplist.rbegin();
    auto _end   = config->oplist.rend();
 
    result_t trace = 0;
    
-   auto const& eigensystem = sosp.get_eigensystems()[bl];
-   auto const& eigenstates = eigensystem.eigenstates;
+   std::size_t nsp, id;
+   std::tie(nsp,id) = config->boundary_block_states_ids[n];
    
-   // DEBUG
-   bool use_krylov_worker = eigenstates.size() > small_matrix_size;
-   
-   for(std::size_t psi0_id : config->boundary_block_states_ids[bl]) {
-     state_t const& psi0 = eigenstates[psi0_id];
+   state_t const& psi0 = sosp.get_eigensystems()[nsp].eigenstates[id];
        
-     // do the first exp
-     double dtau = ( _begin == _end ? config->beta() : double(_begin->first)); 
-     state_t psi = exp_h(psi0, dtau);
+   // do the first exp
+   double dtau = ( _begin == _end ? config->beta() : double(_begin->first)); 
+   state_t psi = exp_h(psi0, dtau);
      
-     for (auto it = _begin; it != _end;) { // do nothing if no operator
+   for (auto it = _begin; it != _end;) { // do nothing if no operator
 
-        // apply operator 
-        auto const & op = sosp.get_fundamental_operator (it->second.dagger, it->second.block_index, it->second.inner_index);
-        psi = op(psi);
+      // apply operator 
+      auto const & op = sosp.get_fundamental_operator (it->second.dagger, it->second.block_index, it->second.inner_index);
+      psi = op(psi);
     
-        // psi is already zero, makes no sense to proceed
-        if(is_zero_state(psi)) goto next_psi0;
+      // psi is already zero, makes no sense to proceed
+      if(is_zero_state(psi)) return 0;
     
-        // apply exponential. 
-        double tau1 = double(it->first);
-        ++it; 
-        dtau = (it == _end ? config->beta() : double(it->first)) - tau1;  assert(dtau >0);        
-        psi = exp_h (psi, dtau);
-     }
-     
-     trace += dotc(psi0,psi);
-     next_psi0:;
-   }
+      // apply exponential. 
+      double tau1 = double(it->first);
+      ++it; 
+      dtau = (it == _end ? config->beta() : double(it->first)) - tau1;  assert(dtau >0);        
+      psi = exp_h (psi, dtau);
+    }
 
-   return trace;
+    return dotc(psi0,psi);
   }
 
   const sorted_spaces& get_sorted_spaces() const { return sosp; };

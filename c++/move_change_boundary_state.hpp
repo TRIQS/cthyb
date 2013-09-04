@@ -68,9 +68,11 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
    std::cerr << "* Proposing to change the boundry state in subspace " << subspace_index << std::endl;
 #endif
 
-    old_state_id = data.config.boundary_block_states_ids[subspace_index][0];
-    data.config.boundary_block_states_ids[subspace_index][0] = rng(data.sosp.subspace(subspace_index).dimension());
-    if(old_state_id == data.config.boundary_block_states_ids[subspace_index][0]) return 0;
+    // first element of the pair must coincide with subspace_index
+    std::tie(std::ignore,old_state_id) = data.config.boundary_block_states_ids[subspace_index];
+    
+    data.config.boundary_block_states_ids[subspace_index].second = rng(data.sosp.subspace(subspace_index).dimension());
+    if(old_state_id == data.config.boundary_block_states_ids[subspace_index].second) return 0;
     
     // Calculate the new trace (an update is made only for one block)
     new_trace = data.atomic_corr(subspace_index);
@@ -110,7 +112,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 #endif
       
     // Restore the previously selected representative state
-    data.config.boundary_block_states_ids[subspace_index][0] = old_state_id;
+    data.config.boundary_block_states_ids[subspace_index].second = old_state_id;
   }
 
  };

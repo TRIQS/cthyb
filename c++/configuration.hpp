@@ -46,8 +46,8 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   typedef std::map<time_pt, op_desc, std::greater<time_pt>> oplist_t;
   oplist_t oplist;
 
-  // The boundary states
-  std::vector<std::vector<std::size_t>> boundary_block_states_ids;
+  // The boundary states, (subspace,state) pairs
+  std::vector<std::pair<std::size_t,std::size_t>> boundary_block_states_ids;
 
   // construction and the basics stuff. value semantics, except = ?
   configuration(double beta_) :
@@ -59,7 +59,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
       boundary_block_states_ids.resize(sosp.n_subspaces());
       for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
           // Should initialize all boundary states with something nonzero
-          boundary_block_states_ids[nsp].push_back(0);
+          boundary_block_states_ids.push_back(std::make_pair(nsp,0));
       }
   }
   
@@ -80,7 +80,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
           for(size_t n=0; n<eigensystem.eigenvalues.size(); ++n){
               double prob = exp(-beta_*eigensystem.eigenvalues[n])/z;
               if(prob>prob_tolerance){
-                  boundary_block_states_ids[nsp].push_back(n);
+                  boundary_block_states_ids.push_back(std::make_pair(nsp,n));
                   total_states++;
               }
           }
@@ -95,11 +95,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   friend std::ostream & operator << (std::ostream & out, configuration const & c) {
     out << "boundary_block_states_ids:" << std::endl;
-    for (size_t bl=0; bl< c.boundary_block_states_ids.size(); ++bl){
-        out << "block " << bl << ":" << std::endl;
-        for(auto const& st : c.boundary_block_states_ids[bl]) out << st << " ";
-        out << std::endl;
-    }
+    for(auto const& st : c.boundary_block_states_ids) out << "(" << st.first << "," << st.second << ") "; 
     out << std::endl;
     for (auto const& op : c.oplist)  
         out << "tau = "<< op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","<< op.second.inner_index<<")\n";

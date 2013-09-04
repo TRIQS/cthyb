@@ -57,7 +57,7 @@ struct measure_boundary_state {
     void accumulate(mc_sign_type s) {
         // Accumulates statistics for the first element of boundary_block_states_ids only.
         for(std::size_t spn=0; spn<stats.size(); ++spn){
-            stats[spn][data.config.boundary_block_states_ids[spn][0]]++;
+            stats[spn][data.config.boundary_block_states_ids[spn].second]++;
         }
     }
 

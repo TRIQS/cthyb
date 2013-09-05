@@ -50,20 +50,24 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   std::vector<std::pair<std::size_t,std::size_t>> boundary_block_states_ids;
 
   // construction and the basics stuff. value semantics, except = ?
-  configuration(double beta_) :
+  configuration(
+      double beta_, sorted_spaces const & sosp,
+      bool use_cutoff, double cutoff) :
    beta_(beta_)
-  {}
-  
-  void reset_boundary_block_states(sorted_spaces const & sosp)
   {
-      boundary_block_states_ids.resize(sosp.n_subspaces());
+    if(use_cutoff) fill_boundary_states(sosp,cutoff);
+    else reset_boundary_states(sosp);
+  }
+  
+  void reset_boundary_states(sorted_spaces const & sosp)
+  {
       for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
           // Should initialize all boundary states with something nonzero
           boundary_block_states_ids.push_back(std::make_pair(nsp,0));
       }
   }
   
-  void fill_boundary_block_states(sorted_spaces const & sosp, double prob_tolerance = -1)
+  void fill_boundary_states(sorted_spaces const & sosp, double prob_tolerance = -1)
   {
       // Atomic partition function
       double z = 0;
@@ -73,7 +77,6 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
           }
               
       // Fill boundary_block_states with states which have significant weights
-      boundary_block_states_ids.resize(sosp.n_subspaces());
       std::size_t total_states = 0;
       for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
           auto const& eigensystem = sosp.get_eigensystems()[nsp];

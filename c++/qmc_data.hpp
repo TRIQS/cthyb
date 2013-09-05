@@ -75,19 +75,14 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   // construction and the basics stuff. value semantics, except = ?
   qmc_data(utility::parameters const& p, sorted_spaces const & sosp, const delta_t delta):
-   config (p["beta"]),
+   config (p["beta"], sosp, p["krylov_bs_use_cutoff"], p["krylov_bs_prob_cutoff"]),
    sosp(sosp),
    atomic_corr (config, sosp,
      p["krylov_gs_energy_convergence"],
      p["krylov_small_matrix_size"]
    ),
    current_sign(1), old_sign(1)
-   {    
-    if(p["krylov_bs_use_cutoff"])
-        config.fill_boundary_block_states(sosp,p["krylov_bs_prob_cutoff"]);
-    else
-        config.reset_boundary_block_states(sosp);
-    
+   {
     trace = atomic_corr();
     
     dets.clear();

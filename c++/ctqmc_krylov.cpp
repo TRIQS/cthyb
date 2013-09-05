@@ -86,7 +86,7 @@ parameter_defaults ctqmc_krylov::constructor_defaults() const {
   pdef.optional
    ("n_tau_delta",int(10001),"Number of time slices for Delta(tau)")
    ("n_tau_g",int(10001),"Number of time slices for G(tau)")
-   ("N_Matsubara_Frequencies", int(1025), "Number of Matsubara frequencies")
+   ("n_w", int(1025), "Number of Matsubara frequencies")
    ;
 
    return pdef;
@@ -99,16 +99,16 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
   parameter_defaults pdef;
 
   pdef.required
-   ("N_Cycles", int(), "Number of QMC cycles")
+   ("n_cycles", int(), "Number of QMC cycles")
    ; 
 
   pdef.optional
-   ("Length_Cycle", int(50), "Length of a single QMC cycle")
-   ("N_Warmup_Cycles", int(5000), "Number of cycles for thermalization")
-   ("Random_Seed", int(34788+928374*c.rank()), "Seed for random number generator")
-   ("Random_Generator_Name", std::string(""), "Name of random number generator")
+   ("length_cycle", int(50), "Length of a single QMC cycle")
+   ("n_warmup_cycles", int(5000), "Number of cycles for thermalization")
+   ("random_seed", int(34788+928374*c.rank()), "Seed for random number generator")
+   ("random_name", std::string(""), "Name of random number generator")
    ("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
-   ("Verbosity", int(3), "Verbosity level")
+   ("verbosity", int(3), "Verbosity level")
    ("measure_gt", bool(true), "Whether to measure G(tau)")
    ("krylov_bs_use_cutoff", bool(false), " bool ")
    ("krylov_bs_prob_cutoff", double(1e-8), " double ") // put negative to include all boundary states.

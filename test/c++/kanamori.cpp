@@ -43,13 +43,13 @@ int main(int argc, char* argv[]) {
   // Put in the class
   parameters p;
   p["beta"] = beta;
-  p["Max_Time"] = -1;
-  p["Random_Generator_Name"] = "";
-  p["Random_Seed"] = 123 * rank + 567;
-  p["Verbosity"] = 3;
-  p["Length_Cycle"] = 50;
-  p["N_Warmup_Cycles"] = 50;
-  p["N_Cycles"] = 500;
+  p["max_time"] = -1;
+  p["random_name"] = "";
+  p["random_seed"] = 123 * rank + 567;
+  p["verbosity"] = 3;
+  p["length_cycle"] = 50;
+  p["n_warmup_cycles"] = 50;
+  p["n_cycles"] = 500;
   p["n_tau_delta"] = 1000;
   p["n_tau_g"] = 1000;
   p["krylov_bs_use_cutoff"] = true;

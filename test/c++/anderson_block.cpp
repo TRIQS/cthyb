@@ -42,13 +42,13 @@ int main(int argc, char* argv[]) {
 
   parameters p;
   p["beta"] = beta;
-  p["Random_Generator_Name"] = "";
-  p["Random_Seed"] = 123 * rank + 567;
-  p["Max_Time"] = -1;
-  p["Verbosity"] = 3;
+  p["random_name"] = "";
+  p["random_seed"] = 123 * rank + 567;
+  p["max_time"] = -1;
+  p["verbosity"] = 3;
   p["Length_Cycle"] = 50;
-  p["N_Warmup_Cycles"] = 10;
-  p["N_Cycles"] = 5000;
+  p["n_warmup_cycles"] = 10;
+  p["n_cycles"] = 5000;
   p["n_tau_delta"] = 1000;
   p["n_tau_g"] = 1000;
   p["krylov_bs_use_cutoff"] = true;

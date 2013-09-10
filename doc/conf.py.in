@@ -1,0 +1,34 @@
+# -*- coding: utf-8 -*-
+#
+# TRIQS documentation build configuration file
+
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.intersphinx',
+              'matplotlib.sphinxext.plot_directive']
+
+source_suffix = '.rst'
+
+project = u'TRIQS Hybridization Expansion Krylov Solver'
+copyright = u'2013, I. Krivenko, M. Ferrero, O. Parcollet'
+version = '@CTHYB_KRYLOV_VERSION@'
+release = '@CTHYB_KRYLOV_RELEASE@'
+
+mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
+templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
+
+html_theme = 'triqs'
+html_theme_path = ['@TRIQS_THEMES_PATH@']
+html_show_sphinx = False
+html_context = {'header_title': 'krylov',
+                'header_subtitle': 'a generic quantum impurity solver based on the <a class="triqs" style="font-size: 12px" href="http://ipht.cea.fr/triqs">TRIQS</a> library',
+                'header_links': [['Install', 'install'],
+                                 ['Documentation', 'documentation'],
+                                 ['Issues', 'issues'],
+                                 ['About Krylov', 'about']]}
+html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
+html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
+
+htmlhelp_basename = 'TRIQSHybKrylovdoc'
+
+intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('http://ipht.cea.fr/triqs', None)}

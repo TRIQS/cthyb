@@ -54,6 +54,8 @@ namespace triqs { namespace utility {
   static_assert(boost::has_less<std::tuple<IndexTypes...>>::value, "All indices must be LessThanComparable.");
   static constexpr int n_indices = sizeof...(IndexTypes); 
 
+  static constexpr scalar_t small_coeff = 100*std::numeric_limits<scalar_t>::epsilon();
+  
   public:
 
   // The canonical operator : a dagger and some indices
@@ -136,7 +138,7 @@ namespace triqs { namespace utility {
   friend many_body_operator operator-(scalar_t alpha, many_body_operator const& op) { return -op + alpha; }
 
   many_body_operator & operator*= (scalar_t alpha) {
-   if(std::abs(alpha) < 2*std::numeric_limits<scalar_t>::epsilon()){ monomials.clear(); } 
+   if(std::abs(alpha) < small_coeff){ monomials.clear(); } 
    else { for(auto & m : monomials) m.second *= alpha; }
    return *this;
   }
@@ -242,8 +244,7 @@ namespace triqs { namespace utility {
 
   // Erase a monomial with a close-to-zero coefficient.
   static void erase_zero_monomial(monomials_map_t & m, typename monomials_map_t::iterator & it) {
-   if(std::abs(it->second) < 2*std::numeric_limits<scalar_t>::epsilon())
-    m.erase(it);
+   if(std::abs(it->second) < small_coeff) m.erase(it);
   }
 
   friend std::ostream& operator<<(std::ostream &os, canonical_ops_t const & op) {

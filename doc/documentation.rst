@@ -9,8 +9,9 @@ Documentation
 .. toctree::
    :maxdepth: 2
 
+   algorithm
+   krylov
    sorted_spaces
    operators
    benchmarks
-   krylov
    implementation_notes

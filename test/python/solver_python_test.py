@@ -3,7 +3,7 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.parameters.parameters import Parameters
-from pytriqs.applications.impurity_solvers.cthyb_krylov.ctqmc_hyb_krylov import *
+from pytriqs.applications.impurity_solvers.cthyb_krylov.cthyb_krylov import *
 from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
 import itertools

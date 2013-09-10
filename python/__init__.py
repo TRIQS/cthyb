@@ -23,6 +23,6 @@ r"""
 DOC
 
 """
-from ctqmc_hyb_krylov import Operator, C, C_dag, N, Solver
+from cthyb_krylov import Operator, C, C_dag, N, Solver
 
 __all__ = ['Operator', 'C', 'C_dag', 'N', 'Solver']

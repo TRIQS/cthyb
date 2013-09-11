@@ -25,18 +25,19 @@ V = 1.0 * np.eye(num_orbitals) + 0.1 * (np.ones(num_orbitals) - np.eye(num_orbit
 
 # Parameters
 p = Parameters()
-p["beta"] = beta;
-p["max_time"] = -1;
-p["random_name"] = "";
-p["random_seed"] = 123 * mpi.rank + 567;
-p["verbosity"] = 3;
-p["length_cycle"] = 50;
-p["n_warmup_cycles"] = 50;
-p["n_cycles"] = 500;
-p["n_tau_delta"] = 1000;
-p["n_tau_g"] = 1000;
-p["krylov_bs_use_cutoff"] = True;
-p["krylov_bs_prob_cutoff"] = .0;
+p["beta"] = beta
+p["max_time"] = -1
+p["random_name"] = ""
+p["random_seed"] = 123 * mpi.rank + 567
+p["verbosity"] = 3
+p["length_cycle"] = 50
+p["n_warmup_cycles"] = 50
+p["n_cycles"] = 500
+p["n_tau_delta"] = 1000
+p["n_tau_g"] = 1000
+p["krylov_bs_use_cutoff"] = True
+p["krylov_bs_prob_cutoff"] = -1.0
+p["krylov_small_matrix_size"] = 25
 
 # Block structure of GF
 gf_struct = OrderedDict()

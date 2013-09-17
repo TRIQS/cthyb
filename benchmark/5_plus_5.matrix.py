@@ -7,6 +7,7 @@
 from multiorbital import *
 
 from itertools import product
+from datetime import datetime
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
@@ -18,6 +19,10 @@ from params import *
 
 # Remove Krylov-specific parameters 
 p = {k:v for k, v in p.items() if not k.startswith('krylov')}
+
+# Not needed
+del p["beta"]
+del p["verbosity"]
 
 print "Welcome to 5+5 (5 orbitals + 5 bath sites) test, matrix version."
 
@@ -85,7 +90,9 @@ print "Running the simulation..."
 p['H_local'] = H
 p['quantum_numbers'] = QN
 
+start_time = datetime.now()
 S.solve(**p)
+print "Simulation lasted:", (datetime.now() - start_time).total_seconds(), "seconds"
 
 # Save the results  
 if mpi.rank==0:

@@ -10,6 +10,7 @@ stats = {}
 space_dims = []
 total_counts = 0
 average_krylov_dim = 0
+average_krylov_dim2 = 0
 for line in open(stats_filename,'r'):
 	if line[0] == '#': continue
 	space_dim, krylov_dim, count = map(lambda s: int(s), line.split('\t'))
@@ -20,6 +21,7 @@ for line in open(stats_filename,'r'):
 	stats[space_dim][krylov_dim] = count
 	
 	average_krylov_dim += krylov_dim*count
+	average_krylov_dim2 += (krylov_dim**2)*count 
 	total_counts += count
 
 space_dims.sort()
@@ -38,6 +40,7 @@ ax.set_xlabel("Space Dim")
 ax.set_ylabel("Krylov Dim")
 ax.set_zlabel("Count")
 
-print "Average Krylov dimension:", float(average_krylov_dim)/total_counts
+print "<krylov_dim> =", float(average_krylov_dim)/total_counts
+print "<krylov_dim^2> =", float(average_krylov_dim2)/total_counts
 
 plt.show()

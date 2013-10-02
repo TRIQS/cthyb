@@ -1,4 +1,5 @@
 from libcpp.string cimport string as string
+from libcpp cimport bool
 
 cdef extern from "<sstream>" namespace "std":
     cdef cppclass stringstream:
@@ -18,6 +19,8 @@ cdef extern from "c++/operator.hpp" namespace "triqs::utility":
         many_body_operator operator-()
         many_body_operator operator*(const many_body_operator&)
         many_body_operator operator*(double)
+        
+        bool is_zero()
 
     cdef many_body_operator c(string,string)
     cdef many_body_operator c_dag(string,string)
@@ -101,6 +104,9 @@ cdef class Operator:
         else:
             (<Operator?> O)._c = (<Operator?> B)._c * (<double?> A)
         return O
+        
+    def is_zero(self):
+        return self._c.is_zero()
         
 def C(block,index):
     O = Operator()

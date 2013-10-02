@@ -86,6 +86,8 @@ instance of ``scalar_t``, then the following expressions are valid: ::
 
 The result of any of the defined operations is guaranteed to preserve its normally ordered form.
 
+An operator can be tested to be precise zero by a call to ``is_zero()`` method.
+
 Within the current implementation, ``many_body_operator`` provides no type conversions between objects with
 different scalar types or index types.
 For example, one cannot mix operators with ``scalar_t=double`` and ``scalar_t=std::complex<double>`` in a single expression.

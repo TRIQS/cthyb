@@ -115,6 +115,9 @@ namespace triqs { namespace utility {
   const_iterator cbegin() const noexcept { return monomials.cbegin(); }
   const_iterator cend()   const noexcept { return monomials.cend(); }
 
+  // Zero operator?
+  bool is_zero() const { return monomials.empty(); }
+  
   // Algebraic operations involving scalar_t constants
   many_body_operator operator-() const {
    auto tmp =*this;

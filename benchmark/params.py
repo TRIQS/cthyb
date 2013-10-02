@@ -44,6 +44,8 @@ atomic_levels = {('up_xy',0) :        -0.2,
                  ('up_x^2-y^2',0) :   0.4,
                  ('dn_x^2-y^2',0) :   0.4}
 
+use_PS_quantum_numbers = False
+
 p = {}
 p["beta"] = beta
 p["max_time"] = -1

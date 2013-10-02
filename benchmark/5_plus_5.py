@@ -61,6 +61,13 @@ for cn in cubic_names:
     for n, sn in enumerate(spin_names):
         QN[n] += N(*mkind(sn,cn))
 
+# Use PS quantum numbers (see arXiv:1209.0915)
+if use_PS_quantum_numbers:
+    for cn in cubic_names:
+        QN += [Operator()]
+        dN = N(*mkind(spin_names[0],cn)) - N(*mkind(spin_names[1],cn))
+        QN[-1] = dN*dN
+        
 print "Constructing the solver..."
 
 # Construct the solver

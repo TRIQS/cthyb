@@ -75,7 +75,7 @@ class sorted_spaces {
   public:
 
   struct eigensystem_t {
-      vector<double> eigenvalues;
+      vector<double> eigenvalues;   // in ascending order
       std::vector<state<partial_hilbert_space,false>> eigenstates;
       matrix<double> unitary_matrix; // H = U * \Lambda * U^+
   };
@@ -296,7 +296,7 @@ class sorted_spaces {
          ew.invoke();
          eigensystem.eigenvalues = ew.values();
          eigensystem.unitary_matrix = h_matrix.transpose();
-         gs_energy = std::min(gs_energy,*std::min_element(eigensystem.eigenvalues.begin(), eigensystem.eigenvalues.end()));
+         gs_energy = std::min(gs_energy,eigensystem.eigenvalues[0]);
          
          eigensystem.eigenstates.reserve(sp.dimension());
          for(std::size_t e=0; e<sp.dimension(); ++e){

@@ -73,7 +73,9 @@ cdef class Solver:
         
         # Quantum numbers
         cdef vector[operator_c] quantum_numbers
-        for qn in kw['quantum_numbers']: quantum_numbers.push_back((<Operator?> qn)._c)
+        for qn in kw['quantum_numbers']:
+            quantum_numbers.push_back((<Operator?> qn)._c)
+            assert (H_local*quantum_numbers.back() - quantum_numbers.back()*H_local).is_zero(), "One quantum number is not commuting with Hamiltonian"
         
         cdef vector[block_desc_t] block_stucture
         cdef fundamental_operator_set fops

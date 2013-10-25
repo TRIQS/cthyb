@@ -84,6 +84,7 @@ for sn, cn in product(spin_names,cubic_names):
 print "Running the simulation..."
 
 # Solve the problem
+pp['time_accumulation'] = True
 S.solve(parameters=pp)
 
 # Save the results  

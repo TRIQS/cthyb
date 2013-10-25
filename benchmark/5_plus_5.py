@@ -1,8 +1,4 @@
 #!/bin/env pytriqs
-#$ -N five_plus_five
-#$ -pe mpi 128
-#$ -q amd
-#$ -cwd
 
 from multiorbital import *
 

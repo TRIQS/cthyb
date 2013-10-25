@@ -1,0 +1,13 @@
+#!/bin/sh
+#$ -S /bin/sh
+#$ -N _5+5.job 
+#$ -pe mpi 128
+#$ -q amd
+
+if [ -n "${SGE_TASK_ID}" ]
+then
+	echo "Running the MPI version ..."
+	mpirun -machinefile $TMPDIR/machines -np ${NSLOTS} pytriqs 5_plus_5.py
+else
+	pytriqs 5_plus_5.py
+fi

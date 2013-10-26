@@ -11,10 +11,13 @@ from pytriqs.gf.local import *
 
 from params import *
 
+def print_master(msg):
+	if mpi.rank==0: print msg
+
 pp = Parameters()
 for k in p: pp[k] = p[k]
 
-print "Welcome to 5+5 (5 orbitals + 5 bath sites) test."
+print_master("Welcome to 5+5 (5 orbitals + 5 bath sites) test.")
 
 cubic_names, W = spherical2cubic(L)
 N_comp = len(cubic_names)
@@ -37,7 +40,7 @@ for i in atomic_levels:
     H += atomic_levels[i] * N(*i)
 
 if use_interaction:
-    print "Preparing the interaction matrix..."
+    print_master("Preparing the interaction matrix...")
 
     U_matrix = transform_U_matrix(U_matrix_spherical([F0,F2,F4]),W)
 
@@ -64,12 +67,12 @@ if use_PS_quantum_numbers:
         dN = N(*mkind(spin_names[0],cn)) - N(*mkind(spin_names[1],cn))
         QN[-1] = dN*dN
         
-print "Constructing the solver..."
+print_master("Constructing the solver...")
 
 # Construct the solver
 S = Solver(parameters=pp, H_local=H, quantum_numbers=QN, gf_struct=gf_struct)
 
-print "Preparing the hybridization function..."
+print_master("Preparing the hybridization function...")
 
 # Set hybridization function
 for sn, cn in product(spin_names,cubic_names):
@@ -81,10 +84,9 @@ for sn, cn in product(spin_names,cubic_names):
     delta_w <<= (V**2) * inverse(iOmega_n - e)
     S.Delta_tau[bn][i,i] <<= InverseFourier(delta_w)
 
-print "Running the simulation..."
+print_master("Running the simulation...")
 
 # Solve the problem
-pp['time_accumulation'] = True
 S.solve(parameters=pp)
 
 # Save the results  

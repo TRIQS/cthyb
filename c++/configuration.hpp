@@ -89,7 +89,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
           }
       }
     
-    std::cout << "Summing over " << total_states << " in the outer trace ";
+    std::cout << "Summing over " << total_states << " states in the outer trace ";
     std::cout << "(the probability cutoff is set to " << prob_tolerance << ")" << std::endl;
   }
 

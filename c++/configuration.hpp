@@ -88,10 +88,9 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
               }
           }
       }
-      
-#ifdef EXT_DEBUG
-    std::cerr << total_states << " states will be used in the outer trace summation." << std::endl;
-#endif
+    
+    std::cout << "Summing over " << total_states << " in the outer trace ";
+    std::cout << "(the probability cutoff is set to " << prob_tolerance << ")" << std::endl;
   }
 
   double beta() const {return beta_;}

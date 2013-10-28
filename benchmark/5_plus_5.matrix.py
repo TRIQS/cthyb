@@ -1,8 +1,4 @@
 #!/bin/env pytriqs
-#$ -N five_plus_five.matrix
-#$ -pe mpi 128
-#$ -q amd
-#$ -cwd
 
 from multiorbital import *
 
@@ -17,6 +13,9 @@ from pytriqs.gf.local import *
 
 from params import *
 
+def print_master(msg):
+	if mpi.rank==0: print msg
+
 # Remove Krylov-specific parameters 
 p = {k:v for k, v in p.items() if not k.startswith('krylov')}
 
@@ -24,7 +23,7 @@ p = {k:v for k, v in p.items() if not k.startswith('krylov')}
 del p["beta"]
 del p["verbosity"]
 
-print "Welcome to 5+5 (5 orbitals + 5 bath sites) test, matrix version."
+print_master("Welcome to 5+5 (5 orbitals + 5 bath sites) test, matrix version.")
 
 cubic_names, W = spherical2cubic(L)
 N_comp = len(cubic_names)
@@ -47,7 +46,7 @@ for i in atomic_levels:
     H += atomic_levels[i] * N(*i)
 
 if use_interaction:
-    print "Preparing the interaction matrix..."
+    print_master("Preparing the interaction matrix...")
     
     U_matrix = transform_U_matrix(U_matrix_spherical([F0,F2,F4]),W)
 
@@ -67,12 +66,18 @@ for cn in cubic_names:
     for sn in spin_names:
         QN['N_'+sn] += N(*mkind(sn,cn))
 
-print "Constructing the solver..."
+# Use PS quantum numbers (see arXiv:1209.0915)
+if use_PS_quantum_numbers:
+	for cn in cubic_names:
+	   dN = N(*mkind(spin_names[0],cn)) - N(*mkind(spin_names[1],cn))
+	   QN['PS_'+cn] = dN*dN
+
+print_master("Constructing the solver...")
 
 # Construct the solver
 S = Solver(beta=beta, gf_struct=gf_struct.items())
 
-print "Preparing the hybridization function..."
+print_master("Preparing the hybridization function...")
 
 # Set hybridization function
 for sn, cn in product(spin_names,cubic_names):
@@ -84,15 +89,18 @@ for sn, cn in product(spin_names,cubic_names):
     delta_w <<= (V**2) * inverse(iOmega_n - e)
     S.G0[bn][i,i] <<= inverse(iOmega_n - delta_w)
 
-print "Running the simulation..."
+print_master("Running the simulation...")
 
 # Solve the problem
 p['H_local'] = H
 p['quantum_numbers'] = QN
 
+p['legendre_accumulation'] = False
+p['time_accumulation'] = True
+
 start_time = datetime.now()
 S.solve(**p)
-print "Simulation lasted:", (datetime.now() - start_time).total_seconds(), "seconds"
+print_master("Simulation lasted: " + str((datetime.now() - start_time).total_seconds()) + " seconds")
 
 # Save the results  
 if mpi.rank==0:

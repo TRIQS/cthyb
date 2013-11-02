@@ -31,7 +31,7 @@ class partial_hilbert_space {
   public:
 
   // constructor
-  partial_hilbert_space() : index(next_index++) {}
+  partial_hilbert_space(size_t index) : index(index) {}
 
   int n_bits (uint64_t f) const{ return (f * 0x200040008001ULL & 0x111111111111111ULL) % 0xf; }
 
@@ -73,11 +73,7 @@ class partial_hilbert_space {
   // a map to quickly find the index of a state
   std::unordered_map<fock_state, size_t> fock_to_index;
   std::vector<long> fock_to_index_v;
-
-  static size_t next_index;
 };
-
-size_t partial_hilbert_space::next_index = 0;
 
 }}}}
 #endif

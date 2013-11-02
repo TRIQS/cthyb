@@ -119,13 +119,13 @@ int main() {
   
   complete_hilbert_space h4(f4);
   
-  partial_hilbert_space phs0;
+  partial_hilbert_space phs0(0);
   phs0.add_basis_fock(h4.get_fock_state(0)); // 000
   phs0.add_basis_fock(h4.get_fock_state(1)); // 001
   phs0.add_basis_fock(h4.get_fock_state(2)); // 010
   phs0.add_basis_fock(h4.get_fock_state(3)); // 011
 
-  partial_hilbert_space phs1;
+  partial_hilbert_space phs1(1);
   phs1.add_basis_fock(h4.get_fock_state(4)); // 100
   phs1.add_basis_fock(h4.get_fock_state(5)); // 101
   phs1.add_basis_fock(h4.get_fock_state(6)); // 110

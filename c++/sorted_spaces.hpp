@@ -131,7 +131,7 @@ class sorted_spaces {
 
       // if first time we meet these quantum numbers create partial Hilbert space
       if(map_qn_n.count(qn) == 0) {
-        hilbert_spaces.push_back(std::make_shared<partial_hilbert_space>());
+        hilbert_spaces.push_back(std::make_shared<partial_hilbert_space>(hilbert_spaces.size()));
         quantum_numbers.push_back(qn);
         map_qn_n[qn] = n_blocks;
         n_blocks++;

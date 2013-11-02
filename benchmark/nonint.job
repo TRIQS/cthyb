@@ -1,0 +1,13 @@
+#!/bin/sh
+#$ -S /bin/sh
+#$ -N nonint
+#$ -pe mpi 64
+#$ -q amd
+
+if [ -n "${SGE_TASK_ID}" ]
+then
+	echo "Running the MPI version ..."
+	mpirun -machinefile $TMPDIR/machines -np ${NSLOTS} pytriqs nonint.py
+else
+	pytriqs nonint.py
+fi

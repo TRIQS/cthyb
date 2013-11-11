@@ -316,7 +316,7 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	 return dotc(s1.ampli, s2.ampli);
 	}
 
-	friend bool is_zero_state(state const& st, double tolerance = 10e-10)
+	friend bool is_zero_state(state const& st, double tolerance = 1e-18)
 	{
 	 if (st.amplitudes().size() == 0) return true;
 	 for (auto const &a : st.amplitudes()) if(std::fabs(a) > tolerance) return false;

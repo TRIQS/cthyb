@@ -25,7 +25,7 @@
 #include <functional>
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
-#define QUICK_APPLY_OP
+//#define QUICK_APPLY_OP
 
 #ifdef QUICK_APPLY_OP
 

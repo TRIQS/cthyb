@@ -285,7 +285,7 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	 for(int i=0; i<s.n_amplitudes(); ++i) {
       auto ampl = s(i);
       if(std::abs(ampl)<1e-10) continue;
-	  os << " +(" << ampl << ")" << "|" << s.hs->get_fock_state(i) << ">";
+	  os << " +(" << ampl << ")" << s.hs->get_fock_state(i);
 	 }
 	 return os;
 	}

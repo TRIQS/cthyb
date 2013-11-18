@@ -22,6 +22,7 @@
 #ifndef TRIQS_CTQMC_KRYLOV_IMPERATIVE_OPERATOR
 #define TRIQS_CTQMC_KRYLOV_IMPERATIVE_OPERATOR
 
+#include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include "operator.hpp"
 #include "fock_state.hpp"

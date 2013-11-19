@@ -94,7 +94,7 @@ typedef  uint64_t fock_state;
    void set_to_0(std::size_t mode) { bitfield.all &= ~(static_cast<storage_t>(1) << mode); }
    void set_to_1(std::size_t mode) { bitfield.all |= (static_cast<storage_t>(1) << mode); }
 
-   friend std::ostream& operator<<(std::ostream& os, const fock_state& fs) { return os << "|" << fs.bitfield.all << ">"; }
+   friend std::ostream& operator<<(std::ostream& os, const fock_state& fs) { return os << fs.bitfield.all; }
  };
 
  int fock_state::count_table[]  =

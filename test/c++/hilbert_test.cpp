@@ -137,13 +137,34 @@ int main() {
 
   state<partial_hilbert_space, false> start(phs0);
 
+  std::cout << "operator is: " << Cdag << std::endl;
+  
   start(0) = 1.0;
   start(1) = 2.0;
   start(2) = 3.0;
   start(3) = 4.0;
-
+  
+  std::cout << "old state is: " << start << std::endl;
   std::cout << "new state is: " << opCdag(start) << std::endl;
+  
+  std::cout << std::endl << "Part VIII: quartic operators" << std::endl << std::endl;
 
+  fundamental_operator_set<const char *,int> FOPS;
+  FOPS.add_operator("up",0);
+  FOPS.add_operator("down",0);
+  FOPS.add_operator("up",1);
+  FOPS.add_operator("down",1);
+  complete_hilbert_space HS(FOPS);
+   
+  triqs::utility::many_body_operator<double,const char*,int> quartic_op;
+  quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
+     
+  state<complete_hilbert_space, false> st1(HS);
+  st1(6) = 1.0; // 0110
+  std::cout << "old state is: " << st1 << std::endl;
+  std::cout << "operator is: " << quartic_op << std::endl;
+  std::cout << "new state is: " << imperative_operator<complete_hilbert_space>(quartic_op,FOPS)(st1) << std::endl;
+    
   return 0;
 
 }

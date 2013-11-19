@@ -170,7 +170,7 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
 
     friend std::ostream& operator<<(std::ostream& os, state const& s) {
       for(amplitude_t::const_reference a : s.ampli){
-        os << " +(" << a.second << ")" << s.hs->get_fock_state(a.first);
+        os << " +(" << a.second << ")" << "|" << s.hs->get_fock_state(a.first) << ">";
       }
       return os;
     }

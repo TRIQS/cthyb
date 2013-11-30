@@ -1,9 +1,9 @@
 sources = """
-. qmc_parameters.hpp t_ordered_colored_c_ops.hpp segment.hpp trace_c_ops.hpp trace_c_ops.cpp configuration.hpp hybridization_dets.hpp hyb_opmap_no_storage.hpp move_insert_segment.hpp move_remove_segment.hpp move_move_segment.hpp move_swap_empty_lines.hpp ctqmc_seg.hpp ctqmc_seg.cpp measure_hist.hpp measure_gt.hpp measure_nn.hpp 
+. operator.hpp fock_state.hpp state.hpp fundamental_operator_set.hpp complete_hilbert_space.hpp partial_hilbert_space.hpp imperative_operator.hpp sorted_spaces.hpp krylov_worker.hpp exp_h_worker.hpp configuration.hpp qmc_data.hpp atomic_correlators_worker.hpp move_change_boundary_state.hpp move_insert.hpp move_remove.hpp measure_boundary_state.hpp measure_g.hpp measure_z.hpp statistics.hpp ctqmc_krylov.cpp ctqmc_krylov.hpp
 """
 
-src_dir = "~/triqs/src/applications/impurity_solvers/ctqmc_seg/"
-code_filename = "~/ctseg_code.ps"
+src_dir = "/home/parcolle/triqs/src/cthyb_krylov/c++"
+code_filename = "~/ctkrylov_code.ps"
 
 #################################################
 

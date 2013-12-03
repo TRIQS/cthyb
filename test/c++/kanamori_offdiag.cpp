@@ -73,14 +73,14 @@ int main(int argc, char* argv[]) {
   p["krylov_bs_prob_cutoff"] = .0;
 
   // basis of operators to use  
-  fundamental_operator_set<const char *,int> fops;
+  fundamental_operator_set<std::string,int> fops;
   for(int o = 0; o < num_orbitals; ++o){
       fops.add_operator("up",o);
       fops.add_operator("down",o);
   }
   
   // block structure of GF
-  std::vector<block_desc_t<const char *,int>> block_structure;
+  std::vector<block_desc_t<std::string,int>> block_structure;
   block_structure.push_back({"up",{}});
   block_structure.push_back({"down",{}});
   for(int o = 0; o < num_orbitals; ++o){
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Hamiltonian
-  many_body_operator<double,const char*,int> H;
+  many_body_operator<double,std::string,int> H;
   for(int o = 0; o < num_orbitals; ++o){
       H += -mu*(n("up",o) + n("down",o));
   }
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
   }
 
   // quantum numbers
-  std::vector<many_body_operator<double,const char*,int>> qn;
+  std::vector<many_body_operator<double,std::string,int>> qn;
 
   // Construct CTQMC solver
   ctqmc_krylov solver(p, H, qn, fops, block_structure);

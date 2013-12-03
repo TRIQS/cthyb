@@ -18,7 +18,7 @@ n operators = 8
 dim = 16
 n operators = 4
 
-(down,0) --> 2
+(down,0) --> 0
 dim = 16
 n operators = 4
 
@@ -51,10 +51,6 @@ new state is:  +(-1)|1> +(5)|7>
 old state is:  +(1)|7>
 new state is:  +(-1)|1> +(5)|7>
 new state is:  +(-1)|1> +(5)|7>
-size of hilbert: 8
-size of op: 88
-size of op: 88
-size of op: 88
 
 Part VII: partial hilbert space
 
@@ -64,6 +60,6 @@ new state is:  +(1)|4> +(-2)|5> +(-3)|6> +(4)|7>
 
 Part VIII: quartic operators
 
-old state is:  +(1)|6>
-operator is: 1*C^+(up,0)C^+(down,1)C(down,0)C(up,1)
-new state is:  +(-1)|9>
+old state is:  +(1)|9>
+operator is: 1*C^+(down,1)C^+(up,0)C(up,1)C(down,0)
+new state is:  +(1)|6>

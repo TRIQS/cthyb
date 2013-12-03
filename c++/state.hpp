@@ -282,11 +282,14 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 
 	// print
 	friend std::ostream& operator<<(std::ostream& os, state const& s) {
+         bool something_written = false;
 	 for(int i=0; i<s.n_amplitudes(); ++i) {
       auto ampl = s(i);
       if(std::abs(ampl)<1e-10) continue;
 	  os << " +(" << ampl << ")" << "|" << s.hs->get_fock_state(i) << ">";
+	  something_written = true;
 	 }
+	 if (!something_written) os << 0;
 	 return os;
 	}
 

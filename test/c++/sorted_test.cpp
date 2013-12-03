@@ -1,3 +1,4 @@
+#include <triqs/utility/first_include.hpp>
 #include "./sorted_spaces.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
@@ -17,20 +18,20 @@ int main() {
 
   // put quantum numbers in a vector
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-  std::vector<many_body_operator<double,const char*>> qn_list {n_up, n_down};
+  std::vector<many_body_operator<double,std::string>> qn_list {n_up, n_down};
 #else
-  std::vector<many_body_operator<double,const char*>> qn_list; qn_list.push_back(n_up); qn_list.push_back(n_down);
+  std::vector<many_body_operator<double,std::string>> qn_list; qn_list.push_back(n_up); qn_list.push_back(n_down);
 #endif
-  //std::vector<many_body_operator<double,const char*, int>> qn_list {n_up+n_down};
-  //std::vector<many_body_operator<double,const char*, int>> qn_list;
+  //std::vector<many_body_operator<double,std::string, int>> qn_list {n_up+n_down};
+  //std::vector<many_body_operator<double,std::string, int>> qn_list;
 
   // chose the fundamental operator set
-  fundamental_operator_set<const char *> fops;
+  fundamental_operator_set<std::string> fops;
   fops.add_operator("up");
   fops.add_operator("down");
 
   // Block structure
-  std::vector<block_desc_t<const char *>> block_structure;
+  std::vector<block_desc_t<std::string>> block_structure;
   block_structure.push_back({"up",{std::make_tuple("up")}});
   block_structure.push_back({"down",{std::make_tuple("down")}});
 

@@ -58,17 +58,17 @@ int main(int argc, char* argv[]) {
   auto H = U*n("up")*n("down") + (-mu+h)*n("up") + (-mu-h)*n("down");
 
   // quantum numbers
-  std::vector<many_body_operator<double,const char*>> qn;
+  std::vector<many_body_operator<double,std::string>> qn;
   qn.push_back(n("up"));
   qn.push_back(n("down"));
 
   // basis of operators to use
-  fundamental_operator_set<const char *> fops;
+  fundamental_operator_set<std::string> fops;
   fops.add_operator("up");
   fops.add_operator("down");
  
   // block structure of GF
-  std::vector<block_desc_t<const char *>> block_structure;
+  std::vector<block_desc_t<std::string>> block_structure;
   block_structure.push_back({"up",{std::make_tuple("up")}});
   block_structure.push_back({"down",{std::make_tuple("down")}});
   

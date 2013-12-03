@@ -37,8 +37,8 @@ int main(int argc, char **argv)
     std::cout << "op_with_no_indices = " << op_with_no_indices << std::endl;
     
     // Operators with many indices
-    auto op_with_many_indices = c(1,0.2,std::string("a"),true,-2) +
-                            c_dag(3,0.15,std::string("b"),false,-5);
+    auto op_with_many_indices = c(1,0.2,"a",true,-2) +
+                            c_dag(3,0.15,"b",false,-5);
     std::cout << "op_with_many_indices = " << op_with_many_indices << std::endl;
                             
     // Commutation relations
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
     // N^3
     std::cout << std::endl << "N^3:" << std::endl;
-    auto N = n(std::string("up")) + n(std::string("dn"));
+    auto N = n("up") + n("dn");
     auto N3 = N*N*N;
     std::cout << "N = " << N << std::endl;
     std::cout << "N^3 = " << N3 << std::endl; 

@@ -59,16 +59,16 @@ int main(int argc, char* argv[]) {
   auto H = U*n("0")*n("1") - mu*(n("0")+n("1")) - t*c_dag("0")*c("1") - t*c_dag("1")*c("0");
 
   // quantum numbers
-  std::vector<many_body_operator<double,const char*>> qn;
+  std::vector<many_body_operator<double,std::string>> qn;
   qn.push_back(n("0")+n("1"));
 
   // basis of operators to use
-  fundamental_operator_set<const char *> fops;
+  fundamental_operator_set<std::string> fops;
   fops.add_operator("0");
   fops.add_operator("1");
 
   // block structure of GF
-  std::vector<block_desc_t<const char *>> block_structure;
+  std::vector<block_desc_t<std::string>> block_structure;
   block_structure.push_back({"tot",
       {std::make_tuple("0"),std::make_tuple("1")}}
   );

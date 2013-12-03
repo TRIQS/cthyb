@@ -22,22 +22,25 @@
 #define TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
 #include <utility>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include "tuple_hasher.hpp"
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 
 // This class defines the list of operators that are used to describe
-// e.g. Fock states etc.
+   // e.g. Fock states etc.
 
  template<typename ...IndexType>
 class fundamental_operator_set {
 
   // The index of the operators
   typedef std::tuple<IndexType...> tuple_t;
+ //  using tuple_t = std::tuple<typename _meta_change_constchar_to_stdstring2<IndexType>::type ...>;
 
-  // the hash table index <-> n
-  typedef std::unordered_map<tuple_t, int, tuple_hasher<tuple_t>> map_t;
+  // the table index <-> n
+  typedef std::map<tuple_t, int> map_t;
+  //typedef std::unordered_map<tuple_t, int, tuple_hasher<tuple_t>> map_t;
   map_t map_index_n;
 
   public:
@@ -53,9 +56,17 @@ class fundamental_operator_set {
       add_operator(i,j); 
    }
 
+  // REMOVE THIS : jsut in construction, to avoid reorganizing all the time
+  // may lead to bug if start to use it, then add new ops, then reuse...
   // add an operator in the set
   void add_operator(IndexType const & ...ind) {
-   map_index_n.insert(std::make_pair(std::make_tuple(ind...), n_operators()));
+   map_index_n.insert( { std::make_tuple(ind...), n_operators()});
+   //reorder the indices which are always given in the order of the indices tuple
+   std::map<tuple_t, int> m;
+   int i=0;
+   for (auto const& p : map_index_n) m.insert({p.first, i++});
+   std::swap(m,map_index_n); // if change back to unordered_map (speed ???), copy here explicitely back
+   // but use a map for m (to reorder)
   }
 
   // return the dimension of the space spanned by the operators
@@ -65,7 +76,7 @@ class fundamental_operator_set {
   size_t n_operators() const { return map_index_n.size(); }
 
   // flatten (a,alpha) --> n
-  template<typename ...Indices>
+   template<typename ...Indices>
    size_t index_to_n(Indices const & ...ind) const { return map_index_n.at(std::make_tuple(ind...)); }
 
     // flatten (a,alpha) --> n

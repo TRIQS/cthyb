@@ -243,7 +243,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
        fock_state newf = a.fs;
 
        try { 
-	//#define DEBUG_TEST
+//	#define DEBUG_TEST
 #ifdef DEBUG_TEST
 
 	uint64_t f2 = a.fs;
@@ -280,7 +280,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
 #ifdef DEBUG_TEST
 	if (skip != skip1) TRIQS_RUNTIME_ERROR << " error skip1 " << a.fs << d_mask << dag_mask <<" "<< d_count_mask << dag_count_mask <<" "<<skip << skip1 ;
-	if ( !skip && (sign%2 != s1%2)) TRIQS_RUNTIME_ERROR << " error sign1 " << a.fs << d_mask << dag_mask <<" "<< d_count_mask << dag_count_mask<<" " << sign << s1 ;
+	if ( !skip && (sign%2 != s1%2)) TRIQS_RUNTIME_ERROR << " error sign1 " << a.fs << " "<< d_mask << " "<<dag_mask <<" "<< d_count_mask << " "<<dag_count_mask<<" : s:  " << sign << s1 ;
 #endif
 
 	if (skip) continue;

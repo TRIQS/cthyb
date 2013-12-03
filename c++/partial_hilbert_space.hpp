@@ -23,6 +23,7 @@
 #define TRIQS_CTQMC_KRYLOV_HILBERT_SPACE_QN
 
 #include "fock_state.hpp"
+#include <unordered_map>
 
 namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
 

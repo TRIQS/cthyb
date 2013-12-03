@@ -41,6 +41,9 @@
 
 namespace triqs { namespace utility {
 
+ template<typename T> struct _meta_change_constchar_to_stdstring { using type = T;};
+ template<> struct _meta_change_constchar_to_stdstring<const char *> { using type = std::string;};
+
  template<typename scalar_t, typename... IndexTypes>
   class many_body_operator :
    boost::addable<many_body_operator<scalar_t,IndexTypes...>,
@@ -51,7 +54,6 @@ namespace triqs { namespace utility {
    boost::multipliable2<many_body_operator<scalar_t, IndexTypes...>, scalar_t
    >>>>>> 
  {
-  static_assert(boost::has_less<std::tuple<IndexTypes...>>::value, "All indices must be LessThanComparable.");
   static constexpr int n_indices = sizeof...(IndexTypes); 
 
   static constexpr scalar_t small_coeff = 100*std::numeric_limits<scalar_t>::epsilon();
@@ -60,7 +62,11 @@ namespace triqs { namespace utility {
 
   // The canonical operator : a dagger and some indices
   struct canonical_ops_t { 
-   bool dagger; std::tuple<IndexTypes...> indices;
+   bool dagger; 
+   using tuple_t = std::tuple<IndexTypes ...>;
+   //using tuple_t = std::tuple<typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...>;
+   static_assert(boost::has_less<tuple_t>::value, "All indices must be LessThanComparable.");
+   tuple_t indices;
    // dagger < non dagger, and then indices
    friend bool operator < (canonical_ops_t const & a, canonical_ops_t const & b) { return (a.dagger!=b.dagger ? a.dagger > b.dagger : (a.dagger ? a.indices < b.indices : a.indices > b.indices));}
    friend bool operator > (canonical_ops_t const & a, canonical_ops_t const & b) { return b<a; }
@@ -193,9 +199,9 @@ namespace triqs { namespace utility {
   template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & monomials; }    
 
   // Free factory functions
-  template<typename... T> friend many_body_operator<double, T...> c(T...);
-  template<typename... T> friend many_body_operator<double, T...> c_dag(T...);
-  template<typename... T> friend many_body_operator<double, T...> n(T...);
+  template<typename... T> friend many_body_operator<double, typename _meta_change_constchar_to_stdstring<T>::type ...> c(T...);
+  template<typename... T> friend many_body_operator<double, typename _meta_change_constchar_to_stdstring<T>::type ...> c_dag(T...);
+  template<typename... T> friend many_body_operator<double, typename _meta_change_constchar_to_stdstring<T>::type ...> n(T...);
 
   private:
 
@@ -279,8 +285,9 @@ namespace triqs { namespace utility {
 
  // Free functions to make creation/annihilation operators
  template<typename... IndexTypes>
-  many_body_operator<double, IndexTypes...> c(IndexTypes... indices) {
-   typedef many_body_operator<double,IndexTypes...> c_t;
+  many_body_operator<double, typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...> c(IndexTypes... indices) {
+  //many_body_operator<double, IndexTypes...> c(IndexTypes... indices) {
+   typedef many_body_operator<double,typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...> c_t;
    typedef typename c_t::canonical_ops_t canonical_ops_t;
 
    c_t tmp;
@@ -294,8 +301,9 @@ namespace triqs { namespace utility {
   }
 
  template<typename... IndexTypes>
-  many_body_operator<double,IndexTypes...> c_dag(IndexTypes... indices) {
-   typedef many_body_operator<double, IndexTypes...> c_dag_t;
+  many_body_operator<double,typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...> c_dag(IndexTypes... indices) {
+  //many_body_operator<double,IndexTypes...> c_dag(IndexTypes... indices) {
+   typedef many_body_operator<double, typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...> c_dag_t;
    typedef typename c_dag_t::canonical_ops_t canonical_ops_t;
 
    c_dag_t tmp;
@@ -309,8 +317,9 @@ namespace triqs { namespace utility {
   }
 
  template<typename... IndexTypes>
-  many_body_operator<double,IndexTypes...> n(IndexTypes... indices) {
-   typedef many_body_operator<double,IndexTypes...> n_t;
+  many_body_operator<double,typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...> n(IndexTypes... indices) {
+  //many_body_operator<double,IndexTypes...> n(IndexTypes... indices) {
+   typedef many_body_operator<double,typename _meta_change_constchar_to_stdstring<IndexTypes>::type ...> n_t;
    typedef typename n_t::canonical_ops_t canonical_ops_t;
    n_t tmp;
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS

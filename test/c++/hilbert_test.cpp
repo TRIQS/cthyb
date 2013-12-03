@@ -1,3 +1,4 @@
+#include <iostream>
 #include "./fundamental_operator_set.hpp"
 #include "./fock_state.hpp"
 #include "./complete_hilbert_space.hpp"
@@ -62,7 +63,7 @@ int main() {
 
   std::cout << std::endl << "Part IV: the state operator" << std::endl << std::endl;
 
-  fundamental_operator_set<const char *, int> fop;
+  fundamental_operator_set<std::string, int> fop;
   for (int i=0; i<5; ++i) fop.add_operator("up",i);
 
   complete_hilbert_space h_full(fop);
@@ -104,17 +105,18 @@ int main() {
   auto copy_op = opH2;
   std::cout << "new state is: " << copy_op(old_state2) << std::endl;
 
-  std::cout << "size of hilbert: " << sizeof(h_full) << std::endl;
-  std::cout << "size of op: " << sizeof(opH) << std::endl;
-  std::cout << "size of op: " << sizeof(opH2) << std::endl;
-  std::cout << "size of op: " << sizeof(copy_op) << std::endl;
+  // machine dependent apparently ...
+  std::cerr << "size of hilbert: " << sizeof(h_full) << std::endl;
+  std::cerr << "size of op: " << sizeof(opH) << std::endl;
+  std::cerr << "size of op: " << sizeof(opH2) << std::endl;
+  std::cerr << "size of op: " << sizeof(copy_op) << std::endl;
 
 
   std::cout << std::endl << "Part VII: partial hilbert space" << std::endl << std::endl;
   
   auto Cdag = c_dag("up",2);
 
-  fundamental_operator_set<const char *, int> fop2;
+  fundamental_operator_set<std::string, int> fop2;
   for (int i=0; i<5; ++i) fop2.add_operator("up",i);
   
   complete_hilbert_space h4(f4);
@@ -149,22 +151,25 @@ int main() {
   
   std::cout << std::endl << "Part VIII: quartic operators" << std::endl << std::endl;
 
-  fundamental_operator_set<const char *,int> FOPS;
+  {
+   fundamental_operator_set<std::string,int> FOPS;
   FOPS.add_operator("up",0);
   FOPS.add_operator("down",0);
   FOPS.add_operator("up",1);
   FOPS.add_operator("down",1);
   complete_hilbert_space HS(FOPS);
-   
-  triqs::utility::many_body_operator<double,const char*,int> quartic_op;
+  std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
+  
+  triqs::utility::many_body_operator<double,std::string,int> quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
      
   state<complete_hilbert_space, false> st1(HS);
-  st1(6) = 1.0; // 0110
+  st1(9) = 1.0; // 0110
   std::cout << "old state is: " << st1 << std::endl;
   std::cout << "operator is: " << quartic_op << std::endl;
   std::cout << "new state is: " << imperative_operator<complete_hilbert_space>(quartic_op,FOPS)(st1) << std::endl;
-    
+  }
+
   return 0;
 
 }

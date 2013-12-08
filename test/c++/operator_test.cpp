@@ -42,13 +42,9 @@ int main(int argc, char **argv)
     std::cout << "op_with_many_indices = " << op_with_many_indices << std::endl;
                             
     // Commutation relations
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-    std::vector<many_body_operator<double,int> > C = {c(1), c(2), c(3)};
-    std::vector<many_body_operator<double,int> > Cd = {c_dag(1), c_dag(2), c_dag(3)};
-#else
-    std::vector<many_body_operator<double,int> > C; C.push_back(c(1)); C.push_back(c(3));C.push_back(c(3));
-    std::vector<many_body_operator<double,int> > Cd; C.push_back(c_dag(1)); C.push_back(c_dag(3));C.push_back(c_dag(3));
-#endif    
+    std::vector<many_body_operator<double> > C = {c(1), c(2), c(3)};
+    std::vector<many_body_operator<double> > Cd = {c_dag(1), c_dag(2), c_dag(3)};
+    
     std::cout << std::endl << "Anticommutators:" << std::endl;
     for(auto const& cdi : Cd)
     for(auto const& ci : C){
@@ -93,10 +89,13 @@ int main(int argc, char **argv)
     oa & N3;
 
     boost::archive::text_iarchive ia(ss);
-    many_body_operator<double,std::string> new_N3;
+    many_body_operator<double> new_N3;
     ia & new_N3;
     
     std::cout << "New N^3 = " << new_N3 << std::endl; 
-    
+   
+    auto X = c_dag(1) * c_dag(2) * c(3) * c(4);
+    std::cout  << "X = "<< X<<std::endl; 
+    std::cout  << "dagger(X) = "<< dagger(X)<<std::endl; 
     return 0;
 }

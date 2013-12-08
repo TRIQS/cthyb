@@ -17,23 +17,17 @@ int main() {
   auto H = U * n_up * n_down;
 
   // put quantum numbers in a vector
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-  std::vector<many_body_operator<double,std::string>> qn_list {n_up, n_down};
-#else
-  std::vector<many_body_operator<double,std::string>> qn_list; qn_list.push_back(n_up); qn_list.push_back(n_down);
-#endif
-  //std::vector<many_body_operator<double,std::string, int>> qn_list {n_up+n_down};
-  //std::vector<many_body_operator<double,std::string, int>> qn_list;
+  auto qn_list = std::vector<many_body_operator<double>>{n_up, n_down};
 
   // chose the fundamental operator set
-  fundamental_operator_set<std::string> fops;
+  fundamental_operator_set fops;
   fops.add_operator("up");
   fops.add_operator("down");
 
   // Block structure
-  std::vector<block_desc_t<std::string>> block_structure;
-  block_structure.push_back({"up",{std::make_tuple("up")}});
-  block_structure.push_back({"down",{std::make_tuple("down")}});
+  std::vector<block_desc_t> block_structure;
+  block_structure.push_back({"up",{{"up"}}});
+  block_structure.push_back({"down",{{"down"}}});
 
   // divide the full Hilbert space
   sorted_spaces ss(H, qn_list, fops, block_structure);

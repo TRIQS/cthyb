@@ -58,18 +58,19 @@ int main(int argc, char* argv[]) {
   auto H = U*n("up")*n("down") + (-mu+h)*n("up") + (-mu-h)*n("down");
 
   // quantum numbers
-  std::vector<many_body_operator<double,std::string>> qn;
+  std::vector<many_body_operator<double>> qn;
 
   // basis of operators to use
-  fundamental_operator_set<std::string> fops;
+  fundamental_operator_set fops;
   fops.add_operator("up");
   fops.add_operator("down");
  
   // block structure of GF
-  std::vector<block_desc_t<std::string>> block_structure;
-  block_structure.push_back({"tot",
-      {std::make_tuple("up"),std::make_tuple("down")}}
-  );
+  std::vector<block_desc_t> block_structure {  {"tot", {{"up"}, {"down"} } }  };
+  //std::vector<block_desc_t> block_structure { block_desc_t{"tot", {{std::string("up")}, {std::string("down")}}}};
+  //block_structure.push_back({"tot",
+  //    {std::make_tuple("up"),std::make_tuple("down")}}
+  //);
   
   // Construct CTQMC solver
   ctqmc_krylov solver(p, H, qn, fops, block_structure);

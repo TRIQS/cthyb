@@ -59,10 +59,10 @@ struct lt_dbl {
   }
 };
 
-template<typename ...IndexType>
 struct block_desc_t {
     std::string name;
-    std::vector<std::tuple<IndexType...>> indices;
+    //std::vector<std::tuple<IndexType...>> indices;
+    std::vector<fundamental_operator_set::indices_t> indices;
 };
 
 /*
@@ -72,6 +72,8 @@ struct block_desc_t {
 */
 class sorted_spaces {
 
+ using indices_t = fundamental_operator_set::indices_t;
+ using one_indices_t = typename indices_t::value_type; // one element of the vector
   public:
 
   struct eigensystem_t {
@@ -82,17 +84,16 @@ class sorted_spaces {
       
   typedef double quantum_number_t;
 
-  template<typename ...IndexType>
-  sorted_spaces(utility::many_body_operator<double,IndexType...> const& h_,
-                std::vector<utility::many_body_operator<double,IndexType...>> const& qn_vector,
-                fundamental_operator_set<IndexType...> const& fops,
-                std::vector<block_desc_t<IndexType...>> const& block_structure):
+  sorted_spaces(utility::many_body_operator<double> const& h_,
+                std::vector<utility::many_body_operator<double>> const& qn_vector,
+                fundamental_operator_set const& fops,
+                std::vector<block_desc_t> const& block_structure):
     n_blocks(0), hamilt(h_, fops),
     creation_operators(fops.n_operators()), destruction_operators(fops.n_operators()),
     creation_map(fops.n_operators()), destruction_map(fops.n_operators()),
     creation_connection(fops.n_operators()), destruction_connection(fops.n_operators()) {
 
-    std::map<std::tuple<IndexType...>, std::pair<int,int>> indices_to_ints;
+    std::map<indices_t, std::pair<int,int>> indices_to_ints;
     for(int bl=0; bl<block_structure.size(); ++bl){
         auto const& indices = block_structure[bl].indices;
         for(int i=0; i<indices.size(); ++i){
@@ -151,8 +152,10 @@ class sorted_spaces {
 
       // get the operators and their index
       int n = ind_tuple.second;
-      auto create = tuple::apply(triqs::utility::c_dag<IndexType...>, ind_tuple.first);
-      auto destroy = tuple::apply(triqs::utility::c<IndexType...>, ind_tuple.first);
+      auto create = utility::many_body_operator<double>::make_canonical(true, ind_tuple.first);
+      auto destroy = utility::many_body_operator<double>::make_canonical(false, ind_tuple.first);
+      //auto create = tuple::apply(triqs::utility::c_dag, ind_tuple.first);
+      //auto destroy = tuple::apply(triqs::utility::c, ind_tuple.first);
 
       // construct their imperative counterpart
       imperative_operator<complete_hilbert_space> op_c_dag(create, fops);

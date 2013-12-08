@@ -59,16 +59,14 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   
   public:
       
-  template<typename ...IndexType>
-  using real_operator_t = many_body_operator<double, IndexType...>;
+  using real_operator_t = many_body_operator<double>;
         
-  template<typename ...IndexType>
   ctqmc_krylov(
       parameters p_in,
-      real_operator_t<IndexType...> const& h_loc,
-      std::vector<real_operator_t<IndexType...>> const& quantum_numbers,
-      fundamental_operator_set<IndexType...> const& fops,
-      std::vector<block_desc_t<IndexType...>> const& block_structure
+      real_operator_t const& h_loc,
+      std::vector<real_operator_t> const& quantum_numbers,
+      fundamental_operator_set const& fops,
+      std::vector<block_desc_t> const& block_structure
   ) :
       sosp(h_loc,quantum_numbers,fops,block_structure)
   {

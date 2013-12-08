@@ -13,7 +13,7 @@ int main() {
 
   std::cout << std::endl << "Part I: the fundamental_operator_set class" << std::endl << std::endl;
 
-  fundamental_operator_set<int,int> f1(std::vector<int>(2,4));
+  fundamental_operator_set f1(std::vector<int>(2,4));
   for (int i=0; i<2; ++i)
     for (int j=0; j<4; ++j)
       std::cout << "(" << i << "," << j << ") --> " << f1.index_to_n(i,j) << std::endl;
@@ -21,19 +21,19 @@ int main() {
   std::cout << "n operators = " << f1.n_operators() << std::endl;
 
   std::cout << std::endl;
-  fundamental_operator_set<int,int> f2;
+  fundamental_operator_set f2;
   f2 = f1;
   std::cout << "(1,1) --> " << f2.index_to_n(1,1) << std::endl;
 
   std::cout << std::endl;
-  fundamental_operator_set<int> f3;
+  fundamental_operator_set f3;
   for (int i=0; i<4; ++i) f3.add_operator(i);
   std::cout << "2 --> " << f3.index_to_n(2) << std::endl;
   std::cout << "dim = " << f3.dimension() << std::endl;
   std::cout << "n operators = " << f3.n_operators() << std::endl;
 
   std::cout << std::endl;
-  fundamental_operator_set<std::string,int> f4;
+  fundamental_operator_set f4;
   for (int i=0; i<2; ++i) f4.add_operator("up",i);
   for (int i=0; i<2; ++i) f4.add_operator("down",i);
   std::cout << "(down,0) --> " << f4.index_to_n("down",0) << std::endl;
@@ -63,7 +63,7 @@ int main() {
 
   std::cout << std::endl << "Part IV: the state operator" << std::endl << std::endl;
 
-  fundamental_operator_set<std::string, int> fop;
+  fundamental_operator_set fop;
   for (int i=0; i<5; ++i) fop.add_operator("up",i);
 
   complete_hilbert_space h_full(fop);
@@ -116,7 +116,7 @@ int main() {
   
   auto Cdag = c_dag("up",2);
 
-  fundamental_operator_set<std::string, int> fop2;
+  fundamental_operator_set fop2;
   for (int i=0; i<5; ++i) fop2.add_operator("up",i);
   
   complete_hilbert_space h4(f4);
@@ -152,7 +152,7 @@ int main() {
   std::cout << std::endl << "Part VIII: quartic operators" << std::endl << std::endl;
 
   {
-   fundamental_operator_set<std::string,int> FOPS;
+   fundamental_operator_set FOPS;
   FOPS.add_operator("up",0);
   FOPS.add_operator("down",0);
   FOPS.add_operator("up",1);
@@ -160,7 +160,7 @@ int main() {
   complete_hilbert_space HS(FOPS);
   std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
   
-  triqs::utility::many_body_operator<double,std::string,int> quartic_op;
+  triqs::utility::many_body_operator<double> quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
      
   state<complete_hilbert_space, false> st1(HS);

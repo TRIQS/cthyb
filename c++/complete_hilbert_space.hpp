@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_CTQMC_KRYLOV_HILBERT_SPACE
 #define TRIQS_CTQMC_KRYLOV_HILBERT_SPACE
 
@@ -39,8 +38,7 @@ class complete_hilbert_space {
   complete_hilbert_space(): dim(0) {}
 
   // construct full complete_hilbert_space for a given basis
-  template<typename ...T>
-  complete_hilbert_space(fundamental_operator_set<T...> const & fops): dim(fops.dimension()) {}
+  complete_hilbert_space(fundamental_operator_set const & fops): dim(fops.dimension()) {}
 
   // value
   complete_hilbert_space(complete_hilbert_space const &) = default;

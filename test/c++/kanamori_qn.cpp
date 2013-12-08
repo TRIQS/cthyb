@@ -56,25 +56,25 @@ int main(int argc, char* argv[]) {
   p["krylov_bs_prob_cutoff"] = .0;
   
   // basis of operators to use  
-  fundamental_operator_set<std::string,int> fops;
+  fundamental_operator_set fops;
   for(int o = 0; o < num_orbitals; ++o){
       fops.add_operator("up",o);
       fops.add_operator("down",o);
   }
 
   // block structure of GF
-  std::vector<block_desc_t<std::string,int>> block_structure;
+  std::vector<block_desc_t> block_structure;
   for(int o = 0; o < num_orbitals; ++o){
     std::stringstream bup; bup << "up-" << o;
-    block_structure.push_back({bup.str(),{std::make_tuple("up",o)}});
+    block_structure.push_back({bup.str(),{{"up",o}}});
   }
   for(int o = 0; o < num_orbitals; ++o){
     std::stringstream bdown; bdown << "down-" << o;
-    block_structure.push_back({bdown.str(),{std::make_tuple("down",o)}});
+    block_structure.push_back({bdown.str(),{{"down",o}}});
   }
     
   // Hamiltonian
-  many_body_operator<double,std::string,int> H;
+  many_body_operator<double> H;
   for(int o = 0; o < num_orbitals; ++o){
       H += -mu*(n("up",o) + n("down",o));
   }
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
   }
 
   // quantum numbers
-  std::vector<many_body_operator<double,std::string,int>> qn;
+  std::vector<many_body_operator<double>> qn;
   qn.resize(2);
   for(int o = 0; o < num_orbitals; ++o){
       qn[0] += n("up",o);

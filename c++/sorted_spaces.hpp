@@ -63,6 +63,10 @@ struct block_desc_t {
     std::string name;
     //std::vector<std::tuple<IndexType...>> indices;
     std::vector<fundamental_operator_set::indices_t> indices;
+    // for python interface only
+    void indices_push_back(std::string a, std::string b) {
+     indices.push_back({a, b});
+    }
 };
 
 /*

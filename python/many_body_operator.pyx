@@ -8,7 +8,7 @@ cdef extern from "<sstream>" namespace "std":
 
 cdef extern from "c++/operator.hpp" namespace "triqs::utility":
 
-    cdef cppclass many_body_operator[double,string,string]:
+    cdef cppclass many_body_operator[double]:
 
         many_body_operator() except +
 
@@ -32,10 +32,10 @@ cdef class Operator:
     """
     Many-body operator
     """
-    cdef many_body_operator[double,string,string] _c
+    cdef many_body_operator[double] _c
         
     def __cinit__(self):
-        self._c = many_body_operator[double,string,string]()
+        self._c = many_body_operator[double]()
     
     def __repr__(self):
         cdef stringstream ss

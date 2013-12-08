@@ -10,20 +10,22 @@ from pytriqs.gf.local import *
 
 include "many_body_operator.pyx"
 
-ctypedef many_body_operator[double,string,string] operator_c
+ctypedef many_body_operator[double] operator_c
 
 cdef extern from "c++/fundamental_operator_set.hpp" namespace "triqs::app::impurity_solvers::ctqmc_krylov":
-    cdef cppclass fundamental_operator_set[string,string]:
-        
+    cdef cppclass fundamental_operator_set:
         fundamental_operator_set() except +
         void add_operator(string, string)
         
 cdef extern from "c++/sorted_spaces.hpp" namespace "triqs::app::impurity_solvers::ctqmc_krylov":
-    cdef cppclass block_desc_t[string,string]:
-        
+    cdef cppclass variant_t "boost::variant<int,std::string,double>":
+        variant_t(string)
+
+    cdef cppclass block_desc_t:
         string name
-        vector[pair[string,string]] indices
-        
+        vector[vector[variant_t]] indices
+        void indices_push_back(string, string) 
+
         block_desc_t() except +
 
 cdef extern from "c++/ctqmc_krylov.hpp" namespace "triqs::app::impurity_solvers":
@@ -93,7 +95,7 @@ cdef class Solver:
             for i_name in block_indices:
                 index_name = str(i_name)    
                 fops.add_operator(block_name,index_name)
-                block.indices.push_back(pair[string,string](block_name,index_name))
+                block.indices_push_back(block_name,index_name) 
             
             block_stucture.push_back(block)
             self.block_indices_pack.append([range(block.indices.size()),range(block.indices.size())])

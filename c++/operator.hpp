@@ -258,7 +258,6 @@ namespace utility {
         new_m.reserve(m.size() - 2);
         std::copy(m.begin(), m.begin() + n - 1, std::back_inserter(new_m));
         std::copy(m.begin() + n + 1, m.end(), std::back_inserter(new_m));
-
         normalize_and_insert(new_m, coeff, target);
        }
        coeff = -coeff;

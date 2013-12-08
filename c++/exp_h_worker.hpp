@@ -30,7 +30,7 @@
 
 using namespace triqs::arrays;
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
 template<typename HamiltonianType, typename StateType>
 class exp_h_worker {
@@ -136,5 +136,5 @@ public:
 
 };
     
-}}}}
+}
 #endif

@@ -27,7 +27,7 @@
 #include "partial_hilbert_space.hpp"
 #include <triqs/utility/time_pt.hpp>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
  using triqs::utility::time_pt;
 
@@ -114,6 +114,6 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
   double beta_;
  };
 
-}}}}
+}
 #endif
 

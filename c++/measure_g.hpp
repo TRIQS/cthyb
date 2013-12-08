@@ -38,7 +38,7 @@ using triqs::gfs::gf_view;
 using triqs::gfs::block_index;
 using triqs::gfs::imtime;
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
 // Measure imaginary time Green's function (one block)
 struct measure_g : measure_z {
@@ -88,6 +88,5 @@ struct measure_g : measure_z {
   
 };
   
-}}}}
-
+}
 #endif 

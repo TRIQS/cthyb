@@ -7,7 +7,7 @@
 #include <triqs/gfs/imtime.hpp>
 #include <triqs/gfs/imfreq.hpp>
 
-using namespace triqs::app::impurity_solvers::ctqmc_krylov;
+using namespace cthyb_krylov;
 using triqs::utility::many_body_operator;
 using triqs::utility::c;
 using triqs::utility::c_dag;

@@ -28,7 +28,8 @@
 #include <boost/serialization/hash_collections_load_imp.hpp>
 #include <boost/serialization/hash_collections_save_imp.hpp>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
+
     
 struct dims_stats_collector {
     
@@ -92,6 +93,6 @@ public:
     
 };
 
-}}}}
+}
 
 #endif

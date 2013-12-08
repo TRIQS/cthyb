@@ -25,14 +25,14 @@
 #include <map>
 #include "./operator.hpp"
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
 // This class defines the list of operators that are used to describe
 // e.g. Fock states etc.
 
 class fundamental_operator_set {
- public :
- using indices_t = utility::many_body_operator<double>::indices_t;
+ public:
+ using indices_t = triqs::utility::many_body_operator<double>::indices_t;
 
  private:
  // the table index <-> n
@@ -69,11 +69,14 @@ class fundamental_operator_set {
  size_t n_operators() const { return map_index_n.size(); }
 
  // flatten (a,alpha) --> n
- template <typename... Indices> size_t index_to_n(Indices const&... ind) const { return index_tuple_to_linear({ind...}); }
+ template <typename... Indices> size_t index_to_n(Indices const&... ind) const {
+  return index_tuple_to_linear({ind...});
+ }
 
  // flatten (a,alpha) --> n
  template <typename... Indices> size_t index_tuple_to_linear(indices_t const& t) const { return map_index_n.at(t); }
- //template <typename... Indices> size_t index_tuple_to_linear(std::tuple<Indices...> const& t) const { return map_index_n.at(t); }
+ // template <typename... Indices> size_t index_tuple_to_linear(std::tuple<Indices...> const& t) const { return
+ // map_index_n.at(t); }
 
  // iterator on the tuples
  using const_iterator = typename map_t::const_iterator;
@@ -82,5 +85,5 @@ class fundamental_operator_set {
  const_iterator cbegin() const noexcept { return map_index_n.cbegin(); }
  const_iterator cend() const noexcept { return map_index_n.cend(); }
 };
-}}}}
+}
 #endif

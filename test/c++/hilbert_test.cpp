@@ -7,7 +7,7 @@
 #include "./imperative_operator.hpp"
 #include "./state.hpp"
 
-using namespace triqs::app::impurity_solvers::ctqmc_krylov;
+using namespace cthyb_krylov;
 
 int main() {
 

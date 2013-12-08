@@ -29,7 +29,7 @@
 #include "fundamental_operator_set.hpp"
 #include <vector>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
  // Reminder
  // fock state convention:
@@ -86,7 +86,7 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
    // constructor from a many_body_operator, a fundamental_operator_set and a map (UseMap = true)
     imperative_operator(
-      utility::many_body_operator<double> const & op,
+      triqs::utility::many_body_operator<double> const & op,
       fundamental_operator_set const & fops,
       hilbert_map_t hmap = hilbert_map_t() ){ 
 
@@ -322,5 +322,5 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
   };
 
-}}}}
+}
 #endif

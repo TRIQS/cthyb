@@ -35,7 +35,8 @@
 
 #include "fock_state.hpp"
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
+
 
 // Helper
 template<typename T>
@@ -337,5 +338,5 @@ void foreach (state<HilbertSpace, false> const & st, Lambda l) {
 } 
 
 
-}}}}
+}
 #endif

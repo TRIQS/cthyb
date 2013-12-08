@@ -28,7 +28,7 @@
 
 using triqs::arrays::blas::tridiag_worker;
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
     
 template <typename OperatorType, typename StateType>
     class krylov_worker {
@@ -150,5 +150,5 @@ template <typename OperatorType, typename StateType>
     
   };
 
-}}}}
+}
 #endif

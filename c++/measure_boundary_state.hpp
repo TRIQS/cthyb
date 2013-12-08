@@ -33,7 +33,7 @@
 
 #include "qmc_data.hpp"
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
 // Measure imaginary time Green's function (one block)
 struct measure_boundary_state {
@@ -97,6 +97,6 @@ struct measure_boundary_state {
   
 };
   
-}}}}
+}
 
 #endif

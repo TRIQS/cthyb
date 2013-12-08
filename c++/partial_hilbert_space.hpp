@@ -25,7 +25,7 @@
 #include "fock_state.hpp"
 #include <unordered_map>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
 class partial_hilbert_space {
 
@@ -76,5 +76,5 @@ class partial_hilbert_space {
   std::vector<long> fock_to_index_v;
 };
 
-}}}}
+}
 #endif

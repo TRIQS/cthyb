@@ -24,7 +24,7 @@
 #include <triqs/mc_tools/random_generator.hpp>
 #include <triqs/mc_tools/histograms.hpp>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
  typedef std::complex<double> mc_weight_type;
 
@@ -178,5 +178,5 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
  };
 
-}}}}
+}
 #endif

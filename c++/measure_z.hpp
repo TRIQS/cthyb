@@ -28,7 +28,8 @@
 #include <functional>
 #include <boost/mpi/collectives.hpp>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
+
 
 // Measure for the partition function and average sign
 struct measure_z {
@@ -52,6 +53,6 @@ struct measure_z {
   
 };
   
-}}}}
+}
 
 #endif 

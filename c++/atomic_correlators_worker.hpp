@@ -23,7 +23,7 @@
 #include "configuration.hpp"
 #include "sorted_spaces.hpp"
 #include "exp_h_worker.hpp"
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
  // A safe default if is_zero_state() isn't defined for StateType.
  template<typename StateType> bool is_zero_state(StateType const& st) { return false; }
@@ -128,6 +128,6 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
  //    ar & boost::make_nvp("oplist", oplist) & boost::make_nvp("beta",beta_) &  boost::make_nvp("boundary_block_state_ids",atomic_corr);
  //   }  
 
-}}}}
+}
 #endif
 

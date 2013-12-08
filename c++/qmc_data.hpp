@@ -28,7 +28,7 @@
 #include <triqs/h5.hpp>
 #include <triqs/utility/serialization.hpp>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
  /**
   * The data of the Monte carlo
@@ -146,6 +146,6 @@ namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_k
 
  };
 
-}}}}
+}
 #endif
 

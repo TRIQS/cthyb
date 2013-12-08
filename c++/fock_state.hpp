@@ -24,7 +24,10 @@
 #include <ostream>
 #include <functional>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
+
+ using namespace triqs;
+
 //#define QUICK_APPLY_OP
 
 #ifdef QUICK_APPLY_OP
@@ -111,14 +114,14 @@ typedef  uint64_t fock_state;
 
 #endif
 
-}}}}
+}
 
 #ifndef QUICK_APPLY_OP
 
 // hash function
 namespace std {
- template<> class hash<triqs::app::impurity_solvers::ctqmc_krylov::fock_state> :
-  public hash<triqs::app::impurity_solvers::ctqmc_krylov::fock_state::storage_t> {};
+ template<> class hash<cthyb_krylov::fock_state> :
+  public hash<cthyb_krylov::fock_state::storage_t> {};
 }
 #endif
 

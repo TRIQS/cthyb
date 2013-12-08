@@ -7,6 +7,7 @@
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/arrays/asserts.hpp>
 
+using namespace triqs;
 using triqs::arrays::vector;
 using triqs::arrays::matrix;
 using triqs::arrays::dotc;
@@ -26,7 +27,7 @@ vector<double> make_zero_state(vector<double> const& st)
 #include "./krylov_worker.hpp"
 #include "./exp_h_worker.hpp"
 
-using namespace triqs::app::impurity_solvers::ctqmc_krylov;
+using namespace cthyb_krylov;
 
 
 int main() {

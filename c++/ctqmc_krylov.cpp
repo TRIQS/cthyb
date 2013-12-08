@@ -31,7 +31,7 @@
 #include "measure_boundary_state.hpp"
 #endif
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
     
 void ctqmc_krylov::solve(utility::parameters p_in) {
 
@@ -125,4 +125,4 @@ void ctqmc_krylov::help() const
 }
 
 
-}}}}
+}

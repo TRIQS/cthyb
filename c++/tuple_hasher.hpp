@@ -26,7 +26,7 @@
 #include <boost/functional/hash.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 
-namespace triqs { namespace app { namespace impurity_solvers { namespace ctqmc_krylov {
+namespace cthyb_krylov {
 
 // because there is no std hash for things like tuple<int,int>
 template<typename TupleType>
@@ -47,5 +47,5 @@ struct tuple_hasher: std::unary_function<TupleType, size_t> {
 
 };
 
-}}}}
+}
 #endif

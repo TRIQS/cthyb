@@ -12,12 +12,12 @@ include "many_body_operator.pyx"
 
 ctypedef many_body_operator[double] operator_c
 
-cdef extern from "c++/fundamental_operator_set.hpp" namespace "triqs::app::impurity_solvers::ctqmc_krylov":
+cdef extern from "c++/fundamental_operator_set.hpp" namespace "cthyb_krylov":
     cdef cppclass fundamental_operator_set:
         fundamental_operator_set() except +
         void add_operator(string, string)
         
-cdef extern from "c++/sorted_spaces.hpp" namespace "triqs::app::impurity_solvers::ctqmc_krylov":
+cdef extern from "c++/sorted_spaces.hpp" namespace "cthyb_krylov":
     cdef cppclass variant_t "boost::variant<int,std::string>":
         variant_t(string)
 
@@ -28,9 +28,9 @@ cdef extern from "c++/sorted_spaces.hpp" namespace "triqs::app::impurity_solvers
 
         block_desc_t() except +
 
-cdef extern from "c++/ctqmc_krylov.hpp" namespace "triqs::app::impurity_solvers":
+cdef extern from "c++/ctqmc_krylov.hpp" namespace "cthyb_krylov":
 
-    cdef cppclass solver_c "triqs::app::impurity_solvers::ctqmc_krylov::ctqmc_krylov":
+    cdef cppclass solver_c "cthyb_krylov::ctqmc_krylov":
         
       solver_c(parameters p,
               const operator_c& h_loc,

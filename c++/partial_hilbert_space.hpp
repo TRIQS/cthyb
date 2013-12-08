@@ -18,63 +18,50 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef TRIQS_CTQMC_KRYLOV_HILBERT_SPACE_QN
-#define TRIQS_CTQMC_KRYLOV_HILBERT_SPACE_QN
+#pragma once
 
 #include "fock_state.hpp"
-#include <unordered_map>
+#include <boost/container/flat_map.hpp>
 
 namespace cthyb_krylov {
 
+// a subhilbert space, as a set of basis Fock states.
+// contains 2 functions to switch from the Fock state to its number in this set
 class partial_hilbert_space {
 
-  public:
+ public:
+ partial_hilbert_space(int index) : index(index) {}
 
-  // constructor
-  partial_hilbert_space(size_t index) : index(index) {}
+ // add a fock state to the hilbert space basis
+ void add_fock_state(fock_state f) {
+  int ind = fock_states.size();
+  fock_states.push_back(f);
+  fock_to_index.insert(std::make_pair(f, ind));
+ }
 
-  int n_bits (uint64_t f) const{ return (f * 0x200040008001ULL & 0x111111111111111ULL) % 0xf; }
+ // dimension of the sub hilbert space
+ int dimension() const { return fock_states.size(); }
 
-  // add a fock state to the hilbert space basis
-  void add_basis_fock(fock_state const & f) {
-    size_t ind = fock_states.size();
-    fock_states.push_back(f);
-    fock_to_index.insert(std::make_pair(f, ind));
-    fock_to_index_v.resize(f+1,-1);
-    fock_to_index_v[f] = ind;
+ // find the index of a given state
+ int get_state_index(fock_state f) const { return fock_to_index.find(f)->second; }
 
-    //if (dimension() && (n_bits(*fock_states.begin()) != n_bits(f)))  TRIQS_RUNTIME_ERROR << "oops "<< f ;
-  }
+ // the state for a given index
+ fock_state get_fock_state(int i) const { return fock_states[i]; }
 
-  // return dimension of the sub hilbert space
-  size_t dimension() const { return fock_states.size(); }
+ int get_index() const {
+  return index;
+ };
 
-  // find the index of a given state
-  size_t get_state_index(fock_state f) const { 
-   
-   //std::cout << fock_to_index_v[f] << " "<< fock_to_index.find(f)->second<<std::endl;
-   return fock_to_index_v[f];
-   //return fock_to_index.find(f)->second; 
-  }
+ private:
+ // index of a partial space
+ int index;
 
-  // return the state for a given index
-  fock_state get_fock_state(size_t i) const { return fock_states[i]; }
-  
-  size_t get_index() const { return index; };
+ // the list of all fock states
+ std::vector<fock_state> fock_states;
 
-  private:
-      
-  // Automatically assigned index of a partial space
-  size_t index;
-      
-  // the list of all fock states
-  std::vector<fock_state> fock_states;
-
-  // a map to quickly find the index of a state
-  std::unordered_map<fock_state, size_t> fock_to_index;
-  std::vector<long> fock_to_index_v;
+ // reverse a map to quickly find the index of a state
+ // the boost flat_map is implemented as an ordered vector,
+ // hence is it slow to insert (we don't care) but fast to look up (we do it a lot)
+ boost::container::flat_map<fock_state, int> fock_to_index;
 };
-
 }
-#endif

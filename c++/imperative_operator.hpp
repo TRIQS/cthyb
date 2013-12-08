@@ -28,6 +28,7 @@
 #include "fock_state.hpp"
 #include "fundamental_operator_set.hpp"
 #include <vector>
+#include <unordered_map>
 
 namespace cthyb_krylov {
 
@@ -104,8 +105,8 @@ namespace cthyb_krylov {
       std::vector<int> dag, ndag;
       uint64_t d_mask=0, dag_mask=0;
       for (auto const & canonical_op : term.monomial ) { 
-       (canonical_op.dagger ? dag : ndag).push_back(fops.index_tuple_to_linear(canonical_op.indices));
-       (canonical_op.dagger ? dag_mask : d_mask) |= ( uint64_t(1) <<  fops.index_tuple_to_linear(canonical_op.indices));
+       (canonical_op.dagger ? dag : ndag).push_back(fops[canonical_op.indices]);
+       (canonical_op.dagger ? dag_mask : d_mask) |= ( uint64_t(1) <<  fops[canonical_op.indices]);
       }
       auto compute_count_mask = [](std::vector<int> const & d) {
        //std::cout  << " cpmut mask "<< std::endl ;

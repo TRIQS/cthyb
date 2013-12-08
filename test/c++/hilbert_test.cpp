@@ -16,19 +16,19 @@ int main() {
   fundamental_operator_set f1(std::vector<int>(2,4));
   for (int i=0; i<2; ++i)
     for (int j=0; j<4; ++j)
-      std::cout << "(" << i << "," << j << ") --> " << f1.index_to_n(i,j) << std::endl;
+      std::cout << "(" << i << "," << j << ") --> " << f1[{i,j}] << std::endl;
   std::cout << "dim = " << f1.dimension() << std::endl;
   std::cout << "n operators = " << f1.n_operators() << std::endl;
 
   std::cout << std::endl;
   fundamental_operator_set f2;
   f2 = f1;
-  std::cout << "(1,1) --> " << f2.index_to_n(1,1) << std::endl;
+  std::cout << "(1,1) --> " << f2[{1,1}] << std::endl;
 
   std::cout << std::endl;
   fundamental_operator_set f3;
   for (int i=0; i<4; ++i) f3.add_operator(i);
-  std::cout << "2 --> " << f3.index_to_n(2) << std::endl;
+  std::cout << "2 --> " << f3[{2}] << std::endl;
   std::cout << "dim = " << f3.dimension() << std::endl;
   std::cout << "n operators = " << f3.n_operators() << std::endl;
 
@@ -36,7 +36,7 @@ int main() {
   fundamental_operator_set f4;
   for (int i=0; i<2; ++i) f4.add_operator("up",i);
   for (int i=0; i<2; ++i) f4.add_operator("down",i);
-  std::cout << "(down,0) --> " << f4.index_to_n("down",0) << std::endl;
+  std::cout << "(down,0) --> " << f4[{"down",0}] << std::endl;
   std::cout << "dim = " << f4.dimension() << std::endl;
   std::cout << "n operators = " << f4.n_operators() << std::endl;
   
@@ -122,16 +122,16 @@ int main() {
   complete_hilbert_space h4(f4);
   
   partial_hilbert_space phs0(0);
-  phs0.add_basis_fock(h4.get_fock_state(0)); // 000
-  phs0.add_basis_fock(h4.get_fock_state(1)); // 001
-  phs0.add_basis_fock(h4.get_fock_state(2)); // 010
-  phs0.add_basis_fock(h4.get_fock_state(3)); // 011
+  phs0.add_fock_state(h4.get_fock_state(0)); // 000
+  phs0.add_fock_state(h4.get_fock_state(1)); // 001
+  phs0.add_fock_state(h4.get_fock_state(2)); // 010
+  phs0.add_fock_state(h4.get_fock_state(3)); // 011
 
   partial_hilbert_space phs1(1);
-  phs1.add_basis_fock(h4.get_fock_state(4)); // 100
-  phs1.add_basis_fock(h4.get_fock_state(5)); // 101
-  phs1.add_basis_fock(h4.get_fock_state(6)); // 110
-  phs1.add_basis_fock(h4.get_fock_state(7)); // 111
+  phs1.add_fock_state(h4.get_fock_state(4)); // 100
+  phs1.add_fock_state(h4.get_fock_state(5)); // 101
+  phs1.add_fock_state(h4.get_fock_state(6)); // 110
+  phs1.add_fock_state(h4.get_fock_state(7)); // 111
 
   std::unordered_map<const partial_hilbert_space*, const partial_hilbert_space*> Cdagmap;
   Cdagmap[&phs0] = &phs1;

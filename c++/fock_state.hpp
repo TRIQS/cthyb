@@ -28,7 +28,7 @@ namespace cthyb_krylov {
 
  using namespace triqs;
 
-//#define QUICK_APPLY_OP
+#define QUICK_APPLY_OP
 
 #ifdef QUICK_APPLY_OP
 

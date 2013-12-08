@@ -41,7 +41,7 @@ class exp_h_worker {
     krylov_worker<HamiltonianType,StateType> kw;
     sorted_spaces sosp;
     
-    std::size_t small_matrix_size;
+    int small_matrix_size;
     
     // Temporary matrices 
     matrix<scalar_type> matrix_exp;
@@ -53,7 +53,7 @@ class exp_h_worker {
     
 public:
     
-    exp_h_worker(HamiltonianType const& H, sorted_spaces const& sosp, double gs_energy_convergence, std::size_t small_matrix_size) :
+    exp_h_worker(HamiltonianType const& H, sorted_spaces const& sosp, double gs_energy_convergence, int small_matrix_size) :
         kw(H,gs_energy_convergence),
         sosp(sosp),
         small_matrix_size(small_matrix_size)
@@ -61,8 +61,8 @@ public:
         ,stats(DIMS_STATS_FILE)
 #endif
     {
-        std::size_t max_subspace_dim = 0;
-        for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp)
+        int  max_subspace_dim = 0;
+        for(int nsp = 0; nsp < sosp.n_subspaces(); ++nsp)
             max_subspace_dim = std::max(max_subspace_dim,sosp.subspace(nsp).dimension());
 
         small_matrix_size = std::min(small_matrix_size,max_subspace_dim);

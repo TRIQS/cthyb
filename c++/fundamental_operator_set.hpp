@@ -20,7 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
 #define TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
-#include <utility>
+//#include <utility>
 #include <vector>
 #include <map>
 #include "./operator.hpp"
@@ -58,28 +58,27 @@ class fundamental_operator_set {
   map_t m;
   int i = 0;
   for (auto const& p : map_index_n) m.insert({p.first, i++});
-  std::swap(m, map_index_n); // if change back to unordered_map (speed ???), copy here explicitely back
-                             // but use a map for m (to reorder)
+  std::swap(m, map_index_n);
  }
 
  // return the dimension of the space spanned by the operators
- size_t dimension() const { return 1ull << n_operators(); } // 2^ n_ops
+ int dimension() const { return 1ull << n_operators(); } // 2^ n_ops
 
  // return the number of operators
- size_t n_operators() const { return map_index_n.size(); }
+ int n_operators() const { return map_index_n.size(); }
 
  // flatten (a,alpha) --> n
- template <typename... Indices> size_t index_to_n(Indices const&... ind) const {
-  return index_tuple_to_linear({ind...});
- }
-
- // flatten (a,alpha) --> n
- template <typename... Indices> size_t index_tuple_to_linear(indices_t const& t) const { return map_index_n.at(t); }
- // template <typename... Indices> size_t index_tuple_to_linear(std::tuple<Indices...> const& t) const { return
- // map_index_n.at(t); }
+ int operator[](indices_t const& t) const { return map_index_n.at(t); }
 
  // iterator on the tuples
- using const_iterator = typename map_t::const_iterator;
+ // for (auto & x : fops) { x.linear_index is linear_index, while x.index is the C multi-index.
+ struct _cdress {
+  int linear_index;
+  indices_t const& index;
+  _cdress(typename map_t::const_iterator _it) : index(_it->first), linear_index(_it->second) {}
+ };
+ using const_iterator = triqs::utility::dressed_iterator<typename map_t::const_iterator, _cdress>;
+
  const_iterator begin() const noexcept { return map_index_n.begin(); }
  const_iterator end() const noexcept { return map_index_n.end(); }
  const_iterator cbegin() const noexcept { return map_index_n.cbegin(); }

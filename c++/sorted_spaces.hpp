@@ -70,7 +70,7 @@ class sorted_spaces {
   matrix<double> unitary_matrix; // H = U * \Lambda * U^+
  };
 
- using quantum_number_t=double ;
+ using quantum_number_t = double;
 
  sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
                std::vector<triqs::utility::many_body_operator<double>> const& qn_vector, fundamental_operator_set const& fops,
@@ -93,8 +93,8 @@ class sorted_spaces {
   }
 
   // create the map pair<int,int> --> int identifying operators
-  for (auto const& ind_tuple : fops) {
-   int_pair_to_n[indices_to_ints.at(ind_tuple.first)] = ind_tuple.second;
+  for (auto x : fops) {
+   int_pair_to_n[indices_to_ints.at(x.index)] = x.linear_index;
   }
 
   // the full Hilbert space
@@ -130,7 +130,7 @@ class sorted_spaces {
    }
 
    // add fock state to partial Hilbert space
-   hilbert_spaces[map_qn_n[qn]]->add_basis_fock(fs);
+   hilbert_spaces[map_qn_n[qn]]->add_fock_state(fs);
   }
 
   /*
@@ -139,12 +139,12 @@ class sorted_spaces {
     space with a creation (destruction) operator, in which other
     partial Hilbert space we end up.
   */
-  for (auto const& ind_tuple : fops) {
+  for (auto const& x : fops) {
 
    // get the operators and their index
-   int n = ind_tuple.second;
-   auto create = triqs::utility::many_body_operator<double>::make_canonical(true, ind_tuple.first);
-   auto destroy = triqs::utility::many_body_operator<double>::make_canonical(false, ind_tuple.first);
+   int n = x.linear_index;
+   auto create = triqs::utility::many_body_operator<double>::make_canonical(true, x.index);
+   auto destroy = triqs::utility::many_body_operator<double>::make_canonical(false, x.index);
    // auto create = tuple::apply(triqs::triqs::utility::c_dag, ind_tuple.first);
    // auto destroy = tuple::apply(triqs::triqs::utility::c, ind_tuple.first);
 
@@ -254,7 +254,7 @@ class sorted_spaces {
  double get_gs_energy() const { return gs_energy; }
 
  private:
- using hilbert_map_t=std::unordered_map<const partial_hilbert_space*, const partial_hilbert_space*> ;
+ using hilbert_map_t = std::unordered_map<const partial_hilbert_space*, const partial_hilbert_space*>;
 
  // Helper function to get quantum numbers
  std::vector<quantum_number_t> get_quantum_numbers(state<complete_hilbert_space> const& s) {

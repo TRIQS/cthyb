@@ -37,8 +37,8 @@ int main(int argc, char **argv)
     std::cout << "op_with_no_indices = " << op_with_no_indices << std::endl;
     
     // Operators with many indices
-    auto op_with_many_indices = c(1,0.2,"a",true,-2) +
-                            c_dag(3,0.15,"b",false,-5);
+    auto op_with_many_indices = c(1,2,"a",true,-2) +
+                            c_dag(3,15,"b",false,-5);
     std::cout << "op_with_many_indices = " << op_with_many_indices << std::endl;
                             
     // Commutation relations

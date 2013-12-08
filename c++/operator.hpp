@@ -18,9 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_CTQMC_KRYLOV_OPERATOR_HPP
-#define TRIQS_CTQMC_KRYLOV_OPERATOR_HPP
-
+#pragma once
 #include <triqs/utility/dressed_iterator.hpp>
 
 #include <ostream>
@@ -50,16 +48,14 @@ namespace utility {
   static constexpr scalar_t threshold_coeff = 100 * std::numeric_limits<scalar_t>::epsilon();
 
   public:
-
   /// The indices of the C, C^+ operators are a vector of int/string
-  using indices_t = std::vector<boost::variant<int, std::string, double>>;
+  using indices_t = std::vector<boost::variant<int, std::string>>;
 
   private:
   // The canonical operator : a dagger and some indices
   struct canonical_ops_t {
    bool dagger;
    indices_t indices;
-   
    // Order : dagger < non dagger, and then indices
    friend bool operator<(canonical_ops_t const& a, canonical_ops_t const& b) {
     if (a.dagger != b.dagger) return (a.dagger > b.dagger);
@@ -94,7 +90,7 @@ namespace utility {
   many_body_operator(many_body_operator const&) = default;
   many_body_operator(many_body_operator&&) = default;
   many_body_operator& operator=(many_body_operator const&) = default;
-  many_body_operator& operator=(many_body_operator &&) = default;
+  many_body_operator& operator=(many_body_operator&&) = default;
 
   template <typename S> many_body_operator(many_body_operator<S> const& x) { *this = x; }
 
@@ -148,7 +144,7 @@ namespace utility {
    return *this;
   }
 
-  many_body_operator& operator-=(scalar_t alpha) { return operator += (-alpha); }
+  many_body_operator& operator-=(scalar_t alpha) { return operator+=(-alpha); }
 
   friend many_body_operator operator-(scalar_t alpha, many_body_operator const& op) { return -op + alpha; }
 
@@ -195,10 +191,10 @@ namespace utility {
      // prepare an unnormalized product
      monomial_t product_m;
      product_m.reserve(m.first.size() + op_m.first.size());
-     for (auto const & op : m.first) product_m.push_back(op);
-     for (auto const & op : op_m.first) product_m.push_back(op);
-     //std::copy(m.first.begin(), m.first.end(), std::back_inserter(product_m));
-     //std::copy(op_m.first.begin(), op_m.first.end(), std::back_inserter(product_m));
+     for (auto const& op : m.first) product_m.push_back(op);
+     for (auto const& op : op_m.first) product_m.push_back(op);
+     // std::copy(m.first.begin(), m.first.end(), std::back_inserter(product_m));
+     // std::copy(op_m.first.begin(), op_m.first.end(), std::back_inserter(product_m));
      normalize_and_insert(product_m, m.second * op_m.second, tmp_map);
     }
    std::swap(monomials, tmp_map);
@@ -283,21 +279,21 @@ namespace utility {
    if (std::abs(it->second) < threshold_coeff) m.erase(it);
   }
 
-  struct print_visitor : public boost::static_visitor<> { 
-    std::ostream & os;
-    print_visitor(std::ostream & os_):os(os_){}
-    template<typename T> void operator()(T const & x) const { os << x;}
+  struct print_visitor : public boost::static_visitor<> {
+   std::ostream& os;
+   print_visitor(std::ostream& os_) : os(os_) {}
+   template <typename T> void operator()(T const& x) const { os << x; }
   };
 
   friend std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
    if (op.dagger) os << "^+";
    os << "(";
-   int u =0;
+   int u = 0;
    for (auto const& i : op.indices) {
     if (u++) os << ",";
     boost::apply_visitor(print_visitor{os}, i);
    }
-   return os<<")";
+   return os << ")";
   }
 
   friend std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
@@ -324,7 +320,7 @@ namespace utility {
  };
 
  // ---- factories --------------
- 
+
  // Free functions to make creation/annihilation operators
  template <typename... IndexTypes> many_body_operator<double> c(IndexTypes... indices) {
   return many_body_operator<double>::make_canonical(false, {indices...});
@@ -339,5 +335,3 @@ namespace utility {
  }
 }
 }
-
-#endif

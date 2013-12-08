@@ -18,7 +18,7 @@ cdef extern from "c++/fundamental_operator_set.hpp" namespace "triqs::app::impur
         void add_operator(string, string)
         
 cdef extern from "c++/sorted_spaces.hpp" namespace "triqs::app::impurity_solvers::ctqmc_krylov":
-    cdef cppclass variant_t "boost::variant<int,std::string,double>":
+    cdef cppclass variant_t "boost::variant<int,std::string>":
         variant_t(string)
 
     cdef cppclass block_desc_t:

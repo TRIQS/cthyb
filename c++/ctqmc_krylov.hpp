@@ -75,21 +75,21 @@ class ctqmc_krylov {
 
    auto shape = make_shape(block.indices.size(), block.indices.size());
 
-   deltat_blocks.push_back(make_gf<imtime>(params["beta"], Fermion, shape, params["n_tau_delta"], half_bins));
-   gt_blocks.push_back(make_gf<imtime>(params["beta"], Fermion, shape, params["n_tau_g"], half_bins));
+   deltat_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_delta"], half_bins}, shape});
+   gt_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_g"], half_bins}, shape});
   }
 
-  deltat = make_gf<block_index, gf<imtime>>(block_names, deltat_blocks);
-  gt = make_gf<block_index, gf<imtime>>(block_names, gt_blocks);
+  deltat = make_block_gf(block_names, deltat_blocks);
+  gt = make_block_gf(block_names, gt_blocks);
  }
 
  void solve(parameters p_in);
 
  // input containers
- gf_view<block_index, gf<imtime>> deltat_view() const { return deltat; }
+ gf_view<block_index, gf<imtime>> deltat_view() { return deltat; }
 
  // imaginary-time measurements
- gf_view<block_index, gf<imtime>> gt_view() const { return gt; }
+ gf_view<block_index, gf<imtime>> gt_view() { return gt; }
 
  // specify all required and optional parameters and generate help from them
  parameter_defaults constructor_defaults() const;

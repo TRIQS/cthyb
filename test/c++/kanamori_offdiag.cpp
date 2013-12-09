@@ -124,20 +124,20 @@ int main(int argc, char* argv[]) {
   ctqmc_krylov solver(p, H, qn, fops, block_structure);
   
   // Set hybridization function
-  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(num_orbitals,num_orbitals));
+  auto delta_w = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
     
   auto w_mesh = delta_w.mesh();
   for(std::size_t w_index = 0; w_index < w_mesh.size(); ++w_index){
       auto iw = w_mesh.index_to_point(w_index);
       
-      auto m = delta_w(w_index);
+      auto m = delta_w[w_index];
       for(int j=0; j < epsilon.size(); ++j){
           for(int o = 0; o < num_orbitals; ++o) m(o,o) = 1.0/(iw - epsilon[j]);
           m = _conj(V[j]) * m * V[j];
       }
   }
-  solver.deltat_view()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
-  solver.deltat_view()[1] = triqs::gfs::lazy_inverse_fourier(delta_w);
+  solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
+  solver.deltat_view()[1] = triqs::gfs::inverse_fourier(delta_w);
   
   // Solve!
   solver.solve(p);

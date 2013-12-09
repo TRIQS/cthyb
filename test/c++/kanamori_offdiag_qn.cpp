@@ -129,10 +129,10 @@ int main(int argc, char* argv[]) {
   ctqmc_krylov solver(p, H, qn, fops, block_structure);
   
   // Set hybridization function
-  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(num_orbitals,num_orbitals));
+  auto delta_w = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
   
   triqs::clef::placeholder<0> om_;
-  auto term = make_gf<imfreq>(beta, Fermion, make_shape(num_orbitals,num_orbitals));  
+  auto term = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
   for(int j=0; j < epsilon.size(); ++j){
       term(om_) << 1.0/(om_ - epsilon[j]);
       
@@ -150,8 +150,8 @@ int main(int argc, char* argv[]) {
       delta_w = delta_w + term;
   }
   
-  solver.deltat_view()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
-  solver.deltat_view()[1] = triqs::gfs::lazy_inverse_fourier(delta_w);
+  solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
+  solver.deltat_view()[1] = triqs::gfs::inverse_fourier(delta_w);
   
   // Solve!
   solver.solve(p);

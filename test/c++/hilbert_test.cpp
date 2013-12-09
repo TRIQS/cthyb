@@ -1,4 +1,3 @@
-#include <iostream>
 #include "./fundamental_operator_set.hpp"
 #include "./fock_state.hpp"
 #include "./complete_hilbert_space.hpp"
@@ -6,6 +5,7 @@
 #include "./operator.hpp"
 #include "./imperative_operator.hpp"
 #include "./state.hpp"
+#include <iostream>
 
 using namespace cthyb_krylov;
 

@@ -75,9 +75,9 @@ int main(int argc, char* argv[]) {
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(1,1));
+  auto delta_w = gf<imfreq>{{beta, Fermion}, {1,1}};
   delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
-  for (int bl=0; bl<2; ++bl) solver.deltat_view()[bl] = triqs::gfs::lazy_inverse_fourier(delta_w);
+  for (int bl=0; bl<2; ++bl) solver.deltat_view()[bl] = triqs::gfs::inverse_fourier(delta_w);
   
   // Solve!
   solver.solve(p);

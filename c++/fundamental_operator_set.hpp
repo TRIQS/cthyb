@@ -20,10 +20,9 @@
  ******************************************************************************/
 #ifndef TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
 #define TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
-//#include <utility>
+#include "./operator.hpp"
 #include <vector>
 #include <map>
-#include "./operator.hpp"
 
 namespace cthyb_krylov {
 

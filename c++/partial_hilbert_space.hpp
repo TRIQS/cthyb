@@ -62,6 +62,7 @@ class partial_hilbert_space {
  // reverse a map to quickly find the index of a state
  // the boost flat_map is implemented as an ordered vector,
  // hence is it slow to insert (we don't care) but fast to look up (we do it a lot)
- boost::container::flat_map<fock_state, int> fock_to_index;
+ std::map<fock_state, int> fock_to_index;
+ //boost::container::flat_map<fock_state, int> fock_to_index;
 };
 }

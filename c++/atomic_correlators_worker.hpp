@@ -100,21 +100,44 @@ namespace cthyb_krylov {
    // do the first exp
    double dtau = ( _begin == _end ? config->beta() : double(_begin->first)); 
    state_t psi = exp_h(psi0, dtau);
-     
+   
+  /* 
+   * // NEED TO CHANGE pointer to number with -1 when nothing....
+   // first check of structural cancellation
+   std::vector<int> blo(sosp.n_subspaces());
+   auto n_blocks = sosp.n_subspaces();
+   for (int u = 0; u < n_blocks; ++u) blo[u]=u;
+
    for (auto it = _begin; it != _end;) { // do nothing if no operator
+    auto const & op = sosp.get_fundamental_operator (it->second.dagger, it->second.block_index, it->second.inner_index);
+    bool all_zero = true;
+    for (int u = 0; u < n_blocks; ++u) {
+     if (blo[u] != -1) {
+      all_zero = false;
+      blo[u] = op.get_hilbert_connection(blo[u]);
+     }
+    }
+    if (all_zero) return 0; 
+   }  
+*/
+
+   int cc =0;
+   for (auto it = _begin; it != _end; cc++) { // do nothing if no operator
 
       // apply operator 
       auto const & op = sosp.get_fundamental_operator (it->second.dagger, it->second.block_index, it->second.inner_index);
       psi = op(psi);
     
       // psi is already zero, makes no sense to proceed
-      if(is_zero_state(psi)) return 0;
+      if(is_zero_state(psi)) { return 0;}
+      //if(is_zero_state(psi)) { if (cc !=0) std::cout << "Cancel after : "<< cc << std::endl ; return 0;}
     
       // apply exponential. 
       double tau1 = double(it->first);
       ++it; 
       dtau = (it == _end ? config->beta() : double(it->first)) - tau1;  assert(dtau >0);        
-      psi = exp_h (psi, dtau);
+      exp_h.apply (psi, dtau);
+      //psi = exp_h (psi, dtau);
     }
 
     return dotc(psi0,psi);

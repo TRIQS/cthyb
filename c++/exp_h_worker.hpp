@@ -24,8 +24,12 @@
 #include "krylov_worker.hpp"
 #include "sorted_spaces.hpp"
 
+//#define KRYLOV_STATS
+
 #ifdef KRYLOV_STATS
 #include "statistics.hpp"
+#define DIMS_STATS_FILE "krylov_stat.txt"
+#define BOUNDARY_STATS_FILE "bs_stat.txt"
 #endif
 
 using namespace triqs::arrays;
@@ -46,7 +50,9 @@ class exp_h_worker {
     // Temporary matrices 
     matrix<scalar_type> matrix_exp;
     matrix<scalar_type> krylov_exp;
-    
+	triqs::arrays::vector<scalar_type> v2;
+
+
 #ifdef KRYLOV_STATS
     dims_stats_collector stats;
 #endif
@@ -69,6 +75,7 @@ public:
         
         matrix_exp.resize(small_matrix_size,small_matrix_size);
         krylov_exp.resize(max_subspace_dim,max_subspace_dim);
+	v2.resize(max_subspace_dim);
     }
 
     exp_h_worker(exp_h_worker const&) = default;
@@ -78,8 +85,8 @@ public:
     {
         auto const& space = initial_state.get_hilbert();
         std::size_t space_dim = space.dimension();
-        
-        if(space_dim > small_matrix_size){
+      
+             if(space_dim > small_matrix_size){
         
             scalar_type initial_state_norm  = std::sqrt(dotc(initial_state,initial_state));
             kw(initial_state/initial_state_norm);
@@ -112,21 +119,51 @@ public:
             auto const& unitary_matrix = eigensystem.unitary_matrix;
         
             auto all = range(0,space_dim);
-            
+            StateType st = make_zero_state(initial_state);
+           
+//#define NOT_OPTIMAL 
+#ifdef NOT_OPTIMAL 
             matrix_exp(all,all) = 0;
             for(std::size_t n = 0; n < space_dim; ++n)
                 matrix_exp(n,n) = exp(-dtau*(eigensystem.eigenvalues(n)));
         
             matrix_exp(all,all) = unitary_matrix * matrix_exp(all,all) * unitary_matrix.transpose();
 
-            StateType st = make_zero_state(initial_state);
             // FIXME: not supposed to work with the map-based version of state...
-            st.amplitudes() = matrix_exp(all,all) * initial_state.amplitudes();
-        
+            
+	    st.amplitudes() = matrix_exp(all,all) * initial_state.amplitudes();
+#else
+	    //v2(all) = unitary_matrix.transpose() * initial_state.amplitudes();
+	    triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(),  initial_state.amplitudes(), 0.0, v2(all)) ;
+            for(int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau* eigensystem.eigenvalues(n));
+            //st.amplitudes() =  unitary_matrix * v2(all);		
+	    triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0,  st.amplitudes()) ;
+#endif
+
             return st;
         }
     }
-    
+        void apply(state_type & initial_state, double dtau)
+    {
+        auto const& space = initial_state.get_hilbert();
+        std::size_t space_dim = space.dimension();
+      
+            auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
+            auto const& eigenvalues = eigensystem.eigenvalues;
+            auto const& unitary_matrix = eigensystem.unitary_matrix;
+        
+            auto all = range(0,space_dim);
+            //StateType st = make_zero_state(initial_state);
+           
+	    //v2(all) = unitary_matrix.transpose() * initial_state.amplitudes();
+	    triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(),  initial_state.amplitudes(), 0.0, v2(all)) ;
+            for(int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau* eigensystem.eigenvalues(n));
+            //st.amplitudes() =  unitary_matrix * v2(all);		
+	    triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0,  initial_state.amplitudes()) ;
+
+            //return st;
+    }
+
 #ifdef KRYLOV_STATS
     ~exp_h_worker()
     {        

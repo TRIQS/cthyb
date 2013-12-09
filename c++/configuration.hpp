@@ -44,6 +44,7 @@ namespace cthyb_krylov {
 
   // a map associating an operator to an imaginary time
   typedef std::map<time_pt, op_desc, std::greater<time_pt>> oplist_t;
+  //typedef boost::container::flat_map<time_pt, op_desc, std::greater<time_pt>> oplist_t;
   oplist_t oplist;
 
   // The boundary states, (subspace,state) pairs

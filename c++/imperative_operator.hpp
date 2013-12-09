@@ -179,6 +179,9 @@ namespace cthyb_krylov {
 
    public:
 
+   // 
+   const HilbertType * get_hilbert_connection(const HilbertType *h) const { return hilbert_map(h);}
+
    // act on a state and return a new state
    template<typename StateType>    
     StateType operator() (StateType const & st) const { 

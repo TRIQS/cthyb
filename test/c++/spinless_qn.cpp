@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_w = make_gf<imfreq>(beta, Fermion, make_shape(2,2));
+  auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
   auto d00 = slice_target(delta_w, triqs::arrays::range(0,1), triqs::arrays::range(0,1));
   auto d11 = slice_target(delta_w, triqs::arrays::range(1,2), triqs::arrays::range(1,2));
   auto d01 = slice_target(delta_w, triqs::arrays::range(0,1), triqs::arrays::range(1,2));
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   d11(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d01(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d10(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
-  solver.deltat_view()[0] = triqs::gfs::lazy_inverse_fourier(delta_w);
+  solver.deltat_view()[0] = inverse_fourier(delta_w);
   
   // Solve!
   solver.solve(p);

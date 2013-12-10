@@ -40,7 +40,7 @@ template<typename HamiltonianType, typename StateType>
 class exp_h_worker {
     
     typedef StateType state_type;
-    typedef typename state_type::value_type scalar_type;
+    typedef typename state_type::scalar_t scalar_type;
     
     krylov_worker<HamiltonianType,StateType> kw;
     sorted_spaces sosp;
@@ -88,7 +88,7 @@ public:
       
              if(space_dim > small_matrix_size){
         
-            scalar_type initial_state_norm  = std::sqrt(dotc(initial_state,initial_state));
+            scalar_type initial_state_norm  = std::sqrt(dot_product(initial_state,initial_state));
             kw(initial_state/initial_state_norm);
 
             auto eigenvalues = kw.values();

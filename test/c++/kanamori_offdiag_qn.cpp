@@ -139,13 +139,13 @@ int main(int argc, char* argv[]) {
       matrix<std::complex<double>> m(num_orbitals,num_orbitals);
       for(std::size_t w_index = 0; w_index < term.mesh().size(); ++w_index){
           m = term.data()(w_index,ellipsis());
-          m = _conj(V[j]) * m * V[j];
+          m = conj(V[j]) * m * V[j];
           term.data()(w_index,ellipsis()) = m;
       }
       for(int tail_o = term.singularity().order_min();
               tail_o <= term.singularity().order_max(); ++tail_o){
           m = term.singularity()(tail_o);
-          term.singularity()(tail_o) = _conj(V[j]) * m * V[j];
+          term.singularity()(tail_o) = conj(V[j]) * m * V[j];
       }
       delta_w = delta_w + term;
   }

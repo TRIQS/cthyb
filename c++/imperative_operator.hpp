@@ -160,7 +160,7 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
    auto d_count_mask = all_terms[i].d_count_mask, dag_count_mask = all_terms[i].dag_count_mask;
    auto coef = all_terms[i].coeff;
 
-   foreach(st, [&](uint64_t f2, typename StateType::data_t amplitude) {
+   foreach(st, [&](uint64_t f2, typename StateType::scalar_t amplitude) {
     if ((f2 & d_mask) != d_mask) return;
     f2 &= ~d_mask;
     if (((f2 ^ dag_mask) & dag_mask) != dag_mask) return;

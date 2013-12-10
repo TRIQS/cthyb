@@ -64,7 +64,7 @@ class sorted_spaces {
  public:
  struct eigensystem_t {
   vector<double> eigenvalues; // in ascending order
-  std::vector<state<sub_hilbert_space, false>> eigenstates;
+  std::vector<state<sub_hilbert_space,double, false>> eigenstates;
   matrix<double> unitary_matrix; // H = U * \Lambda * U^+
  };
 
@@ -113,7 +113,7 @@ class sorted_spaces {
    fock_state_t fs = full_hs.get_fock_state(r);
 
    // the state we'll act on
-   state<hilbert_space, true> s(full_hs);
+   state<hilbert_space, double, true> s(full_hs);
    s(r) = 1.0;
 
    // create the vector with the quantum numbers
@@ -162,7 +162,7 @@ class sorted_spaces {
    for (size_t r = 0; r < full_hs.dimension(); ++r) {
 
     // the state we'll act on and its quantum numbers
-    state<hilbert_space, true> s(full_hs);
+    state<hilbert_space, double, true> s(full_hs);
     s(r) = 1.0;
     qn_before = get_quantum_numbers(s);
 
@@ -170,7 +170,7 @@ class sorted_spaces {
     qn_after = get_quantum_numbers(op_c_dag(s));
 
     // insert in creation map checking whether it was already there
-    if (dotc(op_c_dag(s), op_c_dag(s)) > 1.e-10) {
+    if (dot_product(op_c_dag(s), op_c_dag(s)) > 1.e-10) {
      origin = hilbert_spaces[map_qn_n[qn_before]].get();
      target = hilbert_spaces[map_qn_n[qn_after]].get();
      if (creation_map[n].count(origin) == 0)
@@ -184,7 +184,7 @@ class sorted_spaces {
     qn_after = get_quantum_numbers(op_c(s));
 
     // insert in destruction map checking whether it was already there
-    if (dotc(op_c(s), op_c(s)) > 1.e-10) {
+    if (dot_product(op_c(s), op_c(s)) > 1.e-10) {
      origin = hilbert_spaces[map_qn_n[qn_before]].get();
      target = hilbert_spaces[map_qn_n[qn_after]].get();
      if (destruction_map[n].count(origin) == 0)
@@ -229,7 +229,7 @@ class sorted_spaces {
  sub_hilbert_space const& subspace(size_t n) const { return *hilbert_spaces[n]; }
 
  // substate
- state<sub_hilbert_space, false> substate(size_t n) const { return state<sub_hilbert_space, false>(*hilbert_spaces[n]); }
+ state<sub_hilbert_space, double, false> substate(size_t n) const { return state<sub_hilbert_space, double, false>(*hilbert_spaces[n]); }
 
  // number of blocks
  size_t n_subspaces() const { return n_blocks; }
@@ -256,9 +256,9 @@ class sorted_spaces {
  using hilbert_map_t = std::unordered_map<const sub_hilbert_space*, const sub_hilbert_space*>;
 
  // Helper function to get quantum numbers
- std::vector<quantum_number_t> get_quantum_numbers(state<hilbert_space> const& s) {
+ std::vector<quantum_number_t> get_quantum_numbers(state<hilbert_space, double, true> const& s) {
   std::vector<quantum_number_t> qn;
-  for (auto& op : qn_operators) qn.push_back(dotc(s, op(s)));
+  for (auto& op : qn_operators) qn.push_back(dot_product(s, op(s)));
   return qn;
  }
 
@@ -270,7 +270,7 @@ class sorted_spaces {
    auto const& sp = subspace(spn);
    auto& eigensystem = eigensystems[spn];
 
-   state<sub_hilbert_space, false> i_state(sp);
+   state<sub_hilbert_space, double, false> i_state(sp);
    matrix<double> h_matrix(sp.dimension(), sp.dimension());
 
    for (std::size_t i = 0; i < sp.dimension(); ++i) {

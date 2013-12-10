@@ -18,83 +18,50 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#pragma once
 
-#ifndef TRIQS_CTQMC_KRYLOV_STATE
-#define TRIQS_CTQMC_KRYLOV_STATE
+#include <triqs/arrays.hpp>
 
-#include <map>
 #include <ostream>
-#include <boost/operators.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <tuple>
-#include <algorithm>
 #include <unordered_map>
 #include <cmath>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
+#include <boost/operators.hpp>
 
 #include "hilbert_space.hpp"
 
 namespace cthyb_krylov {
 
+inline double conj(double x) { return x; }
 
-// Helper
-template <typename T> typename std::enable_if<boost::is_complex<T>::value, T>::type _conj(T&& x) {
- return conj(std::forward<T>(x));
-}
-template <typename T> typename std::enable_if<!boost::is_complex<T>::value, T>::type _conj(T&& x) { return std::forward<T>(x); }
+// States of a Hilbert space : can either be described by a map
+// or by a triqs::vector so there are two implementations controlled by BasedOnMap
+template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state {};
 
-
-/*
-  The class describing states of a Hilbert space.
-  These states can either be described by a map
-  or by a triqs::vector so there are two implementations
-  controlled by the bool template argument BasedOnMap
-*/
-template <typename HilbertSpace, bool BasedOnMap = true> class state {};
-
-/*
-  This is the implementation of a state based on a
-  a map so that in principle we can work
-  on huge hilbert spaces as long as there are not too
-  many components in the state and not too many monomials
-  in the operator acting on the state...
-*/
-template <typename HilbertSpace>
-class state<
-    HilbertSpace,
-    true> : boost::addable<state<HilbertSpace, true>,
-                           boost::subtractable<state<HilbertSpace, true>,
-                                               boost::dividable2<state<HilbertSpace, true>, double,
-                                                                 boost::multipliable2<state<HilbertSpace, true>, double>>>> {
-
- public:
- using data_t=double ;
- using value_type=data_t ;
- using amplitude_t=std::unordered_map<std::size_t, data_t> ;
-
- private:
+// -----------------------------------------------------------------------------------
+// implementation based on a map : can work
+// on huge hilbert spaces as long as there are not too
+// many components in the state and not too many monomials
+//  in the operator acting on the state...
+// -----------------------------------------------------------------------------------
+template <typename HilbertSpace, typename ScalarType>
+class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace, ScalarType, true>>,
+                                              boost::multiplicative<state<HilbertSpace, ScalarType, true>, ScalarType> {
+ // derivations implement the vector space operations over ScalarType from the compounds operators +=, *=, ....
  const HilbertSpace* hs;
+ using amplitude_t = std::unordered_map<std::size_t, ScalarType>;
  amplitude_t ampli;
 
  public:
- // empty constructor
- // This constructor creates an object which is logically 'just zero', irrespectively of any Hilbert space.
- // However, technically this object is invalid and must not be used in expressions. For the sake of convenience,
- // I add a generic free function which detects this invalid state: is_zero_state()
- state() : hs(nullptr) {}
+ using scalar_t = ScalarType;
+ using value_type = ScalarType; // only for use with the Krylov (concept to write).
 
- // constructor on a Hilbert space
+ state() : hs(nullptr) {} // non valid state !
  state(HilbertSpace const& hs_) : hs(&hs_) {}
 
- // std::size_t n_amplitudes() const { return ampli.size(); }
+ scalar_t& operator()(int i) { return ampli[i]; }
  amplitude_t const& amplitudes() const { return ampli; }
  amplitude_t& amplitudes() { return ampli; }
-
- friend std::size_t get_space_dim(state const& st) {
-  assert(st.hs != nullptr);
-  return st.hs->dimension();
- }
+ HilbertSpace const& get_hilbert() const { return *hs; }
 
  friend state make_zero_state(state const& st) {
   assert(st.hs != nullptr);
@@ -102,37 +69,26 @@ class state<
   return zero_st;
  }
 
- data_t& operator()(std::size_t i) { return ampli[i]; }
-
- HilbertSpace const& get_hilbert() const { return *hs; }
-
- state(state const&) = default;
- state& operator=(state const&) = default;
-
  // basic operations
- state& operator+=(state const& another_state) {
-  bool new_amplitude;
-  amplitude_t::iterator it;
-  for (amplitude_t::const_reference aa : another_state.ampli) {
-   std::tie(it, new_amplitude) = ampli.insert(aa);
-   if (!new_amplitude) it->second += aa.second;
+ state& operator+=(state const& s2) {
+  for (auto const& aa : s2.ampli) {
+   auto r = ampli.insert(aa);
+   if (!r.second) r.first->second += aa.second;
   }
   prune();
   return *this;
  }
 
- state& operator-=(state const& another_state) {
-  bool new_amplitude;
-  amplitude_t::iterator it;
-  for (amplitude_t::const_reference aa : another_state.ampli) {
-   std::tie(it, new_amplitude) = ampli.insert(std::make_pair(aa.first, -aa.second));
-   if (!new_amplitude) it->second -= aa.second;
+ state& operator-=(state const& s2) {
+  for (auto const& aa : s2.ampli) {
+   auto r = ampli.insert({aa.first, -aa.second});
+   if (!r.second) r.first->second -= aa.second;
   }
   prune();
   return *this;
  }
 
- state& operator*=(data_t x) {
+ state& operator*=(scalar_t x) {
   for (auto& a : ampli) {
    a.second *= x;
   }
@@ -140,19 +96,13 @@ class state<
   return *this;
  }
 
- state& operator/=(data_t x) {
-  (*this) *= (1 / x);
+ state& operator/=(scalar_t x) {
+  (*this) *= 1 / x;
   return *this;
  }
 
- void prune(double tolerance = 10e-10) {
-  for (auto it = ampli.begin(); it != ampli.end(); it++) {
-   if (std::fabs(it->second) < tolerance) ampli.erase(it);
-  }
- }
-
  friend std::ostream& operator<<(std::ostream& os, state const& s) {
-  for (amplitude_t::const_reference a : s.ampli) {
+  for (auto const& a : s.ampli) {
    os << " +(" << a.second << ")"
       << "|" << s.hs->get_fock_state(a.first) << ">";
   }
@@ -160,70 +110,54 @@ class state<
  }
 
  // scalar product
- friend data_t dotc(state const& s1, state const& s2) {
-  data_t res = 0.0;
-  for (amplitude_t::const_reference a : s1.ampli) {
-   if (s2.ampli.count(a.first) == 1) res += _conj(a.second) * s2.ampli.at(a.first);
+ friend scalar_t dot_product(state const& s1, state const& s2) {
+  scalar_t res = 0.0;
+  for (auto const& a : s1.ampli) {
+   if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
   }
   return res;
  }
 
  friend bool is_zero_state(state const& st) { return st.amplitudes().size() == 0; }
+
+ private:
+
+ void prune(double tolerance = 10e-10) {
+  for (auto it = ampli.begin(); it != ampli.end(); it++) {
+   if (std::fabs(it->second) < tolerance) ampli.erase(it);
+  }
+ }
+
 };
 
 // Lambda (fs, amplitude)
-template <typename HilbertSpace, typename Lambda> void foreach(state<HilbertSpace, true> const& st, Lambda l) {
+template <typename HilbertSpace, typename ScalarType, typename Lambda>
+void foreach(state<HilbertSpace, ScalarType, true> const& st, Lambda l) {
  for (auto const& p : st.amplitudes()) l(st.get_hilbert().get_fock_state(p.first), p.second);
 }
 
+// -----------------------------------------------------------------------------------
+// implementation based on a vector
+// -----------------------------------------------------------------------------------
+template <typename HilbertSpace, typename ScalarType>
+class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpace, ScalarType, false>>,
+                                               boost::multiplicative<state<HilbertSpace, ScalarType, false>, ScalarType> {
 
-
-/*
-   This is the implementation of a state based on a
-   a triqs::vector.
-   */
-template <typename HilbertSpace>
-class state<
-    HilbertSpace,
-    false> : boost::addable<state<HilbertSpace, false>,
-                            boost::subtractable<state<HilbertSpace, false>,
-                                                boost::dividable2<state<HilbertSpace, false>, double,
-                                                                  boost::multipliable2<state<HilbertSpace, false>, double>>>> {
-
-
- public:
- using data_t=double ;
- using value_type=data_t ;
- using amplitude_t=triqs::arrays::vector<data_t> ;
-
- private:
  const HilbertSpace* hs;
+ using amplitude_t = triqs::arrays::vector<ScalarType>;
  amplitude_t ampli;
 
  public:
- // default constructor
+ using scalar_t = ScalarType;
+ using value_type = ScalarType; // only for use with the Krylov (concept to write).
+
  state() : hs(nullptr) {}
-
- // constructor from just a hilbert_space
  state(HilbertSpace const& hs_) : hs(&hs_), ampli(hs_.dimension(), 0.0) {}
-
- // value
- state(state const&) = default;
- state(state&&) = default;
- state& operator=(state const&) = default;
-
- // how many amplitudes
- size_t n_amplitudes() const { return ampli.size(); }
-
- friend std::size_t get_space_dim(state const& st) {
-  assert(st.hs != nullptr);
-  return st.hs->dimension();
- }
 
  friend state make_zero_state(state const& st) {
   assert(st.hs != nullptr);
   state zero_st(*st.hs);
-  zero_st.amplitudes()() = 0;
+  // zero_st.amplitudes()() = 0;
   return zero_st;
  }
 
@@ -232,8 +166,8 @@ class state<
  amplitude_t& amplitudes() { return ampli; }
 
  // access to data
- data_t& operator()(std::size_t i) { return ampli[i]; }
- data_t const& operator()(std::size_t i) const { return ampli[i]; }
+ scalar_t& operator()(int i) { return ampli[i]; }
+ scalar_t const& operator()(int i) const { return ampli[i]; }
 
  // get access to hilbert space
  HilbertSpace const& get_hilbert() const { return *hs; }
@@ -241,7 +175,7 @@ class state<
  // print
  friend std::ostream& operator<<(std::ostream& os, state const& s) {
   bool something_written = false;
-  for (int i = 0; i < s.n_amplitudes(); ++i) {
+  for (int i = 0; i < s.ampli.size(); ++i) {
    auto ampl = s(i);
    if (std::abs(ampl) < 1e-10) continue;
    os << " +(" << ampl << ")"
@@ -253,29 +187,30 @@ class state<
  }
 
  // basic operations
- state& operator+=(state const& another_state) {
-  ampli += another_state.ampli;
+ state& operator+=(state const& s2) {
+  ampli += s2.ampli;
   return *this;
  }
 
- state& operator-=(state const& another_state) {
-  ampli -= another_state.ampli;
+ state& operator-=(state const& s2) {
+  ampli -= s2.ampli;
   return *this;
  }
 
- state& operator*=(data_t x) {
+ state& operator*=(scalar_t x) {
   ampli *= x;
   return *this;
  }
 
- state& operator/=(data_t x) {
+ state& operator/=(scalar_t x) {
   ampli /= x;
   return *this;
  }
 
  // scalar product
- friend data_t dotc(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
+ friend scalar_t dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
 
+ // TO BE REMOVED : tolerance !!
  friend bool is_zero_state(state const& st, double tolerance = 1e-18) {
   if (st.amplitudes().size() == 0) return true;
   for (auto const& a : st.amplitudes())
@@ -284,11 +219,10 @@ class state<
  }
 };
 
-
 // Lambda (fs, amplitude)
-template <typename HilbertSpace, typename Lambda> void foreach(state<HilbertSpace, false> const& st, Lambda l) {
+template <typename HilbertSpace, typename ScalarType, typename Lambda>
+void foreach(state<HilbertSpace, ScalarType, false> const& st, Lambda l) {
  const auto L = st.amplitudes().size();
  for (size_t i = 0; i < L; ++i) l(st.get_hilbert().get_fock_state(i), st.amplitudes()[i]);
 }
 }
-#endif

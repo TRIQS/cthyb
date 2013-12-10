@@ -46,7 +46,7 @@ namespace cthyb_krylov {
   sorted_spaces sosp;
 
   // the state
-  typedef state<sub_hilbert_space,false> state_t;
+  typedef state<sub_hilbert_space,double,false> state_t;
   
   exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;
 
@@ -148,7 +148,7 @@ namespace cthyb_krylov {
       //psi = exp_h (psi, dtau);
     }
 
-    return dotc(psi0,psi);
+    return dot_product(psi0,psi);
   }
 
   const sorted_spaces& get_sorted_spaces() const { return sosp; };

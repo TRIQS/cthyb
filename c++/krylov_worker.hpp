@@ -67,7 +67,7 @@ template <typename OperatorType, typename StateType>
     {
         basisstates.push_back(initial_state);
         res_vector = H(basisstates.back());
-        alpha.push_back(dotc(initial_state,res_vector));
+        alpha.push_back(dot_product(initial_state,res_vector));
         res_vector -= alpha.back() * initial_state;
         
         return alpha.back();
@@ -77,7 +77,7 @@ template <typename OperatorType, typename StateType>
     // Returns false if the previous state was an eigenstate of H
     bool advance()
     {
-        double new_beta = std::sqrt(dotc(res_vector,res_vector));
+        double new_beta = std::sqrt(dot_product(res_vector,res_vector));
         // We don't really want to divide by zero
         if(std::abs(new_beta) < gs_energy_convergence) return false;
         
@@ -86,7 +86,7 @@ template <typename OperatorType, typename StateType>
         // try optimisation : if ok, use assign delegation to maintain genericty
         //res_vector.amplitudes()()=0; H.apply(basisstates.back(),res_vector);
         res_vector = H(basisstates.back());
-        alpha.push_back(dotc(basisstates.back(),res_vector));
+        alpha.push_back(dot_product(basisstates.back(),res_vector));
         res_vector -= alpha.back() * basisstates.back();
         res_vector -= beta.back() * basisstates[basisstates.size()-2];
     

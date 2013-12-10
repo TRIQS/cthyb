@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
       auto m = delta_w[w_index];
       for(int j=0; j < epsilon.size(); ++j){
           for(int o = 0; o < num_orbitals; ++o) m(o,o) = 1.0/(iw - epsilon[j]);
-          m = _conj(V[j]) * m * V[j];
+          m = conj(V[j]) * m * V[j];
       }
   }
   solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);

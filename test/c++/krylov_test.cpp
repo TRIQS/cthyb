@@ -24,6 +24,8 @@ vector<double> make_zero_state(vector<double> const& st)
     return zero_st;
 }
 
+double dot_product( vector<double> const& a, vector<double> const& b) { return dotc(a,b);}
+
 #include "./krylov_worker.hpp"
 #include "./exp_h_worker.hpp"
 

@@ -65,7 +65,7 @@ int main() {
   for (int i=0; i<5; ++i) fop.add_operator("up",i);
 
   hilbert_space h_full(fop);
-  state<hilbert_space, true> st(h_full);
+  state<hilbert_space,double, true> st(h_full);
   st(0) = 3.0;
   st(3) = 5.0;
   std::cout << "state is: " << st << std::endl;
@@ -82,7 +82,7 @@ int main() {
 
   auto opH = imperative_operator<hilbert_space>(H, fop);
 
-  state<hilbert_space, true> old_state(h_full);
+  state<hilbert_space, double, true> old_state(h_full);
   old_state(7) = 1.0;
   std::cout << "old state is: " << old_state << std::endl;
 
@@ -93,7 +93,7 @@ int main() {
   mymap[&h_full] = &h_full;
   auto opH2 = imperative_operator<hilbert_space, true>(H, fop, mymap);
 
-  state<hilbert_space, true> old_state2(h_full);
+  state<hilbert_space, double, true> old_state2(h_full);
   old_state2(7) = 1.0;
   std::cout << "old state is: " << old_state2 << std::endl;
 
@@ -135,7 +135,7 @@ int main() {
   Cdagmap[&phs0] = &phs1;
   auto opCdag = imperative_operator<sub_hilbert_space, true>(Cdag, fop2, Cdagmap);
 
-  state<sub_hilbert_space, false> start(phs0);
+  state<sub_hilbert_space,double, false> start(phs0);
 
   std::cout << "operator is: " << Cdag << std::endl;
   
@@ -161,7 +161,7 @@ int main() {
   triqs::utility::many_body_operator<double> quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
      
-  state<hilbert_space, false> st1(HS);
+  state<hilbert_space,double, false> st1(HS);
   st1(9) = 1.0; // 0110
   std::cout << "old state is: " << st1 << std::endl;
   std::cout << "operator is: " << quartic_op << std::endl;

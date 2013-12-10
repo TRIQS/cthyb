@@ -119,7 +119,7 @@ public:
         
             matrix_exp(all,all) = unitary_matrix * matrix_exp(all,all) * unitary_matrix.transpose();
 
-            StateType st = make_zero_copy(initial_state);
+            StateType st = make_zero_state(initial_state);
             // FIXME: not supposed to work with the map-based version of state...
             st.amplitudes() = matrix_exp(all,all) * initial_state.amplitudes();
         

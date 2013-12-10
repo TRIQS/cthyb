@@ -11,7 +11,12 @@ using triqs::arrays::vector;
 using triqs::arrays::matrix;
 using triqs::arrays::dotc;
 
-vector<double> make_zero_copy(vector<double> const& st)
+std::size_t get_space_dim(vector<double> const& st)
+{
+    return st.size();
+}
+
+vector<double> make_zero_state(vector<double> const& st)
 {
     vector<double> zero_st(st.size());
     zero_st() = 0;

@@ -43,8 +43,7 @@ struct lt_dbl {
 sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
                              std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
                              fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
-   : n_blocks(0),
-     hamilt(h_, fops),
+   : hamiltonian(h_, fops),
      creation_operators(fops.n_operators()),
      destruction_operators(fops.n_operators()),
      creation_connection(fops.n_operators()),
@@ -60,10 +59,6 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
  // hilbert spaces and quantum numbers
  std::map<std::vector<double>, int, lt_dbl> map_qn_n;
-
- //
- using hilbert_map_t = std::unordered_map<const sub_hilbert_space*, const sub_hilbert_space*>;
- std::vector<hilbert_map_t> creation_map(fops.n_operators()), destruction_map(fops.n_operators());
 
  // create the map int_pair_to_n : (int,int) --> int identifying operators
  for (auto x : fops) int_pair_to_n[indices_to_ints.at(x.index)] = x.linear_index;
@@ -86,7 +81,7 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
    The first part consists in dividing the full Hilbert space
    into smaller subspaces using the quantum numbers
  */
- for (size_t r = 0; r < full_hs.dimension(); ++r) {
+ for (int r = 0; r < full_hs.dimension(); ++r) {
 
   // fock_state corresponding to r
   fock_state_t fs = full_hs.get_fock_state(r);
@@ -100,15 +95,14 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
   // if first time we meet these quantum numbers create partial Hilbert space
   if (map_qn_n.count(qn) == 0) {
-   sub_hilbert_spaces.push_back(std::make_shared<sub_hilbert_space>(sub_hilbert_spaces.size()));
-   //   sub_hilbert_spaces.emplace_back(sub_hilbert_spaces.size()); // a new sub_hilbert_space
+   auto n_blocks = n_subspaces();
+   sub_hilbert_spaces.emplace_back(n_blocks); // a new sub_hilbert_space
    quantum_numbers.push_back(qn);
    map_qn_n[qn] = n_blocks;
-   n_blocks++;
   }
 
   // add fock state to partial Hilbert space
-  sub_hilbert_spaces[map_qn_n[qn]]->add_fock_state(fs);
+  sub_hilbert_spaces[map_qn_n[qn]].add_fock_state(fs);
  }
 
  /*
@@ -117,6 +111,10 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
    space with a creation (destruction) operator, in which other
    partial Hilbert space we end up.
  */
+
+ auto creation_map = std::vector<std::vector<int>>(fops.n_operators(), std::vector<int>(n_subspaces(), -1));
+ auto destruction_map = creation_map;
+
  for (auto const& x : fops) {
 
   // get the operators and their index
@@ -129,14 +127,13 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
   // to avoid declaring every time in the loop below
   std::vector<quantum_number_t> qn_before, qn_after;
-  sub_hilbert_space* origin, *target;
 
   // these will be mapping tables
   creation_connection[n].resize(n_subspaces(), -1);
   destruction_connection[n].resize(n_subspaces(), -1);
 
   // now act on the state with the c, c_dag to see how quantum numbers change
-  for (size_t r = 0; r < full_hs.dimension(); ++r) {
+  for (int r = 0; r < full_hs.dimension(); ++r) {
 
    // the state we'll act on and its quantum numbers
    state<hilbert_space, double, true> s(full_hs);
@@ -148,12 +145,12 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
    // insert in creation map checking whether it was already there
    if (dot_product(op_c_dag(s), op_c_dag(s)) > 1.e-10) {
-    origin = sub_hilbert_spaces[map_qn_n[qn_before]].get();
-    target = sub_hilbert_spaces[map_qn_n[qn_after]].get();
-    if (creation_map[n].count(origin) == 0)
+    auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
+    auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
+    if (creation_map[n][origin] == -1)
      creation_map[n][origin] = target;
     else if (creation_map[n][origin] != target)
-     std::cout << "error creation";
+     TRIQS_RUNTIME_ERROR << "Internal Error, Sorted Space, Creation";
     creation_connection[n][map_qn_n[qn_before]] = map_qn_n[qn_after];
    }
 
@@ -162,28 +159,56 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
    // insert in destruction map checking whether it was already there
    if (dot_product(op_c(s), op_c(s)) > 1.e-10) {
-    origin = sub_hilbert_spaces[map_qn_n[qn_before]].get();
-    target = sub_hilbert_spaces[map_qn_n[qn_after]].get();
-    if (destruction_map[n].count(origin) == 0)
+    auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
+    auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
+    if (destruction_map[n][origin] == -1)
      destruction_map[n][origin] = target;
     else if (destruction_map[n][origin] != target)
-     std::cout << "error destruction";
+     TRIQS_RUNTIME_ERROR << "Internal Error, Sorted Space, Creation";
     destruction_connection[n][map_qn_n[qn_before]] = map_qn_n[qn_after];
    }
   }
 
   // insert the creation and destruction operators in vectors. this is the fast version
   // of the operators because we explicitly use the map
-  creation_operators[n] = imperative_operator<sub_hilbert_space, true>(create, fops, creation_map[n]);
-  destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n]);
+  creation_operators[n] = imperative_operator<sub_hilbert_space, true>(create, fops, creation_map[n], &sub_hilbert_spaces);
+  destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n], &sub_hilbert_spaces);
  }
 
  // Compute energy levels and eigenvectors of the local Hamiltonian
- compute_eigensystems();
+ eigensystems.resize(n_subspaces());
+ gs_energy = std::numeric_limits<double>::infinity();
+
+ for (int spn = 0; spn < n_subspaces(); ++spn) {
+  auto const& sp = subspace(spn);
+  auto& eigensystem = eigensystems[spn];
+
+  state<sub_hilbert_space, double, false> i_state(sp);
+  matrix<double> h_matrix(sp.dimension(), sp.dimension());
+
+  for (int i = 0; i < sp.dimension(); ++i) {
+   i_state.amplitudes()() = 0;
+   i_state(i) = 1;
+   auto f_state = hamiltonian(i_state);
+   h_matrix(range(), i) = f_state.amplitudes();
+  }
+  linalg::eigenelements_worker<matrix_view<double>, true> ew(h_matrix);
+
+  ew.invoke();
+  eigensystem.eigenvalues = ew.values();
+  eigensystem.unitary_matrix = h_matrix.transpose();
+  gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
+
+  eigensystem.eigenstates.reserve(sp.dimension());
+  for (int e = 0; e < sp.dimension(); ++e) {
+   eigensystem.eigenstates.emplace_back(sp);
+   eigensystem.eigenstates.back().amplitudes() = h_matrix(e, range());
+  }
+ }
 
  // Shift the ground state energy of the local Hamiltonian to zero.
  for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
- hamilt = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
+ hamiltonian = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
 }
 
 // -----------------------------------------------------------------
@@ -196,43 +221,11 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
   os << "qn = ";
   for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
   os << ", ";
-  os << "size = " << ss.sub_hilbert_spaces[n]->dimension();
+  os << "size = " << ss.sub_hilbert_spaces[n].dimension();
   os << " Relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
  }
  return os;
 }
 
 //----------------------------------------------------------------------
-
-void sorted_spaces::compute_eigensystems() {
- eigensystems.resize(n_subspaces());
- gs_energy = std::numeric_limits<double>::infinity();
-
- for (std::size_t spn = 0; spn < n_subspaces(); ++spn) {
-  auto const& sp = subspace(spn);
-  auto& eigensystem = eigensystems[spn];
-
-  state<sub_hilbert_space, double, false> i_state(sp);
-  matrix<double> h_matrix(sp.dimension(), sp.dimension());
-
-  for (std::size_t i = 0; i < sp.dimension(); ++i) {
-   i_state.amplitudes()() = 0;
-   i_state(i) = 1;
-   auto f_state = hamilt(i_state);
-   h_matrix(range(), i) = f_state.amplitudes();
-  }
-  linalg::eigenelements_worker<matrix_view<double>, true> ew(h_matrix);
-
-  ew.invoke();
-  eigensystem.eigenvalues = ew.values();
-  eigensystem.unitary_matrix = h_matrix.transpose();
-  gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
-
-  eigensystem.eigenstates.reserve(sp.dimension());
-  for (std::size_t e = 0; e < sp.dimension(); ++e) {
-   eigensystem.eigenstates.emplace_back(sp);
-   eigensystem.eigenstates.back().amplitudes() = h_matrix(e, range());
-  }
- }
-}
 }

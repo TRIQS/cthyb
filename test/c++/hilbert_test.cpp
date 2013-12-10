@@ -89,25 +89,9 @@ int main() {
   auto new_state = opH(old_state);
   std::cout << "new state is: " << new_state << std::endl;
 
-  std::unordered_map<const hilbert_space*, const hilbert_space*> mymap;
-  mymap[&h_full] = &h_full;
-  auto opH2 = imperative_operator<hilbert_space, true>(H, fop, mymap);
-
-  state<hilbert_space, double, true> old_state2(h_full);
-  old_state2(7) = 1.0;
-  std::cout << "old state is: " << old_state2 << std::endl;
-
-  auto new_state2 = opH2(old_state2);
-  std::cout << "new state is: " << new_state2 << std::endl;
-
-  auto copy_op = opH2;
-  std::cout << "new state is: " << copy_op(old_state2) << std::endl;
-
   // machine dependent apparently ...
   std::cerr << "size of hilbert: " << sizeof(h_full) << std::endl;
   std::cerr << "size of op: " << sizeof(opH) << std::endl;
-  std::cerr << "size of op: " << sizeof(opH2) << std::endl;
-  std::cerr << "size of op: " << sizeof(copy_op) << std::endl;
 
 
   std::cout << std::endl << "Part VII: partial hilbert space" << std::endl << std::endl;
@@ -131,9 +115,10 @@ int main() {
   phs1.add_fock_state(h4.get_fock_state(6)); // 110
   phs1.add_fock_state(h4.get_fock_state(7)); // 111
 
-  std::unordered_map<const sub_hilbert_space*, const sub_hilbert_space*> Cdagmap;
-  Cdagmap[&phs0] = &phs1;
-  auto opCdag = imperative_operator<sub_hilbert_space, true>(Cdag, fop2, Cdagmap);
+  std::vector<int>  Cdagmap(2,-1);
+  Cdagmap[phs0.get_index()] = phs1.get_index();
+  std::vector<sub_hilbert_space> sub1{phs0, phs1};
+  auto opCdag = imperative_operator<sub_hilbert_space, true>(Cdag, fop2, Cdagmap, &sub1 );
 
   state<sub_hilbert_space,double, false> start(phs0);
 

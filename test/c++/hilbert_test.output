@@ -48,9 +48,6 @@ Part VI: the imperative operator
 
 old state is:  +(1)|7>
 new state is:  +(-1)|1> +(5)|7>
-old state is:  +(1)|7>
-new state is:  +(-1)|1> +(5)|7>
-new state is:  +(-1)|1> +(5)|7>
 
 Part VII: partial hilbert space
 

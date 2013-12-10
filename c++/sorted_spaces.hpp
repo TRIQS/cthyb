@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 #include <map>
-//#include <triqs/utility/tuple_tools.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
 #include "fundamental_operator_set.hpp"
@@ -65,13 +64,13 @@ class sorted_spaces {
                std::vector<block_desc_t> const& block_structure);
 
  // Hamiltonian
- imperative_operator<sub_hilbert_space, false> const& get_hamiltonian() const { return hamilt; }
+ imperative_operator<sub_hilbert_space, false> const& get_hamiltonian() const { return hamiltonian; }
 
  // Number of subspaces
- int n_subspaces() const { return n_blocks; }
+ int n_subspaces() const { return sub_hilbert_spaces.size(); }
 
  // n-th subspace
- sub_hilbert_space const& subspace(int n) const { return *sub_hilbert_spaces[n]; }
+ sub_hilbert_space const& subspace(int n) const { return sub_hilbert_spaces[n]; }
 
  // an 0 state in n-th subpace
  state<sub_hilbert_space, double, false> substate(int n) const {
@@ -98,22 +97,16 @@ class sorted_spaces {
  double get_gs_energy() const { return gs_energy; }
 
  private:
-
  /// ------------------  DATAS  -----------------
- 
- int n_blocks; // number of sub_hilbert_spaces
 
- // a map (int,int) -> int identifying the operator
- std::map<std::pair<int, int>, int> int_pair_to_n;
+ std::vector<sub_hilbert_space> sub_hilbert_spaces; // all blocks
 
- // the hamiltonian,
- imperative_operator<sub_hilbert_space, false> hamilt;
+ // a map (int,int) -> int identifying the operator. use a flat_map for quicker access.
+ boost::container::flat_map<std::pair<int, int>, int> int_pair_to_n;
 
-// have to use shared_ptr, because sub_hilbert_space is non-copyable
- std::vector<std::shared_ptr<sub_hilbert_space>> sub_hilbert_spaces;
- //std::vector<sub_hilbert_space> sub_hilbert_spaces;
+ imperative_operator<sub_hilbert_space, false> hamiltonian;
 
- // Given the index of a ???? EXPLAiN
+ // Given the linear index of the operator, return the table of operator/connection to other sub_hilbert_spaces
  std::vector<std::vector<long>> creation_connection, destruction_connection;
  std::vector<imperative_operator<sub_hilbert_space, true>> creation_operators, destruction_operators;
 
@@ -126,10 +119,6 @@ class sorted_spaces {
  // Keep the QN, only for later printing ? OR MAKE THE STRING ...
  std::vector<std::vector<quantum_number_t>> quantum_numbers;
  
- /// ------------------  Functions  -----------------
- 
  friend std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss);
-
- void compute_eigensystems(); // auxiliary function to compute the eigensystem
 };
 }

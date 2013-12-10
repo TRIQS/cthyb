@@ -19,10 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-
-//#include <triqs/utility/exceptions.hpp>
-//#include <triqs/utility/tuple_tools.hpp>
-
 #include "operator.hpp"
 #include "fundamental_operator_set.hpp"
 #include "hilbert_space.hpp"
@@ -68,17 +64,19 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
  };
  std::vector<one_term_t> all_terms;
 
- using hilbert_map_t = std::unordered_map<const HilbertType *, const HilbertType *>;
+ std::vector<sub_hilbert_space> const * sub_spaces;
+ using hilbert_map_t = std::vector<int>;
  hilbert_map_t hilbert_map;
-
+ 
  public:
 
  imperative_operator() {}
 
  // constructor from a many_body_operator, a fundamental_operator_set and a map (UseMap = true)
  imperative_operator(triqs::utility::many_body_operator<double> const &op, fundamental_operator_set const &fops,
-                     hilbert_map_t hmap = hilbert_map_t()) {
+                     hilbert_map_t hmap = hilbert_map_t(), std::vector<sub_hilbert_space> const * sub_spaces_set= nullptr) {
 
+  sub_spaces = sub_spaces_set;
   hilbert_map = hmap;
   if ((hilbert_map.size() == 0) != !UseMap) TRIQS_RUNTIME_ERROR << "Internal error";
 
@@ -92,9 +90,6 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
     (canonical_op.dagger ? dag_mask : d_mask) |= (uint64_t(1) << fops[canonical_op.indices]);
    }
    auto compute_count_mask = [](std::vector<int> const &d) {
-    // std::sort(dd.begin(), dd.end());
-    // I am using this assumption. If not general, I have to sort and keep the sign
-    // if (d != dd) TRIQS_RUNTIME_ERROR << " Internal error : ndag dag not sorted ";
     uint64_t mask = 0;
     bool is_on = (d.size() % 2 == 1);
     for (int i = 0; i < 64; ++i) {
@@ -112,9 +107,9 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
 
  private:
  template <typename StateType> StateType get_target_st(StateType const &st, std::true_type use_map) const {
-  auto it = hilbert_map.find(&(st.get_hilbert()));
-  if (it == hilbert_map.end()) return StateType();
-  return StateType(*(it->second));
+  auto n = hilbert_map[st.get_hilbert().get_index()];
+  if (n == -1) return StateType{};
+  return StateType{(*sub_spaces)[n]};
  }
 
  template <typename StateType> StateType get_target_st(StateType const &st, std::false_type use_map) const {
@@ -133,8 +128,6 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
  }
 
  public:
- //
- const HilbertType *get_hilbert_connection(const HilbertType *h) const { return hilbert_map(h); }
 
  // act on a state and return a new state
  template <typename StateType> StateType operator()(StateType const &st) const {

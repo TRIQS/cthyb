@@ -246,7 +246,7 @@ namespace cthyb_krylov {
        fock_state newf = a.fs;
 
        try { 
-//	#define DEBUG_TEST
+	#define DEBUG_TEST
 #ifdef DEBUG_TEST
 
 	uint64_t f2 = a.fs;

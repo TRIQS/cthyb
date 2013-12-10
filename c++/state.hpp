@@ -127,8 +127,8 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
       bool equal(const_iterator const & other) const { return(other.it == it); }
       deref_struct dereference() const { return {it->first, st->get_hilbert().get_fock_state(it->first), it->second}; }
     };
-    //const_iterator begin() const { return const_iterator(ampli.begin(), this); }
-    //const_iterator end() const { return const_iterator(ampli.end(), this); }
+    const_iterator begin() const { return const_iterator(ampli.begin(), this); }
+    const_iterator end() const { return const_iterator(ampli.end(), this); }
 
     // basic operations
     state& operator+=(state const& another_state) {
@@ -279,8 +279,8 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	  bool equal(const_iterator const & other) const { return(other.p == p); }
 	  deref_struct dereference() const { return {p, st->get_hilbert().get_fock_state(p), st->ampli[p]}; }
 	};
-	//const_iterator begin() const { return const_iterator(0, this); }
-	//const_iterator end() const { return const_iterator(ampli.size(), this); }
+	const_iterator begin() const { return const_iterator(0, this); }
+	const_iterator end() const { return const_iterator(ampli.size(), this); }
 
 	// print
 	friend std::ostream& operator<<(std::ostream& os, state const& s) {

@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_CTQMC_KRYLOV_CONFIGURATION_H
-#define TRIQS_CTQMC_KRYLOV_CONFIGURATION_H
+#pragma once
 
 #include <map>
 #include "state.hpp"
@@ -29,96 +28,39 @@
 
 namespace cthyb_krylov {
 
- using triqs::utility::time_pt;
+using triqs::utility::time_pt;
 
- /**
-   The configuration of the Monte Carlo
-   */
- struct configuration {
+// The configuration of the Monte Carlo
+struct configuration {
 
-  struct op_desc {     ///< The description of the C operator
-   int block_index;    ///< the block index of the operator
-   int inner_index;    ///< the inner index inside the block
-   bool dagger;        ///< is the operator a dagger
-  };
-
-  // a map associating an operator to an imaginary time
-  typedef std::map<time_pt, op_desc, std::greater<time_pt>> oplist_t;
-  //typedef boost::container::flat_map<time_pt, op_desc, std::greater<time_pt>> oplist_t;
-  oplist_t oplist;
-
-  // The boundary states, (subspace,state) pairs
-  std::vector<std::pair<std::size_t,std::size_t>> boundary_block_states_ids;
-
-  // construction and the basics stuff. value semantics, except = ?
-  configuration(
-      double beta_, sorted_spaces const & sosp,
-      bool use_cutoff, double cutoff) :
-   beta_(beta_)
-  {
-    if(use_cutoff) fill_boundary_states(sosp,cutoff);
-    else reset_boundary_states(sosp);
-  }
-  
-  void reset_boundary_states(sorted_spaces const & sosp)
-  {
-   //std::cout  << " All BS : "<< sosp.n_subspaces() << std::endl ;
-   //std::cout  << " All BS : "<< sosp << std::endl ;
-      for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
-          // Should initialize all boundary states with something nonzero
-          boundary_block_states_ids.push_back(std::make_pair(nsp,0));
-      }
-  }
-  
-  void fill_boundary_states(sorted_spaces const & sosp, double prob_tolerance = -1)
-  {
-   //std::cout  << " Cutoff BS : "<< sosp.n_subspaces() << std::endl ;
-   //std::cout  << " Cutoff BS : "<< sosp << std::endl ;
-       // Atomic partition function
-      double z = 0;
-      for(auto const& es : sosp.get_eigensystems())
-          for(auto e : es.eigenvalues){
-              z += exp(-beta_*e);
-          }
-              
-      // Fill boundary_block_states with states which have significant weights
-      std::size_t total_states = 0;
-      for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
-          auto const& eigensystem = sosp.get_eigensystems()[nsp];
-          for(size_t n=0; n<eigensystem.eigenvalues.size(); ++n){
-              double prob = exp(-beta_*eigensystem.eigenvalues[n])/z;
-              if(prob>prob_tolerance){
-                  boundary_block_states_ids.push_back(std::make_pair(nsp,n));
-                  total_states++;
-              }
-          }
-      }
-    
-    std::cout << "Summing over " << total_states << " states in the outer trace ";
-    std::cout << "(the probability cutoff is set to " << prob_tolerance << ")" << std::endl;
-  }
-
-  double beta() const {return beta_;}
-
-  friend std::ostream & operator << (std::ostream & out, configuration const & c) {
-    out << "boundary_block_states_ids:" << std::endl;
-    for(auto const& st : c.boundary_block_states_ids) out << "(" << st.first << "," << st.second << ") "; 
-    out << std::endl;
-    for (auto const& op : c.oplist)  
-        out << "tau = "<< op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","<< op.second.inner_index<<")\n";
-    return out;
-  }
-
-  template<class Archive> void serialize(Archive & ar, const unsigned int version) {
-   ar & boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta",beta_) 
-    & boost::serialization::make_nvp("boundary_block_states_ids",boundary_block_states_ids);
-  }
-  
-  private:
-
-  double beta_;
+ struct op_desc {  // The description of the C operator
+  int block_index; // the block index of the operator
+  int inner_index; // the inner index inside the block
+  bool dagger;     // is the operator a dagger
  };
 
+ // a map associating an operator to an imaginary time
+ using oplist_t=std::map<time_pt, op_desc, std::greater<time_pt>> ;
+ // using oplist_t=boost::container::flat_map<time_pt, op_desc, std::greater<time_pt>> ;
+ oplist_t oplist;
+
+ // The boundary states, (subspace,state) pairs
+ std::vector<std::pair<int, int>> boundary_block_states_ids;
+
+ // construction and the basics stuff. value semantics, except = ?
+ configuration(double beta_, sorted_spaces const& sosp, bool use_cutoff, double cutoff);
+
+ double beta() const { return beta_; }
+
+ friend std::ostream& operator<<(std::ostream& out, configuration const& c);
+
+ template <class Archive> void serialize(Archive& ar, const unsigned int version) {
+  ar& boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta", beta_) &
+      boost::serialization::make_nvp("boundary_block_states_ids", boundary_block_states_ids);
+ }
+
+ private:
+ double beta_;
+};
 }
-#endif
 

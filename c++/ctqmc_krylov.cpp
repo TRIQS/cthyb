@@ -23,7 +23,6 @@
 
 #include "move_insert.hpp"
 #include "move_remove.hpp"
-#include "move_change_boundary_state.hpp"
 #include "measure_z.hpp"
 #include "measure_g.hpp"
 
@@ -49,9 +48,9 @@ void ctqmc_krylov::solve(utility::parameters p_in) {
      qmc.add_move(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block]);
    }
    
-   if(!params["krylov_bs_use_cutoff"]){
-        qmc.add_move(move_change_boundary_state(data, qmc.rng()), "Change the boundary state");
-   }
+   //if(!params["krylov_bs_use_cutoff"]){
+   //     qmc.add_move(move_change_boundary_state(data, qmc.rng()), "Change the boundary state");
+  // }
    
    // Measurements
    qmc.add_measure(measure_z(), "Z measure");

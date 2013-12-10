@@ -24,7 +24,6 @@
 #include "hilbert_space.hpp"
 
 #include <vector>
-#include <unordered_map>
 
 namespace cthyb_krylov {
 

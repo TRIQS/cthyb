@@ -62,7 +62,7 @@ namespace cthyb_krylov {
                             double gs_energy_convergence, std::size_t small_matrix_size) :
     config(&c),
     sosp(sosp_),
-    exp_h(sosp.hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
+    exp_h(sosp.get_hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
     partial_traces(c.boundary_block_states_ids.size(),0),
     small_matrix_size(small_matrix_size)
   {

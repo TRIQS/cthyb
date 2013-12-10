@@ -20,8 +20,8 @@
  ******************************************************************************/
 #pragma once
 
-#include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/tuple_tools.hpp>
+//#include <triqs/utility/exceptions.hpp>
+//#include <triqs/utility/tuple_tools.hpp>
 
 #include "operator.hpp"
 #include "fundamental_operator_set.hpp"
@@ -55,25 +55,23 @@ namespace cthyb_krylov {
 
    imperative_operator(many_body_op, fundamental_ops, hilbert_map)
    */
+
+ /// REMOVE THE TEMPALTE on HilbertType : only used for the connection ...
+ /// REPLACE POINTER BY NUMBER ....
 template <typename HilbertType, bool UseMap = false> class imperative_operator {
 
- // Pass it as a template parameter?
  using scalar_t = double;
 
- // coeffs has the coefficient in front of the monomial
- // nondaggers has the destruction operators (left to right)
- // daggers has the construction operators (left to right)
- struct one_term {
+ struct one_term_t {
   scalar_t coeff;
   uint64_t d_mask, dag_mask, d_count_mask, dag_count_mask;
  };
- std::vector<one_term> all_terms;
+ std::vector<one_term_t> all_terms;
 
  using hilbert_map_t = std::unordered_map<const HilbertType *, const HilbertType *>;
  hilbert_map_t hilbert_map;
 
  public:
- size_t n_monomials() const { return all_terms.size(); }
 
  imperative_operator() {}
 
@@ -108,13 +106,9 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
     return mask;
    };
    uint64_t d_count_mask = compute_count_mask(ndag), dag_count_mask = compute_count_mask(dag);
-   all_terms.push_back(one_term{term.coef, d_mask, dag_mask, d_count_mask, dag_count_mask});
+   all_terms.push_back(one_term_t{term.coef, d_mask, dag_mask, d_count_mask, dag_count_mask});
   }
  }
-
- // Regular type
- imperative_operator(imperative_operator const &) = default;
- imperative_operator &operator=(imperative_operator const &) = default;
 
  private:
  template <typename StateType> StateType get_target_st(StateType const &st, std::true_type use_map) const {
@@ -127,7 +121,7 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
   return StateType(st.get_hilbert());
  }
 
- bool parity_number_of_bits(uint64_t v) const {
+ static bool parity_number_of_bits(uint64_t v) {
   // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetNaive
   // v ^= v >> 16;
   // only ok until 16 orbitals ! assert this or put the >> 16
@@ -144,33 +138,24 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
 
  // act on a state and return a new state
  template <typename StateType> StateType operator()(StateType const &st) const {
-  StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>()); // moved
-  apply1(st, target_st);
+
+  StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>()); 
+
+  for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
+   auto M = all_terms[i]; 
+   foreach(st, [M, &target_st](uint64_t f2, typename StateType::scalar_t amplitude) {
+    if ((f2 & M.d_mask) != M.d_mask) return;
+    f2 &= ~M.d_mask;
+    if (((f2 ^ M.dag_mask) & M.dag_mask) != M.dag_mask) return;
+    uint64_t f3 = ~(~f2 & ~M.dag_mask);
+    auto sign_is_minus = parity_number_of_bits((f2 & M.d_count_mask) ^ (f3 & M.dag_count_mask));
+    // update state vector in target Hilbert space
+    auto ind = target_st.get_hilbert().get_state_index(f3);
+    target_st(ind) += amplitude * M.coeff * (sign_is_minus ? -1.0 : 1.0);
+   }); // foreach
+  }
   return target_st;
  }
 
- // INLINE
- // Apply the operator
- template <typename StateType> void apply1(StateType const &st, StateType &target_st) const {
-
-  // loop over monomials
-  for (int i = 0; i < n_monomials(); ++i) {
-
-   auto d_mask = all_terms[i].d_mask, dag_mask = all_terms[i].dag_mask;
-   auto d_count_mask = all_terms[i].d_count_mask, dag_count_mask = all_terms[i].dag_count_mask;
-   auto coef = all_terms[i].coeff;
-
-   foreach(st, [&](uint64_t f2, typename StateType::scalar_t amplitude) {
-    if ((f2 & d_mask) != d_mask) return;
-    f2 &= ~d_mask;
-    if (((f2 ^ dag_mask) & dag_mask) != dag_mask) return;
-    uint64_t f3 = ~(~f2 & ~dag_mask);
-    auto sign_is_minus = parity_number_of_bits((f2 & d_count_mask) ^ (f3 & dag_count_mask));
-    // update state vector in target Hilbert space
-    auto ind = target_st.get_hilbert().get_state_index(f3);
-    target_st(ind) += amplitude * coef * (sign_is_minus ? -1.0 : 1.0);
-   }); // foreach
-  }
- }
 };
 }

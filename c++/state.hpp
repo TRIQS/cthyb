@@ -37,6 +37,11 @@ inline double conj(double x) { return x; }
 // or by a triqs::vector so there are two implementations controlled by BasedOnMap
 template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state {};
 
+template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> 
+state<HilbertSpace, ScalarType, BasedOnMap> make_zero_state(state<HilbertSpace, ScalarType, BasedOnMap> const& st) {
+ return {st.get_hilbert()};
+}
+
 // -----------------------------------------------------------------------------------
 // implementation based on a map : can work
 // on huge hilbert spaces as long as there are not too
@@ -62,12 +67,6 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  amplitude_t const& amplitudes() const { return ampli; }
  amplitude_t& amplitudes() { return ampli; }
  HilbertSpace const& get_hilbert() const { return *hs; }
-
- friend state make_zero_state(state const& st) {
-  assert(st.hs != nullptr);
-  state zero_st(*st.hs);
-  return zero_st;
- }
 
  // basic operations
  state& operator+=(state const& s2) {
@@ -153,13 +152,6 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
 
  state() : hs(nullptr) {}
  state(HilbertSpace const& hs_) : hs(&hs_), ampli(hs_.dimension(), 0.0) {}
-
- friend state make_zero_state(state const& st) {
-  assert(st.hs != nullptr);
-  state zero_st(*st.hs);
-  // zero_st.amplitudes()() = 0;
-  return zero_st;
- }
 
  // full access to amplitudes
  amplitude_t const& amplitudes() const { return ampli; }

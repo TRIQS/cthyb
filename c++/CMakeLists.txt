@@ -1,4 +1,4 @@
-add_library(cthyb_krylov_c ctqmc_krylov.cpp)
+add_library(cthyb_krylov_c ctqmc_krylov.cpp sorted_spaces.cpp)
 target_link_libraries(cthyb_krylov_c ${TRIQS_LIBRARY_ALL})
 include_directories(${TRIQS_INCLUDE_ALL})
 triqs_set_rpath_for_target(cthyb_krylov_c)

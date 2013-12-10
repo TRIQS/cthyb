@@ -88,17 +88,11 @@ class state<HilbertSpace, true> : boost::addable< state<HilbertSpace, true>,
     // constructor on a Hilbert space
     state(HilbertSpace const & hs_): hs(&hs_) {}
 
-    //std::size_t n_amplitudes() const { return ampli.size(); }
+    std::size_t size() const { return hs->dimension(); }
     amplitude_t const& amplitudes() const { return ampli; }
     amplitude_t & amplitudes() { return ampli; }
-    
-    friend std::size_t get_space_dim(state const & st)
-    {
-      assert(st.hs!=nullptr);
-      return st.hs->dimension();
-    }
-    
-    friend state make_zero_state(state const & st)
+        
+    friend state make_zero_copy(state const & st)
     {
         assert(st.hs!=nullptr);
         state zero_st(*st.hs);
@@ -236,15 +230,9 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	state & operator = (state const &) = default;
 
 	// how many amplitudes
-	size_t n_amplitudes() const { return ampli.size(); }
+	size_t size() const { return ampli.size(); }
 
-	friend std::size_t get_space_dim(state const & st)
-	{
-	 assert(st.hs!=nullptr);
-	 return st.hs->dimension();
-	}
-
-	friend state make_zero_state(state const & st)
+	friend state make_zero_copy(state const & st)
     {
         assert(st.hs!=nullptr);
         state zero_st(*st.hs);
@@ -283,7 +271,7 @@ class state<HilbertSpace, false> : boost::addable< state<HilbertSpace, false>,
 	// print
 	friend std::ostream& operator<<(std::ostream& os, state const& s) {
          bool something_written = false;
-	 for(int i=0; i<s.n_amplitudes(); ++i) {
+	 for(int i=0; i<s.size(); ++i) {
       auto ampl = s(i);
       if(std::abs(ampl)<1e-10) continue;
 	  os << " +(" << ampl << ")" << "|" << s.hs->get_fock_state(i) << ">";

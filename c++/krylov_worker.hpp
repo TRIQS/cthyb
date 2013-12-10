@@ -142,7 +142,7 @@ template <typename OperatorType, typename StateType>
     template<typename KrylovCoeffs>
     StateType krylov_2_fock(KrylovCoeffs const& phi)
     {
-        StateType st = make_zero_state(res_vector); 
+        StateType st = make_zero_copy(res_vector); 
         for(std::size_t i = 0; i < phi.size(); ++i)
             st += phi(i) * basisstates[i];
         return st;

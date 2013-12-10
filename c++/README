@@ -22,7 +22,6 @@ move_remove.hpp
 
 measure_boundary_state.hpp 
 measure_g.hpp 
-measure_z.hpp 
 
 ctqmc_krylov.cpp 
 ctqmc_krylov.hpp

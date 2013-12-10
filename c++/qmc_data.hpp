@@ -20,10 +20,8 @@
  ******************************************************************************/
 #pragma once
 #include "./atomic_correlators_worker.hpp"
-#include <triqs/gfs/block.hpp>
-#include <triqs/gfs/imtime.hpp>
+#include <triqs/gfs.hpp>
 #include <triqs/det_manip/det_manip.hpp>
-#include <triqs/h5.hpp>
 #include <triqs/utility/serialization.hpp>
 
 namespace cthyb_krylov {
@@ -38,9 +36,7 @@ struct qmc_data {
  sorted_spaces sosp;
  atomic_correlators_worker atomic_corr;
 
- // the trace type
  using trace_t = atomic_correlators_worker::result_t;
-
  using delta_block_t = gfs::gf_view<gfs::imtime>;
  using delta_t = gfs::gf_view<gfs::block_index, gfs::gf<gfs::imtime>>;
 

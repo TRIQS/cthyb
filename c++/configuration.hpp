@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-
 #include <map>
 #include "state.hpp"
 #include "sorted_spaces.hpp"

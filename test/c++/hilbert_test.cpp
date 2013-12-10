@@ -1,5 +1,4 @@
 #include "./fundamental_operator_set.hpp"
-#include "./fock_state.hpp"
 #include "./hilbert_space.hpp"
 #include "./operator.hpp"
 #include "./imperative_operator.hpp"
@@ -54,9 +53,9 @@ int main() {
   
   hilbert_space h3(f3);
   
-  fock_state fs1 = h3.get_fock_state(10);
+  fock_state_t fs1 = h3.get_fock_state(10);
   std::cout << fs1 << std::endl;
-  fock_state fs2 = fs1;
+  fock_state_t fs2 = fs1;
   std::cout << fs2 << std::endl;
   std::cout << std::endl;
 

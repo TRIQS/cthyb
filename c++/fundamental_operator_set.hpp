@@ -26,6 +26,8 @@
 
 namespace cthyb_krylov {
 
+ using namespace triqs;
+
 // This class defines the list of operators that are used to describe
 // e.g. Fock states etc.
 

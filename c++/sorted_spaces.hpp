@@ -37,7 +37,6 @@
 #include "hilbert_space.hpp"
 #include "operator.hpp"
 #include "imperative_operator.hpp"
-#include "fock_state.hpp"
 #include "state.hpp"
 
 using namespace triqs::arrays;
@@ -111,7 +110,7 @@ class sorted_spaces {
   for (size_t r = 0; r < full_hs.dimension(); ++r) {
 
    // fock_state corresponding to r
-   fock_state fs = full_hs.get_fock_state(r);
+   fock_state_t fs = full_hs.get_fock_state(r);
 
    // the state we'll act on
    state<hilbert_space, true> s(full_hs);

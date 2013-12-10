@@ -46,9 +46,9 @@ namespace cthyb_krylov {
   sorted_spaces sosp;
 
   // the state
-  typedef state<partial_hilbert_space,false> state_t;
+  typedef state<sub_hilbert_space,false> state_t;
   
-  exp_h_worker<imperative_operator<partial_hilbert_space, false>, state_t> exp_h;
+  exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;
 
   std::vector<result_t> partial_traces; // the contribution of one block at the boundary
   result_t full_trace;
@@ -71,10 +71,16 @@ namespace cthyb_krylov {
   // recompute and return the full trace
   result_t operator()() {
     full_trace = 0;
+
     for (int i=0; i < partial_traces.size(); ++i) {
       partial_traces[i] = compute_for_one_boundary_state(i);
       full_trace += partial_traces[i];
     }
+    /*std::cout  << " number of BS "<< partial_traces.size() << std::endl;
+    int i=0;
+    for (auto x : partial_traces) if (std::abs(x)> 1.e-10) std::cout << i++ << "  "<< std::abs(x) << std::endl;
+    std::cout  << "-----------"<<std::endl;
+    */
     return full_trace;
   }
   
@@ -121,13 +127,15 @@ namespace cthyb_krylov {
    }  
 */
 
+   //std::cout  << "looping "<< std::endl ;
    int cc =0;
    for (auto it = _begin; it != _end; cc++) { // do nothing if no operator
 
       // apply operator 
       auto const & op = sosp.get_fundamental_operator (it->second.dagger, it->second.block_index, it->second.inner_index);
       psi = op(psi);
-    
+
+      //std::cout << "gs energy interm "<< sosp.get_eigensystems()[psi.get_hilbert().get_index()].eigenvalues[0] << std::endl;
       // psi is already zero, makes no sense to proceed
       if(is_zero_state(psi)) { return 0;}
       //if(is_zero_state(psi)) { if (cc !=0) std::cout << "Cancel after : "<< cc << std::endl ; return 0;}

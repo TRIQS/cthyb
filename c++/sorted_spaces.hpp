@@ -34,8 +34,7 @@
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
 #include "fundamental_operator_set.hpp"
-#include "complete_hilbert_space.hpp"
-#include "partial_hilbert_space.hpp"
+#include "hilbert_space.hpp"
 #include "operator.hpp"
 #include "imperative_operator.hpp"
 #include "fock_state.hpp"
@@ -66,7 +65,7 @@ class sorted_spaces {
  public:
  struct eigensystem_t {
   vector<double> eigenvalues; // in ascending order
-  std::vector<state<partial_hilbert_space, false>> eigenstates;
+  std::vector<state<sub_hilbert_space, false>> eigenstates;
   matrix<double> unitary_matrix; // H = U * \Lambda * U^+
  };
 
@@ -98,11 +97,11 @@ class sorted_spaces {
   }
 
   // the full Hilbert space
-  complete_hilbert_space full_hs(fops);
+  hilbert_space full_hs(fops);
 
   // make a vector of imperative operators for the quantum numbers
   for (auto& qn : qn_vector) {
-   qn_operators.push_back(imperative_operator<complete_hilbert_space>(qn, fops));
+   qn_operators.push_back(imperative_operator<hilbert_space>(qn, fops));
   }
 
   /*
@@ -115,7 +114,7 @@ class sorted_spaces {
    fock_state fs = full_hs.get_fock_state(r);
 
    // the state we'll act on
-   state<complete_hilbert_space, true> s(full_hs);
+   state<hilbert_space, true> s(full_hs);
    s(r) = 1.0;
 
    // create the vector with the quantum numbers
@@ -123,7 +122,7 @@ class sorted_spaces {
 
    // if first time we meet these quantum numbers create partial Hilbert space
    if (map_qn_n.count(qn) == 0) {
-    hilbert_spaces.push_back(std::make_shared<partial_hilbert_space>(hilbert_spaces.size()));
+    hilbert_spaces.push_back(std::make_shared<sub_hilbert_space>(hilbert_spaces.size()));
     quantum_numbers.push_back(qn);
     map_qn_n[qn] = n_blocks;
     n_blocks++;
@@ -149,12 +148,12 @@ class sorted_spaces {
    // auto destroy = tuple::apply(triqs::triqs::utility::c, ind_tuple.first);
 
    // construct their imperative counterpart
-   imperative_operator<complete_hilbert_space> op_c_dag(create, fops);
-   imperative_operator<complete_hilbert_space> op_c(destroy, fops);
+   imperative_operator<hilbert_space> op_c_dag(create, fops);
+   imperative_operator<hilbert_space> op_c(destroy, fops);
 
    // to avoid declaring every time in the loop below
    std::vector<quantum_number_t> qn_before, qn_after;
-   partial_hilbert_space* origin, *target;
+   sub_hilbert_space* origin, *target;
 
    // these will be mapping tables
    creation_connection[n].resize(n_blocks, -1);
@@ -164,7 +163,7 @@ class sorted_spaces {
    for (size_t r = 0; r < full_hs.dimension(); ++r) {
 
     // the state we'll act on and its quantum numbers
-    state<complete_hilbert_space, true> s(full_hs);
+    state<hilbert_space, true> s(full_hs);
     s(r) = 1.0;
     qn_before = get_quantum_numbers(s);
 
@@ -199,8 +198,8 @@ class sorted_spaces {
 
    // insert the creation and destruction operators in vectors. this is the fast version
    // of the operators because we explicitly use the map
-   creation_operators[n] = imperative_operator<partial_hilbert_space, true>(create, fops, creation_map[n]);
-   destruction_operators[n] = imperative_operator<partial_hilbert_space, true>(destroy, fops, destruction_map[n]);
+   creation_operators[n] = imperative_operator<sub_hilbert_space, true>(create, fops, creation_map[n]);
+   destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n]);
   }
 
   // Compute energy levels and eigenvectors of the local Hamiltonian
@@ -208,14 +207,14 @@ class sorted_spaces {
 
   // Shift the ground state energy of the local Hamiltonian to zero.
   for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
-  hamilt = imperative_operator<partial_hilbert_space, false>(h_ - get_gs_energy(), fops);
+  hamilt = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
  }
 
  // get Hamiltonian
- imperative_operator<partial_hilbert_space, false> const& hamiltonian() const { return hamilt; }
+ imperative_operator<sub_hilbert_space, false> const& hamiltonian() const { return hamilt; }
 
  // get fundamental operators
- imperative_operator<partial_hilbert_space, true> const& get_fundamental_operator(bool dagger, int block_index,
+ imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator(bool dagger, int block_index,
                                                                                   int inner_index) const {
   return (dagger ? creation_operators[int_pair_to_n.at(std::make_pair(block_index, inner_index))]
                  : destruction_operators[int_pair_to_n.at(std::make_pair(block_index, inner_index))]);
@@ -228,10 +227,10 @@ class sorted_spaces {
  }
 
  // subspaces
- partial_hilbert_space const& subspace(size_t n) const { return *hilbert_spaces[n]; }
+ sub_hilbert_space const& subspace(size_t n) const { return *hilbert_spaces[n]; }
 
  // substate
- state<partial_hilbert_space, false> substate(size_t n) const { return state<partial_hilbert_space, false>(*hilbert_spaces[n]); }
+ state<sub_hilbert_space, false> substate(size_t n) const { return state<sub_hilbert_space, false>(*hilbert_spaces[n]); }
 
  // number of blocks
  size_t n_subspaces() const { return n_blocks; }
@@ -245,7 +244,8 @@ class sorted_spaces {
    os << "qn = ";
    std::for_each(ss.quantum_numbers[n].begin(), ss.quantum_numbers[n].end(), [&os](double x) { os << x << " "; });
    os << ", ";
-   os << "size = " << ss.hilbert_spaces[n]->dimension() << std::endl;
+   os << "size = " << ss.hilbert_spaces[n]->dimension();
+   os << " Relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0]  << std::endl;
   }
   return os;
  }
@@ -254,10 +254,10 @@ class sorted_spaces {
  double get_gs_energy() const { return gs_energy; }
 
  private:
- using hilbert_map_t = std::unordered_map<const partial_hilbert_space*, const partial_hilbert_space*>;
+ using hilbert_map_t = std::unordered_map<const sub_hilbert_space*, const sub_hilbert_space*>;
 
  // Helper function to get quantum numbers
- std::vector<quantum_number_t> get_quantum_numbers(state<complete_hilbert_space> const& s) {
+ std::vector<quantum_number_t> get_quantum_numbers(state<hilbert_space> const& s) {
   std::vector<quantum_number_t> qn;
   for (auto& op : qn_operators) qn.push_back(dotc(s, op(s)));
   return qn;
@@ -271,7 +271,7 @@ class sorted_spaces {
    auto const& sp = subspace(spn);
    auto& eigensystem = eigensystems[spn];
 
-   state<partial_hilbert_space, false> i_state(sp);
+   state<sub_hilbert_space, false> i_state(sp);
    matrix<double> h_matrix(sp.dimension(), sp.dimension());
 
    for (std::size_t i = 0; i < sp.dimension(); ++i) {
@@ -286,7 +286,7 @@ class sorted_spaces {
    eigensystem.eigenvalues = ew.values();
    eigensystem.unitary_matrix = h_matrix.transpose();
    gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
-
+   
    eigensystem.eigenstates.reserve(sp.dimension());
    for (std::size_t e = 0; e < sp.dimension(); ++e) {
     eigensystem.eigenstates.emplace_back(sp);
@@ -305,10 +305,10 @@ class sorted_spaces {
  // - the quantum number operators
  // - the hamiltonian,
  // - the creation and destruction operators
- std::vector<imperative_operator<complete_hilbert_space>> qn_operators;
- imperative_operator<partial_hilbert_space, false> hamilt;
- std::vector<imperative_operator<partial_hilbert_space, true>> creation_operators;
- std::vector<imperative_operator<partial_hilbert_space, true>> destruction_operators;
+ std::vector<imperative_operator<hilbert_space>> qn_operators;
+ imperative_operator<sub_hilbert_space, false> hamilt;
+ std::vector<imperative_operator<sub_hilbert_space, true>> creation_operators;
+ std::vector<imperative_operator<sub_hilbert_space, true>> destruction_operators;
 
  // hilbert spaces and quantum numbers
  // define a more tolerant comparison between vectors
@@ -326,8 +326,8 @@ class sorted_spaces {
  };
  std::map<std::vector<double>, size_t, lt_dbl> map_qn_n;
 
- // have to use shared_ptr, because partial_hilbert_space is non-copyable
- std::vector<std::shared_ptr<partial_hilbert_space>> hilbert_spaces;
+ // have to use shared_ptr, because sub_hilbert_space is non-copyable
+ std::vector<std::shared_ptr<sub_hilbert_space>> hilbert_spaces;
 
  std::vector<std::vector<quantum_number_t>> quantum_numbers;
 

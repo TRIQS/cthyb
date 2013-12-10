@@ -1,7 +1,6 @@
 #include "./fundamental_operator_set.hpp"
 #include "./fock_state.hpp"
-#include "./complete_hilbert_space.hpp"
-#include "./partial_hilbert_space.hpp"
+#include "./hilbert_space.hpp"
 #include "./operator.hpp"
 #include "./imperative_operator.hpp"
 #include "./state.hpp"
@@ -42,18 +41,18 @@ int main() {
   
   std::cout << std::endl << "Part II: the complete_hilbert_space class" << std::endl << std::endl;
 
-  complete_hilbert_space h(f1);
+  hilbert_space h(f1);
   std::cout << "dim = " << h.dimension() << std::endl;
   std::cout << "fock state for index 120 = " << h.get_fock_state(120) << std::endl;
   std::cout << "index of fock state 120 = " << h.get_state_index(h.get_fock_state(120)) << std::endl;
-  complete_hilbert_space h2;
+  hilbert_space h2;
   h2 = h;
   std::cout << "dim = " << h.dimension() << std::endl;
   std::cout << std::endl;
   
   std::cout << std::endl << "Part III: the fock_state class" << std::endl << std::endl;
   
-  complete_hilbert_space h3(f3);
+  hilbert_space h3(f3);
   
   fock_state fs1 = h3.get_fock_state(10);
   std::cout << fs1 << std::endl;
@@ -66,8 +65,8 @@ int main() {
   fundamental_operator_set fop;
   for (int i=0; i<5; ++i) fop.add_operator("up",i);
 
-  complete_hilbert_space h_full(fop);
-  state<complete_hilbert_space, true> st(h_full);
+  hilbert_space h_full(fop);
+  state<hilbert_space, true> st(h_full);
   st(0) = 3.0;
   st(3) = 5.0;
   std::cout << "state is: " << st << std::endl;
@@ -82,20 +81,20 @@ int main() {
 
   std::cout << std::endl << "Part VI: the imperative operator" << std::endl << std::endl;
 
-  auto opH = imperative_operator<complete_hilbert_space>(H, fop);
+  auto opH = imperative_operator<hilbert_space>(H, fop);
 
-  state<complete_hilbert_space, true> old_state(h_full);
+  state<hilbert_space, true> old_state(h_full);
   old_state(7) = 1.0;
   std::cout << "old state is: " << old_state << std::endl;
 
   auto new_state = opH(old_state);
   std::cout << "new state is: " << new_state << std::endl;
 
-  std::unordered_map<const complete_hilbert_space*, const complete_hilbert_space*> mymap;
+  std::unordered_map<const hilbert_space*, const hilbert_space*> mymap;
   mymap[&h_full] = &h_full;
-  auto opH2 = imperative_operator<complete_hilbert_space, true>(H, fop, mymap);
+  auto opH2 = imperative_operator<hilbert_space, true>(H, fop, mymap);
 
-  state<complete_hilbert_space, true> old_state2(h_full);
+  state<hilbert_space, true> old_state2(h_full);
   old_state2(7) = 1.0;
   std::cout << "old state is: " << old_state2 << std::endl;
 
@@ -119,25 +118,25 @@ int main() {
   fundamental_operator_set fop2;
   for (int i=0; i<5; ++i) fop2.add_operator("up",i);
   
-  complete_hilbert_space h4(f4);
+  hilbert_space h4(f4);
   
-  partial_hilbert_space phs0(0);
+  sub_hilbert_space phs0(0);
   phs0.add_fock_state(h4.get_fock_state(0)); // 000
   phs0.add_fock_state(h4.get_fock_state(1)); // 001
   phs0.add_fock_state(h4.get_fock_state(2)); // 010
   phs0.add_fock_state(h4.get_fock_state(3)); // 011
 
-  partial_hilbert_space phs1(1);
+  sub_hilbert_space phs1(1);
   phs1.add_fock_state(h4.get_fock_state(4)); // 100
   phs1.add_fock_state(h4.get_fock_state(5)); // 101
   phs1.add_fock_state(h4.get_fock_state(6)); // 110
   phs1.add_fock_state(h4.get_fock_state(7)); // 111
 
-  std::unordered_map<const partial_hilbert_space*, const partial_hilbert_space*> Cdagmap;
+  std::unordered_map<const sub_hilbert_space*, const sub_hilbert_space*> Cdagmap;
   Cdagmap[&phs0] = &phs1;
-  auto opCdag = imperative_operator<partial_hilbert_space, true>(Cdag, fop2, Cdagmap);
+  auto opCdag = imperative_operator<sub_hilbert_space, true>(Cdag, fop2, Cdagmap);
 
-  state<partial_hilbert_space, false> start(phs0);
+  state<sub_hilbert_space, false> start(phs0);
 
   std::cout << "operator is: " << Cdag << std::endl;
   
@@ -157,17 +156,17 @@ int main() {
   FOPS.add_operator("down",0);
   FOPS.add_operator("up",1);
   FOPS.add_operator("down",1);
-  complete_hilbert_space HS(FOPS);
+  hilbert_space HS(FOPS);
   std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
   
   triqs::utility::many_body_operator<double> quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
      
-  state<complete_hilbert_space, false> st1(HS);
+  state<hilbert_space, false> st1(HS);
   st1(9) = 1.0; // 0110
   std::cout << "old state is: " << st1 << std::endl;
   std::cout << "operator is: " << quartic_op << std::endl;
-  std::cout << "new state is: " << imperative_operator<complete_hilbert_space>(quartic_op,FOPS)(st1) << std::endl;
+  std::cout << "new state is: " << imperative_operator<hilbert_space>(quartic_op,FOPS)(st1) << std::endl;
   }
 
   return 0;

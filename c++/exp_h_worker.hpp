@@ -136,6 +136,7 @@ public:
 	    //v2(all) = unitary_matrix.transpose() * initial_state.amplitudes();
 	    triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(),  initial_state.amplitudes(), 0.0, v2(all)) ;
             for(int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau* eigensystem.eigenvalues(n));
+	    //std::cout  << "apply exp : min energy :"<<  eigensystem.eigenvalues(0) << "  tau = "<< dtau << std::endl; 
             //st.amplitudes() =  unitary_matrix * v2(all);		
 	    triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0,  st.amplitudes()) ;
 #endif

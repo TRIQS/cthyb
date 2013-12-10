@@ -24,7 +24,7 @@
 #include <map>
 #include "state.hpp"
 #include "sorted_spaces.hpp"
-#include "partial_hilbert_space.hpp"
+#include "hilbert_space.hpp"
 #include <triqs/utility/time_pt.hpp>
 
 namespace cthyb_krylov {
@@ -62,6 +62,8 @@ namespace cthyb_krylov {
   
   void reset_boundary_states(sorted_spaces const & sosp)
   {
+   //std::cout  << " All BS : "<< sosp.n_subspaces() << std::endl ;
+   //std::cout  << " All BS : "<< sosp << std::endl ;
       for(std::size_t nsp = 0; nsp < sosp.n_subspaces(); ++nsp){
           // Should initialize all boundary states with something nonzero
           boundary_block_states_ids.push_back(std::make_pair(nsp,0));
@@ -70,7 +72,9 @@ namespace cthyb_krylov {
   
   void fill_boundary_states(sorted_spaces const & sosp, double prob_tolerance = -1)
   {
-      // Atomic partition function
+   //std::cout  << " Cutoff BS : "<< sosp.n_subspaces() << std::endl ;
+   //std::cout  << " Cutoff BS : "<< sosp << std::endl ;
+       // Atomic partition function
       double z = 0;
       for(auto const& es : sosp.get_eigensystems())
           for(auto e : es.eigenvalues){

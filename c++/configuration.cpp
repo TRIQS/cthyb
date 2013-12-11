@@ -5,7 +5,7 @@ namespace cthyb_krylov {
 configuration::configuration(double beta_, sorted_spaces const& sosp, bool use_cutoff, double cutoff) : beta_(beta_) {
 
  // std::cout  << " Cutoff BS : "<< sosp.n_subspaces() << std::endl ;
- std::cout  << " Cutoff BS : "<< sosp << std::endl ;
+ //std::cout  << " Cutoff BS : "<< sosp << std::endl ;
  // Atomic partition function
  double z = 0;
  for (auto const& es : sosp.get_eigensystems())
@@ -26,8 +26,9 @@ configuration::configuration(double beta_, sorted_spaces const& sosp, bool use_c
   }
  }
 
- std::cout << "Summing over " << total_states << " states in the outer trace ";
- std::cout << "(the probability cutoff is set to " << cutoff << ")" << std::endl;
+ // not true any more
+ //std::cout << "Summing over " << total_states << " states in the outer trace ";
+ //std::cout << "(the probability cutoff is set to " << cutoff << ")" << std::endl;
 }
 
 //-------------------------------------------------------------------------

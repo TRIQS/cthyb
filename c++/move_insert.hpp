@@ -49,8 +49,12 @@ namespace cthyb_krylov {
 #endif
 
    // Pick up the value of alpha and choose the operators
-   configuration::op_desc op1 {block_index, rng(block_size), true},
-                          op2 {block_index, rng(block_size), false};
+ //  configuration::op_desc op1 {block_index, rng(block_size), true, data->sosp.get_fundamental_operator_linear_index(block_index, r1},
+ //                         op2 {block_index, rng(block_size), false};
+  
+   auto rs1 = rng(block_size), rs2 = rng(block_size);
+   configuration::op_desc op1{block_index, rs1, true, data.sosp.get_fundamental_operator_linear_index(block_index, rs1)},
+       op2{block_index, rs2, false, data.sosp.get_fundamental_operator_linear_index(block_index, rs2)};
 
    // Choice of times for insertion. Find the time as double and them put them on the grid.
    //time_pt tau1 (rng(config.beta()),config.beta());

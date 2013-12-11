@@ -16,6 +16,7 @@ struct configuration {
   int block_index; // the block index of the operator
   int inner_index; // the inner index inside the block
   bool dagger;     // is the operator a dagger
+  long linear_index;
  };
 
  // a map associating an operator to an imaginary time

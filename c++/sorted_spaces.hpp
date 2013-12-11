@@ -58,16 +58,32 @@ class sorted_spaces {
  }
 
  // get fundamental operators
+ long get_fundamental_operator_linear_index(int block_index, int inner_index) const {
+  return int_pair_to_n.at({block_index, inner_index});
+ }
+
+ // get fundamental operators
  imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator(bool dagger, int block_index,
                                                                               int inner_index) const {
   auto p = int_pair_to_n.at({block_index, inner_index});
   return (dagger ? creation_operators[p] : destruction_operators[p]);
  }
 
+ // get fundamental operators
+ imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator_from_linear_index(bool dagger,
+                                                                                                int linear_index) const {
+  return (dagger ? creation_operators[linear_index] : destruction_operators[linear_index]);
+ }
+
  // connections for fundamental operators
  long fundamental_operator_connect(bool dagger, int block_index, int inner_index, int n) const {
   auto p = int_pair_to_n.at({block_index, inner_index});
   return (dagger ? creation_connection[p][n] : destruction_connection[p][n]);
+ }
+
+ // connections for fundamental operators
+ long fundamental_operator_connect_from_linear_index(bool dagger, int linear_index, int n) const {
+  return (dagger ? creation_connection[linear_index][n] : destruction_connection[linear_index][n]);
  }
 
  // eigensystems for all blocks

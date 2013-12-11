@@ -15,8 +15,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
- auto _begin = config->oplist.rbegin();
- auto _end = config->oplist.rend();
+ auto _begin = config->oplist.crbegin();
+ auto _end = config->oplist.crend();
  auto last_tau = config->beta();
  int n_blocks = sosp.n_subspaces();
 
@@ -34,18 +34,16 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
  }
  
  for (auto it = _begin; it != _end;) { // do nothing if no operator
-
   auto it1 = it;
-  double tau1 = double(it->first);
   ++it;
-  dtau = (it == _end ? config->beta() : double(it->first)) - tau1;
-  assert(dtau > 0);
-
+  dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
   bool one_non_zero = false;
   for (int n = 0; n < n_blocks; ++n) {
    if (blo[n] == -1) continue; // that chain has ended
-   one_non_zero = true;
-   blo[n] = sosp.fundamental_operator_connect(it1->second.dagger, it1->second.block_index, it1->second.inner_index, blo[n]);
+   blo[n] = sosp.fundamental_operator_connect_from_linear_index(it1->second.dagger, it1->second.linear_index, blo[n]);
+   one_non_zero |= (blo[n] != -1);
+   // a bit slower
+   //blo[n] = sosp.fundamental_operator_connect(it1->second.dagger, it1->second.block_index, it1->second.inner_index, blo[n]);
    E_min_delta_tau[n] += dtau * sosp.get_eigensystems()[n].eigenvalues[0]; // delta_tau * E_min_of_the_block
   }
   if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
@@ -63,11 +61,11 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
 
  result_t full_trace = 0;
  double epsilon = 1.e-15;
+
+ // To implement : regroup all the vector of the block for dgemm computation !
 #ifndef NO_FIRST_PASS
  for (int bl = 0; ((bl < n_bl) && (std::exp(- to_sort[bl].first) >= ( std::abs(full_trace)) * epsilon)); ++bl) {
   int block_index = to_sort[bl].second;
-  //std::cout << "bl = " << bl << " exp (-Emin dtau) "<< std::exp(- to_sort[bl].first)  <<  " trace = "<< std::abs(full_trace)  << std::endl;
-  //for (int block_index = n_blocks-1; block_index < n_blocks; ++block_index) {
 #else
   for (int block_index = 0; block_index < n_blocks; ++block_index) {
 #endif
@@ -75,29 +73,16 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
   int block_size = sosp.get_eigensystems()[block_index].eigenvalues.size();
 
   for (int state_index = 0; state_index < block_size; ++state_index) {
-
    state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
-
    // do the first exp
    double dtau = (_begin == _end ? config->beta() : double(_begin->first));
    state_t psi = exp_h(psi0, dtau);
-
-   int cc = 0;
-   bool psi_is_zero = false;
-   for (auto it = _begin; it != _end; cc++) { // do nothing if no operator
-
+   
+   for (auto it = _begin; it != _end;) { // do nothing if no operator
     // apply operator
-    auto const& op = sosp.get_fundamental_operator(it->second.dagger, it->second.block_index, it->second.inner_index);
+    auto const& op = sosp.get_fundamental_operator_from_linear_index(it->second.dagger, it->second.linear_index);
+    //auto const& op = sosp.get_fundamental_operator(it->second.dagger, it->second.block_index, it->second.inner_index);
     psi = op(psi);
-
-    // std::cout << "gs energy interm "<< sosp.get_eigensystems()[psi.get_hilbert().get_index()].eigenvalues[0] << std::endl;
-    // psi is already zero, makes no sense to proceed
-    if (is_zero_state(psi)) {
-     psi_is_zero = true;
-     //if (cc !=0) std::cout << "Cancel after : "<< cc << std::endl ;
-     break;
-    }
-    // if(is_zero_state(psi)) { if (cc !=0) std::cout << "Cancel after : "<< cc << std::endl ; return 0;}
 
     // apply exponential.
     double tau1 = double(it->first);
@@ -108,23 +93,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
     // psi = exp_h (psi, dtau);
    }
 
-   if (psi_is_zero) continue;
-
    auto partial_trace = dot_product(psi0, psi);
    full_trace += partial_trace;
-
-   // WHY IS full_trace complex ??
-   // std::cout  << "trace = "<< partial_trace << "   "<< full_trace << std::endl;
-
-   // std::cout  << " partial trace "<< n << " "<< partial_trace<< std::endl;
-   /*std::cout  << " number of BS "<< partial_traces.size() << std::endl;
-     int i=0;
-     for (auto x : partial_traces) if (std::abs(x)> 1.e-10) std::cout << i++ << "  "<< std::abs(x) << std::endl;
-     std::cout  << "-----------"<<std::endl;
-     */
   }
  }
- // std::cout << "trace = " << full_trace << std::endl;
  return full_trace;
  }
 }

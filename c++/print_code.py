@@ -1,5 +1,5 @@
 sources = """
-. operator.hpp fock_state.hpp state.hpp fundamental_operator_set.hpp complete_hilbert_space.hpp partial_hilbert_space.hpp imperative_operator.hpp sorted_spaces.hpp krylov_worker.hpp exp_h_worker.hpp configuration.hpp qmc_data.hpp atomic_correlators_worker.hpp move_change_boundary_state.hpp move_insert.hpp move_remove.hpp measure_boundary_state.hpp measure_g.hpp measure_z.hpp statistics.hpp ctqmc_krylov.cpp ctqmc_krylov.hpp
+. operator.hpp  fundamental_operator_set.hpp hilbert_space.hpp state.hpp imperative_operator.hpp sorted_spaces.hpp sorted_spaces.cpp krylov_worker.hpp exp_h_worker.hpp configuration.hpp configuration.cpp qmc_data.hpp atomic_correlators_worker.hpp atomic_correlators_worker.cpp  move_insert.hpp move_remove.hpp measure_g.hpp  statistics.hpp ctqmc_krylov.cpp ctqmc_krylov.hpp
 """
 
 src_dir = "/home/parcolle/triqs/src/cthyb_krylov/c++"
@@ -17,6 +17,7 @@ print rep
 def cut_license(f) : 
     status = 0
     print "treating %s"%f
+    return
     A = open(f).readlines()
     out = open (f,'w')
     for line in A :

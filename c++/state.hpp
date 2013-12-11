@@ -185,8 +185,9 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  // TO BE REMOVED : tolerance !!
  friend bool is_zero_state(state const& st, double tolerance = 1e-18) {
   if (st.amplitudes().size() == 0) return true;
-  for (auto const& a : st.amplitudes())
-   if (std::fabs(a) > tolerance) return false;
+  //for (auto const& a : st.amplitudes())
+  // if (std::fabs(a) > tolerance) return false;
+  return false;
   return true;
  }
 };

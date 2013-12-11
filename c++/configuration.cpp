@@ -5,7 +5,7 @@ namespace cthyb_krylov {
 configuration::configuration(double beta_, sorted_spaces const& sosp, bool use_cutoff, double cutoff) : beta_(beta_) {
 
  // std::cout  << " Cutoff BS : "<< sosp.n_subspaces() << std::endl ;
- // std::cout  << " Cutoff BS : "<< sosp << std::endl ;
+ std::cout  << " Cutoff BS : "<< sosp << std::endl ;
  // Atomic partition function
  double z = 0;
  for (auto const& es : sosp.get_eigensystems())

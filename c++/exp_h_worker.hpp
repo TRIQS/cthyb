@@ -97,6 +97,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
 
    // v2(all) = unitary_matrix.transpose() * initial_state.amplitudes();
    triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
+   //for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n)/2) * exp(-dtau * eigensystem.eigenvalues(n)/2);
    for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n));
    // std::cout  << "apply exp : min energy :"<<  eigensystem.eigenvalues(0) << "  tau = "<< dtau << std::endl;
    // st.amplitudes() =  unitary_matrix * v2(all);
@@ -116,15 +117,14 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
   auto const& eigenvalues = eigensystem.eigenvalues;
   auto const& unitary_matrix = eigensystem.unitary_matrix;
 
-  auto all = range(0, space_dim);
-  // StateType st = make_zero_state(initial_state);
-
-  // v2(all) = unitary_matrix.transpose() * initial_state.amplitudes();
-  triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
-  for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n));
-  // st.amplitudes() =  unitary_matrix * v2(all);
-  triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
-
+  if (space_dim == 1) {
+   initial_state.amplitudes()[0] *= exp(-dtau * eigensystem.eigenvalues(0));
+  } else {
+   auto all = range(0, space_dim);
+   triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
+   for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n));
+   triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
+  }
  }
 
 #ifdef KRYLOV_STATS

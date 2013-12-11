@@ -82,7 +82,8 @@ class sorted_spaces {
  std::vector<sub_hilbert_space> sub_hilbert_spaces; // all blocks
 
  // a map (int,int) -> int identifying the operator. use a flat_map for quicker access.
- boost::container::flat_map<std::pair<int, int>, int> int_pair_to_n;
+ std::map<std::pair<int, int>, int> int_pair_to_n;
+ //boost::container::flat_map<std::pair<int, int>, int> int_pair_to_n;
 
  imperative_operator<sub_hilbert_space, false> hamiltonian;
 

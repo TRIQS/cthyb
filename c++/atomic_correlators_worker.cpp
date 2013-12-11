@@ -40,11 +40,11 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
   bool one_non_zero = false;
   for (int n = 0; n < n_blocks; ++n) {
    if (blo[n] == -1) continue; // that chain has ended
+   E_min_delta_tau[n] += dtau * sosp.get_eigensystems()[blo[n]].eigenvalues[0]; // delta_tau * E_min_of_the_block
    blo[n] = sosp.fundamental_operator_connect_from_linear_index(it1->second.dagger, it1->second.linear_index, blo[n]);
    one_non_zero |= (blo[n] != -1);
    // a bit slower
    //blo[n] = sosp.fundamental_operator_connect(it1->second.dagger, it1->second.block_index, it1->second.inner_index, blo[n]);
-   E_min_delta_tau[n] += dtau * sosp.get_eigensystems()[n].eigenvalues[0]; // delta_tau * E_min_of_the_block
   }
   if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
  }

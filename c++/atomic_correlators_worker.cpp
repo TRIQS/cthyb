@@ -52,7 +52,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
  // TEST ONLY
  double E_min_delta_tau0=0;
 
- bool TEST_PRI_ONLY = true;
+ bool TEST_PRI_ONLY = false;
  if (TEST_PRI_ONLY) {
   auto bl0 = 351;
   E_min_delta_tau0 = dtau0 * sosp.get_eigensystems()[351].eigenvalues[0];

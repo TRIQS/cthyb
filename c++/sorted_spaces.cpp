@@ -85,6 +85,71 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   sub_hilbert_spaces[map_qn_n[qn]].add_fock_state(fs);
  }
 
+ /* 
+   Compute energy levels and eigenvectors of the local Hamiltonian
+ */
+ eigensystems.resize(n_subspaces());
+ gs_energy = std::numeric_limits<double>::infinity();
+
+ // Prepare the eigensystem in a temporary map to sort them by energy !
+ std::map<std::pair<double,int>,eigensystem_t> eign_map;
+
+ for (int spn = 0; spn < n_subspaces(); ++spn) {
+  auto const& sp = subspace(spn);
+  //auto& eigensystem = eigensystems[spn];
+  eigensystem_t eigensystem;
+
+  state<sub_hilbert_space, double, false> i_state(sp);
+  matrix<double> h_matrix(sp.dimension(), sp.dimension());
+
+  for (int i = 0; i < sp.dimension(); ++i) {
+   i_state.amplitudes()() = 0;
+   i_state(i) = 1;
+   auto f_state = hamiltonian(i_state);
+   h_matrix(range(), i) = f_state.amplitudes();
+  }
+  linalg::eigenelements_worker<matrix_view<double>, true> ew(h_matrix);
+
+  ew.invoke();
+  eigensystem.eigenvalues = ew.values();
+  eigensystem.unitary_matrix = h_matrix.transpose();
+  gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
+
+  eigensystem.eigenstates.reserve(sp.dimension());
+  for (int e = 0; e < sp.dimension(); ++e) {
+   eigensystem.eigenstates.emplace_back(sp);
+   eigensystem.eigenstates.back().amplitudes() = h_matrix(e, range());
+  }
+
+  eign_map.insert({{eigensystem.eigenvalues(0), spn}, eigensystem});
+ }
+
+ // Reorder the block along their minimal energy
+ {
+  auto tmp = sub_hilbert_spaces;
+  std::map<int, int> remap;
+  int i = 0;
+  for (auto const& x : eign_map) { // in order of min energy !
+   eigensystems[i] = x.second;
+   tmp[i] = sub_hilbert_spaces[x.first.second];
+   tmp[i].set_index(i);
+   remap[x.first.second] = i;
+   ++i;
+  }
+  std::swap(tmp, sub_hilbert_spaces);
+  for (auto& x : map_qn_n) {
+   x.second = remap[x.second];
+  }
+  // rematch the state which are NOT regular type !!
+  for (int spn = 0; spn < n_subspaces(); ++spn) {
+   for (auto& st : eigensystems[spn].eigenstates) st.set_hilbert(sub_hilbert_spaces[spn]);
+  }
+ }
+
+ // Shift the ground state energy of the local Hamiltonian to zero.
+ for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
+ hamiltonian = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
+
  /*
    In this second part we want to derive the partial Hilbert space
    mapping. Basically we want to know if we act on a partial Hilbert
@@ -155,40 +220,6 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n], &sub_hilbert_spaces);
  }
 
- // Compute energy levels and eigenvectors of the local Hamiltonian
- eigensystems.resize(n_subspaces());
- gs_energy = std::numeric_limits<double>::infinity();
-
- for (int spn = 0; spn < n_subspaces(); ++spn) {
-  auto const& sp = subspace(spn);
-  auto& eigensystem = eigensystems[spn];
-
-  state<sub_hilbert_space, double, false> i_state(sp);
-  matrix<double> h_matrix(sp.dimension(), sp.dimension());
-
-  for (int i = 0; i < sp.dimension(); ++i) {
-   i_state.amplitudes()() = 0;
-   i_state(i) = 1;
-   auto f_state = hamiltonian(i_state);
-   h_matrix(range(), i) = f_state.amplitudes();
-  }
-  linalg::eigenelements_worker<matrix_view<double>, true> ew(h_matrix);
-
-  ew.invoke();
-  eigensystem.eigenvalues = ew.values();
-  eigensystem.unitary_matrix = h_matrix.transpose();
-  gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
-
-  eigensystem.eigenstates.reserve(sp.dimension());
-  for (int e = 0; e < sp.dimension(); ++e) {
-   eigensystem.eigenstates.emplace_back(sp);
-   eigensystem.eigenstates.back().amplitudes() = h_matrix(e, range());
-  }
- }
-
- // Shift the ground state energy of the local Hamiltonian to zero.
- for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
- hamiltonian = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
 }
 
 // -----------------------------------------------------------------
@@ -201,7 +232,8 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
   os << "qn = ";
   for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
   os << ", ";
-  os << "size = " << ss.sub_hilbert_spaces[n].dimension();
+  os << "index = " << ss.sub_hilbert_spaces[n].get_index() << std::endl ;
+  os << "size = " << ss.sub_hilbert_spaces[n].dimension()<<std::endl ;
   os << " Relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
  }
  return os;

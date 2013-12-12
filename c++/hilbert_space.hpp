@@ -68,6 +68,8 @@ class sub_hilbert_space {
   return index;
  };
 
+ void set_index(int i) { index = i; }
+
  private:
  int index;
 

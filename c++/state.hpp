@@ -47,6 +47,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  amplitude_t const& amplitudes() const { return ampli; }
  amplitude_t& amplitudes() { return ampli; }
  HilbertSpace const& get_hilbert() const { return *hs; }
+ void set_hilbert(HilbertSpace const& hs_) { hs = &hs_; }
 
  // basic operations
  state& operator+=(state const& s2) {
@@ -143,6 +144,7 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
 
  // get access to hilbert space
  HilbertSpace const& get_hilbert() const { return *hs; }
+ void set_hilbert(HilbertSpace const& hs_) { hs = &hs_; }
 
  // print
  friend std::ostream& operator<<(std::ostream& os, state const& s) {

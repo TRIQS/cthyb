@@ -34,6 +34,7 @@ namespace cthyb_krylov {
 
   //----------------
 
+  // FAIRE UN LAMBDA
   void remove_op(int n, bool dag) {
    // Find the position of the operator to remove
    int i = 0;
@@ -54,7 +55,7 @@ namespace cthyb_krylov {
    std::cerr << "* Configuration before:" << std::endl;
    std::cerr << config;
 #endif
-
+   
    // the det has to be recomputed each time, since global moves will change it
    auto & det = data.dets[block_index];
 
@@ -76,11 +77,12 @@ namespace cthyb_krylov {
 #endif
    remove_op(num_c,false); remove_op(num_c_dag,true);
 
-   auto det_ratio = det.try_remove(num_c_dag,num_c);
-
    new_trace = data.atomic_corr();
+   if (new_trace == 0.0) return 0;
    auto trace_ratio = new_trace/data.trace;
 
+   auto det_ratio = det.try_remove(num_c_dag,num_c);
+   
    // acceptance probability
    mc_weight_type p = trace_ratio * det_ratio;
    double t_ratio = std::pow(block_size* config.beta() / double(det_size), 2);

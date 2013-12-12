@@ -2,6 +2,8 @@
 #include "configuration.hpp"
 #include "sorted_spaces.hpp"
 #include "exp_h_worker.hpp"
+
+#include "./histograms.hpp"
 namespace cthyb_krylov {
 
 /**
@@ -23,6 +25,8 @@ class atomic_correlators_worker {
  const configuration* config; // must exists longer than this object.
  sorted_spaces sosp;          // The sorted space
  int small_matrix_size;// The minimal size of a matrix to be treated with exp_h_matrix
+ std::map<std::string,statistics::histogram_segment_bin> histos;
+ statistics::histogram histo_bs_block; 
 
  using state_t = state<sub_hilbert_space, double, false>;
  exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;

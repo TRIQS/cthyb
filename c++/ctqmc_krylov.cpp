@@ -5,6 +5,8 @@
 #include "move_remove.hpp"
 #include "measure_g.hpp"
 
+#include "measure_path_analysis.hpp"
+
 #ifdef KRYLOV_STATS
 #include "measure_boundary_state.hpp"
 #endif
@@ -39,6 +41,8 @@ void ctqmc_krylov::solve(utility::parameters p_in) {
   }
  }
 
+  //qmc.add_measure(measure_path_analysis(data), "Path statistics");
+ 
 #ifdef KRYLOV_STATS
  if (!params["krylov_bs_use_cutoff"]) {
   qmc.add_measure(measure_boundary_state(data, BOUNDARY_STATS_FILE), "Boundary state statistics");

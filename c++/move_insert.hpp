@@ -86,6 +86,7 @@ namespace cthyb_krylov {
    inserted_ops.push_back(r2.first);
    
    new_trace = data.atomic_corr();
+   if (new_trace == 0.0) return 0;
    auto trace_ratio = new_trace/data.trace;
    
    auto & det = data.dets[block_index];

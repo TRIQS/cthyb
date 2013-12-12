@@ -126,6 +126,23 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
    triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
   }
  }
+ //-----------------------------------------------------
+ 
+ void apply_no_emin(state_type& initial_state, double dtau) {
+  auto const& space = initial_state.get_hilbert();
+  std::size_t space_dim = space.dimension();
+
+  auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
+  auto const& eigenvalues = eigensystem.eigenvalues;
+  auto const& unitary_matrix = eigensystem.unitary_matrix;
+  
+  if (space_dim == 1) return;
+  
+  auto all = range(0, space_dim);
+  triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
+  for (int n = 1; n < space_dim; ++n) v2[n] *= exp(-dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+  triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
+ }
 
 #ifdef KRYLOV_STATS
  ~exp_h_worker() { stats.dump(); }

@@ -34,33 +34,36 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
  std::vector<double> E_min_delta_tau(n_blocks, 0);
  std::vector<int> blo(n_blocks);
 
- //std::vector<std::pair<double,int>> config_table;
- //std::vector<std::tuple<double,bool,int>> config_table(n_blocks);
  std::vector<_p1> config_table(config_size);
  const double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
 
- // first block only
- // TEST ONLY
- double E_min_delta_tau0=0;
-if (1) {
-  auto bl0 = 351;
-  int ii=0;
-  E_min_delta_tau0 = dtau0 * sosp.get_eigensystems()[351].eigenvalues[0];
+ // fill the table
+ {
+  int ii = 0;
   for (auto it = _begin; it != _end;) { // do nothing if no operator
    auto it1 = it;
    ++it;
    double dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
    config_table[ii++] = {dtau, it1->second.dagger, it1->second.linear_index};
-   // apply operator
-   bl0 = sosp.fundamental_operator_connect_from_linear_index(it1->second.dagger, it1->second.linear_index, bl0);
-   if (bl0 == -1) break;
-   E_min_delta_tau0 += dtau * sosp.get_eigensystems()[bl0].eigenvalues[0]; // delta_tau * E_min_of_the_block
   }
-
-  //if (bl0 != -1) return std::exp(-E_min_delta_tau0);
  }
 
- // reverse the loop
+ // first block only. MUST HAVE THE BLOCK IN Emin Order 
+ // TEST ONLY
+ double E_min_delta_tau0=0;
+
+ bool TEST_PRI_ONLY = true;
+ if (TEST_PRI_ONLY) {
+  auto bl0 = 351;
+  E_min_delta_tau0 = dtau0 * sosp.get_eigensystems()[351].eigenvalues[0];
+  for (int i = 0; i < config_size; ++i) {
+   // apply operator
+   bl0 = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl0);
+   if (bl0 == -1) break;
+   E_min_delta_tau0 += config_table[i].dtau  * sosp.get_eigensystems()[bl0].eigenvalues[0]; // delta_tau * E_min_of_the_block
+  }
+ }
+
  bool one_non_zero = false;
  for (int n = 0; n < n_blocks; ++n) {
   int bl = n;
@@ -69,7 +72,7 @@ if (1) {
    bl = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl);
    if (bl == -1) break;
    sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   if (sum_emin_dtau > E_min_delta_tau0 + 35) {                                        // exp (-35) = 1.e-15
+   if (TEST_PRI_ONLY && (sum_emin_dtau > E_min_delta_tau0 + 35)) {                                        // exp (-35) = 1.e-15
     bl = -1;
     break;
    }
@@ -80,34 +83,6 @@ if (1) {
  }
  if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
 
-/*
- // do the first exp
- //double dtau = (_begin == _end ? config->beta() : double(_begin->first));
- for (int n = 0; n < n_blocks; ++n) {
-  blo[n]=n;
-  E_min_delta_tau[n] = dtau0 * sosp.get_eigensystems()[n].eigenvalues[0]; // delta_tau * E_min_of_the_block
- }
-
- for (auto it = _begin; it != _end;) { // do nothing if no operator
-  auto it1 = it;
-  ++it;
-  double dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
-  bool one_non_zero = false;
-  for (int n = 0; n < n_blocks; ++n) {
-   if (blo[n] == -1) continue;
-   // apply operator
-   blo[n] = sosp.fundamental_operator_connect_from_linear_index(it1->second.dagger, it1->second.linear_index, blo[n]);
-   // blo[n] = sosp.fundamental_operator_connect(it1->second.dagger, it1->second.block_index, it1->second.inner_index, blo[n]);
-   if (blo[n] == -1) continue;
-   // apply "exp"
-   E_min_delta_tau[n] += dtau * sosp.get_eigensystems()[blo[n]].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   if (E_min_delta_tau[n] > E_min_delta_tau0 + 35) { blo[n] =-1; continue;} // exp (-35) = 1.e-15
-   one_non_zero = true;
-  }
-  if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
- }
-
-*/
  // Now sort the blocks
  std::vector<std::pair<double, int>> to_sort(n_blocks);
  int n_bl = 0; // the number of blocks giving non zero
@@ -184,8 +159,8 @@ if (1) {
   }
  }
 
- bool use_histograms = false;
- //bool use_histograms = true; //false;
+ //bool use_histograms = false;
+ bool use_histograms = true; //false;
  if (use_histograms) {
   auto abs_trace = std::abs(full_trace);
   if (abs_trace > 0) histos["FirsTerm_FullTrace"] << std::abs(first_term) / abs_trace;

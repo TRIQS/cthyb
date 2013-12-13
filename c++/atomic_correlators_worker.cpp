@@ -19,29 +19,79 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
 //------------------------------------------------------------------------------
 
+struct _p1 { double dtau; bool dag; long n;};
+
 atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
- auto _begin = config->oplist.crbegin();
- auto _end = config->oplist.crend();
- auto last_tau = config->beta();
- int n_blocks = sosp.n_subspaces();
+ const auto _begin = config->oplist.crbegin();
+ const auto _end = config->oplist.crend();
+ const auto last_tau = config->beta();
+ const int n_blocks = sosp.n_subspaces();
+ const int config_size = config->oplist.size();
 
 //#define NO_FIRST_PASS
 #ifndef NO_FIRST_PASS
  // make a first pass to compute the bound for each term.
  std::vector<double> E_min_delta_tau(n_blocks, 0);
  std::vector<int> blo(n_blocks);
- for (int u = 0; u < n_blocks; ++u) blo[u] = u;
 
- // do the first exp
- double dtau = (_begin == _end ? config->beta() : double(_begin->first));
+ //std::vector<std::pair<double,int>> config_table;
+ //std::vector<std::tuple<double,bool,int>> config_table(n_blocks);
+ std::vector<_p1> config_table(config_size);
+ const double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
+
+ // first block only
+ // TEST ONLY
+ double E_min_delta_tau0=0;
+if (1) {
+  auto bl0 = 351;
+  int ii=0;
+  E_min_delta_tau0 = dtau0 * sosp.get_eigensystems()[351].eigenvalues[0];
+  for (auto it = _begin; it != _end;) { // do nothing if no operator
+   auto it1 = it;
+   ++it;
+   double dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
+   config_table[ii++] = {dtau, it1->second.dagger, it1->second.linear_index};
+   // apply operator
+   bl0 = sosp.fundamental_operator_connect_from_linear_index(it1->second.dagger, it1->second.linear_index, bl0);
+   if (bl0 == -1) break;
+   E_min_delta_tau0 += dtau * sosp.get_eigensystems()[bl0].eigenvalues[0]; // delta_tau * E_min_of_the_block
+  }
+
+  //if (bl0 != -1) return std::exp(-E_min_delta_tau0);
+ }
+
+ // reverse the loop
+ bool one_non_zero = false;
  for (int n = 0; n < n_blocks; ++n) {
-  E_min_delta_tau[n] = dtau * sosp.get_eigensystems()[n].eigenvalues[0]; // delta_tau * E_min_of_the_block
+  int bl = n;
+  double sum_emin_dtau = dtau0 * sosp.get_eigensystems()[n].eigenvalues[0];
+  for (int i = 0; i < config_size; ++i) {
+   bl = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl);
+   if (bl == -1) break;
+   sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
+   if (sum_emin_dtau > E_min_delta_tau0 + 35) {                                        // exp (-35) = 1.e-15
+    bl = -1;
+    break;
+   }
+  }
+  blo[n] = bl;
+  E_min_delta_tau[n] = sum_emin_dtau;
+  one_non_zero |= (bl != -1);
+ }
+ if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
+
+/*
+ // do the first exp
+ //double dtau = (_begin == _end ? config->beta() : double(_begin->first));
+ for (int n = 0; n < n_blocks; ++n) {
+  blo[n]=n;
+  E_min_delta_tau[n] = dtau0 * sosp.get_eigensystems()[n].eigenvalues[0]; // delta_tau * E_min_of_the_block
  }
 
  for (auto it = _begin; it != _end;) { // do nothing if no operator
   auto it1 = it;
   ++it;
-  dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
+  double dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
   bool one_non_zero = false;
   for (int n = 0; n < n_blocks; ++n) {
    if (blo[n] == -1) continue;
@@ -51,16 +101,18 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
    if (blo[n] == -1) continue;
    // apply "exp"
    E_min_delta_tau[n] += dtau * sosp.get_eigensystems()[blo[n]].eigenvalues[0]; // delta_tau * E_min_of_the_block
+   if (E_min_delta_tau[n] > E_min_delta_tau0 + 35) { blo[n] =-1; continue;} // exp (-35) = 1.e-15
    one_non_zero = true;
   }
   if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
  }
 
+*/
  // Now sort the blocks
  std::vector<std::pair<double, int>> to_sort(n_blocks);
  int n_bl = 0; // the number of blocks giving non zero
  for (int n = 0; n < n_blocks; ++n)
-  if (blo[n] == n) // Must return to the SAME block, or trace is 0
+  if (blo[n] == n)  // Must return to the SAME block, or trace is 0
    to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
 
  std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector
@@ -90,9 +142,9 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
    state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
 
    // do the first exp
-   dtau = (_begin == _end ? config->beta() : double(_begin->first));
+   //dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
    state_t psi = psi0;
-   exp_h.apply_no_emin(psi, dtau);
+   exp_h.apply_no_emin(psi, dtau0);
 
    for (auto it = _begin; it != _end;) { // do nothing if no operator
     // apply operator
@@ -103,7 +155,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
     // apply exponential.
     double tau1 = double(it->first);
     ++it;
-    dtau = (it == _end ? config->beta() : double(it->first)) - tau1;
+    double dtau = (it == _end ? config->beta() : double(it->first)) - tau1;
     assert(dtau > 0);
     exp_h.apply_no_emin(psi, dtau);
    }
@@ -132,7 +184,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
   }
  }
 
- bool use_histograms = true; //false;
+ bool use_histograms = false;
+ //bool use_histograms = true; //false;
  if (use_histograms) {
   auto abs_trace = std::abs(full_trace);
   if (abs_trace > 0) histos["FirsTerm_FullTrace"] << std::abs(first_term) / abs_trace;

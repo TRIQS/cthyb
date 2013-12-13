@@ -47,10 +47,10 @@ for sn in spin_names:
         # Plot the results
         oplot(arch[mkind(sn,cn)[0]], name="Krylov")
         # Plot the reference curve
-        oplot(g_ref[nc,nc], name="ED")
-        if not use_interaction:
-            # Plot the theoretical curve
-            oplot(g_theor[nc,nc], name="Theory")
+	if use_interaction:
+            oplot(g_ref[nc,nc], name="ED")
+        else:
+            oplot(g_theor[nc,nc], name="ED")
         
         axes = plt.gca()
         axes.set_title('$' + sn + '$, $' + cn + '$')

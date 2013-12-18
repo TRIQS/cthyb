@@ -10,8 +10,7 @@
 #include <triqs/utility/callbacks.hpp>
 #include <boost/mpi/communicator.hpp>
 
-#include "operator.hpp"
-#include "qmc_data.hpp"
+#include "./qmc_data.hpp"
 
 #include <vector>
 

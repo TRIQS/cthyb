@@ -6,20 +6,28 @@
 namespace cthyb_krylov {
 
 atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence,
-                                                     int small_matrix_size)
+                                                     int small_matrix_size, bool make_histograms)
    : config(&c),
      sosp(sosp_),
      exp_h(sosp.get_hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
-     small_matrix_size(small_matrix_size) {
- histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
- histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
- histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
- histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
+     small_matrix_size(small_matrix_size),
+     make_histograms(make_histograms) {
+ if (make_histograms) {
+  histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
+  histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
+  histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
+  histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
+ }
+ // std::cout  << "Block structure " << sosp<< std::endl;
 }
 
 //------------------------------------------------------------------------------
 
-struct _p1 { double dtau; bool dag; long n;};
+struct _p1 {
+ double dtau;
+ bool dag;
+ long n;
+};
 
 atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
  const auto _begin = config->oplist.crbegin();
@@ -48,20 +56,15 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
   }
  }
 
- // first block only. MUST HAVE THE BLOCK IN Emin Order 
- // TEST ONLY
- double E_min_delta_tau0=0;
-
- bool TEST_PRI_ONLY = false;
- if (TEST_PRI_ONLY) {
-  auto bl0 = 351;
-  E_min_delta_tau0 = dtau0 * sosp.get_eigensystems()[351].eigenvalues[0];
-  for (int i = 0; i < config_size; ++i) {
-   // apply operator
-   bl0 = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl0);
-   if (bl0 == -1) break;
-   E_min_delta_tau0 += config_table[i].dtau  * sosp.get_eigensystems()[bl0].eigenvalues[0]; // delta_tau * E_min_of_the_block
-  }
+ // First compute a guess of the minimal E Tau
+ double E_min_delta_tau0 = 0;
+ auto bl0 = 0;
+ E_min_delta_tau0 = dtau0 * sosp.get_eigensystems()[0].eigenvalues[0];
+ for (int i = 0; i < config_size; ++i) {
+  // apply operator
+  bl0 = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl0);
+  if (bl0 == -1) break;
+  E_min_delta_tau0 += config_table[i].dtau * sosp.get_eigensystems()[bl0].eigenvalues[0]; // delta_tau * E_min_of_the_block
  }
 
  bool one_non_zero = false;
@@ -72,7 +75,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
    bl = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl);
    if (bl == -1) break;
    sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   if (TEST_PRI_ONLY && (sum_emin_dtau > E_min_delta_tau0 + 35)) {                                        // exp (-35) = 1.e-15
+   if (sum_emin_dtau > E_min_delta_tau0 + 35) {                                        // exp (-35) = 1.e-15
     bl = -1;
     break;
    }
@@ -87,14 +90,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
  std::vector<std::pair<double, int>> to_sort(n_blocks);
  int n_bl = 0; // the number of blocks giving non zero
  for (int n = 0; n < n_blocks; ++n)
-  if (blo[n] == n)  // Must return to the SAME block, or trace is 0
+  if (blo[n] == n) // Must return to the SAME block, or trace is 0
    to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
 
  std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector
-
- // NOT much faster because the first part of the code IS LONGER
- // TOO MANY BLOCS ! --> do first GS, then search for better...
- //return std::exp(-to_sort[0].first); // QUICK estimate 
 
 #endif
 
@@ -117,7 +116,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
    state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
 
    // do the first exp
-   //dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
+   // dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
    state_t psi = psi0;
    exp_h.apply_no_emin(psi, dtau0);
 
@@ -141,27 +140,12 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
    // CHECK conjecture
    if (std::abs(partial_trace_no_emin) > 1.0000001) throw "halte la !";
 
-   /*
-   if (bl==0) {
-    std::cout << "-------" << std::endl;
-    std::cout  << " block_index" << block_index<<std::endl;
-    std::cout << "partial trace " << std::abs(partial_trace) << std::endl;
-    std::cout << "partial_trace without emin" << std::abs(partial_trace_check) << std::endl;
-    std::cout << "exp - sum emin" << std::exp(-to_sort[bl].first) << std::endl;
-    std::cout << "exp - sum emin" << std::exp(-E_min_delta_tau[block_index]) << std::endl;
-    std::cout << "<1 ?" << std::abs(partial_trace) / std::exp(-to_sort[bl].first) << std::endl;
-   // std::cout << "partial_trace_noexp " << std::abs(partial_trace_noexp) << std::endl;
-   }
- */
-
    if (bl == 0) first_term = partial_trace;
    full_trace += partial_trace;
   }
  }
 
- //bool use_histograms = false;
- bool use_histograms = true; //false;
- if (use_histograms) {
+ if (make_histograms) {
   auto abs_trace = std::abs(full_trace);
   if (abs_trace > 0) histos["FirsTerm_FullTrace"] << std::abs(first_term) / abs_trace;
   histos["FullTrace_ExpSumMin"] << std::abs(full_trace) / std::exp(-to_sort[0].first);

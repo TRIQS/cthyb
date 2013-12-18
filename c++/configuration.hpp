@@ -20,23 +20,24 @@ struct configuration {
  };
 
  // a map associating an operator to an imaginary time
- using oplist_t=std::map<time_pt, op_desc, std::greater<time_pt>> ;
+ using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
  // using oplist_t=boost::container::flat_map<time_pt, op_desc, std::greater<time_pt>> ;
  oplist_t oplist;
 
- // The boundary states, (subspace,state) pairs
- std::vector<std::pair<int, int>> boundary_block_states_ids;
-
  // construction and the basics stuff. value semantics, except = ?
- configuration(double beta_, sorted_spaces const& sosp, bool use_cutoff, double cutoff);
+ configuration(double beta) : beta_(beta) {}
 
  double beta() const { return beta_; }
 
- friend std::ostream& operator<<(std::ostream& out, configuration const& c);
+ friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
+  for (auto const& op : c.oplist)
+   out << "tau = " << op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","
+       << op.second.inner_index << ")\n";
+  return out;
+ }
 
  template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-  ar& boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta", beta_) &
-      boost::serialization::make_nvp("boundary_block_states_ids", boundary_block_states_ids);
+  ar& boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta", beta_);
  }
 
  private:

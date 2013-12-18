@@ -53,9 +53,9 @@ struct qmc_data {
 
  // construction and the basics stuff. value semantics, except = ?
  qmc_data(utility::parameters const &p, sorted_spaces const &sosp, const delta_t delta)
-    : config(p["beta"], sosp, p["krylov_bs_use_cutoff"], p["krylov_bs_prob_cutoff"]),
+    : config(p["beta"]),
       sosp(sosp),
-      atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"]),
+      atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"], p["make_path_histograms"]),
       current_sign(1),
       old_sign(1) {
   trace = atomic_corr();

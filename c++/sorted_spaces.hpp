@@ -5,11 +5,8 @@
 #include <map>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
-#include "fundamental_operator_set.hpp"
-#include "hilbert_space.hpp"
-#include "operator.hpp"
-#include "imperative_operator.hpp"
-#include "state.hpp"
+#include "./imperative_operator.hpp"
+#include "./state.hpp"
 
 using namespace triqs::arrays;
 

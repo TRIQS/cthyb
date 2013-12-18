@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 #include "krylov_worker.hpp"
 #include "sorted_spaces.hpp"
 
@@ -46,9 +46,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
   int max_subspace_dim = 0;
   for (int nsp = 0; nsp < sosp.n_subspaces(); ++nsp)
    max_subspace_dim = std::max(max_subspace_dim, sosp.subspace(nsp).dimension());
-
   small_matrix_size = std::min(small_matrix_size, max_subspace_dim);
-
   matrix_exp.resize(small_matrix_size, small_matrix_size);
   krylov_exp.resize(max_subspace_dim, max_subspace_dim);
   v2.resize(max_subspace_dim);
@@ -60,7 +58,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
  //---------------------------------------------------------------------------
  state_type operator()(state_type const& initial_state, double dtau) {
   auto const& space = initial_state.get_hilbert();
-  std::size_t space_dim = space.dimension();
+  int space_dim = space.dimension();
 
   if (space_dim > small_matrix_size) {
 
@@ -68,7 +66,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
    kw(initial_state / initial_state_norm);
 
    auto eigenvalues = kw.values();
-   std::size_t krylov_dim = eigenvalues.size();
+   int krylov_dim = eigenvalues.size();
 
 #ifdef KRYLOV_STATS
    stats(space_dim, krylov_dim);
@@ -76,7 +74,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
    auto all = range(0, krylov_dim);
 
    krylov_exp(all, all) = 0;
-   for (std::size_t n = 0; n < krylov_dim; ++n) krylov_exp(n, n) = exp(-dtau * eigenvalues(n));
+   for (int n = 0; n < krylov_dim; ++n) krylov_exp(n, n) = exp(-dtau * eigenvalues(n));
 
    krylov_exp(all, all) = kw.vectors().transpose() * krylov_exp(all, all) * kw.vectors();
    auto krylov_coeffs = initial_state_norm * krylov_exp(all, 0);
@@ -97,51 +95,26 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
 
    // v2(all) = unitary_matrix.transpose() * initial_state.amplitudes();
    triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
-   //for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n)/2) * exp(-dtau * eigensystem.eigenvalues(n)/2);
    for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n));
-   // std::cout  << "apply exp : min energy :"<<  eigensystem.eigenvalues(0) << "  tau = "<< dtau << std::endl;
    // st.amplitudes() =  unitary_matrix * v2(all);
    triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, st.amplitudes());
 
    return st;
   }
  }
- 
  //-----------------------------------------------------
- 
- void apply(state_type& initial_state, double dtau) {
-  auto const& space = initial_state.get_hilbert();
-  std::size_t space_dim = space.dimension();
 
-  auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
-  auto const& eigenvalues = eigensystem.eigenvalues;
-  auto const& unitary_matrix = eigensystem.unitary_matrix;
-
-  if (space_dim == 1) {
-   initial_state.amplitudes()[0] *= exp(-dtau * eigensystem.eigenvalues(0));
-  } else {
-   auto all = range(0, space_dim);
-   triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
-   for (int n = 0; n < space_dim; ++n) v2[n] *= exp(-dtau * eigensystem.eigenvalues(n));
-   triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
-  }
- }
- //-----------------------------------------------------
- 
  void apply_no_emin(state_type& initial_state, double dtau) {
   auto const& space = initial_state.get_hilbert();
-  std::size_t space_dim = space.dimension();
+  int space_dim = space.dimension();
 
   auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
-  auto const& eigenvalues = eigensystem.eigenvalues;
-  auto const& unitary_matrix = eigensystem.unitary_matrix;
-  
+
   if (space_dim == 1) return;
-  
   auto all = range(0, space_dim);
-  triqs::arrays::blas::gemv(1.0, unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
+  triqs::arrays::blas::gemv(1.0, eigensystem.unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
   for (int n = 1; n < space_dim; ++n) v2[n] *= exp(-dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
-  triqs::arrays::blas::gemv(1.0, unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
+  triqs::arrays::blas::gemv(1.0, eigensystem.unitary_matrix, v2(all), 0.0, initial_state.amplitudes());
  }
 
 #ifdef KRYLOV_STATS

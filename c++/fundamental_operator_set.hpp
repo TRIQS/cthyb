@@ -1,6 +1,5 @@
-#ifndef TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
-#define TRIQS_CTQMC_KRYLOV_FUNDAMENTAL_OPERATOR_SET
-#include "./operator.hpp"
+#pragma once
+#include "triqs/many_body_operator.hpp"
 #include <vector>
 #include <map>
 
@@ -66,4 +65,4 @@ class fundamental_operator_set {
  const_iterator cend() const noexcept { return map_index_n.cend(); }
 };
 }
-#endif
+

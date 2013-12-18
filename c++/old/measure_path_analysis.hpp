@@ -2,10 +2,6 @@
 #include "qmc_data.hpp"
 #include <vector>
 #include <functional>
-//#include <algorithm>
-//#include <fstream>
-//#include <boost/serialization/vector.hpp>
-//#include <boost/mpi/collectives.hpp>
 
 namespace cthyb_krylov {
 

@@ -6,7 +6,7 @@ cdef extern from "<sstream>" namespace "std":
         stringstream()
         string str()
 
-cdef extern from "c++/operator.hpp" namespace "triqs::utility":
+cdef extern from "c++/triqs/many_body_operator.hpp" namespace "triqs::utility":
 
     cdef cppclass many_body_operator[double]:
 

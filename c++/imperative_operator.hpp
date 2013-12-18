@@ -1,7 +1,6 @@
 #pragma once
-#include "operator.hpp"
-#include "fundamental_operator_set.hpp"
-#include "hilbert_space.hpp"
+#include "./fundamental_operator_set.hpp"
+#include "./hilbert_space.hpp"
 
 #include <vector>
 

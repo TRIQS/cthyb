@@ -14,7 +14,7 @@ inline double conj(double x) { return x; } // questionable : collides with std::
 // or by a triqs::vector so there are two implementations controlled by BasedOnMap
 template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state {};
 
-template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> 
+template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
 state<HilbertSpace, ScalarType, BasedOnMap> make_zero_state(state<HilbertSpace, ScalarType, BasedOnMap> const& st) {
  return {st.get_hilbert()};
 }
@@ -93,13 +93,11 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  }
 
  private:
-
  void prune(double tolerance = 10e-10) {
   for (auto it = ampli.begin(); it != ampli.end(); it++) {
    if (std::fabs(it->second) < tolerance) ampli.erase(it);
   }
  }
-
 };
 
 // Lambda (fs, amplitude)
@@ -175,7 +173,6 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
 
  // scalar product
  friend scalar_t dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
-
 };
 
 // Lambda (fs, amplitude)

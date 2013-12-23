@@ -14,7 +14,8 @@ class atomic_correlators_worker {
  public:
  using result_t = std::complex<double>;
 
- atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence, int small_matrix_size, bool make_histograms);
+ atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence, int small_matrix_size,
+                           bool make_histograms);
 
  result_t operator()(); // recompute and return the full trace
 

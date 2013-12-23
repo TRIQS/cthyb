@@ -86,18 +86,18 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   sub_hilbert_spaces[map_qn_n[qn]].add_fock_state(fs);
  }
 
- /* 
+ /*
    Compute energy levels and eigenvectors of the local Hamiltonian
  */
  eigensystems.resize(n_subspaces());
  gs_energy = std::numeric_limits<double>::infinity();
 
  // Prepare the eigensystem in a temporary map to sort them by energy !
- std::map<std::pair<double,int>,eigensystem_t> eign_map;
+ std::map<std::pair<double, int>, eigensystem_t> eign_map;
 
  for (int spn = 0; spn < n_subspaces(); ++spn) {
   auto const& sp = subspace(spn);
-  //auto& eigensystem = eigensystems[spn];
+  // auto& eigensystem = eigensystems[spn];
   eigensystem_t eigensystem;
 
   state<sub_hilbert_space, double, false> i_state(sp);
@@ -146,7 +146,7 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   for (int spn = 0; spn < n_subspaces(); ++spn) {
    for (auto& st : eigensystems[spn].eigenstates) st.set_hilbert(sub_hilbert_spaces[spn]);
   }
- }//end reordering
+ } // end reordering
 
  // Shift the ground state energy of the local Hamiltonian to zero.
  for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
@@ -233,14 +233,13 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
  for (int n = 0; n < ss.sub_hilbert_spaces.size(); ++n) {
   os << "Block " << n << ", ";
   os << "relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
-  os << "size = " << ss.sub_hilbert_spaces[n].dimension()<<std::endl ;
+  os << "size = " << ss.sub_hilbert_spaces[n].dimension() << std::endl;
   os << "qn = ";
   for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
   os << std::endl;
-  os << "index = " << ss.sub_hilbert_spaces[n].get_index() << std::endl ;
+  os << "index = " << ss.sub_hilbert_spaces[n].get_index() << std::endl;
   os << "-------------------------" << std::endl;
  }
  return os;
 }
-
 }

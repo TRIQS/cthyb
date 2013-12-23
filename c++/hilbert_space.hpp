@@ -32,7 +32,7 @@ class hilbert_space {
  // return the i^th basis element as a fock state
  fock_state_t get_fock_state(int i) const {
   if (i >= dim) TRIQS_RUNTIME_ERROR << "this fock state doesn't exist (index too big)";
-  return i; 
+  return i;
  }
 };
 

@@ -10,7 +10,7 @@ using namespace triqs::gfs;
 // Measure imaginary time Green's function (one block)
 struct measure_g {
  using mc_sign_type = std::complex<double>;
- 
+
  qmc_data const& data;
  gf_view<imtime> g_tau;
  int a_level;
@@ -29,7 +29,7 @@ struct measure_g {
  void accumulate(mc_sign_type s) {
   z += s;
   num += 1;
-  if (num<0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
+  if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
   foreach(data.dets[a_level], [this, s](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
    // beta-periodicity is implicit in the argument, just fix the sign properly
@@ -44,7 +44,7 @@ struct measure_g {
   boost::mpi::all_reduce(c, num, num, std::c14::plus<>());
   average_sign = z / num;
   // Need a copy, because all_reduce wants default-constructible types
-  auto g_tau_copy = make_clone(g_tau); 
+  auto g_tau_copy = make_clone(g_tau);
   boost::mpi::all_reduce(c, g_tau_copy, g_tau_copy, std::c14::plus<>());
   g_tau = g_tau_copy / (-real(z) * data.config.beta() * g_tau_copy.mesh().delta());
  }

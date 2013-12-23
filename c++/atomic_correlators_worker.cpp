@@ -18,7 +18,6 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
  }
- // std::cout  << "Block structure " << sosp<< std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -123,7 +122,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
    for (auto it = _begin; it != _end;) { // do nothing if no operator
     // apply operator
     auto const& op = sosp.get_fundamental_operator_from_linear_index(it->second.dagger, it->second.linear_index);
-    // auto const& op = sosp.get_fundamental_operator(it->second.dagger, it->second.block_index, it->second.inner_index);
     psi = op(psi);
 
     // apply exponential.
@@ -136,9 +134,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
 
    auto partial_trace_no_emin = dot_product(psi0, psi);
    auto partial_trace = partial_trace_no_emin * exp_no_emin;
-
-   // CHECK conjecture
-   if (std::abs(partial_trace_no_emin) > 1.0000001) throw "halte la !";
+   if (std::abs(partial_trace_no_emin) > 1.0000001) throw "halte la !"; // CHECK conjecture
 
    if (bl == 0) first_term = partial_trace;
    full_trace += partial_trace;

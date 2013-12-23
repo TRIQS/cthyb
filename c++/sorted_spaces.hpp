@@ -27,7 +27,7 @@ class sorted_spaces {
 
  using indices_t = fundamental_operator_set::indices_t;
  using quantum_number_t = double;
- 
+
  public:
  struct eigensystem_t {
   vector<double> eigenvalues; // in ascending order, the GS energy is set to 0 at initialisation
@@ -41,7 +41,7 @@ class sorted_spaces {
                std::vector<block_desc_t> const& block_structure);
 
  sorted_spaces(sorted_spaces const&) = delete;
- sorted_spaces(sorted_spaces &&) = default;
+ sorted_spaces(sorted_spaces&&) = default;
 
  // Hamiltonian
  imperative_operator<sub_hilbert_space, false> const& get_hamiltonian() const { return hamiltonian; }
@@ -99,7 +99,7 @@ class sorted_spaces {
 
  // a map (int,int) -> int identifying the operator. use a flat_map for quicker access.
  std::map<std::pair<int, int>, int> int_pair_to_n;
- //boost::container::flat_map<std::pair<int, int>, int> int_pair_to_n;
+ // boost::container::flat_map<std::pair<int, int>, int> int_pair_to_n;
 
  imperative_operator<sub_hilbert_space, false> hamiltonian;
 
@@ -115,7 +115,7 @@ class sorted_spaces {
 
  // Keep the QN, only for later printing ? OR MAKE THE STRING ...
  std::vector<std::vector<quantum_number_t>> quantum_numbers;
- 
+
  friend std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss);
 };
 }

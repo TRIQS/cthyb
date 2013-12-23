@@ -4,7 +4,7 @@
 
 namespace cthyb_krylov {
 
-using mc_weight_type=std::complex<double> ;
+using mc_weight_type = std::complex<double>;
 
 // Removal of C, C^dagger operator
 class move_remove_c_cdag {

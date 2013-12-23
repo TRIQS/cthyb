@@ -7,6 +7,30 @@
 
 namespace cthyb_krylov {
 
+ctqmc_krylov::ctqmc_krylov(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
+                           fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
+   : sosp(h_loc, quantum_numbers, fops, block_structure) {
+ p_in.update(constructor_defaults());
+ auto const& params = p_in;
+
+ std::vector<std::string> block_names;
+ std::vector<gf<imtime>> deltat_blocks;
+ std::vector<gf<imtime>> gt_blocks;
+
+ for (auto const& block : block_structure) {
+  block_names.push_back(block.name);
+
+  auto shape = make_shape(block.indices.size(), block.indices.size());
+
+  deltat_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_delta"], half_bins}, shape});
+  gt_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_g"], half_bins}, shape});
+ }
+
+ deltat = make_block_gf(block_names, deltat_blocks);
+ gt = make_block_gf(block_names, gt_blocks);
+}
+
+
 void ctqmc_krylov::solve(utility::parameters p_in) {
 
  p_in.update(solve_defaults());
@@ -30,7 +54,7 @@ void ctqmc_krylov::solve(utility::parameters p_in) {
    qmc.add_measure(measure_g(block, gt[block], data), "G measure (" + gt_names[block] + ")");
   }
  }
- 
+
  // run!! The empty configuration has sign = 1
  qmc.start(1.0, triqs::utility::clock_callback(params["max_time"]));
  qmc.collect_results(c);

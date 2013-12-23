@@ -18,7 +18,7 @@ class atomic_correlators_worker {
 
  result_t operator()(); // recompute and return the full trace
 
- sorted_spacesc const& get_sorted_spaces() const { return sosp; }
+ sorted_spaces const& get_sorted_spaces() const { return sosp; }
 
  private:
  const configuration* config;                                     // must exists longer than this object.

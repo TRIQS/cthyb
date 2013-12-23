@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
   // basis of operators to use  
   fundamental_operator_set fops;
   for(int o = 0; o < num_orbitals; ++o){
-      fops.add_operator("up",o);
-      fops.add_operator("down",o);
+      fops.insert("up",o);
+      fops.insert("down",o);
   }
 
   // block structure of GF

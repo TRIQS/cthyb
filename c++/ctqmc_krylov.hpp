@@ -1,6 +1,5 @@
 #pragma once
 #include <triqs/parameters.hpp>
-#include <triqs/gfs.hpp>
 #include <triqs/mc_tools.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <boost/mpi/communicator.hpp>
@@ -9,7 +8,6 @@
 
 namespace cthyb_krylov {
 
-using namespace triqs::gfs;
 using namespace triqs::utility;
 
 class ctqmc_krylov {
@@ -18,7 +16,7 @@ class ctqmc_krylov {
 
  block_gf<imtime> deltat, gt; // Green's function containers: imaginary-time Green's functions
  boost::mpi::communicator c;  // define the communicator, here MPI_COMM_WORLD
- sorted_spaces sosp;          // Information about the atomic problem
+ sorted_spaces sosp;          // Diagonalization of the atomic problem
 
  public:
  using real_operator_t = many_body_operator<double>;

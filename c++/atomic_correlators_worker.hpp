@@ -22,7 +22,7 @@ class atomic_correlators_worker {
 
  private:
  const configuration* config;                                     // must exists longer than this object.
- sorted_spaces sosp;                                              // The sorted space
+ sorted_spaces const& sosp;                                       // The sorted space
  int small_matrix_size;                                           // The minimal size of a matrix to be treated with exp_h_matrix
  bool make_histograms;                                            // Do we make the Histograms ?
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms

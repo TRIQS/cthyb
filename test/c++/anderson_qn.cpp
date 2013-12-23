@@ -64,8 +64,8 @@ int main(int argc, char* argv[]) {
 
   // basis of operators to use
   fundamental_operator_set fops;
-  fops.add_operator("up");
-  fops.add_operator("down");
+  fops.insert("up");
+  fops.insert("down");
  
   // block structure of GF
   std::vector<block_desc_t> block_structure;

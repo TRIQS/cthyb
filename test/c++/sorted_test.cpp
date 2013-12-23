@@ -21,8 +21,8 @@ int main() {
 
   // chose the fundamental operator set
   fundamental_operator_set fops;
-  fops.add_operator("up");
-  fops.add_operator("down");
+  fops.insert("up");
+  fops.insert("down");
 
   // Block structure
   std::vector<block_desc_t> block_structure;

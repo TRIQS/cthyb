@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
   // basis of operators to use  
   fundamental_operator_set<int, const char *> fops;
   for(int o = 0; o < num_orbitals; ++o){
-      fops.add_operator(o,"up");
-      fops.add_operator(o,"down");
+      fops.insert(o,"up");
+      fops.insert(o,"down");
   }
 
   // Hamiltonian

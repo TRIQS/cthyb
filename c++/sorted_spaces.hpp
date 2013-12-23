@@ -40,6 +40,9 @@ class sorted_spaces {
                std::vector<triqs::utility::many_body_operator<double>> const& qn_vector, fundamental_operator_set const& fops,
                std::vector<block_desc_t> const& block_structure);
 
+ sorted_spaces(sorted_spaces const&) = delete;
+ sorted_spaces(sorted_spaces &&) = default;
+
  // Hamiltonian
  imperative_operator<sub_hilbert_space, false> const& get_hamiltonian() const { return hamiltonian; }
 

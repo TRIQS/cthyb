@@ -19,17 +19,16 @@ ctqmc_krylov::ctqmc_krylov(parameters p_in, real_operator_t const& h_loc, std::v
 
  for (auto const& block : block_structure) {
   block_names.push_back(block.name);
-
-  auto shape = make_shape(block.indices.size(), block.indices.size());
-
-  deltat_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_delta"], half_bins}, shape});
-  gt_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_g"], half_bins}, shape});
+  int n = block.indices.size();
+  deltat_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_delta"], half_bins}, {n,n}});
+  gt_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_g"], half_bins}, {n,n}});
  }
 
  deltat = make_block_gf(block_names, deltat_blocks);
  gt = make_block_gf(block_names, gt_blocks);
 }
 
+//-----------------------------------
 
 void ctqmc_krylov::solve(utility::parameters p_in) {
 
@@ -88,8 +87,6 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
      .optional("verbosity", int(3), "Verbosity level")
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
-     .optional("krylov_bs_use_cutoff", bool(false), " bool ")
-     .optional("krylov_bs_prob_cutoff", double(1e-8), " double ") // put negative to include all boundary states.
      .optional("krylov_gs_energy_convergence", 1e-10, " double ")
      .optional("krylov_small_matrix_size", int(10), " unsigned int ");
  return pdef;

@@ -64,8 +64,8 @@ int main(int argc, char* argv[]) {
 
   // basis of operators to use
   fundamental_operator_set<const char *> fops;
-  fops.add_operator("0");
-  fops.add_operator("1");
+  fops.insert("0");
+  fops.insert("1");
 
   // map indices --> pair of ints
   std::map<std::tuple<const char *>, std::pair<int,int>> my_map;

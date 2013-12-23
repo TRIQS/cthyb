@@ -7,32 +7,26 @@ namespace cthyb_krylov {
 
  using namespace triqs;
 
-// This class defines the list of operators that are used to describe
-// e.g. Fock states etc.
-
-class fundamental_operator_set {
+ // This class contains an ordered list the **indices** of the canonical operators used to build the Fock state.
+ // It guarantees that the order in the list is the same as given by < operator on the indice tuple of the canonical operators.
+ class fundamental_operator_set {
  public:
  using indices_t = triqs::utility::many_body_operator<double>::indices_t;
 
  private:
- // the table index <-> n
- using map_t = std::map<indices_t, int>;
+ using map_t = std::map<indices_t, int>; // the table index <-> n
  map_t map_index_n;
 
  public:
  fundamental_operator_set() {}
 
  // constructor on a vector which gives the number of alpha's for every a
- // this only makes sense if the indices are two integers
  fundamental_operator_set(std::vector<int> const& v) {
   for (int i = 0; i < v.size(); ++i)
-   for (int j = 0; j < v[i]; ++j) add_operator(i, j);
+   for (int j = 0; j < v[i]; ++j) insert(i, j);
  }
 
- // REMOVE THIS : jsut in construction, to avoid reorganizing all the time
- // may lead to bug if start to use it, then add new ops, then reuse...
- // add an operator in the set
- template <typename... IndexType> void add_operator(IndexType const&... ind) {
+ template <typename... IndexType> void insert(IndexType const&... ind) {
   map_index_n.insert({{ind...}, n_operators()});
   // reorder the indices which are always given in the order of the indices tuple
   map_t m;

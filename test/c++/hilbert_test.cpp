@@ -25,15 +25,15 @@ int main() {
 
   std::cout << std::endl;
   fundamental_operator_set f3;
-  for (int i=0; i<4; ++i) f3.add_operator(i);
+  for (int i=0; i<4; ++i) f3.insert(i);
   std::cout << "2 --> " << f3[{2}] << std::endl;
   std::cout << "dim = " << f3.dimension() << std::endl;
   std::cout << "n operators = " << f3.n_operators() << std::endl;
 
   std::cout << std::endl;
   fundamental_operator_set f4;
-  for (int i=0; i<2; ++i) f4.add_operator("up",i);
-  for (int i=0; i<2; ++i) f4.add_operator("down",i);
+  for (int i=0; i<2; ++i) f4.insert("up",i);
+  for (int i=0; i<2; ++i) f4.insert("down",i);
   std::cout << "(down,0) --> " << f4[{"down",0}] << std::endl;
   std::cout << "dim = " << f4.dimension() << std::endl;
   std::cout << "n operators = " << f4.n_operators() << std::endl;
@@ -62,7 +62,7 @@ int main() {
   std::cout << std::endl << "Part IV: the state operator" << std::endl << std::endl;
 
   fundamental_operator_set fop;
-  for (int i=0; i<5; ++i) fop.add_operator("up",i);
+  for (int i=0; i<5; ++i) fop.insert("up",i);
 
   hilbert_space h_full(fop);
   state<hilbert_space,double, true> st(h_full);
@@ -99,7 +99,7 @@ int main() {
   auto Cdag = c_dag("up",2);
 
   fundamental_operator_set fop2;
-  for (int i=0; i<5; ++i) fop2.add_operator("up",i);
+  for (int i=0; i<5; ++i) fop2.insert("up",i);
   
   hilbert_space h4(f4);
   
@@ -136,10 +136,10 @@ int main() {
 
   {
    fundamental_operator_set FOPS;
-  FOPS.add_operator("up",0);
-  FOPS.add_operator("down",0);
-  FOPS.add_operator("up",1);
-  FOPS.add_operator("down",1);
+  FOPS.insert("up",0);
+  FOPS.insert("down",0);
+  FOPS.insert("up",1);
+  FOPS.insert("down",1);
   hilbert_space HS(FOPS);
   std::cerr  << " HS dimension "<< HS.dimension() << std::endl;
   

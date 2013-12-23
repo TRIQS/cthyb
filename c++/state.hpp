@@ -1,17 +1,14 @@
 #pragma once
-
 #include <triqs/arrays.hpp>
-
-#include <ostream>
+//#include <ostream>
 #include <unordered_map>
 #include <cmath>
 #include <boost/operators.hpp>
-
 #include "hilbert_space.hpp"
 
 namespace cthyb_krylov {
 
-inline double conj(double x) { return x; }
+inline double conj(double x) { return x; } // questionable : collides with std::conj !!
 
 // States of a Hilbert space : can either be described by a map
 // or by a triqs::vector so there are two implementations controlled by BasedOnMap
@@ -76,10 +73,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   return *this;
  }
 
- state& operator/=(scalar_t x) {
-  (*this) *= 1 / x;
-  return *this;
- }
+ state& operator/=(scalar_t x) { return operator*=(1 / x); }
 
  friend std::ostream& operator<<(std::ostream& os, state const& s) {
   for (auto const& a : s.ampli) {
@@ -97,8 +91,6 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   }
   return res;
  }
-
- friend bool is_zero_state(state const& st) { return st.amplitudes().size() == 0; }
 
  private:
 
@@ -184,14 +176,6 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  // scalar product
  friend scalar_t dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
 
- // TO BE REMOVED : tolerance !!
- friend bool is_zero_state(state const& st, double tolerance = 1e-18) {
-  if (st.amplitudes().size() == 0) return true;
-  //for (auto const& a : st.amplitudes())
-  // if (std::fabs(a) > tolerance) return false;
-  return false;
-  return true;
- }
 };
 
 // Lambda (fs, amplitude)

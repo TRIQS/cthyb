@@ -1,4 +1,5 @@
 #include "sorted_spaces.hpp"
+#include <fstream>
 
 using namespace triqs::arrays;
 using std::string;
@@ -127,24 +128,25 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
  // Reorder the block along their minimal energy
  {
   auto tmp = sub_hilbert_spaces;
+  auto qns2 = quantum_numbers;
   std::map<int, int> remap;
   int i = 0;
   for (auto const& x : eign_map) { // in order of min energy !
    eigensystems[i] = x.second;
    tmp[i] = sub_hilbert_spaces[x.first.second];
    tmp[i].set_index(i);
+   qns2[i] = quantum_numbers[x.first.second];
    remap[x.first.second] = i;
    ++i;
   }
   std::swap(tmp, sub_hilbert_spaces);
-  for (auto& x : map_qn_n) {
-   x.second = remap[x.second];
-  }
+  std::swap(qns2, quantum_numbers);
+  for (auto& x : map_qn_n) x.second = remap[x.second];
   // rematch the state which are NOT regular type !!
   for (int spn = 0; spn < n_subspaces(); ++spn) {
    for (auto& st : eigensystems[spn].eigenstates) st.set_hilbert(sub_hilbert_spaces[spn]);
   }
- }
+ }//end reordering
 
  // Shift the ground state energy of the local Hamiltonian to zero.
  for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
@@ -220,6 +222,7 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n], &sub_hilbert_spaces);
  }
 
+ std::ofstream("Diagonalization_atomic_pb") << *this;
 }
 
 // -----------------------------------------------------------------
@@ -229,15 +232,15 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
  os << "Number of blocks: " << ss.n_subspaces() << std::endl;
  for (int n = 0; n < ss.sub_hilbert_spaces.size(); ++n) {
   os << "Block " << n << ", ";
+  os << "relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
+  os << "size = " << ss.sub_hilbert_spaces[n].dimension()<<std::endl ;
   os << "qn = ";
   for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
-  os << ", ";
+  os << std::endl;
   os << "index = " << ss.sub_hilbert_spaces[n].get_index() << std::endl ;
-  os << "size = " << ss.sub_hilbert_spaces[n].dimension()<<std::endl ;
-  os << " Relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
+  os << "-------------------------" << std::endl;
  }
  return os;
 }
 
-//----------------------------------------------------------------------
 }

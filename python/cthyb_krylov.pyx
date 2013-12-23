@@ -15,7 +15,7 @@ ctypedef many_body_operator[double] operator_c
 cdef extern from "c++/fundamental_operator_set.hpp" namespace "cthyb_krylov":
     cdef cppclass fundamental_operator_set:
         fundamental_operator_set() except +
-        void add_operator(string, string)
+        void insert(string, string)
         
 cdef extern from "c++/sorted_spaces.hpp" namespace "cthyb_krylov":
     cdef cppclass variant_t "boost::variant<int,std::string>":
@@ -94,7 +94,7 @@ cdef class Solver:
             
             for i_name in block_indices:
                 index_name = str(i_name)    
-                fops.add_operator(block_name,index_name)
+                fops.insert(block_name,index_name)
                 block.indices_push_back(block_name,index_name) 
             
             block_stucture.push_back(block)

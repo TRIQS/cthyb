@@ -1,58 +1,47 @@
 #pragma once
 #include "./atomic_correlators_worker.hpp"
 #include <triqs/gfs.hpp>
-#include <triqs/det_manip/det_manip.hpp>
+#include <triqs/det_manip.hpp>
 #include <triqs/utility/serialization.hpp>
 
 namespace cthyb_krylov {
+using namespace triqs::gfs;
 
 /**
  * The data of the Monte carlo
  */
 struct qmc_data {
 
- // the configuration and the worker to compute the trace...
- configuration config;
- sorted_spaces sosp;
- atomic_correlators_worker atomic_corr;
+ configuration config;                  // Configuration
+ sorted_spaces const &sosp;             // Diagonalization of the atomic problem
+ atomic_correlators_worker atomic_corr; // Calculator of the trace
 
  using trace_t = atomic_correlators_worker::result_t;
- using delta_block_t = gfs::gf_view<gfs::imtime>;
- using delta_t = gfs::gf_view<gfs::block_index, gfs::gf<gfs::imtime>>;
 
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {
+  gf_const_view<imtime> delta_block;
 
-  delta_block_t delta_block;
-
-  delta_block_adaptor(delta_block_t const &delta_block) : delta_block(delta_block) {}
+  delta_block_adaptor(gf_const_view<imtime> const &delta_block) : delta_block(delta_block) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
-  delta_block_adaptor &operator=(delta_block_adaptor &&a) noexcept {
-   delta_block.rebind(a.delta_block);
-   return *this;
-  }
+  delta_block_adaptor &operator=(delta_block_adaptor &&a) = default;
 
   // no need of argument_type, return_type : det_manip now synthetize everything (need to UPDATE doc).
   double operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
-   double res = delta_block[delta_block.mesh().nearest_index(double(x.first - y.first))](x.second, y.second);
-   return (x.first >= y.first ? res : -res); // x,y first are time_pt, the wrapping is automatic in the - operation, but need to
+   double res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
+   return (x.first >= y.first ? res : -res); // x,y first are time_pt, wrapping is automatic in the - operation, but need to
                                              // compute the sign
   }
  };
 
- // The determinants
- std::vector<det_manip::det_manip<delta_block_adaptor>> dets;
-
- // Permutation prefactor
- int current_sign, old_sign;
-
- // The current value of the trace
- trace_t trace;
+ std::vector<det_manip::det_manip<delta_block_adaptor>> dets; // The determinants
+ int current_sign, old_sign;                                  // Permutation prefactor
+ trace_t trace;                                               // The current value of the trace
 
  // construction and the basics stuff. value semantics, except = ?
- qmc_data(utility::parameters const &p, sorted_spaces const &sosp, const delta_t delta)
+ qmc_data(utility::parameters const &p, sorted_spaces const &sosp, block_gf_const_view<imtime> delta)
     : config(p["beta"]),
       sosp(sosp),
       atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"], p["make_path_histograms"]),
@@ -76,7 +65,7 @@ struct qmc_data {
   // d^_1 d^_1 d^_1 ... d_1 d_1 d_1   d^_2 d^_2 ... d_2 d_2   ...   d^_n .. d_n
 
   // loop over the operators "op" in the trace (right to left)
-  for (auto const & op : config.oplist) { 
+  for (auto const &op : config.oplist) {
 
    // how many operators with an 'a' larger than "op" are there on the left of "op"?
    for (int a = op.second.block_index + 1; a < num_blocks; ++a) s += n_op_with_a_equal_to[a];
@@ -100,7 +89,7 @@ struct qmc_data {
   current_sign = (s % 2 == 0 ? 1 : -1);
  }
 
-  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+ template <class Archive> void serialize(Archive &ar, const unsigned int version) {
   ar &boost::serialization::make_nvp("configuration", config) & boost::serialization::make_nvp("dets", dets) &
       boost::serialization::make_nvp("atomic_corr", atomic_corr) & boost::serialization::make_nvp("old_sign", old_sign) &
       boost::serialization::make_nvp("current_sign", current_sign);

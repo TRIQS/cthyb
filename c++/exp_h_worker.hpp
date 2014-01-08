@@ -76,10 +76,8 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
  void apply_no_emin(state_type& initial_state, double dtau) {
   auto const& space = initial_state.get_hilbert();
   int space_dim = space.dimension();
-
-  auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
-
   if (space_dim == 1) return;
+  auto const& eigensystem = sosp.get_eigensystems()[space.get_index()];
   auto all = range(0, space_dim);
   triqs::arrays::blas::gemv(1.0, eigensystem.unitary_matrix.transpose(), initial_state.amplitudes(), 0.0, v2(all));
   for (int n = 1; n < space_dim; ++n) v2[n] *= exp(-dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));

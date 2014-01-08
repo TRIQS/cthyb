@@ -1,5 +1,4 @@
 #pragma once
-#include <triqs/parameters.hpp>
 #include <triqs/mc_tools.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <boost/mpi/communicator.hpp>

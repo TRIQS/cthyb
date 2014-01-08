@@ -10,7 +10,7 @@ namespace cthyb_krylov {
 ctqmc_krylov::ctqmc_krylov(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
                            fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
    : sosp(h_loc, quantum_numbers, fops, block_structure) {
- p_in.update(constructor_defaults());
+ p_in.update(constructor_defaults());//, utility::parameters::reject_key_without_default);
  auto const& params = p_in;
 
  std::vector<std::string> block_names;
@@ -32,7 +32,7 @@ ctqmc_krylov::ctqmc_krylov(parameters p_in, real_operator_t const& h_loc, std::v
 
 void ctqmc_krylov::solve(utility::parameters p_in) {
 
- p_in.update(solve_defaults());
+ p_in.update(solve_defaults());//, utility::parameters::reject_key_without_default);
  auto const& params = p_in;
 
  qmc_data data(params, sosp, deltat);
@@ -87,6 +87,8 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
      .optional("verbosity", int(3), "Verbosity level")
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
+     .optional("use_quick_trace_estimator", bool(false), " Use for QMC weight a quick estimate ....")
+     .optional("trace_estimator_n_blocks_guess", int(-1), " Number max of blocks used in the trace estimator (default : -1 = all blocks)")
      .optional("krylov_gs_energy_convergence", 1e-10, " double ")
      .optional("krylov_small_matrix_size", int(10), " unsigned int ");
  return pdef;

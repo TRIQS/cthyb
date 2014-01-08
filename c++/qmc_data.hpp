@@ -14,7 +14,7 @@ struct qmc_data {
 
  configuration config;                  // Configuration
  sorted_spaces const &sosp;             // Diagonalization of the atomic problem
- atomic_correlators_worker atomic_corr; // Calculator of the trace
+ mutable atomic_correlators_worker atomic_corr; // Calculator of the trace
 
  using trace_t = atomic_correlators_worker::result_t;
 
@@ -39,14 +39,16 @@ struct qmc_data {
  std::vector<det_manip::det_manip<delta_block_adaptor>> dets; // The determinants
  int current_sign, old_sign;                                  // Permutation prefactor
  trace_t trace;                                               // The current value of the trace
+ bool use_quick_trace_estimator;
 
  // construction and the basics stuff. value semantics, except = ?
  qmc_data(utility::parameters const &p, sorted_spaces const &sosp, block_gf_const_view<imtime> delta)
     : config(p["beta"]),
       sosp(sosp),
-      atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"], p["make_path_histograms"]),
+      atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"], p["make_path_histograms"],p["use_quick_trace_estimator"], p["trace_estimator_n_blocks_guess"]),
       current_sign(1),
       old_sign(1) {
+  use_quick_trace_estimator = p["use_quick_trace_estimator"];
   trace = atomic_corr();
   dets.clear();
   for (auto const &bl : delta.mesh()) dets.emplace_back(delta_block_adaptor(delta[bl]), 100);

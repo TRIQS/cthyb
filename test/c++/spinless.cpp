@@ -13,12 +13,7 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using triqs::utility::parameters;
-using triqs::gfs::gf;
-using triqs::gfs::imfreq;
-using triqs::gfs::imfreq;
-using triqs::gfs::make_gf;
-using triqs::gfs::slice_target;
-using triqs::gfs::Fermion;
+using namespace triqs::gfs;
 
 int main(int argc, char* argv[]) {
 

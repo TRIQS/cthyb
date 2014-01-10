@@ -27,12 +27,13 @@ struct measure_g {
  // --------------------
 
  void accumulate(mc_sign_type s) {
-  z += s;
   num += 1;
   if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
   auto corr = real(this->data.atomic_corr.full_trace_over_estimator());
   // if (std::abs(corr) < 0.01) std::cout  << "corr " << corr << std::endl;
+
+  z += s * corr;
 
   foreach(data.dets[a_level], [this, corr, s](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
    // beta-periodicity is implicit in the argument, just fix the sign properly

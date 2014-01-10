@@ -303,11 +303,12 @@ namespace utility {
 
  // Free functions to make creation/annihilation operators
  template <typename... IndexTypes> many_body_operator<double> c(IndexTypes... indices) {
-  return many_body_operator<double>::make_canonical(false, {indices...});
+  return many_body_operator<double>::make_canonical(false, many_body_operator<double>::indices_t{indices...});
+  // need to put many_body_operator<double>::indices_t because {} constructor is explicit !?
  }
 
  template <typename... IndexTypes> many_body_operator<double> c_dag(IndexTypes... indices) {
-  return many_body_operator<double>::make_canonical(true, {indices...});
+  return many_body_operator<double>::make_canonical(true, many_body_operator<double>::indices_t{indices...});
  }
 
  template <typename... IndexTypes> many_body_operator<double> n(IndexTypes... indices) {

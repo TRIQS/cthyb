@@ -1,11 +1,9 @@
+#include <triqs/gfs.hpp>
 #include "./ctqmc_krylov.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
 #include <triqs/gfs/local/fourier_matsubara.hpp>
 #include <triqs/parameters.hpp>
-#include <triqs/gfs/block.hpp>
-#include <triqs/gfs/imtime.hpp>
-#include <triqs/gfs/imfreq.hpp>
 
 using namespace cthyb_krylov;
 using triqs::utility::many_body_operator;
@@ -77,8 +75,8 @@ int main(int argc, char* argv[]) {
   
   // block structure of GF
   std::vector<block_desc_t> block_structure;
-  block_structure.push_back({"up",{}});
-  block_structure.push_back({"down",{}});
+  block_structure.push_back({"up"});
+  block_structure.push_back({"down"});
   for(int o = 0; o < num_orbitals; ++o){
       block_structure[0].indices.push_back({"up",o});
       block_structure[1].indices.push_back({"down",o});

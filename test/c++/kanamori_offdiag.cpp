@@ -77,8 +77,8 @@ int main(int argc, char* argv[]) {
   
   // block structure of GF
   std::vector<block_desc_t> block_structure;
-  block_structure.push_back({"up",{}});
-  block_structure.push_back({"down",{}});
+  block_structure.push_back({"up"});
+  block_structure.push_back({"down"});
   for(int o = 0; o < num_orbitals; ++o){
       block_structure[0].indices.push_back({"up",o});
       block_structure[1].indices.push_back({"down",o});

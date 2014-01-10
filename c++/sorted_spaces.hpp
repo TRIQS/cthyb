@@ -16,6 +16,8 @@ namespace cthyb_krylov {
 struct block_desc_t {
  std::string name;
  std::vector<fundamental_operator_set::indices_t> indices;
+ block_desc_t(std::string name, std::vector<fundamental_operator_set::indices_t> ind) : name(name), indices(ind){}
+ block_desc_t(std::string name="") : name(name), indices(){}
  // for python interface only
  void indices_push_back(std::string a, std::string b) {
   indices.push_back({a, b});

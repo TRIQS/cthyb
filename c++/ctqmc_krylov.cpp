@@ -19,7 +19,7 @@ ctqmc_krylov::ctqmc_krylov(parameters p_in, real_operator_t const& h_loc, std::v
 
  for (auto const& block : block_structure) {
   block_names.push_back(block.name);
-  int n = block.indices.size();
+  size_t n = block.indices.size();
   deltat_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_delta"], half_bins}, {n, n}});
   gt_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_g"], half_bins}, {n, n}});
  }

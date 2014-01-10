@@ -1,5 +1,5 @@
 sources = """
-. operator.hpp  fundamental_operator_set.hpp hilbert_space.hpp state.hpp imperative_operator.hpp sorted_spaces.hpp sorted_spaces.cpp krylov_worker.hpp exp_h_worker.hpp configuration.hpp configuration.cpp qmc_data.hpp atomic_correlators_worker.hpp atomic_correlators_worker.cpp  move_insert.hpp move_remove.hpp measure_g.hpp  statistics.hpp ctqmc_krylov.cpp ctqmc_krylov.hpp
+. fundamental_operator_set.hpp hilbert_space.hpp state.hpp imperative_operator.hpp sorted_spaces.hpp sorted_spaces.cpp krylov_worker.hpp exp_h_worker.hpp configuration.hpp qmc_data.hpp atomic_correlators_worker.hpp atomic_correlators_worker.cpp  move_insert.hpp move_remove.hpp measure_g.hpp  ctqmc_krylov.hpp ctqmc_krylov.cpp
 """
 
 src_dir = "/home/parcolle/triqs/src/cthyb_krylov/c++"

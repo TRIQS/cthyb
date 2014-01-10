@@ -91,7 +91,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
     break;
    }
   }
-  if (bl != -1) {
+  if (bl == n) {
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
    ++n_block_non_failed;
    one_non_zero = true;
@@ -133,8 +133,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   }
   blo[n] = bl;
   E_min_delta_tau[n] = sum_emin_dtau;
-  if (bl != -1) E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
-  one_non_zero |= (bl != -1);
+  if (bl == n) {
+   E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
+   one_non_zero = true;
+  }
  }
  if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
 

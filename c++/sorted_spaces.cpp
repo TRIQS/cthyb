@@ -220,7 +220,37 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   // of the operators because we explicitly use the map
   creation_operators[n] = imperative_operator<sub_hilbert_space, true>(create, fops, creation_map[n], &sub_hilbert_spaces);
   destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n], &sub_hilbert_spaces);
- }
+
+  // Compute the matrices of c, c dagger in the diagonalization base of H_loc
+  // first a lambda, since it is almost the same code for c and cdag
+  auto make_c_mat = [&](std::vector<long> const& connection, imperative_operator<hilbert_space> c_op) {
+   std::vector<triqs::arrays::matrix<double>> cmat(connection.size());
+   for (int B = 0; B < connection.size(); ++B) {
+    auto Bp = connection[B];
+    if (Bp == -1) continue;
+    auto M = matrix<double>(sub_hilbert_spaces[Bp].dimension(), sub_hilbert_spaces[B].dimension());
+    M() = 0;
+    // put the permutation matrix
+    for (auto fs : sub_hilbert_spaces[B].get_all_fock_states()) { // loop on all fock states of the blocks
+     state<hilbert_space, double, true> s(full_hs);
+     s(fs) = 1.0;
+     auto s2 = c_op(s);
+     if (s2.amplitudes().size() == 0) continue;
+     if (s2.amplitudes().size() != 1) TRIQS_RUNTIME_ERROR << "Internal consistency error " << s2.amplitudes().size();
+     auto fs2 = s2.amplitudes().begin()->first;
+     auto ampl = s2.amplitudes().begin()->second;
+     M(sub_hilbert_spaces[Bp].get_state_index(fs2), sub_hilbert_spaces[B].get_state_index(fs)) = ampl;
+    }
+    cmat[B] = eigensystems[Bp].unitary_matrix.transpose() * M * eigensystems[B].unitary_matrix;
+   }
+   return cmat;
+  };
+
+  // now execute code...
+  c_matrices.push_back(make_c_mat(destruction_connection[n], op_c));
+  cdag_matrices.push_back(make_c_mat(creation_connection[n], op_c_dag));
+
+ } // end of loop on operators
 
  std::ofstream("Diagonalization_atomic_pb") << *this;
 }

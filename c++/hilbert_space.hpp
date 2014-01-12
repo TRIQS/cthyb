@@ -62,6 +62,9 @@ class sub_hilbert_space {
  // the state for a given index
  fock_state_t get_fock_state(int i) const { return fock_states[i]; }
 
+  // the state for a given index
+ std::vector<fock_state_t> const & get_all_fock_states() const { return fock_states; }
+
  // The subhilbert has a (block) index
  int get_index() const {
   return index;

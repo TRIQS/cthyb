@@ -155,7 +155,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  double epsilon = 1.e-15;
  double first_term = 0;
 
- // To implement : regroup all the vector of the block for dgemm computation !
  for (int bl = 0; ((bl < n_bl) && (std::exp(-to_sort[bl].first) >= (std::abs(full_trace)) * epsilon)); ++bl) {
   int block_index = to_sort[bl].second;
   auto exp_no_emin = std::exp(-to_sort[bl].first);
@@ -167,35 +166,88 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
   if (make_histograms) histo_block_size << block_size;
 
-  for (int state_index = 0; state_index < block_size; ++state_index) {
-   state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
+  //bool use_old_trace = true;
+  bool use_old_trace = false;
+  // -.-.-.-.-.-.-.-.-.   Old implementation of the trace -.-.-.-.-.-.-
+  if (use_old_trace) {
+   for (int state_index = 0; state_index < block_size; ++state_index) {
+    state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
 
-   // do the first exp
-   // dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
-   state_t psi = psi0;
-   exp_h.apply_no_emin(psi, dtau0);
+    // do the first exp
+    // dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
+    state_t psi = psi0;
+    exp_h.apply_no_emin(psi, dtau0);
 
-   for (auto it = _begin; it != _end;) { // do nothing if no operator
+    for (auto it = _begin; it != _end;) { // do nothing if no operator
+     // apply operator
+     auto const& op = sosp.get_fundamental_operator_from_linear_index(it->second.dagger, it->second.linear_index);
+     psi = op(psi);
+
+     // apply exponential.
+     double tau1 = double(it->first);
+     ++it;
+     double dtau = (it == _end ? config->beta() : double(it->first)) - tau1;
+     assert(dtau > 0);
+     exp_h.apply_no_emin(psi, dtau);
+    }
+
+    auto partial_trace_no_emin = dot_product(psi0, psi);
+    auto partial_trace = partial_trace_no_emin * exp_no_emin;
+    if (std::abs(partial_trace_no_emin) > 1.0000001) throw "halte la !"; // CHECK conjecture
+
+    if (bl == 0) first_term = partial_trace;
+    full_trace += partial_trace;
+   }
+  } else { // -.-.-.-.-.-.-.-.-.  New implementation of the trace -.-.-.-.-.-.-
+
+   auto const& eigensystem = sosp.get_eigensystems()[block_index];
+   auto space_dim = eigensystem.eigenvalues.size();
+   auto const& U_boundary = sosp.get_eigensystems()[block_index].unitary_matrix;
+   auto M = U_boundary;
+   //auto M2 = triqs::arrays::matrix<double>(100,100);//  CHANGE THIS !!
+   auto _ = range{};
+   // do the first exponential
+   for (int n = 1; n < space_dim; ++n) M(n, _) *= exp(-dtau0 * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+
+   auto B = block_index;
+
+   for (int i = 0; i < config_size; ++i) {
+    // get the next block
+    auto Bp = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, B);
+    if (Bp == -1) TRIQS_RUNTIME_ERROR << " Internal error : Bp =-1";
     // apply operator
-    auto const& op = sosp.get_fundamental_operator_from_linear_index(it->second.dagger, it->second.linear_index);
-    psi = op(psi);
+    auto const& Cop = sosp.fundamental_operator_matrix_from_linear_index(config_table[i].dag, config_table[i].n, B);
+    auto const& eigensystem = sosp.get_eigensystems()[Bp];
+    auto space_dim_p = eigensystem.eigenvalues.size();
+ 
+    if ((space_dim == 1) && (space_dim_p == 1)) // some quick optimisation
+     M *= Cop(0,0);
+    else {
+     auto M2 = Cop * M;
+     swap(M2, M);
+     // improve this with a larger matrix to avoid allocation ???
+     // triqs::arrays::blas::gemm(1.0, Cop, M, 0.0, M2(range(0,space_dim_p), range(0,space_dim));
+    }
+    B = Bp;
+    space_dim = space_dim_p;
 
     // apply exponential.
-    double tau1 = double(it->first);
-    ++it;
-    double dtau = (it == _end ? config->beta() : double(it->first)) - tau1;
-    assert(dtau > 0);
-    exp_h.apply_no_emin(psi, dtau);
-   }
+   if (space_dim_p ==1) continue;
+   for (int n = 1; n < space_dim_p; ++n)
+    M(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+   } // loop on the c ops of the configuration
 
-   auto partial_trace_no_emin = dot_product(psi0, psi);
+   auto partial_trace_no_emin = trace(U_boundary.transpose() * M);
    auto partial_trace = partial_trace_no_emin * exp_no_emin;
-   if (std::abs(partial_trace_no_emin) > 1.0000001) throw "halte la !"; // CHECK conjecture
+   if (std::abs(partial_trace_no_emin) > space_dim * 1.0000001) throw "halte la !"; // CHECK conjecture
 
    if (bl == 0) first_term = partial_trace;
    full_trace += partial_trace;
-  }
- }
+
+  } // -.-.-.-.-.-.-.-.-.  choice of trace computation method -.-.-.-.-.-.-
+
+ } // end of loop on blocks
+
  if (make_histograms) {
   auto abs_trace = std::abs(full_trace);
   if (abs_trace > 0) histos["FirsTerm_FullTrace"] << std::abs(first_term) / abs_trace;

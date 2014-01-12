@@ -88,6 +88,12 @@ class sorted_spaces {
   return (dagger ? creation_connection[linear_index][n] : destruction_connection[linear_index][n]);
  }
 
+ // connections for fundamental operators
+ triqs::arrays::matrix<double> const& fundamental_operator_matrix_from_linear_index(bool dagger, int linear_index,
+                                                                                    int block_index) const {
+  return (dagger ? cdag_matrices[linear_index][block_index] : c_matrices[linear_index][block_index]);
+ }
+
  // eigensystems for all blocks
  std::vector<eigensystem_t> const& get_eigensystems() const { return eigensystems; }
 
@@ -108,6 +114,9 @@ class sorted_spaces {
  // Given the linear index of the operator, return the table of operator/connection to other sub_hilbert_spaces
  std::vector<std::vector<long>> creation_connection, destruction_connection;
  std::vector<imperative_operator<sub_hilbert_space, true>> creation_operators, destruction_operators;
+
+ // Given the linear index of the operator i, the matrice c_matrices[i][B] is the matrix from block B -> B'
+ std::vector<std::vector<triqs::arrays::matrix<double>>> c_matrices, cdag_matrices;
 
  // Eigensystem in each subspace
  std::vector<eigensystem_t> eigensystems;

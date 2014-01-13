@@ -45,7 +45,7 @@ struct qmc_data {
  qmc_data(utility::parameters const &p, sorted_spaces const &sosp, block_gf_const_view<imtime> delta)
     : config(p["beta"]),
       sosp(sosp),
-      atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"], p["make_path_histograms"],p["use_quick_trace_estimator"], p["trace_estimator_n_blocks_guess"]),
+      atomic_corr(config, sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"], p["make_path_histograms"],p["use_quick_trace_estimator"], p["trace_estimator_n_blocks_guess"], p["use_truncation"]),
       current_sign(1),
       old_sign(1) {
   use_quick_trace_estimator = p["use_quick_trace_estimator"];

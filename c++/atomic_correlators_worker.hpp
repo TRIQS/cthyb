@@ -15,7 +15,7 @@ class atomic_correlators_worker {
  using result_t = std::complex<double>;
 
  atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence, int small_matrix_size,
-                           bool make_histograms, bool use_quick_trace_estimator, int trace_estimator_n_blocks_guess);
+                           bool make_histograms, bool use_quick_trace_estimator, int trace_estimator_n_blocks_guess, bool use_truncation);
 
  result_t operator()(); // recompute and return the full trace
  result_t full_trace_over_estimator();
@@ -32,6 +32,7 @@ class atomic_correlators_worker {
  statistics::histogram histo_block_size;
  bool use_quick_trace_estimator;
  int trace_estimator_n_blocks_guess;
+ bool use_truncation;
 
  boost::mpi::communicator comm;
 

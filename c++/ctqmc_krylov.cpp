@@ -87,6 +87,7 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
      .optional("verbosity", int(3), "Verbosity level")
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
+     .optional("use_truncation", bool(true), " Use truncation in the trace calculation ")
      .optional("use_quick_trace_estimator", bool(false), " Use for QMC weight a quick estimate ....")
      .optional("trace_estimator_n_blocks_guess", int(-1), " Number max of blocks used in the trace estimator (default : -1 = all blocks)")
      .optional("krylov_gs_energy_convergence", 1e-10, " double ")

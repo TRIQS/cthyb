@@ -8,14 +8,15 @@ namespace cthyb_krylov {
 
 atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence,
                                                      int small_matrix_size, bool make_histograms, bool use_quick_trace_estimator,
-                                                     int trace_estimator_n_blocks_guess)
+                                                     int trace_estimator_n_blocks_guess, bool use_truncation)
    : config(&c),
      sosp(sosp_),
      exp_h(sosp.get_hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
      small_matrix_size(small_matrix_size),
      make_histograms(make_histograms),
      use_quick_trace_estimator(use_quick_trace_estimator),
-     trace_estimator_n_blocks_guess(trace_estimator_n_blocks_guess) {
+     trace_estimator_n_blocks_guess(trace_estimator_n_blocks_guess),
+     use_truncation(use_truncation) {
  if (make_histograms) {
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
@@ -155,7 +156,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  double epsilon = 1.e-15;
  double first_term = 0;
 
- for (int bl = 0; ((bl < n_bl) && (std::exp(-to_sort[bl].first) >= (std::abs(full_trace)) * epsilon)); ++bl) {
+ for (int bl = 0; ((bl < n_bl) && ((!use_truncation) || (std::exp(-to_sort[bl].first) >= (std::abs(full_trace)) * epsilon))); ++bl) {
   int block_index = to_sort[bl].second;
   auto exp_no_emin = std::exp(-to_sort[bl].first);
 

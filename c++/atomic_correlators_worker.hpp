@@ -33,6 +33,8 @@ class atomic_correlators_worker {
  bool use_quick_trace_estimator;
  int trace_estimator_n_blocks_guess;
 
+ boost::mpi::communicator comm;
+
  using state_t = state<sub_hilbert_space, double, false>;
  exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;
 

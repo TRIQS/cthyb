@@ -21,6 +21,7 @@
 #pragma once
 #include <map>
 #include <fstream>
+#include <boost/mpi.hpp>
 
 namespace triqs {
 namespace statistics {
@@ -88,10 +89,15 @@ namespace statistics {
 
   /** */
   void dump(std::string s) {
-   std::ofstream f(s);
-   size_t i = 0;
-   for (auto const& x : normalize()) f << i++ << "  " << x << std::endl;
-   if (del) std::cerr << "Histogram : " << del << " points have been lost !" << std::endl;
+   boost::mpi::communicator world;
+   if (world.rank() == 0) {
+    std::ofstream f(s);
+    size_t i = 0;
+    for (auto const& x : normalize()) f << i++ << "  " << x << std::endl;
+    if (del) std::cerr << "Histogram : " << del << " points have been lost !" << std::endl;
+   } else {
+    //std::cout << "not dumping histo " << s <<" on node " << world.rank() << std::endl;
+   }
   }
  };
 
@@ -136,11 +142,16 @@ namespace statistics {
 
   /// Dump into text file
   void dump(std::string s) {
-   std::cout << "DUMPING HISTO" << std::endl;
-   std::ofstream f(s);
-   size_t i = 0;
-   for (auto const& x : histo.normalize()) f << _a + (i++) / n_bin_over_len << "  " << x << std::endl;
-   if (histo.n_lost_pts() != 0) std::cerr << "Histogram : " << histo.n_lost_pts() << " points have been lost !" << std::endl;
+   boost::mpi::communicator world;
+   if (world.rank() == 0) {
+    std::cout << "DUMPING HISTO" << std::endl;
+    std::ofstream f(s);
+    size_t i = 0;
+    for (auto const& x : histo.normalize()) f << _a + (i++) / n_bin_over_len << "  " << x << std::endl;
+    if (histo.n_lost_pts() != 0) std::cerr << "Histogram : " << histo.n_lost_pts() << " points have been lost !" << std::endl;
+   } else {
+    //std::cout << "not dumping histo "<< s << " on node " << world.rank() << std::endl;
+   }
   }
  };
 }

@@ -8,7 +8,7 @@ namespace cthyb_krylov {
 
 atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence,
                                                      int small_matrix_size, bool make_histograms, bool use_quick_trace_estimator,
-                                                     int trace_estimator_n_blocks_guess, bool use_truncation)
+                                                     int trace_estimator_n_blocks_guess, bool use_truncation, bool use_old_trace)
    : config(&c),
      sosp(sosp_),
      exp_h(sosp.get_hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
@@ -16,7 +16,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
      make_histograms(make_histograms),
      use_quick_trace_estimator(use_quick_trace_estimator),
      trace_estimator_n_blocks_guess(trace_estimator_n_blocks_guess),
-     use_truncation(use_truncation) {
+     use_truncation(use_truncation),
+     use_old_trace(use_old_trace) {
  if (make_histograms) {
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
@@ -167,8 +168,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
   if (make_histograms) histo_block_size << block_size;
 
-  //bool use_old_trace = true;
-  bool use_old_trace = false;
   // -.-.-.-.-.-.-.-.-.   Old implementation of the trace -.-.-.-.-.-.-
   if (use_old_trace) {
    for (int state_index = 0; state_index < block_size; ++state_index) {

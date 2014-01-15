@@ -28,7 +28,8 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
      creation_operators(fops.n_operators()),
      destruction_operators(fops.n_operators()),
      creation_connection(fops.n_operators()),
-     destruction_connection(fops.n_operators()) {
+     destruction_connection(fops.n_operators()),
+     fops(fops) {
 
  std::map<indices_t, std::pair<int, int>> indices_to_ints;
  for (int bl = 0; bl < block_structure.size(); ++bl) {
@@ -253,6 +254,44 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
  } // end of loop on operators
 
  std::ofstream("Diagonalization_atomic_pb") << *this;
+}
+
+// -----------------------------------------------------------------
+
+block_gf<imtime> sorted_spaces::atomic_gf(double beta) const {
+
+ // First compute the partition function
+ // we should revert the order,
+ double z = 0;
+ for (auto const& es : eigensystems)
+  for (auto e : es.eigenvalues) z += std::exp(-beta * e);
+
+ // std::cerr << "  Z = " << z << std::endl;
+ auto n_times_pts = 100;
+ std::vector<gf<imtime>> res;
+
+ // this only valid if Gf is 1x1 matrices....
+ for (auto const& x : fops) {
+
+  int n = x.linear_index;
+  auto g = gf<imtime>{{beta, Fermion, n_times_pts}, {1, 1}};
+
+  for (int A = 0; A < sub_hilbert_spaces.size(); ++A) { // index of the A block. sum over all
+   int B = creation_connection[n][A];                   // index of the block connected to A by operator c_n
+   if (B == -1) continue;                               // no matrix element
+   for (int ia = 0; ia < sub_hilbert_spaces[A].dimension(); ++ia)
+    for (int ib = 0; ib < sub_hilbert_spaces[B].dimension(); ++ib) {
+     auto Ea = eigensystems[A].eigenvalues[ia];
+     auto Eb = eigensystems[B].eigenvalues[ib];
+     for (auto tau : g.mesh())
+      g[tau](0, 0) += -cdag_matrices[n][A](ib, ia) * c_matrices[n][B](ia, ib) * std::exp(-(Eb - Ea) * tau - beta * Ea) / z;
+    }
+  }
+  res.push_back(g);
+  // g /= - z; // nooverload ??
+ }
+
+ return make_block_gf(res);
 }
 
 // -----------------------------------------------------------------

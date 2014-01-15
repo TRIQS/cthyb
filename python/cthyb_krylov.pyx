@@ -48,6 +48,8 @@ cdef extern from "c++/ctqmc_krylov.hpp" namespace "cthyb_krylov":
       #imaginary-time Green's functions
       gf_block_imtime & gt_view()
 
+      gf_block_imtime atomic_gf(double)
+
       #Matsubara Green's functions
       #gf_block_imfreq & gw_view()
 
@@ -122,6 +124,10 @@ cdef class Solver:
         def __get__(self): return make_BlockGfImTime(self._c.gt_view(), self.block_indices_pack, "G") # backward compatibility to h5
         #def __get__(self): return make_BlockGfImTime(self._c.gt_view(), self.block_indices_pack, "G(tau)")
 
+    def g_atomic_tau(self,double beta):
+        """Imaginary-time ATOMIC Green's function"""
+        return make_BlockGfImTime(self._c.atomic_gf(beta), self.block_indices_pack, "Gatomic") # backward compatibility to h5
+    
     # Todo : add option to generate correct rst table..
     def help(self) :
         """Generate the documentation of the solver"""

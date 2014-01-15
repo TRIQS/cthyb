@@ -1,5 +1,6 @@
 #pragma once
 #include <triqs/arrays.hpp>
+#include <triqs/gfs.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -11,6 +12,8 @@
 using namespace triqs::arrays;
 
 namespace cthyb_krylov {
+
+ using namespace triqs::gfs;
 
 /// ???
 struct block_desc_t {
@@ -100,6 +103,9 @@ class sorted_spaces {
  // (global) gs energy (i.e. min of all subspaces).
  double get_gs_energy() const { return gs_energy; }
 
+ /// The atomic green function
+ block_gf<imtime> atomic_gf(double beta) const;
+
  private:
  /// ------------------  DATAS  -----------------
 
@@ -126,6 +132,9 @@ class sorted_spaces {
 
  // Keep the QN, only for later printing ? OR MAKE THE STRING ...
  std::vector<std::vector<quantum_number_t>> quantum_numbers;
+
+ // keep it to compute the local gf
+ fundamental_operator_set fops;
 
  friend std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss);
 };

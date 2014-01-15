@@ -35,5 +35,8 @@ class ctqmc_krylov {
  parameter_defaults constructor_defaults() const;
  parameter_defaults solve_defaults() const;
  void help() const;
+
+ block_gf_view<imtime> atomic_gf(double beta) const { return sosp.atomic_gf(beta); }
+
 };
 }

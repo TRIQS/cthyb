@@ -17,7 +17,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
  // Temporary matrices
  matrix<scalar_type> matrix_exp;
  matrix<scalar_type> krylov_exp;
- triqs::arrays::vector<scalar_type> v2;
+ triqs::arrays::vector<scalar_type> v2, krylov_coeffs;
 
  public:
  exp_h_worker(HamiltonianType const& H, sorted_spaces const& sosp, double gs_energy_convergence, int small_matrix_size)
@@ -28,6 +28,7 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
   small_matrix_size = std::min(small_matrix_size, max_subspace_dim);
   matrix_exp.resize(small_matrix_size, small_matrix_size);
   krylov_exp.resize(max_subspace_dim, max_subspace_dim);
+  krylov_coeffs.resize(max_subspace_dim);
   v2.resize(max_subspace_dim);
  }
 
@@ -47,12 +48,19 @@ template <typename HamiltonianType, typename StateType> class exp_h_worker {
 
    auto all = range(0, krylov_dim);
 
-   // TO BE OPTIMIZED !! Like below
+#ifdef DONT_OPTIMIZE_KRYLOV
    krylov_exp(all, all) = 0;
    for (int n = 0; n < krylov_dim; ++n) krylov_exp(n, n) = exp(-dtau * eigenvalues(n));
-
    krylov_exp(all, all) = kw.vectors().transpose() * krylov_exp(all, all) * kw.vectors();
-   auto krylov_coeffs = initial_state_norm * krylov_exp(all, 0);
+   krylov_coeffs(all) = initial_state_norm * krylov_exp(all, 0);
+   //auto krylov_coeffs = initial_state_norm * krylov_exp(all, 0);
+#else
+   krylov_coeffs(all) = 0;
+   krylov_coeffs(0) = 1;
+   triqs::arrays::blas::gemv(1.0, kw.vectors(), krylov_coeffs(all), 0.0, v2(all));
+   for (int n = 0; n < krylov_dim; ++n) v2[n] *= exp(-dtau * eigenvalues(n));
+   triqs::arrays::blas::gemv(1.0, kw.vectors().transpose(), v2(all), 0.0, krylov_coeffs(all));
+#endif
 
    return kw.krylov_2_fock(krylov_coeffs);
 

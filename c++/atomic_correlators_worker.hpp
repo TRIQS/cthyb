@@ -31,6 +31,7 @@ class atomic_correlators_worker {
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  statistics::histogram histo_bs_block;                            // Histogram of the boundary state
  statistics::histogram histo_block_size;
+ statistics::histogram histo_block_freq;
  bool use_quick_trace_estimator;
  int trace_estimator_n_blocks_guess;
  bool use_truncation;

@@ -24,6 +24,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histos.insert({"FullTrace_over_Estimator", {0, 10, 100, "hist_FullTrace_over_Estimator.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
   histo_block_size = statistics::histogram{100, "hist_block_size.dat"};
+  histo_block_freq = statistics::histogram{100, "hist_block_freq.dat"};
  }
 }
 
@@ -166,7 +167,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
   int block_size = sosp.get_eigensystems()[block_index].eigenvalues.size();
 
-  if (make_histograms) histo_block_size << block_size;
+  if (make_histograms) {
+   histo_block_size << block_size; //size of block
+   histo_block_freq << block_index; // number of times block included
+  }
 
   // -.-.-.-.-.-.-.-.-.   Old implementation of the trace -.-.-.-.-.-.-
   if (use_old_trace) {

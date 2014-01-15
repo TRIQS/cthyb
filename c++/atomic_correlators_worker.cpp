@@ -22,7 +22,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
   histos.insert({"FullTrace_over_Estimator", {0, 10, 100, "hist_FullTrace_over_Estimator.dat"}});
-  histos.insert({"ExpBlock_over_ExpFirsTerm", {0, 10, 100, "hist_ExpBlock_over_ExpFirsTerm.dat"}});
+  histos.insert({"ExpBlock_over_ExpFirsTerm", {0, 1, 100, "hist_ExpBlock_over_ExpFirsTerm.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
   histo_block_size = statistics::histogram{100, "hist_block_size.dat"};
   histo_block_freq = statistics::histogram{100, "hist_block_freq.dat"};

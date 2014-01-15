@@ -22,6 +22,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
   histos.insert({"FullTrace_over_Estimator", {0, 10, 100, "hist_FullTrace_over_Estimator.dat"}});
+  histos.insert({"ExpBlock_over_ExpFirsTerm", {0, 10, 100, "hist_ExpBlock_over_ExpFirsTerm.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
   histo_block_size = statistics::histogram{100, "hist_block_size.dat"};
   histo_block_freq = statistics::histogram{100, "hist_block_freq.dat"};
@@ -158,6 +159,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  double epsilon = 1.e-15;
  double first_term = 0;
 
+ auto exp_first_term = std::exp(-to_sort[0].first); // precompute largest term
+
  for (int bl = 0; ((bl < n_bl) && ((!use_truncation) || (std::exp(-to_sort[bl].first) >= (std::abs(full_trace)) * epsilon))); ++bl) {
   int block_index = to_sort[bl].second;
   auto exp_no_emin = std::exp(-to_sort[bl].first);
@@ -168,8 +171,9 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   int block_size = sosp.get_eigensystems()[block_index].eigenvalues.size();
 
   if (make_histograms) {
-   histo_block_size << block_size; //size of block
+   histo_block_size << block_size; // size of block
    histo_block_freq << block_index; // number of times block included
+   histos["ExpBlock_over_ExpFirsTerm"] <<  exp_no_emin / exp_first_term; // ratio of e^-E_bl to e^-E0
   }
 
   // -.-.-.-.-.-.-.-.-.   Old implementation of the trace -.-.-.-.-.-.-
@@ -223,7 +227,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     auto const& Cop = sosp.fundamental_operator_matrix_from_linear_index(config_table[i].dag, config_table[i].n, B);
     auto const& eigensystem = sosp.get_eigensystems()[Bp];
     auto space_dim_p = eigensystem.eigenvalues.size();
- 
+
     if ((space_dim == 1) && (space_dim_p == 1)) // some quick optimisation
      M *= Cop(0,0);
     else {

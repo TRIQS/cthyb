@@ -49,7 +49,9 @@ p['quantum_numbers'] = qn
     
 S = Solver(beta=beta, gf_struct=gf_struct.items())
 
-if mpi.rank==0: pp = PdfPages('G_asymm_bath.matrix.pdf')
+if mpi.rank==0:
+    arch = HDFArchive('asymm_bath.matrix.h5','w') 
+    pp = PdfPages('G_asymm_bath.matrix.pdf')
 
 # Set hybridization function
 for e in epsilon:
@@ -62,6 +64,8 @@ for e in epsilon:
     S.solve(**p)
   
     if mpi.rank==0:
+        arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "down":S.G_tau["down"]}
+
         plt.clf()
         oplot(S.G_tau["up"], name="$\uparrow\uparrow$")
         oplot(S.G_tau["down"],name="$\downarrow\downarrow$")

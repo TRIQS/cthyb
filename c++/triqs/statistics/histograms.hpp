@@ -59,7 +59,7 @@ namespace statistics {
   /// Accumulate an integer into the histogram
   histogram& operator<<(int i) {
    auto n = i - imin;
-   if ((n < 0) || (n > data.size()))
+   if ((n < 0) || (n >= data.size()))
     ++del;
    else
     ++data[n];

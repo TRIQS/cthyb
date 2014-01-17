@@ -93,6 +93,6 @@ def spherical2cubic(L):
         W[4,0] = 1.0/sqrt(2);   W[4,4] = 1.0/sqrt(2)
     else: raise ValueError("spherical2cubic: implemented only for L=0,1,2")
 
-    return (cubic_names,W)
+    return (cubic_names,np.matrix(W))
 
 spin_names = ("up","dn")

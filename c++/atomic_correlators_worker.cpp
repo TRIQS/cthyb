@@ -17,16 +17,51 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
      use_quick_trace_estimator(use_quick_trace_estimator),
      trace_estimator_n_blocks_guess(trace_estimator_n_blocks_guess),
      use_truncation(use_truncation),
-     use_old_trace(use_old_trace) {
+     use_old_trace(use_old_trace),
+     time_spent_in_block(sosp.n_subspaces()),
+     partial_over_full_trace(sosp.n_subspaces()),
+     block_died_anal(sosp.n_subspaces(),11),
+     block_died_num(sosp.n_subspaces(),11) {
+// block_died_anal{} = 0;
+// block_died_num{} = 0;
  if (make_histograms) {
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
   histos.insert({"FullTrace_over_Estimator", {0, 10, 100, "hist_FullTrace_over_Estimator.dat"}});
   histos.insert({"ExpBlock_over_ExpFirsTerm", {0, 1, 100, "hist_ExpBlock_over_ExpFirsTerm.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
-  histo_block_size = statistics::histogram{100, "hist_block_size.dat"};
-  histo_block_freq = statistics::histogram{100, "hist_block_freq.dat"};
+  histo_opcount = statistics::histogram{100, "hist_opcount.dat"};
  }
+}
+
+//------------------------------------------------------------------------------
+
+atomic_correlators_worker::~atomic_correlators_worker() {
+
+   boost::mpi::communicator world;
+   std::string s = "time_and_partial_trace.dat";
+   std::string t = "block_died_anal.dat"; // first x<=10 columns measure # times
+   std::string u = "block_died_num.dat";  // block dies after x operators,
+                                          // 11th column measures # times block 
+                                          // dies some point after 10 operators
+
+   if (world.rank() == 0) {
+    std::ofstream f(s);
+    std::ofstream g(t);
+    std::ofstream h(u);
+    f << "Block  Time in block  Partial/Full Trace  Time*Partial/Full Trace" << std::endl;
+    for (int i=0; i<time_spent_in_block.size(); i++) {
+      f << i << " " << time_spent_in_block[i] << " " << partial_over_full_trace[i] << " " << time_spent_in_block[i]*partial_over_full_trace[i] << std::endl;
+      std::string cat1 = "";
+      std::string cat2 = "";
+      for (int j=0; i<11; i++) {
+        cat1 += " " + block_died_anal(i,j);
+        cat2 += " " + block_died_num(i,j);
+      }
+      g << i << cat1 << std::endl;
+      h << i << cat2 << std::endl;
+    }
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -113,6 +148,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  auto _end = config->oplist.crend();
  int n_blocks = sosp.n_subspaces();
  int config_size = config->oplist.size();
+ std::vector<result_t> partial_trace_of_block(n_blocks);
 
  // make a first pass to compute the bound for each term.
  std::vector<double> E_min_delta_tau(n_blocks, 0);
@@ -126,14 +162,28 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  for (int n = 0; n < n_blocks; ++n) {
   int bl = n;
   double sum_emin_dtau = dtau0 * sosp.get_eigensystems()[n].eigenvalues[0];
+  int opcount = 0;
   for (int i = 0; i < config_size; ++i) {
    bl = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl);
-   if (bl == -1) break;
+   if (bl == -1) {
+    if (i < 10) {
+     block_died_anal(bl,i) += 1;
+    } else {
+     block_died_anal(bl,10) += 1;
+    }
+    break;
+   }
    sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
    if (sum_emin_dtau > E_min_delta_tau_min + 35) {                                     // exp (-35) = 1.e-15
     bl = -1;
+    if (i < 10) {
+     block_died_num(bl,i) += 1;
+    } else {
+     block_died_num(bl,10) += 1;
+    }
     break;
    }
+   opcount += 1; // if path hasn't died, count operators for histogram
   }
   blo[n] = bl;
   E_min_delta_tau[n] = sum_emin_dtau;
@@ -141,6 +191,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
    one_non_zero = true;
   }
+  histo_opcount << opcount; 
  }
  if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
 
@@ -171,8 +222,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   int block_size = sosp.get_eigensystems()[block_index].eigenvalues.size();
 
   if (make_histograms) {
-   histo_block_size << block_size; // size of block
-   histo_block_freq << block_index; // number of times block included
    histos["ExpBlock_over_ExpFirsTerm"] <<  exp_no_emin / exp_first_term; // ratio of e^-E_bl to e^-E0
   }
 
@@ -240,9 +289,13 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     space_dim = space_dim_p;
 
     // apply exponential.
-   if (space_dim_p ==1) continue;
-   for (int n = 1; n < space_dim_p; ++n)
-    M(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+    if (space_dim_p ==1) continue;
+    for (int n = 1; n < space_dim_p; ++n)
+     M(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+
+    // measure time spent in block B
+    time_spent_in_block[B] += double(config_table[i].dtau);
+
    } // loop on the c ops of the configuration
 
    auto partial_trace_no_emin = trace(U_boundary.transpose() * M);
@@ -251,6 +304,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
    if (bl == 0) first_term = partial_trace;
    full_trace += partial_trace;
+   partial_trace_of_block[block_index] = partial_trace;
 
   } // -.-.-.-.-.-.-.-.-.  choice of trace computation method -.-.-.-.-.-.-
 
@@ -262,6 +316,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   histos["FullTrace_ExpSumMin"] << std::abs(full_trace) / std::exp(-to_sort[0].first);
   histo_bs_block << to_sort[0].second;
  }
+ for (int i=0; i<partial_trace_of_block.size(); i++) partial_over_full_trace[i] += partial_trace_of_block[i] / full_trace;
  return full_trace;
 }
 }

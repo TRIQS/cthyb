@@ -18,6 +18,8 @@ class atomic_correlators_worker {
                            bool make_histograms, bool use_quick_trace_estimator, int trace_estimator_n_blocks_guess,
                            bool use_truncation, bool use_old_trace);
 
+ ~atomic_correlators_worker();
+
  result_t operator()(); // recompute and return the full trace
  result_t full_trace_over_estimator();
 
@@ -30,12 +32,15 @@ class atomic_correlators_worker {
  bool make_histograms;                                            // Do we make the Histograms ?
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  statistics::histogram histo_bs_block;                            // Histogram of the boundary state
- statistics::histogram histo_block_size;
- statistics::histogram histo_block_freq;
+ statistics::histogram histo_opcount;                             // Histogram of number of operators in non-zero path
  bool use_quick_trace_estimator;
  int trace_estimator_n_blocks_guess;
  bool use_truncation;
  bool use_old_trace;
+ std::vector<result_t> time_spent_in_block;
+ std::vector<result_t> partial_over_full_trace;
+ triqs::arrays::array<int,2> block_died_anal;
+ triqs::arrays::array<int,2> block_died_num;
 
  boost::mpi::communicator comm;
 

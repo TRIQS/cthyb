@@ -25,6 +25,8 @@ F4 = F2*0.63
 
 # Dump the local Hamiltonian to a text file (set to None to disable dumping)
 H_dump = "H.txt"
+# Dump Delta parameters to a text file (set to None to disable dumping)
+Delta_dump = "Delta_params.txt"
 
 # Hybridization function parameters
 # Delta(\tau) is diagonal in the basis of cubic harmonics

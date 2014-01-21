@@ -92,6 +92,7 @@ S = Solver(parameters=pp, H_local=H, quantum_numbers=QN, gf_struct=gf_struct)
 print_master("Preparing the hybridization function...")
 
 # Set hybridization function
+if Delta_dump: Delta_dump_file = open(Delta_dump,'w')
 for sn, cn in product(spin_names,cubic_names):
     bn, i = mkind(sn,cn)
     V = delta_params[cn]['V']
@@ -100,6 +101,12 @@ for sn, cn in product(spin_names,cubic_names):
     delta_w = GfImFreq(indices = [i], beta=beta)
     delta_w <<= (V**2) * inverse(iOmega_n - e)
     S.Delta_tau[bn][i,i] <<= InverseFourier(delta_w)
+
+    # Dump Delta parameters
+    if Delta_dump:
+        Delta_dump_file.write(bn + '\t')
+        Delta_dump_file.write(str(V) + '\t')
+        Delta_dump_file.write(str(e) + '\n')
 
 print_master("Running the simulation...")
 

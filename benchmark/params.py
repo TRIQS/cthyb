@@ -23,6 +23,9 @@ F0 = U
 F2 = J*(14.0/(1.0 + 0.63))
 F4 = F2*0.63
 
+# Dump the local Hamiltonian to a text file (set to None to disable dumping)
+H_dump = "H.txt"
+
 # Hybridization function parameters
 # Delta(\tau) is diagonal in the basis of cubic harmonics
 # Each component of Delta(\tau) is represented as a list of single-particle

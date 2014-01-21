@@ -39,6 +39,14 @@ for b in gf_struct:
 for i in atomic_levels:
     H += atomic_levels[i] * N(*i)
 
+# Dump quadratic terms of H
+if H_dump:
+    H_dump_file = open(H_dump,'w')
+    for b in gf_struct:
+        H_dump_file.write(b + '\t')
+        H_dump_file.write(b + '\t')
+        H_dump_file.write(str(atomic_levels[(b,0)]-mu) + '\n')
+
 if use_interaction:
     print_master("Preparing the interaction matrix...")
 
@@ -52,7 +60,16 @@ if use_interaction:
             if abs(U_val.imag) > 1e-10:
                 raise RuntimeError("Cubic harmonics are real, so should be the matrix elements of U.")
 
-            H += 0.5*U_val.real*C_dag(*mkind(s1,cubic_names[ap1]))*C_dag(*mkind(s2,cubic_names[ap2]))*C(*mkind(s2,cubic_names[a1]))*C(*mkind(s1,cubic_names[a2]))
+            H_term = 0.5*U_val.real*C_dag(*mkind(s1,cubic_names[ap1]))*C_dag(*mkind(s2,cubic_names[ap2]))*C(*mkind(s2,cubic_names[a1]))*C(*mkind(s1,cubic_names[a2]))
+            H += H_term
+
+            # Dump quartic terms of H
+            if H_dump and not H_term.is_zero():
+                H_dump_file.write(mkind(s1,cubic_names[ap1])[0] + '\t')
+                H_dump_file.write(mkind(s2,cubic_names[ap2])[0] + '\t')
+                H_dump_file.write(mkind(s2,cubic_names[a1])[0] + '\t')
+                H_dump_file.write(mkind(s1,cubic_names[a2])[0] + '\t')
+                H_dump_file.write(str(U_val.real) + '\n')
 
 # Quantum numbers (N_up and N_down)
 QN=[Operator(),Operator()]

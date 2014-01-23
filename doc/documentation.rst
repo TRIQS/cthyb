@@ -14,4 +14,3 @@ Documentation
    sorted_spaces
    operators
    benchmarks
-   implementation_notes

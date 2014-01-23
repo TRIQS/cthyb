@@ -24,7 +24,7 @@ StateVector Concept
 +==========================================+=================================================================================+
 | value_type                               | Type of element in the container. Values of this type must form a number field. |
 +------------------------------------------+---------------------------------------------------------------------------------+
-| size_t size() const                      | Returns the number of elements in the container.                                |
+| int size() const                         | Returns the number of elements in the container.                                |
 +------------------------------------------+---------------------------------------------------------------------------------+
 | value_type [const]& operator()(size_t)   | Read/write access to a single element.                                          |
 | [const]                                  |                                                                                 |

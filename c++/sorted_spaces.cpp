@@ -237,9 +237,9 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
      s(fs) = 1.0;
      auto s2 = c_op(s);
      int nonzeros_in_s2 = 0;
-     foreach(s2, [&](int fs2, double ampl){
+     foreach(s2, [&](int i, double ampl){
          if (nonzeros_in_s2 >= 1) TRIQS_RUNTIME_ERROR << "Internal consistency error ";
-         M(sub_hilbert_spaces[Bp].get_state_index(fs2), sub_hilbert_spaces[B].get_state_index(fs)) = ampl;
+         M(sub_hilbert_spaces[Bp].get_state_index(i/*full_hs.get_fock_state(i)==i*/), sub_hilbert_spaces[B].get_state_index(fs)) = ampl;
          nonzeros_in_s2++;
      });
     }

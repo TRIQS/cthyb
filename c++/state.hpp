@@ -76,14 +76,6 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
 
  state& operator/=(value_type x) { return operator*=(1 / x); }
 
- friend std::ostream& operator<<(std::ostream& os, state const& s) {
-  for (auto const& a : s.ampli) {
-   os << " +(" << a.second << ")"
-      << "|" << s.hs->get_fock_state(a.first) << ">";
-  }
-  return os;
- }
-
  // Scalar product
  friend value_type dot_product(state const& s1, state const& s2) {
   value_type res = 0.0;
@@ -93,13 +85,15 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   return res;
  }
 
+ // Lambda (fs, amplitude)
+ template<typename Lambda>
+ friend void foreach(state const& st, Lambda l) {
+  for (auto const& p : st.ampli) l(p.first, p.second);
+ }
+
  //
  // Additions to StateVector concept
  //
-
- // Full access to amplitudes
- amplitude_t const& amplitudes() const { return ampli; }
- amplitude_t& amplitudes() { return ampli; }
 
  HilbertSpace const& get_hilbert() const { return *hs; }
  void set_hilbert(HilbertSpace const& hs_) { hs = &hs_; }
@@ -111,13 +105,6 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   }
  }
 };
-
-// Lambda (fs, amplitude)
-template <typename HilbertSpace, typename ScalarType, typename Lambda>
-void foreach(state<HilbertSpace, ScalarType, true> const& st, Lambda l) {
- auto hs = st.get_hilbert();
- for (auto const& p : st.amplitudes()) l(hs.get_fock_state(p.first), p.second);
-}
 
 // -----------------------------------------------------------------------------------
 // implementation based on a vector
@@ -168,6 +155,13 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  // Scalar product
  friend value_type dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
 
+ // Lambda (fs, amplitude)
+ template<typename Lambda>
+ friend void foreach(state const& st, Lambda l) {
+  const auto L = st.size();
+  for (size_t i = 0; i < L; ++i) l(i, st(i));
+ }
+
  //
  // Additions to StateVector concept
  //
@@ -180,28 +174,25 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  HilbertSpace const& get_hilbert() const { return *hs; }
  void set_hilbert(HilbertSpace const& hs_) { hs = &hs_; }
 
- // Print
- friend std::ostream& operator<<(std::ostream& os, state const& s) {
-  bool something_written = false;
-  for (int i = 0; i < s.size(); ++i) {
-   auto ampl = s(i);
-   if (std::abs(ampl) < 1e-10) continue;
-   os << " +(" << ampl << ")"
-      << "|" << s.hs->get_fock_state(i) << ">";
-   something_written = true;
-  }
-  if (!something_written) os << 0;
-  return os;
- }
-
 };
 
-// Lambda (fs, amplitude)
-template <typename HilbertSpace, typename ScalarType, typename Lambda>
-void foreach(state<HilbertSpace, ScalarType, false> const& st, Lambda l) {
- const auto L = st.size();
- auto hs = st.get_hilbert();
- for (size_t i = 0; i < L; ++i) l(hs.get_fock_state(i), st(i));
+// Print state
+template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
+std::ostream& operator<<(std::ostream& os, state<HilbertSpace, ScalarType, BasedOnMap> const& s) {
+ bool something_written = false;
+ auto const& hs = s.get_hilbert();
+
+ using value_type = typename state<HilbertSpace, ScalarType, BasedOnMap>::value_type;
+ foreach(s, [&os,hs,&something_written](int i, value_type ampl){
+  if (std::abs(ampl) > 1e-10){
+   os << " +(" << ampl << ")" << "|" << hs.get_fock_state(i) << ">";
+   something_written = true;
+  }
+ });
+
+ if (!something_written) os << 0;
+ return os;
 }
+
 
 }

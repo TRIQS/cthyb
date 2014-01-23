@@ -107,10 +107,12 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
  template <typename StateType> StateType operator()(StateType const &st) const {
 
   StateType target_st = get_target_st(st, std::integral_constant<bool, UseMap>());
+  auto const& hs = st.get_hilbert();
 
   for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
    auto M = all_terms[i];
-   foreach(st, [M, &target_st](fock_state_t f2, typename StateType::value_type amplitude) {
+   foreach(st, [M, &target_st,hs](int i, typename StateType::value_type amplitude) {
+    fock_state_t f2 = hs.get_fock_state(i);
     if ((f2 & M.d_mask) != M.d_mask) return;
     f2 &= ~M.d_mask;
     if (((f2 ^ M.dag_mask) & M.dag_mask) != M.dag_mask) return;

@@ -7,7 +7,7 @@ namespace cthyb_krylov {
 template <typename HamiltonianType, typename StateType> class exp_h_worker {
 
  using state_type = StateType;
- using scalar_type = typename state_type::scalar_t;
+ using scalar_type = typename state_type::value_type;
 
  krylov_worker<HamiltonianType, StateType> kw;
  sorted_spaces const& sosp;

@@ -110,7 +110,7 @@ template <typename HilbertType, bool UseMap = false> class imperative_operator {
 
   for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
    auto M = all_terms[i];
-   foreach(st, [M, &target_st](fock_state_t f2, typename StateType::scalar_t amplitude) {
+   foreach(st, [M, &target_st](fock_state_t f2, typename StateType::value_type amplitude) {
     if ((f2 & M.d_mask) != M.d_mask) return;
     f2 &= ~M.d_mask;
     if (((f2 ^ M.dag_mask) & M.dag_mask) != M.dag_mask) return;

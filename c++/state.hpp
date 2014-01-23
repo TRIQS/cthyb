@@ -34,13 +34,12 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  amplitude_t ampli;
 
  public:
- using scalar_t = ScalarType;
- using value_type = ScalarType; // only for use with the Krylov (concept to write).
+ using value_type = ScalarType;
 
  state() : hs(nullptr) {} // non valid state !
  state(HilbertSpace const& hs_) : hs(&hs_) {}
 
- scalar_t& operator()(int i) { return ampli[i]; }
+ value_type& operator()(int i) { return ampli[i]; }
  amplitude_t const& amplitudes() const { return ampli; }
  amplitude_t& amplitudes() { return ampli; }
  HilbertSpace const& get_hilbert() const { return *hs; }
@@ -65,7 +64,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   return *this;
  }
 
- state& operator*=(scalar_t x) {
+ state& operator*=(value_type x) {
   for (auto& a : ampli) {
    a.second *= x;
   }
@@ -73,7 +72,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
   return *this;
  }
 
- state& operator/=(scalar_t x) { return operator*=(1 / x); }
+ state& operator/=(value_type x) { return operator*=(1 / x); }
 
  friend std::ostream& operator<<(std::ostream& os, state const& s) {
   for (auto const& a : s.ampli) {
@@ -84,8 +83,8 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  }
 
  // scalar product
- friend scalar_t dot_product(state const& s1, state const& s2) {
-  scalar_t res = 0.0;
+ friend value_type dot_product(state const& s1, state const& s2) {
+  value_type res = 0.0;
   for (auto const& a : s1.ampli) {
    if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
   }
@@ -118,8 +117,7 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  amplitude_t ampli;
 
  public:
- using scalar_t = ScalarType;
- using value_type = ScalarType; // only for use with the Krylov (concept to write).
+ using value_type = ScalarType;
 
  state() : hs(nullptr) {}
  state(HilbertSpace const& hs_) : hs(&hs_), ampli(hs_.dimension(), 0.0) {}
@@ -129,8 +127,8 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  amplitude_t& amplitudes() { return ampli; }
 
  // access to data
- scalar_t& operator()(int i) { return ampli[i]; }
- scalar_t const& operator()(int i) const { return ampli[i]; }
+ value_type& operator()(int i) { return ampli[i]; }
+ value_type const& operator()(int i) const { return ampli[i]; }
 
  // get access to hilbert space
  HilbertSpace const& get_hilbert() const { return *hs; }
@@ -161,18 +159,18 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
   return *this;
  }
 
- state& operator*=(scalar_t x) {
+ state& operator*=(value_type x) {
   ampli *= x;
   return *this;
  }
 
- state& operator/=(scalar_t x) {
+ state& operator/=(value_type x) {
   ampli /= x;
   return *this;
  }
 
  // scalar product
- friend scalar_t dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
+ friend value_type dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
 };
 
 // Lambda (fs, amplitude)

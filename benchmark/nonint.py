@@ -26,12 +26,10 @@ for modes in range(1,10+1):
 	p["random_seed"] = 123 * mpi.rank + 567
 	p["verbosity"] = 3
 	p["length_cycle"] = 50
-	p["n_warmup_cycles"] = 10000
-	p["n_cycles"] = 300000
+	p["n_warmup_cycles"] = 50000
+	p["n_cycles"] = 1200000
 	p["n_tau_delta"] = 1000
 	p["n_tau_g"] = 400
-	p["krylov_bs_use_cutoff"] = True
-	p["krylov_bs_prob_cutoff"] = -1.0
 	p["krylov_gs_energy_convergence"] = 1e-8
 	p["krylov_small_matrix_size"] = 100
 

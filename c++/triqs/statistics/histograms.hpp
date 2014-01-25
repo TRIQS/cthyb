@@ -93,7 +93,11 @@ namespace statistics {
    if (world.rank() == 0) {
     std::ofstream f(s);
     size_t i = 0;
-    for (auto const& x : normalize()) f << i++ << "  " << x << std::endl;
+    double cum=0;
+    for (auto const& x : normalize()) {
+     cum += x;
+     f << std::setw(4) << i++ << "  " << std::setw(10) << x << " " << std::setw(10) << cum << std::endl;
+    }
     if (del) std::cerr << "Histogram : " << del << " points have been lost !" << std::endl;
    } else {
     //std::cout << "not dumping histo " << s <<" on node " << world.rank() << std::endl;

@@ -12,6 +12,12 @@ from collections import OrderedDict
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
+def print_master(msg):
+    if mpi.rank==0: print msg
+
+print_master("Welcome to asymm_bath test (1 band with a small asymmetric hybridization function).")
+print_master("This test helps to detect sampling problems.")
+
 # H_loc parameters
 beta = 40.0
 ed = -1.0
@@ -32,6 +38,11 @@ p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
 p["n_tau_delta"] = 1000
 p["n_tau_g"] = 1000
+p["use_truncation"] = True
+p["use_old_trace"] = False
+p["use_quick_trace_estimator"] = False
+p["trace_estimator_n_blocks_guess"] = -1
+p["krylov_gs_energy_convergence"] = 1e-8
 p["krylov_small_matrix_size"] = 4
 
 # Block structure of GF

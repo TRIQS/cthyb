@@ -11,6 +11,12 @@ import itertools
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
+def print_master(msg):
+    if mpi.rank==0: print msg
+
+print_master("Welcome to asymm_bath test (1 band with a small asymmetric hybridization function; matrix version).")
+print_master("This test helps to detect sampling problems.")
+
 # H_loc parameters
 beta = 40.0
 ed = -1.0

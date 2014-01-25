@@ -11,6 +11,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 def print_master(msg):
 	if mpi.rank==0: print msg
 
+print_master("Welcome to nonint (non-interacting many-band systems) test.")
+print_master("This test is aimed to reveal excessive state truncation issues.")
+
 beta = 40.0
 
 for modes in range(1,10+1):
@@ -24,12 +27,16 @@ for modes in range(1,10+1):
 	p["max_time"] = -1
 	p["random_name"] = ""
 	p["random_seed"] = 123 * mpi.rank + 567
-	p["verbosity"] = 3
+	p["verbosity"] = 2
 	p["length_cycle"] = 50
 	p["n_warmup_cycles"] = 50000
 	p["n_cycles"] = 1200000
 	p["n_tau_delta"] = 1000
-	p["n_tau_g"] = 400
+        p["n_tau_g"] = 400
+        p["use_truncation"] = True
+        p["use_old_trace"] = False
+        p["use_quick_trace_estimator"] = False
+        p["trace_estimator_n_blocks_guess"] = -1
 	p["krylov_gs_energy_convergence"] = 1e-8
 	p["krylov_small_matrix_size"] = 100
 

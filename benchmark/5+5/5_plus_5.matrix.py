@@ -17,11 +17,16 @@ def print_master(msg):
 	if mpi.rank==0: print msg
 
 # Remove Krylov-specific parameters 
-p = {k:v for k, v in p.items() if not k.startswith('krylov')}
-
-# Not needed
-del p["beta"]
-del p["verbosity"]
+krylov_only_params = [
+	'beta',
+	'verbosity',
+	'use_old_trace',
+	'trace_estimator_n_blocks_guess',
+	'use_truncation',
+	'use_quick_trace_estimator',
+	'krylov_gs_energy_convergence',
+	'krylov_small_matrix_size']
+p = {k:v for k, v in p.items() if not k in krylov_only_params}
 
 print_master("Welcome to 5+5 (5 orbitals + 5 bath sites) test, matrix version.")
 

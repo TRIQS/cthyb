@@ -9,7 +9,12 @@ from pytriqs.parameters.parameters import Parameters
 from pytriqs.applications.impurity_solvers.cthyb_krylov import *
 from pytriqs.gf.local import *
 
+# import parameters from cwd
+from os import getcwd
+from sys import path
+path.insert(0,getcwd())
 from params import *
+del path[0]
 
 def print_master(msg):
 	if mpi.rank==0: print msg

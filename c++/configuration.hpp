@@ -17,20 +17,46 @@ struct configuration {
   int inner_index; // the inner index inside the block
   bool dagger;     // is the operator a dagger
   long linear_index;
+  bool is_identity() const { return linear_index == -1;}
+  static op_desc identity() { return {0,0,0,-1};} // -1 used for Id only
  };
 
  // a map associating an operator to an imaginary time
  using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
  // using oplist_t=boost::container::flat_map<time_pt, op_desc, std::greater<time_pt>> ;
+ private:
  oplist_t oplist;
+ public : 
 
  // construction and the basics stuff. value semantics, except = ?
- configuration(double beta) : beta_(beta) {}
+ configuration(double beta) : beta_(beta) {
+  // add the two Id operators at the boundaries beta and 0
+  oplist.insert( {time_pt::make_zero(beta), op_desc::identity()}); 
+  oplist.insert( {time_pt::make_beta(beta), op_desc::identity()}); 
+ }
 
  double beta() const { return beta_; }
 
+ int size() const { return oplist.size() - 2; } // rm the 2 boundary points 
+
+ auto insert(time_pt tau, op_desc op) DECL_AND_RETURN(oplist.insert({tau,op}));
+ auto insert(std::pair<time_pt,op_desc> p) DECL_AND_RETURN(oplist.insert(p));
+
+ void erase(oplist_t::iterator it) { oplist.erase(it); }
+
+ oplist_t::iterator begin() { auto r = oplist.begin(); ++r; return r;}
+ oplist_t::iterator end() { auto r = oplist.end(); --r; return r;}
+ 
+ oplist_t::const_iterator begin() const { auto r = oplist.begin(); ++r; return r;}
+ oplist_t::const_iterator end() const { auto r = oplist.end(); --r; return r;}
+ 
+ oplist_t::const_iterator lowest_time_operator() const { auto r = end(); --r; return r;}
+ //oplist_t::const_iterator highest_time_operator() const { auto r = end(); --r; return r;}
+ oplist_t::const_iterator boundary_beta() const { return oplist.begin();}
+ oplist_t::const_iterator boundary_zero() const { return end();}
+
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
-  for (auto const& op : c.oplist)
+  for (auto const& op : c)
    out << "tau = " << op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","
        << op.second.inner_index << ")\n";
   return out;

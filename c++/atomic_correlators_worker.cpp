@@ -46,6 +46,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    histo_opcount.emplace_back(100, s.str());
   }
  }
+
+ // insert the boundary points for the cache.
 }
 
 //------------------------------------------------------------------------------
@@ -105,27 +107,26 @@ struct _p1 {
 
 // a small temporary table from the config, to optimize the sweep in the algorithms below
 std::vector<_p1> make_config_table(const configuration* config) {
- std::vector<_p1> config_table(config->oplist.size());
- const auto _begin = config->oplist.crbegin();
- const auto _end = config->oplist.crend();
+ std::vector<_p1> config_table(config->size());
+ const auto _begin = config->lowest_time_operator(); //config->oplist.crbegin();
+ const auto _end = config->boundary_beta(); //config->oplist.crend();
  int ii = 0;
  for (auto it = _begin; it != _end;) { // do nothing if no operator
   auto it1 = it;
-  ++it;
-  double dtau = (it == _end ? config->beta() : double(it->first)) - double(it1->first);
+  --it;
+  double dtau = double(it->first) - double(it1->first);
   config_table[ii++] = {dtau, it1->second.dagger, it1->second.linear_index};
  }
  return config_table;
 }
 
+
 // ------------------ trace estimate --------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
 
- auto _begin = config->oplist.crbegin();
- auto _end = config->oplist.crend();
- int config_size = config->oplist.size();
- double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
+ int config_size = config->size();
+ auto dtau0 = double(config->lowest_time_operator()->first);
  double E_min_delta_tau_min = std::numeric_limits<double>::max();
  bool one_non_zero = false;
  auto config_table = make_config_table(config);
@@ -170,10 +171,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
 
 atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
- auto _begin = config->oplist.crbegin();
- auto _end = config->oplist.crend();
  int n_blocks = sosp.n_subspaces();
- int config_size = config->oplist.size();
+ int config_size = config->size();
  std::vector<result_t> partial_trace_of_block(n_blocks);
 
  // make a first pass to compute the bound for each term.
@@ -181,7 +180,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  std::vector<int> blo(n_blocks);
 
  auto config_table = make_config_table(config);
- double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
+ auto dtau0 = double(config->lowest_time_operator()->first);
+ //double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
 
  std::vector<int> n_blocks_after_steps(20, 0);
 
@@ -219,7 +219,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  // analysis
  if (make_histograms) {
   std::vector<int> opcount(10, 0);
-  for (auto const& p : config->oplist) opcount[p.second.linear_index]++;
+  for (auto const& p : *config) opcount[p.second.linear_index]++;
   for (int i = 0; i < 10; ++i) histo_opcount[i] << opcount[i] / 2;
   // histo_opcount << config_size/2; // histogram of the configuration size
   for (int i = 0; i < 20; ++i) histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
@@ -263,7 +263,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
   // -.-.-.-.-.-.-.-.-.   Old implementation of the trace -.-.-.-.-.-.-
   if (use_old_trace) {
-   for (int state_index = 0; state_index < block_size; ++state_index) {
+
+  for (int state_index = 0; state_index < block_size; ++state_index) {
     state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
 
     // do the first exp
@@ -271,6 +272,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     state_t psi = psi0;
     exp_h.apply_no_emin(psi, dtau0);
 
+    auto _begin = config->lowest_time_operator();
+    auto _end = config->boundary_zero();
     for (auto it = _begin; it != _end;) { // do nothing if no operator
      // apply operator
      auto const& op = sosp.get_fundamental_operator_from_linear_index(it->second.dagger, it->second.linear_index);
@@ -278,8 +281,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
      // apply exponential.
      double tau1 = double(it->first);
-     ++it;
-     double dtau = (it == _end ? config->beta() : double(it->first)) - tau1;
+     --it;
+     double dtau = double(it->first) - tau1;
      assert(dtau > 0);
      exp_h.apply_no_emin(psi, dtau);
     }

@@ -70,10 +70,12 @@ class move_insert_c_cdag {
   // 1- In the very exceptional case where the insert has failed because an operator is already sitting here
   // (cf std::map doc for insert return), we reject the move.
   // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
-  auto r1 = config.oplist.insert({tau1, op1});
+  auto r1 = config.insert(tau1, op1);
+  //auto r1 = config.oplist.insert({tau1, op1});
   if (!r1.second) return 0;
   inserted_ops.push_back(r1.first);
-  auto r2 = config.oplist.insert({tau2, op2});
+  auto r2 = config.insert(tau2, op2);
+  //auto r2 = config.oplist.insert({tau2, op2});
   if (!r2.second) return 0;
   inserted_ops.push_back(r2.first);
 
@@ -127,7 +129,7 @@ class move_insert_c_cdag {
  //----------------
 
  void reject() {
-  for (auto& it : inserted_ops) config.oplist.erase(it);
+  for (auto& it : inserted_ops) config.erase(it);
   inserted_ops.clear();
  }
 };

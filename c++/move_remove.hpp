@@ -22,13 +22,13 @@ class move_remove_c_cdag {
  void remove_op(int n, bool dag) {
   // Find the position of the operator to remove
   int i = 0;
-  auto it = std::find_if(config.oplist.begin(), config.oplist.end(), [&](typename configuration::oplist_t::value_type const& op) {
+  auto it = std::find_if(config.begin(), config.end(), [&](typename configuration::oplist_t::value_type const& op) {
    if (op.second.dagger == dag && op.second.block_index == block_index) ++i;
    return i == n + 1;
   });
   assert(it != config.oplist.end());
   removed_ops.push_back(*it); // store the pair (time, operator number) which was here, to put it back in reject if necessary
-  config.oplist.erase(it);
+  config.erase(it);
  }
 
  public:
@@ -97,7 +97,7 @@ class move_remove_c_cdag {
  //----------------
 
  void reject() {
-  for (auto& p : removed_ops) config.oplist.insert(p);
+  for (auto& p : removed_ops) config.insert(p);
   removed_ops.clear();
  }
 };

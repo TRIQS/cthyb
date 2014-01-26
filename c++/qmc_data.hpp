@@ -68,7 +68,7 @@ struct qmc_data {
   // d^_1 d^_1 d^_1 ... d_1 d_1 d_1   d^_2 d^_2 ... d_2 d_2   ...   d^_n .. d_n
 
   // loop over the operators "op" in the trace (right to left)
-  for (auto const &op : config.oplist) {
+  for (auto const &op : config) {
 
    // how many operators with an 'a' larger than "op" are there on the left of "op"?
    for (int a = op.second.block_index + 1; a < num_blocks; ++a) s += n_op_with_a_equal_to[a];

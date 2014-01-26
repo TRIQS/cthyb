@@ -26,6 +26,21 @@ class atomic_correlators_worker {
  sorted_spaces const& get_sorted_spaces() const { return sosp; }
 
  private:
+ 
+ struct cache_point_t {
+  struct pt_t {
+   int current_block_number;//, start_block_number;
+   double emin_dtau_acc;
+  };
+  std::vector<pt_t> r, l; // precomputation at the right and the left of the point
+  cache_point_t(int n_blocks) : r{n_blocks, {0, 0}}, l{n_blocks, {0, 0}} {}
+  //cache_point_t(int n_blocks) : r{n_blocks, {0, 0, 0}}, l{n_blocks, {0, 0, 0}} {}
+ };
+
+ using cache_t = std::map<time_pt, cache_point_t, std::greater<time_pt>>;
+ // using oplist_t=boost::container::flat_map<time_pt, cache_point_t, std::greater<time_pt>> ;
+ cache_t cache;
+
  const configuration* config;                                     // must exists longer than this object.
  sorted_spaces const& sosp;                                       // The sorted space
  int small_matrix_size;                                           // The minimal size of a matrix to be treated with exp_h_matrix

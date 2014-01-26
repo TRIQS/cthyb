@@ -18,17 +18,19 @@ class move_remove_c_cdag {
 
  std::vector<std::pair<configuration::oplist_t::key_type, configuration::oplist_t::mapped_type>> removed_ops;
 
- // remove the n-th operator of type dag
- void remove_op(int n, bool dag) {
+ // remove the n-th operator of type dag. Returns the time_pt where it was removed
+ time_pt remove_op(int n, bool dag) {
   // Find the position of the operator to remove
   int i = 0;
   auto it = std::find_if(config.begin(), config.end(), [&](typename configuration::oplist_t::value_type const& op) {
    if (op.second.dagger == dag && op.second.block_index == block_index) ++i;
    return i == n + 1;
   });
-  assert(it != config.oplist.end());
+  assert(it != config.end());
   removed_ops.push_back(*it); // store the pair (time, operator number) which was here, to put it back in reject if necessary
+  auto t = it->first;
   config.erase(it);
+  return t;
  }
 
  public:
@@ -59,10 +61,10 @@ class move_remove_c_cdag {
   std::cerr << num_c_dag << "-th Cdag(" << block_index << ",...), ";
   std::cerr << num_c << "-th C(" << block_index << ",...)" << std::endl;
 #endif
-  remove_op(num_c, false);
-  remove_op(num_c_dag, true);
+  auto t1 = remove_op(num_c, false);
+  auto t2 = remove_op(num_c_dag, true);
 
-  new_trace = data.atomic_corr();
+  new_trace = data.atomic_corr.estimate(t1, t2);
   if (new_trace == 0.0) return 0;
   auto trace_ratio = new_trace / data.trace;
 
@@ -91,6 +93,7 @@ class move_remove_c_cdag {
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
+  data.atomic_corr.cache_update();
   return data.current_sign / data.old_sign;
  }
 

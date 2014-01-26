@@ -89,8 +89,7 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
      .optional("use_truncation", bool(true), " Use truncation in the trace calculation ")
      .optional("use_old_trace", bool(false), "Use old trace (matrix-vector mult)")
-     .optional("use_quick_trace_estimator", bool(false), " Use for QMC weight a quick estimate ....")
-     .optional("trace_estimator_n_blocks_guess", int(-1), " Number max of blocks used in the trace estimator (default : -1 = all blocks)")
+     .optional("trace_estimator", std::string("None"), " None, Simple, WithCache ...")
      .optional("krylov_gs_energy_convergence", 1e-10, " double ")
      .optional("krylov_small_matrix_size", int(10), " unsigned int ");
  return pdef;

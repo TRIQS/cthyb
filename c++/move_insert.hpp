@@ -77,7 +77,7 @@ class move_insert_c_cdag {
   if (!r2.second) return 0;
   inserted_ops.push_back(r2.first);
 
-  new_trace = data.atomic_corr();
+  new_trace = data.atomic_corr.estimate(tau1, tau2);
   if (new_trace == 0.0) return 0;
   auto trace_ratio = new_trace / data.trace;
 
@@ -121,7 +121,7 @@ class move_insert_c_cdag {
   data.update_sign();
   data.trace = new_trace;
   if (record_histograms) histos["length_accepted"] << delta_tau;
-  //data.atomic_corr.cache_update();
+  data.atomic_corr.cache_update();
   return data.current_sign / data.old_sign;
  }
 

@@ -6,24 +6,34 @@
 
 namespace cthyb_krylov {
 
-atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, double gs_energy_convergence,
-                                                     int small_matrix_size, bool make_histograms, bool use_quick_trace_estimator,
-                                                     int trace_estimator_n_blocks_guess, bool use_truncation, bool use_old_trace)
+atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, utility::parameters const& p)
    : config(&c),
      sosp(sosp_),
-     exp_h(sosp.get_hamiltonian(), sosp, gs_energy_convergence, small_matrix_size),
-     small_matrix_size(small_matrix_size),
-     make_histograms(make_histograms),
-     use_quick_trace_estimator(use_quick_trace_estimator),
-     trace_estimator_n_blocks_guess(trace_estimator_n_blocks_guess),
-     use_truncation(use_truncation),
-     use_old_trace(use_old_trace),
+     exp_h(sosp.get_hamiltonian(), sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"]),
      time_spent_in_block(sosp.n_subspaces()),
      partial_over_full_trace(sosp.n_subspaces()),
      block_died_anal(sosp.n_subspaces(), 11),
      block_died_num(sosp.n_subspaces(), 11) {
+
+ make_histograms = p["make_path_histograms"];
+ use_truncation = p["use_truncation"];
+ use_old_trace = p["use_old_trace"];
+
+ std::string ms = p["trace_estimator"];
+ try {
+  estimator_method = std::map<std::string, estimator_method_t>{{"None", estimator_method_t::None},
+                                                                     {"Simple", estimator_method_t::Simple},
+                                                                     {"WithCache", estimator_method_t::WithCache}}.at(ms);
+ }
+ catch (...) {
+  TRIQS_RUNTIME_ERROR << "trace_estimator method " << ms << "not recognized";
+ }
+
  block_died_anal() = 0;
  block_died_num() = 0;
+ 
+ cache_update();
+
  if (make_histograms) {
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
   histos.insert({"FullTrace_ExpSumMin", {0, 10, 100, "hist_FullTrace_ExpSumMin.dat"}});
@@ -46,7 +56,6 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    histo_opcount.emplace_back(100, s.str());
   }
  }
- cache_update();
 }
 
 //------------------------------------------------------------------------------
@@ -82,16 +91,31 @@ atomic_correlators_worker::~atomic_correlators_worker() {
 
 //------------------------------------------------------------------------------
 
+atomic_correlators_worker::result_t atomic_correlators_worker::estimate(time_pt t1, time_pt t2) {
+ switch (estimator_method) {
+  case estimator_method_t::None:
+   return full_trace();
+  case estimator_method_t::Simple:
+   return estimate_simple();
+  case estimator_method_t::WithCache:
+   return estimate_with_cache(t1, t2);
+ }
+}
 
-atomic_correlators_worker::result_t atomic_correlators_worker::operator()() {
- return (use_quick_trace_estimator ? estimate() : full_trace());
+//------------------------------------------------------------------------------
+
+atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
+ if (estimator_method == estimator_method_t::None)
+   return full_trace();
+ else
+   return estimate_simple();
 }
 
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::full_trace_over_estimator() {
- if (!use_quick_trace_estimator) return 1;
- auto r = full_trace() / estimate();
+ if (estimator_method == estimator_method_t::None) return 1;
+ auto r = full_trace() / estimate_simple();
  if (make_histograms) histos["FullTrace_over_Estimator"] << std::abs(r);
  return r;
 }
@@ -180,6 +204,9 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
 
 void atomic_correlators_worker::cache_update() {
 
+ // only if the estimator method is with cache do we do something...
+ if (estimator_method != estimator_method_t::WithCache) return; 
+
  // a brutal solution as first implementation : clean the cache and rebuild
  // better to add the cache in the config ?
  cache.clear();
@@ -225,7 +252,7 @@ void atomic_correlators_worker::cache_update() {
 
 // ------------------ trace estimate --------------
 
-atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
+atomic_correlators_worker::result_t atomic_correlators_worker::estimate_simple() {
 
  int config_size = config->size();
  auto dtau0 = double(config->lowest_time_operator()->first);
@@ -233,12 +260,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
  bool one_non_zero = false;
  auto config_table = make_config_table(config);
  int n_blocks = sosp.n_subspaces();
- int n_block_non_failed = 0;
- auto n_block_max = (trace_estimator_n_blocks_guess == -1 ? n_blocks : trace_estimator_n_blocks_guess);
 
  std::vector<int> n_blocks_after_steps(20, 0);
 
- for (int n = 0; (n < n_blocks) && (n_block_non_failed < n_block_max); ++n) {
+ for (int n = 0; (n < n_blocks); ++n) {
   int bl = n;
   double sum_emin_dtau = dtau0 * sosp.get_eigensystems()[n].eigenvalues[0];
   for (int i = 0; i < config_size; ++i) {
@@ -253,7 +278,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
   }
   if (bl == n) {
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
-   ++n_block_non_failed;
    one_non_zero = true;
   }
  } // loop over n

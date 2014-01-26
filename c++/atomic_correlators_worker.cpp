@@ -46,8 +46,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    histo_opcount.emplace_back(100, s.str());
   }
  }
-
- // insert the boundary points for the cache.
+ cache_update();
 }
 
 //------------------------------------------------------------------------------
@@ -108,8 +107,8 @@ struct _p1 {
 // a small temporary table from the config, to optimize the sweep in the algorithms below
 std::vector<_p1> make_config_table(const configuration* config) {
  std::vector<_p1> config_table(config->size());
- const auto _begin = config->lowest_time_operator(); //config->oplist.crbegin();
- const auto _end = config->boundary_beta(); //config->oplist.crend();
+ const auto _begin = config->lowest_time_operator(); // config->oplist.crbegin();
+ const auto _end = config->boundary_beta();          // config->oplist.crend();
  int ii = 0;
  for (auto it = _begin; it != _end;) { // do nothing if no operator
   auto it1 = it;
@@ -120,6 +119,109 @@ std::vector<_p1> make_config_table(const configuration* config) {
  return config_table;
 }
 
+// ------------------ trace estimate with cache --------------
+
+// tau1, tau2 : time of the last changes since last cache update.
+// the trace is recomputed by windowing tau1, tau2 with 2 operators
+// then gluing together the r, l cached computations of these operators
+// and then running the estimate computation in the middle,
+// breaking in particular when above the current maximum.
+// todo : accelerate the iteration over the config with a table ?
+// or use a boost::container::flat_map for faster iteration ?
+// ALSO : better windowing : one can compute with an inner windowing, running
+// the computation through the cyclic boundary of the trace ?
+//
+atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cache(time_pt tau1, time_pt tau2) {
+
+ auto tl = std::max(tau1, tau2);
+ auto tr = std::min(tau1, tau2);
+
+ // The operators just at the left (higher time) than tl
+ auto opl = config->operator_just_after(tl);
+ auto opr = config->operator_just_before(tr);
+ auto& c_l = cache.at(opl->first).l;
+ auto& c_r = cache.at(opr->first).r;
+
+ double E_min_delta_tau_min = std::numeric_limits<double>::max();
+ bool one_non_zero = false;
+ const int n_blocks = sosp.n_subspaces();
+
+ for (int n = 0; n < n_blocks; ++n) {
+  if ((c_l[n].current_block_number == -1) || (c_r[n].current_block_number = -1)) continue;
+  int start_block = c_l[n].current_block_number;
+  double sum_emin_dtau = c_l[n].emin_dtau_acc + c_r[n].emin_dtau_acc;
+  int bl = start_block;
+  auto op = opl;
+  ++op;
+  double tp = double(op->first);
+  sum_emin_dtau += (double(opl->first) - tp) * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
+  while (op != opr) {
+   bl = sosp.fundamental_operator_connect_from_linear_index(!op->second.dagger, op->second.linear_index, bl);
+   if (bl == -1) break;
+   ++op;
+   sum_emin_dtau += (tp - op->first) * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
+   if (sum_emin_dtau > E_min_delta_tau_min) {
+    bl = -1;
+    break;
+   }
+   tp = double(op->first);
+  }
+  if (bl == start_block) {
+   E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
+   one_non_zero = true;
+  }
+ } // loop over n
+
+ if (!one_non_zero) return 0; // the trace is structurally 0
+ return std::exp(-E_min_delta_tau_min);
+}
+
+// ------------------ refresh the cache completely : only done when accepted, which is rare --------------
+
+void atomic_correlators_worker::cache_update() {
+
+ // a brutal solution as first implementation : clean the cache and rebuild
+ // better to add the cache in the config ?
+ cache.clear();
+ // insert the boundary points for the cache.
+ {
+  auto c = cache_point_t{sosp.n_subspaces()};
+  for (int n = 0; n < sosp.n_subspaces(); ++n) c.r[n].current_block_number = n;
+  c.l = c.r;
+  cache.insert({time_pt::make_zero(config->beta()), c});
+  cache.insert({time_pt::make_beta(config->beta()), c});
+ }
+
+ for (auto const& op : *config) cache.insert({op.first, cache_point_t{sosp.n_subspaces()}});
+
+ const int n_blocks = sosp.n_subspaces();
+ for (int n = 0; n < n_blocks; ++n) {
+
+  // compute from beta -> 0
+  int bl = n;
+  for (auto l = config->boundary_beta(), r = config->highest_time_operator(), _end = config->boundary_zero(); r != _end;
+       ++r, ++l) {
+   // evolve and act with the operator from beta -> 0
+   auto& c = cache.at(r->first).l;
+   bl = sosp.fundamental_operator_connect_from_linear_index(!r->second.dagger, r->second.linear_index, bl);
+   c[n].current_block_number = bl;
+   if (bl == -1) break;
+   c[n].emin_dtau_acc += (l->first - r->first) * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
+  }
+
+  // compute from 0 -> beta
+  bl = n;
+  for (auto l = config->lowest_time_operator(), r = config->boundary_zero(), _end = config->boundary_beta(); l != _end;
+       --r, --l) {
+   // evolve and act with the operator from 0 -> beta
+   auto& c = cache.at(l->first).r;
+   bl = sosp.fundamental_operator_connect_from_linear_index(l->second.dagger, l->second.linear_index, bl);
+   c[n].current_block_number = bl;
+   if (bl == -1) break;
+   c[n].emin_dtau_acc += (l->first - r->first) * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
+  }
+ }
+}
 
 // ------------------ trace estimate --------------
 
@@ -181,7 +283,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
  auto config_table = make_config_table(config);
  auto dtau0 = double(config->lowest_time_operator()->first);
- //double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
+ // double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
 
  std::vector<int> n_blocks_after_steps(20, 0);
 
@@ -264,7 +366,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   // -.-.-.-.-.-.-.-.-.   Old implementation of the trace -.-.-.-.-.-.-
   if (use_old_trace) {
 
-  for (int state_index = 0; state_index < block_size; ++state_index) {
+   for (int state_index = 0; state_index < block_size; ++state_index) {
     state_t const& psi0 = sosp.get_eigensystems()[block_index].eigenstates[state_index];
 
     // do the first exp

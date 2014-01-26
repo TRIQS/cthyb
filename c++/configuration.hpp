@@ -51,9 +51,20 @@ struct configuration {
  oplist_t::const_iterator end() const { auto r = oplist.end(); --r; return r;}
  
  oplist_t::const_iterator lowest_time_operator() const { auto r = end(); --r; return r;}
- //oplist_t::const_iterator highest_time_operator() const { auto r = end(); --r; return r;}
+ oplist_t::const_iterator highest_time_operator() const { return begin();}
  oplist_t::const_iterator boundary_beta() const { return oplist.begin();}
  oplist_t::const_iterator boundary_zero() const { return end();}
+
+ // returns the operator at the left of t (higher time). It can return the boundary Id operator at beta.
+ oplist_t::const_iterator operator_just_after(time_pt t) const {
+  auto r = oplist.lower_bound(t);
+  return --r;
+ }
+
+ // returns the operator at the right of t (lower time). It can return the boundary Id operator at 0.
+ oplist_t::const_iterator operator_just_before(time_pt t) const {
+  return oplist.lower_bound(t);
+ }
 
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
   for (auto const& op : c)

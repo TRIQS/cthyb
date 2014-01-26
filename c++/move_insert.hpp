@@ -71,11 +71,9 @@ class move_insert_c_cdag {
   // (cf std::map doc for insert return), we reject the move.
   // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
   auto r1 = config.insert(tau1, op1);
-  //auto r1 = config.oplist.insert({tau1, op1});
   if (!r1.second) return 0;
   inserted_ops.push_back(r1.first);
   auto r2 = config.insert(tau2, op2);
-  //auto r2 = config.oplist.insert({tau2, op2});
   if (!r2.second) return 0;
   inserted_ops.push_back(r2.first);
 
@@ -123,6 +121,7 @@ class move_insert_c_cdag {
   data.update_sign();
   data.trace = new_trace;
   if (record_histograms) histos["length_accepted"] << delta_tau;
+  //data.atomic_corr.cache_update();
   return data.current_sign / data.old_sign;
  }
 

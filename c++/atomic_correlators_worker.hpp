@@ -25,16 +25,17 @@ class atomic_correlators_worker {
 
  sorted_spaces const& get_sorted_spaces() const { return sosp; }
 
+ void cache_update();
+ result_t estimate_with_cache(time_pt tau1, time_pt tau2);
+
  private:
- 
  struct cache_point_t {
   struct pt_t {
-   int current_block_number;//, start_block_number;
+   int current_block_number; // -1 means no block
    double emin_dtau_acc;
   };
   std::vector<pt_t> r, l; // precomputation at the right and the left of the point
-  cache_point_t(int n_blocks) : r{n_blocks, {0, 0}}, l{n_blocks, {0, 0}} {}
-  //cache_point_t(int n_blocks) : r{n_blocks, {0, 0, 0}}, l{n_blocks, {0, 0, 0}} {}
+  cache_point_t(int n_blocks) : r{n_blocks, {-1, 0}}, l{n_blocks, {-1, 0}} {}
  };
 
  using cache_t = std::map<time_pt, cache_point_t, std::greater<time_pt>>;
@@ -47,8 +48,8 @@ class atomic_correlators_worker {
  bool make_histograms;                                            // Do we make the Histograms ?
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  statistics::histogram histo_bs_block;                            // Histogram of the boundary state
- //statistics::histogram histo_opcount;                             // Histogram of number of operators in non-zero path
- statistics::histogram histo_trace_null_struc; 
+ // statistics::histogram histo_opcount;                             // Histogram of number of operators in non-zero path
+ statistics::histogram histo_trace_null_struc;
 
  std::vector<statistics::histogram> histo_n_blocks_after_steps;
  std::vector<statistics::histogram> histo_opcount;
@@ -58,8 +59,8 @@ class atomic_correlators_worker {
  bool use_old_trace;
  std::vector<result_t> time_spent_in_block;
  std::vector<result_t> partial_over_full_trace;
- triqs::arrays::array<int,2> block_died_anal;
- triqs::arrays::array<int,2> block_died_num;
+ triqs::arrays::array<int, 2> block_died_anal;
+ triqs::arrays::array<int, 2> block_died_num;
 
  using state_t = state<sub_hilbert_space, double, false>;
  exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;

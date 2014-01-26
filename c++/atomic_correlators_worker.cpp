@@ -20,6 +20,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
  use_old_trace = p["use_old_trace"];
 
  std::string ms = p["trace_estimator"];
+ //std::string ms = utility::extract<std::string>(p["trace_estimator"]);
  try {
   estimator_method = std::map<std::string, estimator_method_t>{{"None", estimator_method_t::None},
                                                                      {"Simple", estimator_method_t::Simple},
@@ -166,15 +167,22 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
  auto& c_l = cache.at(opl->first).l;
  auto& c_r = cache.at(opr->first).r;
 
+ /*
+ std::cout  << "etimsate"<< std::endl ; 
+ std::cout  << *config<< std::endl;
+ std::cout  << opl->first<< std::endl ; 
+ std::cout  << opr->first<< tr << std::endl ; 
+ std::cout  << "---------------"<< std::endl ;
+*/
+
  double E_min_delta_tau_min = std::numeric_limits<double>::max();
  bool one_non_zero = false;
  const int n_blocks = sosp.n_subspaces();
 
  for (int n = 0; n < n_blocks; ++n) {
-  if ((c_l[n].current_block_number == -1) || (c_r[n].current_block_number = -1)) continue;
-  int start_block = c_l[n].current_block_number;
+  if ((c_l[n].current_block_number == -1) || (c_r[n].current_block_number == -1)) continue;
   double sum_emin_dtau = c_l[n].emin_dtau_acc + c_r[n].emin_dtau_acc;
-  int bl = start_block;
+  int bl = c_l[n].current_block_number;
   auto op = opl;
   ++op;
   double tp = double(op->first);
@@ -190,20 +198,21 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
    }
    tp = double(op->first);
   }
-  if (bl == start_block) {
+  if ((bl != -1) && (bl == c_r[n].current_block_number)) {
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
    one_non_zero = true;
   }
  } // loop over n
 
+ return estimate_simple();
  if (!one_non_zero) return 0; // the trace is structurally 0
+ std::cout  <<  std::exp(-E_min_delta_tau_min) << estimate_simple() << std::endl ;
  return std::exp(-E_min_delta_tau_min);
 }
 
 // ------------------ refresh the cache completely : only done when accepted, which is rare --------------
 
 void atomic_correlators_worker::cache_update() {
-
  // only if the estimator method is with cache do we do something...
  if (estimator_method != estimator_method_t::WithCache) return; 
 
@@ -212,21 +221,26 @@ void atomic_correlators_worker::cache_update() {
  cache.clear();
  // insert the boundary points for the cache.
  {
-  auto c = cache_point_t{sosp.n_subspaces()};
-  for (int n = 0; n < sosp.n_subspaces(); ++n) c.r[n].current_block_number = n;
-  c.l = c.r;
+  auto c = make_cache_point();
+  for (int n = 0; n < sosp.n_subspaces(); ++n) {
+   c.r[n].current_block_number = n;
+   c.l[n].current_block_number = n;
+  }
   cache.insert({time_pt::make_zero(config->beta()), c});
   cache.insert({time_pt::make_beta(config->beta()), c});
  }
 
  for (auto const& op : *config) cache.insert({op.first, cache_point_t{sosp.n_subspaces()}});
+ 
+ //std::cout  << "cache update"<< std::endl ;
+ //std::cout  << *config<< std::endl;
 
  const int n_blocks = sosp.n_subspaces();
  for (int n = 0; n < n_blocks; ++n) {
 
   // compute from beta -> 0
   int bl = n;
-  for (auto l = config->boundary_beta(), r = config->highest_time_operator(), _end = config->boundary_zero(); r != _end;
+  for (auto l = config->boundary_beta(), r = config->highest_time_operator(), _rend = config->boundary_zero(); r != _rend;
        ++r, ++l) {
    // evolve and act with the operator from beta -> 0
    auto& c = cache.at(r->first).l;
@@ -238,7 +252,7 @@ void atomic_correlators_worker::cache_update() {
 
   // compute from 0 -> beta
   bl = n;
-  for (auto l = config->lowest_time_operator(), r = config->boundary_zero(), _end = config->boundary_beta(); l != _end;
+  for (auto l = config->lowest_time_operator(), r = config->boundary_zero(), _lend = config->boundary_beta(); l != _lend;
        --r, --l) {
    // evolve and act with the operator from 0 -> beta
    auto& c = cache.at(l->first).r;

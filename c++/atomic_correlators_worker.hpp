@@ -41,12 +41,18 @@ class atomic_correlators_worker {
   cache_point_t(int n_blocks) : r{n_blocks, {-1, 0}}, l{n_blocks, {-1, 0}} {}
  };
 
+ cache_point_t make_cache_point() const { return {sosp.n_subspaces()};}
+
  using cache_t = std::map<time_pt, cache_point_t, std::greater<time_pt>>;
  // using oplist_t=boost::container::flat_map<time_pt, cache_point_t, std::greater<time_pt>> ;
  cache_t cache;
 
  const configuration* config;                                     // must exists longer than this object.
  sorted_spaces const& sosp;                                       // The sorted space
+
+ using state_t = state<sub_hilbert_space, double, false>;
+ exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;
+
  bool make_histograms;                                            // Do we make the Histograms ?
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  statistics::histogram histo_bs_block;                            // Histogram of the boundary state
@@ -62,9 +68,6 @@ class atomic_correlators_worker {
  std::vector<result_t> partial_over_full_trace;
  triqs::arrays::array<int, 2> block_died_anal;
  triqs::arrays::array<int, 2> block_died_num;
-
- using state_t = state<sub_hilbert_space, double, false>;
- exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;
 
  result_t estimate_with_cache(time_pt tau1, time_pt tau2);
  result_t estimate_simple();

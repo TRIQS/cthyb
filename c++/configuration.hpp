@@ -63,7 +63,7 @@ struct configuration {
 
  // returns the operator at the right of t (lower time). It can return the boundary Id operator at 0.
  oplist_t::const_iterator operator_just_before(time_pt t) const {
-  return oplist.lower_bound(t);
+  return oplist.upper_bound(t);
  }
 
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {

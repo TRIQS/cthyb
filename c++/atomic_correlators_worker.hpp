@@ -62,6 +62,7 @@ class atomic_correlators_worker {
  statistics::histogram histo_n_block_at_end;
 
  std::vector<statistics::histogram> histo_n_blocks_after_steps;
+ std::vector<statistics::histogram> histo_n_blocks_cache_rl,histo_n_blocks_cache_lr;
  std::vector<statistics::histogram> histo_opcount;
  estimator_method_t estimator_method;
  bool use_truncation;
@@ -72,5 +73,6 @@ class atomic_correlators_worker {
  result_t estimate_with_cache(time_pt tau1, time_pt tau2);
  result_t estimate_simple(bool no_exp = false);
  result_t full_trace();
+ void cache_update_impl();
 };
 }

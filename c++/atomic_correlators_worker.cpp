@@ -30,7 +30,6 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   TRIQS_RUNTIME_ERROR << "trace_estimator method " << ms << "not recognized";
  }
 
- cache_update();
 
  if (make_histograms) {
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
@@ -50,12 +49,26 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    histo_n_blocks_after_steps.emplace_back(sosp.n_subspaces(), s.str());
   }
 
+  for (int i = 0; i < 50; ++i) {
+   std::stringstream s;
+   s << "histo_n_blocks_cache_rl_" << i << ".dat";
+   histo_n_blocks_cache_rl.emplace_back(sosp.n_subspaces(), s.str());
+  }
+  for (int i = 0; i < 50; ++i) {
+   std::stringstream s;
+   s << "histo_n_blocks_cache_lr_" << i << ".dat";
+   histo_n_blocks_cache_lr.emplace_back(sosp.n_subspaces(), s.str());
+  }
+
   for (int i = 0; i < 10; ++i) {
    std::stringstream s;
    s << "histo_opcount" << i << ".dat";
    histo_opcount.emplace_back(100, s.str());
   }
  }
+
+ // must be AFTER the init of the histogram ! 
+ cache_update();
 }
 
 //------------------------------------------------------------------------------
@@ -198,6 +211,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
 void atomic_correlators_worker::cache_update() {
  // only if the estimator method is with cache do we do something...
  if (estimator_method != estimator_method_t::WithCache) return; 
+ cache_update_impl();
+}
+ 
+void atomic_correlators_worker::cache_update_impl() {
 
  // a brutal solution as first implementation : clean the cache and rebuild
  // better to add the cache in the config ?
@@ -214,12 +231,15 @@ void atomic_correlators_worker::cache_update() {
  }
 
  for (auto const& op : *config) cache.insert({op.first, cache_point_t{sosp.n_subspaces()}});
+
+ std::vector<int> n_blocks_lr(histo_n_blocks_cache_lr.size(), 0);
+ std::vector<int> n_blocks_rl(histo_n_blocks_cache_rl.size(), 0);
  
  const int n_blocks = sosp.n_subspaces();
  for (int n = 0; n < n_blocks; ++n) {
 
   // compute from beta -> 0
-  int bl = n;
+  int bl = n, i = 0;
   double emin_dtau_acc = 0;
   for (auto l = config->boundary_beta(), r = config->highest_time_operator(), _rend = config->boundary_zero(); r != _rend;
        ++r, ++l) {
@@ -230,10 +250,14 @@ void atomic_correlators_worker::cache_update() {
    c[n].current_block_number = bl;
    c[n].emin_dtau_acc = emin_dtau_acc;
    if (bl == -1) break;
+   // instrumentation
+   ++i;
+   if (i < n_blocks_lr.size()) n_blocks_lr[i]++;
   }
 
   // compute from 0 -> beta
   bl = n;
+  i = 0;
   emin_dtau_acc = 0;
   for (auto l = config->lowest_time_operator(), r = config->boundary_zero(), _lend = config->boundary_beta(); l != _lend;
        --r, --l) {
@@ -244,8 +268,25 @@ void atomic_correlators_worker::cache_update() {
    c[n].current_block_number = bl;
    c[n].emin_dtau_acc = emin_dtau_acc;
    if (bl == -1) break;
+   // instrumentation
+   ++i;
+   if (i < n_blocks_rl.size()) n_blocks_rl[i]++;
+   }
+ }
+
+ // analysis
+ if (make_histograms) {
+  std::vector<int> opcount(10, 0);
+  for (auto const& p : *config) opcount[p.second.linear_index]++;
+  for (int i = 0; i < 10; ++i) histo_opcount[i] << opcount[i] / 2;
+  // histo_opcount << config_size/2; // histogram of the configuration size
+  for (int i = 0; i < std::min(config->size(),int(histo_n_blocks_cache_lr.size())); ++i) {
+   //std::cout << i << histo_n_blocks_cache_lr.size() << " " << histo_n_blocks_cache_rl.size() << std::endl;
+   histo_n_blocks_cache_lr[i] << n_blocks_lr[i];
+   histo_n_blocks_cache_rl[i] << n_blocks_rl[i];
   }
  }
+
 }
 
 // ------------------ trace estimate --------------
@@ -307,7 +348,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
  auto config_table = make_config_table(config);
  auto dtau0 = double(config->lowest_time_operator()->first);
- // double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
 
  std::vector<int> n_blocks_after_steps(50, 0);
 
@@ -346,19 +386,20 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   for (auto const& p : *config) opcount[p.second.linear_index]++;
   for (int i = 0; i < 10; ++i) histo_opcount[i] << opcount[i] / 2;
   // histo_opcount << config_size/2; // histogram of the configuration size
-  for (int i = 0; i < 50; ++i) histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
 
-  if (0) {
-   std::cout << config_size << " steps: ";
-   for (int i = 0; i < 50; ++i) std::cout << n_blocks_after_steps[i] << " ";
-   std::cout << std::endl; // <<*config << std::endl;
+  for (int i = 0; i < std::min(config->size(), int(histo_n_blocks_after_steps.size())); ++i)
+   histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
+
+  // DEBUG
+  //cache_update_impl();
+
   }
- }
  // Now sort the blocks
  std::vector<std::pair<double, int>> to_sort(n_blocks);
  int n_bl = 0; // the number of blocks giving non zero
  for (int n = 0; n < n_blocks; ++n)
-  if (blo[n] == n) // Must return to the SAME block, or trace is 0
+  if ((blo[n] == n) && // Must return to the SAME block, or trace is 0
+    (E_min_delta_tau[n] < E_min_delta_tau_min + 35)) // cut if too small
    to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
 
  std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector

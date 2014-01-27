@@ -40,6 +40,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
   histo_trace_null_struc = statistics::histogram{2, "hist_trace_struct_nulle.dat"};
   histo_n_block_kept = statistics::histogram{1000, "histo_n_block_kept.dat"};
+  histo_n_block_at_end = statistics::histogram{1000, "histo_n_block_at_end.dat"};
  
   // histo_opcount = statistics::histogram{100, "hist_opcount.dat"};
 
@@ -168,6 +169,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
  bool one_non_zero = false;
  const int n_blocks = sosp.n_subspaces();
  int n_block_kept = 0;
+ int n_block_at_end = 0;
 
  for (int n = 0; n < n_blocks; ++n) {
   if ((c_l[n].current_block_number == -1) || (c_r[n].current_block_number == -1)) continue;
@@ -190,13 +192,14 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
    tp = double(op->first);
   }
   if ((bl != -1) && (bl == c_r[n].current_block_number)) {
+   n_block_at_end++;
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
    one_non_zero = true;
   }
  } // loop over n
 
  histo_n_block_kept << n_block_kept;
-
+ histo_n_block_at_end << n_block_at_end;
  if (!one_non_zero) return 0; // the trace is structurally 0
  //if (std::abs(E_min_delta_tau_min - estimate_simple(true) )>1.e-5) TRIQS_RUNTIME_ERROR << " FATAL";
  return std::exp(-E_min_delta_tau_min);

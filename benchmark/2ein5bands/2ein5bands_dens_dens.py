@@ -11,7 +11,7 @@ import os
 
 fileName=os.path.splitext(os.path.basename(__file__))[0]
 
-beta = 10.0
+beta = 100.0
 # H_loc parameters
 num_orbitals = 5
 U = 5.0
@@ -42,9 +42,9 @@ p["make_path_histograms"] = True
 p["use_old_trace"] = False
 p["use_truncation"] = True
 p["measure_gf"] = False
-p["estimator_method"] = "WithCache"
-#p["estimator_method"] = "Simple"
-#p["estimator_method"] = "None"
+p["trace_estimator"] = "WithCache"
+#p["trace_estimator"] = "Simple"
+#p["trace_estimator"] = "None"
 
 # Block structure of GF
 gf_struct = OrderedDict()

@@ -38,7 +38,7 @@ class atomic_correlators_worker {
    double emin_dtau_acc;
   };
   std::vector<pt_t> r, l; // precomputation at the right and the left of the point
-  cache_point_t(int n_blocks) : r{n_blocks, {-1, 0}}, l{n_blocks, {-1, 0}} {}
+  cache_point_t(int n_blocks) : r(n_blocks, {-1, 0}), l(n_blocks, {-1, 0}) {}
  };
 
  cache_point_t make_cache_point() const { return {sosp.n_subspaces()};}
@@ -66,11 +66,9 @@ class atomic_correlators_worker {
  bool use_old_trace;
  std::vector<result_t> time_spent_in_block;
  std::vector<result_t> partial_over_full_trace;
- triqs::arrays::array<int, 2> block_died_anal;
- triqs::arrays::array<int, 2> block_died_num;
 
  result_t estimate_with_cache(time_pt tau1, time_pt tau2);
- result_t estimate_simple();
+ result_t estimate_simple(bool no_exp = false);
  result_t full_trace();
 };
 }

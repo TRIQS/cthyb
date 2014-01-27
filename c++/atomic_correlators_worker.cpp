@@ -39,7 +39,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histos.insert({"ExpBlock_over_ExpFirsTerm", {0, 1, 100, "hist_ExpBlock_over_ExpFirsTerm.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
   histo_trace_null_struc = statistics::histogram{2, "hist_trace_struct_nulle.dat"};
-
+  histo_n_block_kept = statistics::histogram{1000, "histo_n_block_kept.dat"};
+ 
   // histo_opcount = statistics::histogram{100, "hist_opcount.dat"};
 
   for (int i = 0; i < 20; ++i) {
@@ -147,49 +148,31 @@ std::vector<_p1> make_config_table(const configuration* config) {
 // and then running the estimate computation in the middle,
 // breaking in particular when above the current maximum.
 // todo : accelerate the iteration over the config with a table ?
-// or use a boost::container::flat_map for faster iteration ?
-// ALSO : better windowing : one can compute with an inner windowing, running
-// the computation through the cyclic boundary of the trace ?
 //
 atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cache(time_pt tau1, time_pt tau2) {
 
  auto tl = std::max(tau1, tau2);
  auto tr = std::min(tau1, tau2);
- //std::cout  << "estimate"<< std::endl ; 
  
- //cache_update();
+ //auto opl = config->boundary_beta();
+ //auto opr = config->boundary_zero();
 
- //std::cout << "tl"<< tl << std::endl;
- //std::cout << "tr"<< tr << std::endl;
  // The operators just at the left (higher time) than tl
  auto opl = config->operator_just_after(tl);
  auto opr = config->operator_just_before(tr);
  
- //auto opl = config->boundary_beta();
- //auto opr = config->boundary_zero();
- 
- //std::cout << "opl time"<<opl->first << std::endl;
- //std::cout << "opr time"<<opr->first << std::endl;
- 
  auto& c_l = cache.at(opl->first).l;
  auto& c_r = cache.at(opr->first).r;
-
- //std::cout  << *config<< std::endl;
- //std::cout  << opl->first<< std::endl ; 
- //std::cout  << opr->first<< tr << std::endl ; 
 
  double E_min_delta_tau_min = std::numeric_limits<double>::max();
  bool one_non_zero = false;
  const int n_blocks = sosp.n_subspaces();
  int n_block_kept = 0;
 
- if (1) { 
-
  for (int n = 0; n < n_blocks; ++n) {
   if ((c_l[n].current_block_number == -1) || (c_r[n].current_block_number == -1)) continue;
   n_block_kept++;
   double sum_emin_dtau = c_l[n].emin_dtau_acc + c_r[n].emin_dtau_acc;
-  //std::cout << "sum_emin_dtau  "<< sum_emin_dtau << std::endl;
   int bl = c_l[n].current_block_number;
   auto op = opl;
   ++op;
@@ -204,54 +187,18 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
     bl = -1;
     break;
    }
-   //if (n==5) std::cout << "n= "<< n << " bl "<< bl << " emin "<< sum_emin_dtau <<std::endl;
    tp = double(op->first);
   }
   if ((bl != -1) && (bl == c_r[n].current_block_number)) {
-   //std::cout << " non zero "<< n << std::endl ;
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
    one_non_zero = true;
   }
  } // loop over n
- } else {
 
-  for (int n = 0; n < n_blocks; ++n) {
-   if ((c_l[n].current_block_number == -1) || (c_r[n].current_block_number == -1)) continue;
-   double sum_emin_dtau = c_l[n].emin_dtau_acc + c_r[n].emin_dtau_acc;
-   // std::cout << "sum_emin_dtau  "<< sum_emin_dtau << std::endl;
-   int bl = c_r[n].current_block_number;
-   auto op = opr;
-   --op;
-   double tp = double(op->first);
-   sum_emin_dtau += (tp - double(opr->first)) * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   while (op != opl) {
-    bl = sosp.fundamental_operator_connect_from_linear_index(op->second.dagger, op->second.linear_index, bl);
-    if (bl == -1) break;
-    --op;
-    sum_emin_dtau += (op->first- tp) * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-    if (sum_emin_dtau > E_min_delta_tau_min) {
-     bl = -1;
-     break;
-    }
-    tp = double(op->first);
-   }
-   if ((bl != -1) && (bl == c_l[n].current_block_number)) {
-    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
-    one_non_zero = true;
-   }
-  } // loop over n
- }
- 
- //return estimate_simple();
+ histo_n_block_kept << n_block_kept;
+
  if (!one_non_zero) return 0; // the trace is structurally 0
- //std::cout  <<  "Compare : "<<E_min_delta_tau_min << " "<< estimate_simple(true) << std::endl ;
- //std::cout  <<  "Compare : "<< std::exp(-E_min_delta_tau_min) << " "<< estimate_simple() << std::endl ;
- //std::cout  << "---------------"<< std::endl ;
- 
  //if (std::abs(E_min_delta_tau_min - estimate_simple(true) )>1.e-5) TRIQS_RUNTIME_ERROR << " FATAL";
-
- //std::cout << n_block_kept << std::endl;
- 
  return std::exp(-E_min_delta_tau_min);
 }
 
@@ -277,9 +224,6 @@ void atomic_correlators_worker::cache_update() {
 
  for (auto const& op : *config) cache.insert({op.first, cache_point_t{sosp.n_subspaces()}});
  
- //std::cout  << "cache update"<< std::endl ;
- //std::cout  << *config<< std::endl;
-
  const int n_blocks = sosp.n_subspaces();
  for (int n = 0; n < n_blocks; ++n) {
 
@@ -294,7 +238,6 @@ void atomic_correlators_worker::cache_update() {
    bl = sosp.fundamental_operator_connect_from_linear_index(!r->second.dagger, r->second.linear_index, bl);
    c[n].current_block_number = bl;
    c[n].emin_dtau_acc = emin_dtau_acc;
-   //if (n==5) std::cout << "n= "<< n << " bl "<< bl << " emin "<< c[n].emin_dtau_acc <<std::endl;
    if (bl == -1) break;
   }
 

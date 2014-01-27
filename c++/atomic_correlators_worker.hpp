@@ -58,6 +58,7 @@ class atomic_correlators_worker {
  statistics::histogram histo_bs_block;                            // Histogram of the boundary state
  // statistics::histogram histo_opcount;                             // Histogram of number of operators in non-zero path
  statistics::histogram histo_trace_null_struc;
+ statistics::histogram histo_n_block_kept;
 
  std::vector<statistics::histogram> histo_n_blocks_after_steps;
  std::vector<statistics::histogram> histo_opcount;

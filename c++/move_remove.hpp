@@ -94,6 +94,7 @@ class move_remove_c_cdag {
   data.update_sign();
   data.trace = new_trace;
   data.atomic_corr.cache_update();
+  //for (int i =0; i<100; ++i) data.atomic_corr.cache_update();
   return data.current_sign / data.old_sign;
  }
 

@@ -44,7 +44,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
  
   // histo_opcount = statistics::histogram{100, "hist_opcount.dat"};
 
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 50; ++i) {
    std::stringstream s;
    s << "histo_n_blocks_after_steps" << i << ".dat";
    histo_n_blocks_after_steps.emplace_back(sosp.n_subspaces(), s.str());
@@ -259,7 +259,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_simple(b
  auto config_table = make_config_table(config);
  int n_blocks = sosp.n_subspaces();
 
- std::vector<int> n_blocks_after_steps(20, 0);
+ std::vector<int> n_blocks_after_steps(50, 0);
 
  for (int n = 0; (n < n_blocks); ++n) {
   int bl = n;
@@ -272,7 +272,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_simple(b
     bl = -1;
     break;
    }
-   if (i < 20) n_blocks_after_steps[i]++;
+   if (i < 50) n_blocks_after_steps[i]++;
   }
   if (bl == n) {
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
@@ -285,7 +285,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_simple(b
  // for (int i = 0; i < 10; ++i) histo_n_blocks_after_steps[i] << std::accumulate(n_blocks_after_steps.begin(),
  // n_blocks_after_steps.begin() + i + 1, 0);
  if (make_histograms)
-  for (int i = 0; i < 20; ++i) histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
+  for (int i = 0; i < 50; ++i) histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
 
  if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
  
@@ -309,7 +309,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  auto dtau0 = double(config->lowest_time_operator()->first);
  // double dtau0 = (_begin == _end ? config->beta() : double(_begin->first));
 
- std::vector<int> n_blocks_after_steps(20, 0);
+ std::vector<int> n_blocks_after_steps(50, 0);
 
  bool one_non_zero = false;
  double E_min_delta_tau_min = std::numeric_limits<double>::max() - 100;
@@ -326,7 +326,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     bl = -1;
     break;
    }
-   if (i < 20) n_blocks_after_steps[i]++;
+   if (i < 50) n_blocks_after_steps[i]++;
   }
   blo[n] = bl;
   E_min_delta_tau[n] = sum_emin_dtau;
@@ -346,11 +346,11 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   for (auto const& p : *config) opcount[p.second.linear_index]++;
   for (int i = 0; i < 10; ++i) histo_opcount[i] << opcount[i] / 2;
   // histo_opcount << config_size/2; // histogram of the configuration size
-  for (int i = 0; i < 20; ++i) histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
+  for (int i = 0; i < 50; ++i) histo_n_blocks_after_steps[i] << n_blocks_after_steps[i];
 
   if (0) {
    std::cout << config_size << " steps: ";
-   for (int i = 0; i < 20; ++i) std::cout << n_blocks_after_steps[i] << " ";
+   for (int i = 0; i < 50; ++i) std::cout << n_blocks_after_steps[i] << " ";
    std::cout << std::endl; // <<*config << std::endl;
   }
  }

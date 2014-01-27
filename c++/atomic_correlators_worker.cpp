@@ -64,25 +64,13 @@ atomic_correlators_worker::~atomic_correlators_worker() {
 
  boost::mpi::communicator world;
  std::string s = "time_and_partial_trace.dat";
- std::string t = "block_died_anal.dat"; // first x<=10 columns measure # times
- std::string u = "block_died_num.dat";  // block dies after x operators,
-                                        // 11th column measures # times block
-                                        // dies some point after 10 operators
 
  if (world.rank() == 0) {
   std::ofstream f(s);
-  std::ofstream g(t);
-  std::ofstream h(u);
   f << "Block  Time in block  Partial/Full Trace  Time*Partial/Full Trace" << std::endl;
   for (int i = 0; i < time_spent_in_block.size(); i++) {
    f << i << " " << time_spent_in_block[i] << " " << partial_over_full_trace[i] << " "
      << time_spent_in_block[i] * partial_over_full_trace[i] << std::endl;
-   g << i;
-   h << i;
-   for (int j = 0; j < 11; j++) {
-   }
-   g << std::endl;
-   h << std::endl;
   }
  }
 }

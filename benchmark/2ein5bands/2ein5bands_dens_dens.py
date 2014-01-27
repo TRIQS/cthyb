@@ -78,8 +78,8 @@ for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
 qn = []
 for o in range(0,2*num_orbitals): qn.append(Operator())
 for o in range(0,num_orbitals):
-    qn[2*o] += N("up-%s"%o,0)
-    qn[2*o+1] += N("down-%s"%o,0)
+    qn[2*o] = N("up-%s"%o,0)
+    qn[2*o+1] = N("down-%s"%o,0)
 #    qn[1] += (N("up-%s"%o,0) - N("down-%s"%o,0)) # Sz
 #    qn[2+o] += (N("up-%s"%o,0) - N("down-%s"%o,0))*(N("up-%s"%o,0) - N("down-%s"%o,0)) # Seniority number = Sz^2
 

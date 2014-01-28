@@ -60,6 +60,7 @@ class atomic_correlators_worker {
  statistics::histogram histo_trace_null_struc;
  statistics::histogram histo_n_block_kept;
  statistics::histogram histo_n_block_at_end;
+ statistics::histogram histo_blocks_after_esti,histo_n_block_after_esti;
 
  std::vector<statistics::histogram> histo_n_blocks_after_steps;
  std::vector<statistics::histogram> histo_n_blocks_cache_rl,histo_n_blocks_cache_lr;

@@ -40,6 +40,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histo_trace_null_struc = statistics::histogram{2, "hist_trace_struct_nulle.dat"};
   histo_n_block_kept = statistics::histogram{1000, "histo_n_block_kept.dat"};
   histo_n_block_at_end = statistics::histogram{1000, "histo_n_block_at_end.dat"};
+  histo_n_block_after_esti = statistics::histogram{1000, "histo_n_block_after_esti.dat"};
+  histo_blocks_after_esti = statistics::histogram{sosp.n_subspaces(), "histo_blocks_after_esti.dat"};
  
   // histo_opcount = statistics::histogram{100, "hist_opcount.dat"};
 
@@ -362,10 +364,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     break;
    }
    sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   if (sum_emin_dtau > E_min_delta_tau_min + 35) {                                     // exp (-35) = 1.e-15
+   if (use_truncation && (sum_emin_dtau > E_min_delta_tau_min + 35)) {                                     // exp (-35) = 1.e-15
     bl = -1;
     break;
-   }
+    }
    if (i < 50) n_blocks_after_steps[i]++;
   }
   blo[n] = bl;
@@ -380,6 +382,16 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
  if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
 
+ // Now sort the blocks
+ std::vector<std::pair<double, int>> to_sort(n_blocks);
+ int n_bl = 0; // the number of blocks giving non zero
+ for (int n = 0; n < n_blocks; ++n)
+    if ((blo[n] == n) && // Must return to the SAME block, or trace is 0
+    (!use_truncation || (E_min_delta_tau[n] < E_min_delta_tau_min + 35))) // cut if too small
+   to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
+
+ std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector
+
  // analysis
  if (make_histograms) {
   std::vector<int> opcount(10, 0);
@@ -392,17 +404,13 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
   // DEBUG
   //cache_update_impl();
+  
+  histo_n_block_after_esti << n_bl;// number of blocks after the estimator
+  for (auto const & x: to_sort) histo_blocks_after_esti << x.second;// the blocks after the estimator
 
-  }
- // Now sort the blocks
- std::vector<std::pair<double, int>> to_sort(n_blocks);
- int n_bl = 0; // the number of blocks giving non zero
- for (int n = 0; n < n_blocks; ++n)
-  if ((blo[n] == n) && // Must return to the SAME block, or trace is 0
-    (E_min_delta_tau[n] < E_min_delta_tau_min + 35)) // cut if too small
-   to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
-
- std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector
+  //for (auto const& x : to_sort)
+  // if (x.second != 0) std::cout << " block : " << x.second << " emin_dtau " << x.first << " min "<< to_sort[0].first<<  std::endl;
+ }
 
  // - end first pass
 

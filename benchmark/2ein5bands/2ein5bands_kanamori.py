@@ -41,6 +41,10 @@ p["use_quick_trace_estimator"] = False
 p["make_path_histograms"] = True
 p["use_truncation"] = True
 p["use_old_trace"] = False
+p["measure_gt"] = False
+p["trace_estimator"] = "WithCache"
+#p["trace_estimator"] = "Simple"
+#p["trace_estimator"] = "None"
 
 # Block structure of GF
 gf_struct = OrderedDict()

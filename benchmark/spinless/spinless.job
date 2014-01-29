@@ -1,0 +1,13 @@
+#!/bin/sh
+#$ -S /bin/sh
+#$ -N spinless
+#$ -pe mpi 128
+#$ -q amd
+
+if [ -n "${SGE_TASK_ID}" ]
+then
+	echo "Running the MPI version ..."
+	mpirun -machinefile $TMPDIR/machines -np ${NSLOTS} pytriqs spinless.py
+else
+	pytriqs spinless.py
+fi

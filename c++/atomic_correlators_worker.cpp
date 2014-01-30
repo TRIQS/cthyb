@@ -67,6 +67,15 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    s << "histo_opcount" << i << ".dat";
    histo_opcount.emplace_back(100, s.str());
   }
+
+  trunc_block = std::vector<int>{10,20,30,40,50,100};
+  for (int i : trunc_block) {
+   std::stringstream s;
+   std::stringstream t;
+   s << "TruncatedTrace_over_FullTrace" << i;
+   t << "hist_TruncatedTrace_over_FullTrace" << i << ".dat";
+   histos.insert({s.str(), {0, 1, 100, t.str()}});
+  }
  }
 
  // must be AFTER the init of the histogram ! 
@@ -78,7 +87,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 atomic_correlators_worker::~atomic_correlators_worker() {
 
  boost::mpi::communicator world;
- std::string s = "time_and_partial_trace.dat";
+ std::string s = "hist_time_and_partial_trace.dat";
 
  if (world.rank() == 0) {
   std::ofstream f(s);
@@ -342,7 +351,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
  int n_blocks = sosp.n_subspaces();
  int config_size = config->size();
- std::vector<result_t> partial_trace_of_block(n_blocks);
+ std::vector<result_t> partial_trace_of_block(n_blocks,0);
+ std::vector<result_t> partial_trace_up_to_block(trunc_block.size(),0);
+ double epsilon = 1.e-15; // for machine accuracy use 1.e-15
+ double log_epsilon = -std::log(epsilon);
 
  // make a first pass to compute the bound for each term.
  std::vector<double> E_min_delta_tau(n_blocks, 0);
@@ -364,7 +376,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     break;
    }
    sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   if (use_truncation && (sum_emin_dtau > E_min_delta_tau_min + 35)) {                                     // exp (-35) = 1.e-15
+   if (use_truncation && (sum_emin_dtau > E_min_delta_tau_min + log_epsilon)) {                                     // exp (-35) = 1.e-15
     bl = -1;
     break;
     }
@@ -387,7 +399,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  int n_bl = 0; // the number of blocks giving non zero
  for (int n = 0; n < n_blocks; ++n)
     if ((blo[n] == n) && // Must return to the SAME block, or trace is 0
-    (!use_truncation || (E_min_delta_tau[n] < E_min_delta_tau_min + 35))) // cut if too small
+    (!use_truncation || (E_min_delta_tau[n] < E_min_delta_tau_min + log_epsilon))) // cut if too small
    to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
 
  std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector
@@ -415,7 +427,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  // - end first pass
 
  result_t full_trace = 0;
- double epsilon = 1.e-15;
  double first_term = 0;
 
  auto exp_first_term = std::exp(-to_sort[0].first); // precompute largest term
@@ -517,7 +528,9 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
    if (bl == 0) first_term = partial_trace;
    full_trace += partial_trace;
    partial_trace_of_block[block_index] = partial_trace;
-
+   for (int j = 0; j < trunc_block.size(); ++j){
+    if (bl < trunc_block[j]) partial_trace_up_to_block[j] += partial_trace;
+   }
   } // -.-.-.-.-.-.-.-.-.  choice of trace computation method -.-.-.-.-.-.-
 
  } // end of loop on blocks
@@ -526,9 +539,14 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   auto abs_trace = std::abs(full_trace);
   if (abs_trace > 0) histos["FirsTerm_FullTrace"] << std::abs(first_term) / abs_trace;
   histos["FullTrace_ExpSumMin"] << std::abs(full_trace) / std::exp(-to_sort[0].first);
+  for (int i = 0; i < trunc_block.size() ; ++i){
+   std::stringstream s;
+   s << "TruncatedTrace_over_FullTrace" << trunc_block[i];
+   if (abs_trace > 0) histos[s.str()] << std::abs(partial_trace_up_to_block[i]) / abs_trace;
+  }
   histo_bs_block << to_sort[0].second;
  }
- for (int i = 0; i < partial_trace_of_block.size(); i++) partial_over_full_trace[i] += partial_trace_of_block[i] / full_trace;
+ for (int i = 0; i < partial_trace_of_block.size(); ++i) partial_over_full_trace[i] += partial_trace_of_block[i] / full_trace;
  return full_trace;
 }
 }

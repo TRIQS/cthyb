@@ -65,6 +65,9 @@ class atomic_correlators_worker {
  std::vector<statistics::histogram> histo_n_blocks_after_steps;
  std::vector<statistics::histogram> histo_n_blocks_cache_rl,histo_n_blocks_cache_lr;
  std::vector<statistics::histogram> histo_opcount;
+
+ std::vector<int> trunc_block;
+
  estimator_method_t estimator_method;
  bool use_truncation;
  bool use_old_trace;

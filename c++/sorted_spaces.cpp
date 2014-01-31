@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #include "sorted_spaces.hpp"
+#include "./space_partition.hpp"
 #include <fstream>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
@@ -40,7 +41,59 @@ struct lt_dbl {
  }
 };
 
-// -------------------------------------------------------------------------------------------------
+std::tuple<std::vector<sub_hilbert_space>, std::vector<std::vector<long>>, std::vector<std::vector<long>>>
+autopartition(fundamental_operator_set const& fops, triqs::utility::many_body_operator<double> const& h) {
+
+ imperative_operator<hilbert_space,false> hamiltonian(h,fops);
+ hilbert_space full_hs(fops);
+ state<hilbert_space,double,true> st(full_hs);
+
+ using space_partition_t = space_partition<state<hilbert_space,double,true>,imperative_operator<hilbert_space,false>>;
+ // Split the Hilbert space
+ space_partition_t SP(st,hamiltonian,false);
+
+ std::vector<space_partition_t::matrix_element_map_t> creation_melem(fops.n_operators());
+ std::vector<space_partition_t::matrix_element_map_t> annihilation_melem(fops.n_operators());
+ // Merge subspaces
+ for (auto const& o : fops) {
+  auto create = triqs::utility::many_body_operator<double>::make_canonical(true,o.index);
+  auto destroy = triqs::utility::many_body_operator<double>::make_canonical(false,o.index);
+
+  imperative_operator<hilbert_space> op_c_dag(create,fops), op_c(destroy,fops);
+
+  int n = o.linear_index;
+  std::tie(creation_melem[n],annihilation_melem[n]) = SP.merge_subspaces(op_c_dag,op_c,true);
+ }
+
+ // Fill subspaces
+ std::vector<sub_hilbert_space> subspaces;
+ subspaces.reserve(SP.n_subspaces());
+ for(int n=0; n<SP.n_subspaces(); ++n) subspaces.emplace_back(n);
+
+ foreach(SP,[&subspaces](fock_state_t s, int spn){ subspaces[spn].add_fock_state(s); });
+
+ // Fill connections
+ std::vector<std::vector<long>> creation_connection(fops.n_operators(),std::vector<long>(SP.n_subspaces(),-1));
+ std::vector<std::vector<long>> annihilation_connection(fops.n_operators(),std::vector<long>(SP.n_subspaces(),-1));
+
+ for (auto const& o : fops) {
+  int n = o.linear_index;
+  for(auto const& e : creation_melem[n]){
+      fock_state_t i,f;
+      std::tie(i,f) = e.first;
+      creation_connection[n][SP.lookup_basis_state(i)] = SP.lookup_basis_state(f);
+  }
+  for(auto const& e : annihilation_melem[n]){
+      fock_state_t i,f;
+      std::tie(i,f) = e.first;
+      annihilation_connection[n][SP.lookup_basis_state(i)] = SP.lookup_basis_state(f);
+  }
+ }
+
+ return std::make_tuple(subspaces,creation_connection,annihilation_connection);
+}
+
+//-----------------------------
 
 sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
                              std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,

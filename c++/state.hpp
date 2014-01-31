@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays.hpp>
-//#include <ostream>
+#include <algorithm>
 #include <unordered_map>
 #include <cmath>
 #include <boost/operators.hpp>
@@ -108,6 +108,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  // Lambda (fs, amplitude)
  template<typename Lambda>
  friend void foreach(state const& st, Lambda l) {
+  const_cast<state&>(st).prune();
   for (auto const& p : st.ampli) l(p.first, p.second);
  }
 
@@ -120,8 +121,12 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
 
  private:
  void prune(double tolerance = 10e-10) {
-  for (auto it = ampli.begin(); it != ampli.end(); it++) {
-   if (std::fabs(it->second) < tolerance) ampli.erase(it);
+  for(auto it=ampli.begin(); it!=ampli.end();)
+  {
+   if (std::fabs(it->second) < tolerance)
+    it = ampli.erase(it);
+   else
+    ++it;
   }
  }
 };
@@ -204,7 +209,7 @@ std::ostream& operator<<(std::ostream& os, state<HilbertSpace, ScalarType, Based
 
  using value_type = typename state<HilbertSpace, ScalarType, BasedOnMap>::value_type;
  foreach(s, [&os,hs,&something_written](int i, value_type ampl){
-  if (std::abs(ampl) > 1e-10){
+  if (std::fabs(ampl) > 1e-10){
    os << " +(" << ampl << ")" << "|" << hs.get_fock_state(i) << ">";
    something_written = true;
   }

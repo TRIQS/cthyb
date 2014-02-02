@@ -30,7 +30,12 @@ class atomic_correlators_worker {
  private:
 
  // Various possible algorithms
- enum class estimator_method_t {None, Simple, WithCache};
+ enum class estimator_method_t {
+  None,
+  Simple,
+  WithCache,
+  Experimental1
+ };
 
  struct cache_point_t {
   struct pt_t {
@@ -67,6 +72,7 @@ class atomic_correlators_worker {
  std::vector<statistics::histogram> histo_opcount;
 
  std::vector<int> trunc_block;
+ //triqs::arrays::matrix<double> M_work, M_work2;
 
  estimator_method_t estimator_method;
  bool use_truncation;
@@ -76,7 +82,8 @@ class atomic_correlators_worker {
 
  result_t estimate_with_cache(time_pt tau1, time_pt tau2);
  result_t estimate_simple(bool no_exp = false);
- result_t full_trace();
+ result_t full_trace(double epsilon=1.e-15);
+ result_t full_trace2(double epsilon=1.e-15);
  void cache_update_impl();
 };
 }

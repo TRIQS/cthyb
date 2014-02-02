@@ -20,16 +20,19 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
  std::string ms = p["trace_estimator"];
  //std::string ms = utility::extract<std::string>(p["trace_estimator"]);
  try {
-  estimator_method = std::map<std::string, estimator_method_t> {
-   { "None", estimator_method_t::None }
-   , {"Simple", estimator_method_t::Simple}, { "WithCache", estimator_method_t::WithCache }
-  }
-  .at(ms);
+  estimator_method = std::map<std::string, estimator_method_t>{{"None", estimator_method_t::None},
+                                                               {"Simple", estimator_method_t::Simple},
+                                                               {"WithCache", estimator_method_t::WithCache},
+                                                               {"Experimental1", estimator_method_t::Experimental1}}.at(ms);
  }
  catch (...) {
   TRIQS_RUNTIME_ERROR << "trace_estimator method " << ms << "not recognized";
  }
-
+ 
+ //int max_subspace_dim=0;
+ //for (int nsp = 0; nsp < sosp.n_subspaces(); ++nsp) max_subspace_dim = std::max(max_subspace_dim, sosp.subspace(nsp).dimension());
+ //M_work.resize(max_subspace_dim, max_subspace_dim);
+ //M_work2.resize(max_subspace_dim, max_subspace_dim);
 
  if (make_histograms) {
   histos.insert({"FirsTerm_FullTrace", {0, 10, 100, "hist_FirsTerm_FullTrace.dat"}});
@@ -74,7 +77,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    std::stringstream t;
    s << "TruncatedTrace_over_FullTrace" << i;
    t << "hist_TruncatedTrace_over_FullTrace" << i << ".dat";
-   histos.insert({s.str(), {0, 1, 100, t.str()}});
+   histos.insert({s.str(), {0, 3, 300, t.str()}});
   }
  }
 
@@ -102,9 +105,22 @@ atomic_correlators_worker::~atomic_correlators_worker() {
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::estimate(time_pt t1, time_pt t2) {
+
+ // DEBUG ONLY
+ //auto r1 = full_trace(); 
+ //auto r2 = full_trace2(); 
+ ////if (std::abs(r1/r2 -1) > 1.e-10) 
+ //if (std::abs(r1-r2)> (1.e-10 + 0.1 * std::abs(r1)) ) {
+ //std::cout << r1 << " == " << r2 << " |r1 -r2| "<< std::abs(r1-r2) << std::endl;
+ // throw "ERROR";
+ // }
+ //return r1;
+
  switch (estimator_method) {
   case estimator_method_t::None:
    return full_trace();
+  case estimator_method_t::Experimental1:
+   return full_trace2();
   case estimator_method_t::Simple:
    return estimate_simple();
   case estimator_method_t::WithCache:
@@ -115,16 +131,19 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate(time_pt 
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
+
  if (estimator_method == estimator_method_t::None)
    return full_trace();
- else
-   return estimate_simple();
+ if (estimator_method == estimator_method_t::Experimental1)
+   return full_trace2();
+ return estimate_simple();
 }
 
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::full_trace_over_estimator() {
  if (estimator_method == estimator_method_t::None) return 1;
+ if (estimator_method == estimator_method_t::Experimental1) return 1;
  auto r = full_trace() / estimate_simple();
  if (make_histograms) histos["FullTrace_over_Estimator"] << std::abs(r);
  return r;
@@ -345,15 +364,26 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_simple(b
  return std::exp(-E_min_delta_tau_min);
 }
 
+// ------------
+
+template <typename MatrixType> typename MatrixType::value_type norm1(MatrixType const& m) {
+ auto res = typename MatrixType::value_type{};
+ foreach(m, [&res, &m](int i, int j) {
+  using std::abs;
+  res += abs(m(i, j));
+ });
+ return res;
+}
+
 // ------------------- full trace computation -------------
 
-atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
+atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double epsilon) {
 
  int n_blocks = sosp.n_subspaces();
  int config_size = config->size();
  std::vector<result_t> partial_trace_of_block(n_blocks,0);
  std::vector<result_t> partial_trace_up_to_block(trunc_block.size(),0);
- double epsilon = 1.e-15; // for machine accuracy use 1.e-15
+ //double epsilon = 1.e-1;//5; // for machine accuracy use 1.e-15
  double log_epsilon = -std::log(epsilon);
 
  // make a first pass to compute the bound for each term.
@@ -481,16 +511,19 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
   } else { // -.-.-.-.-.-.-.-.-.  New implementation of the trace -.-.-.-.-.-.-
 
    auto const& eigensystem = sosp.get_eigensystems()[block_index];
-   auto space_dim = eigensystem.eigenvalues.size();
+   auto space_dim_boundary = eigensystem.eigenvalues.size();
+   auto space_dim = space_dim_boundary;
    auto const& U_boundary = sosp.get_eigensystems()[block_index].unitary_matrix;
    auto M = U_boundary;
-   // auto M2 = triqs::arrays::matrix<double>(100,100);//  CHANGE THIS !!
+   //M_work(range(0,space_dim), range(0,space_dim)) = U_boundary;
    auto _ = range{};
    // do the first exponential
    for (int n = 1; n < space_dim; ++n) M(n, _) *= exp(-dtau0 * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+   //for (int n = 1; n < space_dim; ++n) M_work(n, _) *= exp(-dtau0 * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
 
    auto B = block_index;
 
+   bool loop_broken = false;
    for (int i = 0; i < config_size; ++i) {
     // get the next block
     auto Bp = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, B);
@@ -502,9 +535,12 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
 
     if ((space_dim == 1) && (space_dim_p == 1)) // some quick optimisation
      M *= Cop(0, 0);
+     //M_work(...) *= Cop(0, 0);
     else {
+     //triqs::arrays::blas::gemm(1.0, Cop, M_work(range(0,space_dim), range(0,space_dim_boundary)), 0.0, M_work2(range(0,space_dim_p), range(0,space_dim_boundary)));
      auto M2 = Cop * M;
-     swap(M2, M);
+     swap(M, M2);
+     //swap(M_work, M_work2);
      // improve this with a larger matrix to avoid allocation ???
      // triqs::arrays::blas::gemm(1.0, Cop, M, 0.0, M2(range(0,space_dim_p), range(0,space_dim));
     }
@@ -512,28 +548,42 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
     space_dim = space_dim_p;
 
     // apply exponential.
-    if (space_dim_p == 1) continue;
-    for (int n = 1; n < space_dim_p; ++n)
-     M(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
-
+    if (space_dim_p != 1) {
+     for (int n = 1; n < space_dim_p; ++n)
+      M(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+      //M_work(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
+    }
     // measure time spent in block B
     time_spent_in_block[B] += double(config_table[i].dtau);
 
+    // further cut
+    //if (use_truncation && (norm1(M_work(range(0,space_dim),range(0,space_dim))) * exp_no_emin < epsilon * std::abs(full_trace))) {
+    if (use_truncation && (norm1(M) * exp_no_emin < epsilon * std::abs(full_trace))) {
+     loop_broken = true;
+     break;
+    }
    } // loop on the c ops of the configuration
 
-   auto partial_trace_no_emin = trace(U_boundary.transpose() * M);
+   // if previous loop is broken, partial_trace is 0 
+   auto partial_trace_no_emin = (loop_broken ? 0 : trace(U_boundary.transpose() * M));
+   //auto partial_trace_no_emin = (loop_broken ? 0 : trace(U_boundary.transpose() * M_work(range(0,space_dim),range(0,space_dim))));
    auto partial_trace = partial_trace_no_emin * exp_no_emin;
    if (std::abs(partial_trace_no_emin) > space_dim * 1.0000001) throw "halte la !"; // CHECK conjecture
 
+   //std::cout  << bl << " "<< partial_trace << " "<<full_trace << " bound = "<< std::exp(-to_sort[bl].first) << std::endl;
    if (bl == 0) first_term = partial_trace;
    full_trace += partial_trace;
    partial_trace_of_block[block_index] = partial_trace;
    for (int j = 0; j < trunc_block.size(); ++j){
     if (bl < trunc_block[j]) partial_trace_up_to_block[j] += partial_trace;
    }
+
   } // -.-.-.-.-.-.-.-.-.  choice of trace computation method -.-.-.-.-.-.-
 
+  // DEBUG
+  //if (bl ==5) break;
  } // end of loop on blocks
+  //std::cout  << "-----------"<< std::endl;
 
  if (make_histograms) {
   auto abs_trace = std::abs(full_trace);
@@ -549,4 +599,110 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace() {
  for (int i = 0; i < partial_trace_of_block.size(); ++i) partial_over_full_trace[i] += partial_trace_of_block[i] / full_trace;
  return full_trace;
 }
+
+// ------------------- EXPERIMENTAL full trace computation -------------
+// try a direct computation, no estimator, pushing always the largest partial path... 
+struct w_pt { 
+ int time_index;
+ long block_index, block_start;
+};
+
+atomic_correlators_worker::result_t atomic_correlators_worker::full_trace2(double epsilon) {
+
+ int n_blocks = sosp.n_subspaces();
+ int config_size = config->size();
+ std::vector<result_t> partial_trace_of_block(n_blocks,0);
+ std::vector<result_t> partial_trace_up_to_block(trunc_block.size(),0);
+
+ auto config_table = make_config_table(config);
+
+ //std::cout  << * config << std::endl; 
+ if (config_size == 0) { // special case in empty configuration : all paths are already finished !
+  std::cout  << "empty config " << std::endl;
+  double res = 0;
+  for (int n = 0; n < n_blocks; ++n) {
+   auto d = sosp.subspace(n).dimension();
+   for (int k = 0; k < d; ++k)
+    res += std::exp(- config->beta() * (sosp.get_eigensystems()[n].eigenvalues(k))); // - eigensystem.eigenvalues(0)));
+  }
+  return res;
+ }
+
+ auto dtau0 = double(config->lowest_time_operator()->first);
+ double w_sum = 0;
+ result_t full_trace = 0;
+
+ //int max_subspace_dim=0;
+ //for (int nsp = 0; nsp < sosp.n_subspaces(); ++nsp) max_subspace_dim = std::max(max_subspace_dim, sosp.subspace(nsp).dimension());
+ 
+ auto m_work = std::vector<triqs::arrays::matrix<double>>(n_blocks); //, triqs::arrays::matrix<double>{max_subspace_dim,max_subspace_dim});
+ std::multimap<double, w_pt, std::greater<double>> w_p_path; // weighted partial paths
+
+ // init the paths
+ for (int n = 0; n < n_blocks; ++n) {
+  auto d = sosp.subspace(n).dimension();
+  m_work[n] = sosp.get_eigensystems()[n].unitary_matrix;
+  for (int k = 0; k < d; ++k)
+   m_work[n](k, range()) *= std::exp(-dtau0 * (sosp.get_eigensystems()[n].eigenvalues(k))); // - eigensystem.eigenvalues(0)));
+  double w = norm1(m_work[n]);
+  w_sum += w;
+  w_p_path.insert({w, {0, n, n}});
+ }
+
+ // main loop : continue the path with the largest weight
+ while ((w_p_path.size()) && (w_sum > epsilon * std::abs(full_trace))) {
+
+  // pick up the the path with the largest weight
+  auto p = w_p_path.begin();
+  w_p_path.erase(p); // always erase the point what we will now treat
+  auto w = p->first;
+  w_sum -= w;
+  auto B_start = p->second.block_start;
+  auto Bi = p->second.block_index;
+  auto i = p->second.time_index;
+
+  // act with c op
+  auto Bf = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, Bi);
+  if (Bf == -1) continue; // the path has ended ...
+
+  // apply operator
+  auto const& Cop = sosp.fundamental_operator_matrix_from_linear_index(config_table[i].dag, config_table[i].n, Bi);
+  auto const& eigensystem_i = sosp.get_eigensystems()[Bi];
+  auto const& eigensystem_f = sosp.get_eigensystems()[Bf];
+  auto space_dim_i = eigensystem_i.eigenvalues.size();
+  auto space_dim_f = eigensystem_f.eigenvalues.size();
+
+  if ((space_dim_i == 1) && (space_dim_f == 1)) // some quick optimisation
+   m_work[B_start] *= Cop(0, 0);
+  else {
+   auto M2 = Cop * m_work[B_start];
+   swap(m_work[B_start], M2);
+  }
+
+  // apply exponential.
+  for (int n = 0; n < space_dim_f; ++n)
+   m_work[B_start](n, range()) *= std::exp(-config_table[i].dtau * (eigensystem_f.eigenvalues(n))); //- eigensystem.eigenvalues(0)));
+
+  // recompute the weight
+  auto w2 = norm1(m_work[B_start]);
+
+  if (i+1 == config_size) { // the path is at the end
+   auto const& U_boundary = sosp.get_eigensystems()[B_start].unitary_matrix;
+   auto partial_trace = trace(U_boundary.transpose() * m_work[B_start]);
+   full_trace += partial_trace;
+  } else { // the path is not at the end
+   w_p_path.insert({w2, {i+1, Bf, B_start}});
+   w_sum += w2;
+  }
+
+ } // end main loop
+
+ // analysis
+ if (make_histograms) {
+ }
+
+ return full_trace;
 }
+
+}// namespace
+

@@ -34,7 +34,8 @@ class atomic_correlators_worker {
   None,
   Simple,
   WithCache,
-  Experimental1
+  Experimental1,
+  TraceEpsilon
  };
 
  struct cache_point_t {
@@ -80,6 +81,8 @@ class atomic_correlators_worker {
  std::vector<result_t> time_spent_in_block;
  std::vector<result_t> partial_over_full_trace;
 
+ double trace_epsilon_estimator(){ return 1.e-1;}
+ 
  result_t estimate_with_cache(time_pt tau1, time_pt tau2);
  result_t estimate_simple(bool no_exp = false);
  result_t full_trace(double epsilon=1.e-15);

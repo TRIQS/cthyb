@@ -23,6 +23,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   estimator_method = std::map<std::string, estimator_method_t>{{"None", estimator_method_t::None},
                                                                {"Simple", estimator_method_t::Simple},
                                                                {"WithCache", estimator_method_t::WithCache},
+                                                               {"TraceEpsilon", estimator_method_t::TraceEpsilon},
                                                                {"Experimental1", estimator_method_t::Experimental1}}.at(ms);
  }
  catch (...) {
@@ -119,6 +120,8 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate(time_pt 
  switch (estimator_method) {
   case estimator_method_t::None:
    return full_trace();
+  case estimator_method_t::TraceEpsilon:
+   return full_trace(trace_epsilon_estimator());
   case estimator_method_t::Experimental1:
    return full_trace2();
   case estimator_method_t::Simple:
@@ -130,21 +133,33 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate(time_pt 
 
 //------------------------------------------------------------------------------
 
+
 atomic_correlators_worker::result_t atomic_correlators_worker::estimate() {
 
- if (estimator_method == estimator_method_t::None)
-   return full_trace();
- if (estimator_method == estimator_method_t::Experimental1)
-   return full_trace2();
+ if (estimator_method == estimator_method_t::None) return full_trace();
+ if (estimator_method == estimator_method_t::TraceEpsilon) return full_trace(trace_epsilon_estimator());
+ if (estimator_method == estimator_method_t::Experimental1) return full_trace2();
  return estimate_simple();
 }
 
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::result_t atomic_correlators_worker::full_trace_over_estimator() {
- if (estimator_method == estimator_method_t::None) return 1;
- if (estimator_method == estimator_method_t::Experimental1) return 1;
- auto r = full_trace() / estimate_simple();
+ 
+ atomic_correlators_worker::result_t r=1;
+ 
+ switch (estimator_method) {
+  case estimator_method_t::None:
+  case estimator_method_t::Experimental1:
+   break;
+  case estimator_method_t::TraceEpsilon:
+   r = full_trace() / full_trace(trace_epsilon_estimator());
+   break;
+  case estimator_method_t::Simple:
+  case estimator_method_t::WithCache:
+   r = full_trace() / estimate_simple();
+ }
+
  if (make_histograms) histos["FullTrace_over_Estimator"] << std::abs(r);
  return r;
 }
@@ -186,9 +201,6 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_with_cac
  auto tl = std::max(tau1, tau2);
  auto tr = std::min(tau1, tau2);
  
- //auto opl = config->boundary_beta();
- //auto opr = config->boundary_zero();
-
  // The operators just at the left (higher time) than tl
  auto opl = config->operator_just_after(tl);
  auto opr = config->operator_just_before(tr);
@@ -366,6 +378,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::estimate_simple(b
 
 // ------------
 
+// TO BE MOVE TO THE TRIQS LIB : norm1 of a matrix
 template <typename MatrixType> typename MatrixType::value_type norm1(MatrixType const& m) {
  auto res = typename MatrixType::value_type{};
  foreach(m, [&res, &m](int i, int j) {
@@ -381,44 +394,46 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double
 
  int n_blocks = sosp.n_subspaces();
  int config_size = config->size();
- std::vector<result_t> partial_trace_of_block(n_blocks,0);
- std::vector<result_t> partial_trace_up_to_block(trunc_block.size(),0);
- //double epsilon = 1.e-1;//5; // for machine accuracy use 1.e-15
  double log_epsilon = -std::log(epsilon);
-
- // make a first pass to compute the bound for each term.
- std::vector<double> E_min_delta_tau(n_blocks, 0);
- std::vector<int> blo(n_blocks);
-
  auto config_table = make_config_table(config);
  auto dtau0 = double(config->lowest_time_operator()->first);
-
- std::vector<int> n_blocks_after_steps(50, 0);
-
+ 
+ // arrays for histo
+ std::vector<result_t> partial_trace_of_block(n_blocks,0);
+ std::vector<result_t> partial_trace_up_to_block(trunc_block.size(),0);
+ std::vector<int> n_blocks_after_steps(50, 0); 
+ 
+ // make a first pass to compute the bound for each term.
+ std::vector<double> E_min_delta_tau(n_blocks, 0);
+ std::vector<bool> is_block_kept(n_blocks, false);
  bool one_non_zero = false;
  double E_min_delta_tau_min = std::numeric_limits<double>::max() - 100;
+
+for ( int uu=0; uu<1; ++uu) { // JSUT A TRICK TO EVALUATE TEH SPEED OF THIS : put uu < 2 or 3 
+ one_non_zero = false;
+ E_min_delta_tau_min = std::numeric_limits<double>::max() - 100;
+ 
  for (int n = 0; n < n_blocks; ++n) {
   int bl = n;
   double sum_emin_dtau = dtau0 * sosp.get_eigensystems()[n].eigenvalues[0];
   for (int i = 0; i < config_size; ++i) {
    bl = sosp.fundamental_operator_connect_from_linear_index(config_table[i].dag, config_table[i].n, bl);
-   if (bl == -1) {
-    break;
-   }
+   if (bl == -1) break;
    sum_emin_dtau += config_table[i].dtau * sosp.get_eigensystems()[bl].eigenvalues[0]; // delta_tau * E_min_of_the_block
-   if (use_truncation && (sum_emin_dtau > E_min_delta_tau_min + log_epsilon)) {                                     // exp (-35) = 1.e-15
+   if (use_truncation && (sum_emin_dtau > E_min_delta_tau_min + log_epsilon)) {        // exp (-35) = 1.e-15
     bl = -1;
     break;
     }
-   if (i < 50) n_blocks_after_steps[i]++;
+   if (make_histograms && (i < 50)) n_blocks_after_steps[i]++;
   }
-  blo[n] = bl;
   E_min_delta_tau[n] = sum_emin_dtau;
-  if (bl == n) {
+  if (bl == n) {// Must return to the SAME block, or trace is 0
+   is_block_kept[n] = true;
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
    one_non_zero = true;
   }
  }
+}
 
  if (make_histograms) histo_trace_null_struc << one_non_zero;
 
@@ -428,11 +443,10 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double
  std::vector<std::pair<double, int>> to_sort(n_blocks);
  int n_bl = 0; // the number of blocks giving non zero
  for (int n = 0; n < n_blocks; ++n)
-    if ((blo[n] == n) && // Must return to the SAME block, or trace is 0
-    (!use_truncation || (E_min_delta_tau[n] < E_min_delta_tau_min + log_epsilon))) // cut if too small
+  if (is_block_kept[n] && (!use_truncation || (E_min_delta_tau[n] < E_min_delta_tau_min + log_epsilon))) // cut if too small
    to_sort[n_bl++] = std::make_pair(E_min_delta_tau[n], n);
 
- std::sort(to_sort.begin(), to_sort.begin() + n_bl); // sort those vector
+ std::sort(to_sort.begin(), to_sort.begin() + n_bl);
 
  // analysis
  if (make_histograms) {
@@ -454,7 +468,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double
   // if (x.second != 0) std::cout << " block : " << x.second << " emin_dtau " << x.first << " min "<< to_sort[0].first<<  std::endl;
  }
 
- // - end first pass
+ // ------------------- end first pass
 
  result_t full_trace = 0;
  double first_term = 0;
@@ -556,7 +570,7 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double
     // measure time spent in block B
     time_spent_in_block[B] += double(config_table[i].dtau);
 
-    // further cut
+    // further cut : if what we are computing is in fact already smaller than epsilon * full_trace
     //if (use_truncation && (norm1(M_work(range(0,space_dim),range(0,space_dim))) * exp_no_emin < epsilon * std::abs(full_trace))) {
     if (use_truncation && (norm1(M) * exp_no_emin < epsilon * std::abs(full_trace))) {
      loop_broken = true;
@@ -581,9 +595,9 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double
   } // -.-.-.-.-.-.-.-.-.  choice of trace computation method -.-.-.-.-.-.-
 
   // DEBUG
-  //if (bl ==5) break;
+  // if (bl ==5) break;
  } // end of loop on blocks
-  //std::cout  << "-----------"<< std::endl;
+ // std::cout  << "-----------"<< std::endl;
 
  if (make_histograms) {
   auto abs_trace = std::abs(full_trace);

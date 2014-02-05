@@ -90,15 +90,17 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
 atomic_correlators_worker::~atomic_correlators_worker() {
 
- boost::mpi::communicator world;
- std::string s = "hist_time_and_partial_trace.dat";
-
- if (world.rank() == 0) {
-  std::ofstream f(s);
-  f << "Block  Time in block  Partial/Full Trace  Time*Partial/Full Trace" << std::endl;
-  for (int i = 0; i < time_spent_in_block.size(); i++) {
-   f << i << " " << time_spent_in_block[i] << " " << partial_over_full_trace[i] << " "
-     << time_spent_in_block[i] * partial_over_full_trace[i] << std::endl;
+ if (make_histograms) {
+  boost::mpi::communicator world;
+  std::string s = "hist_time_and_partial_trace.dat";
+ 
+  if (world.rank() == 0) {
+   std::ofstream f(s);
+   f << "Block  Time in block  Partial/Full Trace  Time*Partial/Full Trace" << std::endl;
+   for (int i = 0; i < time_spent_in_block.size(); i++) {
+    f << i << " " << time_spent_in_block[i] << " " << partial_over_full_trace[i] << " "
+      << time_spent_in_block[i] * partial_over_full_trace[i] << std::endl;
+   }
   }
  }
 }
@@ -568,7 +570,7 @@ for ( int uu=0; uu<1; ++uu) { // JSUT A TRICK TO EVALUATE TEH SPEED OF THIS : pu
       //M_work(n, _) *= std::exp(-config_table[i].dtau * (eigensystem.eigenvalues(n) - eigensystem.eigenvalues(0)));
     }
     // measure time spent in block B
-    time_spent_in_block[B] += double(config_table[i].dtau);
+    if (make_histograms) time_spent_in_block[B] += double(config_table[i].dtau);
 
     // further cut : if what we are computing is in fact already smaller than epsilon * full_trace
     //if (use_truncation && (norm1(M_work(range(0,space_dim),range(0,space_dim))) * exp_no_emin < epsilon * std::abs(full_trace))) {

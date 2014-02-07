@@ -4,6 +4,7 @@
 #include "move_insert.hpp"
 #include "move_remove.hpp"
 #include "measure_g.hpp"
+#include "measure_perturbation_hist.hpp"
 
 namespace cthyb_krylov {
 
@@ -53,6 +54,12 @@ void ctqmc_krylov::solve(utility::parameters p_in) {
    qmc.add_measure(measure_g(block, gt[block], data), "G measure (" + gt_names[block] + ")");
   }
  }
+ if (params["measure_pert_order"]) {
+  auto& gt_names = gt.domain().names();
+  for (size_t block = 0; block < gt.domain().size(); ++block) {
+   qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + gt_names[block] + ".dat"), "Perturbation order (" + gt_names[block] + ")");
+  }
+ }
 
  // run!! The empty configuration has sign = 1
  qmc.start(1.0, triqs::utility::clock_callback(params["max_time"]));
@@ -86,6 +93,7 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
      .optional("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
      .optional("verbosity", int(3), "Verbosity level")
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
+     .optional("measure_pert_order", bool(false), "Whether to measure perturbation order")
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
      .optional("use_truncation", bool(true), " Use truncation in the trace calculation ")
      .optional("use_old_trace", bool(false), "Use old trace (matrix-vector mult)")

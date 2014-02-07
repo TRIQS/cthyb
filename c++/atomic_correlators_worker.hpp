@@ -3,8 +3,8 @@
 #include "sorted_spaces.hpp"
 #include "exp_h_worker.hpp"
 #include <triqs/parameters.hpp>
-
 #include "triqs/statistics/histograms.hpp"
+
 namespace cthyb_krylov {
 
 /**

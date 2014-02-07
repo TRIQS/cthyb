@@ -10,8 +10,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    : config(&c),
      sosp(sosp_),
      exp_h(sosp.get_hamiltonian(), sosp, p["krylov_gs_energy_convergence"], p["krylov_small_matrix_size"]),
-     time_spent_in_block(sosp.n_subspaces()),
-     partial_over_full_trace(sosp.n_subspaces()) { 
+     time_spent_in_block(sosp.n_subspaces(),0),
+     partial_over_full_trace(sosp.n_subspaces(),0) {
 
  make_histograms = p["make_path_histograms"];
  use_truncation = p["use_truncation"];
@@ -47,8 +47,6 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histo_n_block_after_esti = statistics::histogram{1000, "histo_n_block_after_esti.dat"};
   histo_blocks_after_esti = statistics::histogram{sosp.n_subspaces(), "histo_blocks_after_esti.dat"};
  
-  // histo_opcount = statistics::histogram{100, "hist_opcount.dat"};
-
   for (int i = 0; i < 50; ++i) {
    std::stringstream s;
    s << "histo_n_blocks_after_steps" << i << ".dat";
@@ -320,9 +318,9 @@ void atomic_correlators_worker::cache_update_impl() {
 
  // analysis
  if (make_histograms) {
-  std::vector<int> opcount(10, 0);
+  std::vector<int> opcount(14, 0);  // maximum number of orbitals is 14
   for (auto const& p : *config) opcount[p.second.linear_index]++;
-  for (int i = 0; i < 10; ++i) histo_opcount[i] << opcount[i] / 2;
+  for (int i = 0; i < 14; ++i) histo_opcount[i] << opcount[i] / 2;
   // histo_opcount << config_size/2; // histogram of the configuration size
   for (int i = 0; i < std::min(config->size(),int(histo_n_blocks_cache_lr.size())); ++i) {
    //std::cout << i << histo_n_blocks_cache_lr.size() << " " << histo_n_blocks_cache_rl.size() << std::endl;
@@ -452,9 +450,9 @@ for ( int uu=0; uu<1; ++uu) { // JSUT A TRICK TO EVALUATE TEH SPEED OF THIS : pu
 
  // analysis
  if (make_histograms) {
-  std::vector<int> opcount(10, 0);
+  std::vector<int> opcount(14, 0);  // maximum number of orbitals is 14
   for (auto const& p : *config) opcount[p.second.linear_index]++;
-  for (int i = 0; i < 10; ++i) histo_opcount[i] << opcount[i] / 2;
+  for (int i = 0; i < 14; ++i) histo_opcount[i] << opcount[i] / 2;
   // histo_opcount << config_size/2; // histogram of the configuration size
 
   for (int i = 0; i < std::min(config->size(), int(histo_n_blocks_after_steps.size())); ++i)

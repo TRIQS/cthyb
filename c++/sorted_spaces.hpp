@@ -54,6 +54,9 @@ class sorted_spaces {
  // Number of subspaces
  int n_subspaces() const { return sub_hilbert_spaces.size(); }
 
+ // Number of c operators
+ int n_c_operators() const { return fops.n_operators(); }
+
  // n-th subspace
  sub_hilbert_space const& subspace(int n) const { return sub_hilbert_spaces[n]; }
 

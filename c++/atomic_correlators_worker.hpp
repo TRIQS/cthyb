@@ -59,6 +59,8 @@ class atomic_correlators_worker {
  using state_t = state<sub_hilbert_space, double, false>;
  exp_h_worker<imperative_operator<sub_hilbert_space, false>, state_t> exp_h;
 
+ int n_orbitals = sosp.n_c_operators();
+
  bool make_histograms;                                            // Do we make the Histograms ?
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  statistics::histogram histo_bs_block;                            // Histogram of the boundary state

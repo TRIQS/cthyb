@@ -423,7 +423,7 @@ for ( int uu=0; uu<1; ++uu) { // JSUT A TRICK TO EVALUATE TEH SPEED OF THIS : pu
    if (use_truncation && (sum_emin_dtau > E_min_delta_tau_min + log_epsilon)) {        // exp (-35) = 1.e-15
     bl = -1;
     break;
-    }
+   }
    if (make_histograms && (i < 50)) n_blocks_after_steps[i]++;
   }
   E_min_delta_tau[n] = sum_emin_dtau;

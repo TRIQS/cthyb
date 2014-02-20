@@ -41,7 +41,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   histos.insert({"FullTrace_over_Estimator", {0, 10, 100, "hist_FullTrace_over_Estimator.dat"}});
   histos.insert({"ExpBlock_over_ExpFirsTerm", {0, 1, 100, "hist_ExpBlock_over_ExpFirsTerm.dat"}});
   histo_bs_block = statistics::histogram{sosp.n_subspaces(), "hist_BS1.dat"};
-  histo_trace_null_struc = statistics::histogram{2, "hist_trace_struct_nulle.dat"};
+  histo_trace_null_struc = statistics::histogram{sosp.n_subspaces()+1, "hist_trace_struct_nulle.dat"};
   histo_n_block_kept = statistics::histogram{1000, "histo_n_block_kept.dat"};
   histo_n_block_at_end = statistics::histogram{1000, "histo_n_block_at_end.dat"};
   histo_n_block_after_esti = statistics::histogram{1000, "histo_n_block_after_esti.dat"};
@@ -406,11 +406,11 @@ atomic_correlators_worker::result_t atomic_correlators_worker::full_trace(double
  // make a first pass to compute the bound for each term.
  std::vector<double> E_min_delta_tau(n_blocks, 0);
  std::vector<bool> is_block_kept(n_blocks, false);
- bool one_non_zero = false;
+ int n_non_zero_block = 0;
  double E_min_delta_tau_min = std::numeric_limits<double>::max() - 100;
 
 for ( int uu=0; uu<1; ++uu) { // JSUT A TRICK TO EVALUATE TEH SPEED OF THIS : put uu < 2 or 3 
- one_non_zero = false;
+ n_non_zero_block = 0;
  E_min_delta_tau_min = std::numeric_limits<double>::max() - 100;
  
  for (int n = 0; n < n_blocks; ++n) {
@@ -430,14 +430,14 @@ for ( int uu=0; uu<1; ++uu) { // JSUT A TRICK TO EVALUATE TEH SPEED OF THIS : pu
   if (bl == n) {// Must return to the SAME block, or trace is 0
    is_block_kept[n] = true;
    E_min_delta_tau_min = std::min(E_min_delta_tau_min, sum_emin_dtau);
-   one_non_zero = true;
+   n_non_zero_block++ ;
   }
  }
 }
 
- if (make_histograms) histo_trace_null_struc << one_non_zero;
+ if (make_histograms) histo_trace_null_struc << n_non_zero_block;
 
- if (!one_non_zero) return 0; // quick exit, the trace is structurally 0
+ if (n_non_zero_block == 0) return 0; // quick exit, the trace is structurally 0
 
  // Now sort the blocks
  std::vector<std::pair<double, int>> to_sort(n_blocks);

@@ -106,6 +106,9 @@ class sorted_spaces {
  // (global) gs energy (i.e. min of all subspaces).
  double get_gs_energy() const { return gs_energy; }
 
+ /// The partition function
+ double partition_function(double beta) const;
+
  /// The atomic green function
  block_gf<imtime> atomic_gf(double beta) const;
 

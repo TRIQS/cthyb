@@ -16,7 +16,8 @@ class move_insert_c_cdag {
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  double delta_tau;
  qmc_data::trace_t new_trace;
- std::vector<configuration::oplist_t::iterator> inserted_ops;
+ time_pt tau1, tau2;
+ op_desc op1, op2;
 
  public:
  //-----------------------------------------------
@@ -39,20 +40,23 @@ class move_insert_c_cdag {
  mc_weight_type attempt() {
 
 #ifdef EXT_DEBUG
+  config.id++;
+  config.print_debug();
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
   std::cerr << "* Attempt for move_insert_c_cdag (block " << block_index << ")" << std::endl;
   std::cerr << "* Configuration before:" << std::endl;
   std::cerr << config;
+  data.atomic_corr.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   // Pick up the value of alpha and choose the operators
   auto rs1 = rng(block_size), rs2 = rng(block_size);
-  configuration::op_desc op1{block_index, rs1, true, data.sosp.get_fundamental_operator_linear_index(block_index, rs1)},
-      op2{block_index, rs2, false, data.sosp.get_fundamental_operator_linear_index(block_index, rs2)};
+  op1 = op_desc{block_index, rs1, true, data.sosp.get_fundamental_operator_linear_index(block_index, rs1)};
+  op2 = op_desc{block_index, rs2, false, data.sosp.get_fundamental_operator_linear_index(block_index, rs2)};
 
   // Choice of times for insertion. Find the time as double and them put them on the grid.
-  time_pt tau1 = time_pt::random(rng, config.beta(), config.beta());
-  time_pt tau2 = time_pt::random(rng, config.beta(), config.beta());
+  tau1 = time_pt::random(rng, config.beta(), config.beta());
+  tau2 = time_pt::random(rng, config.beta(), config.beta());
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to insert:" << std::endl;
@@ -70,15 +74,23 @@ class move_insert_c_cdag {
   // 1- In the very exceptional case where the insert has failed because an operator is already sitting here
   // (cf std::map doc for insert return), we reject the move.
   // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
-  auto r1 = config.insert(tau1, op1);
-  if (!r1.second) return 0;
-  inserted_ops.push_back(r1.first);
-  auto r2 = config.insert(tau2, op2);
-  if (!r2.second) return 0;
-  inserted_ops.push_back(r2.first);
+  try {
+   data.atomic_corr.trial_node_insert(tau1, op1);
+   data.atomic_corr.trial_node_insert(tau2, op2);
+  }
+  catch (rbt_insert_error const&) {
+   std::cerr << "insert error " << std::endl;
+   data.atomic_corr.trial_node_uninsert();
+   return 0;
+  }
 
-  new_trace = data.atomic_corr.estimate(tau1, tau2);
-  if (new_trace == 0.0) return 0;
+  new_trace = data.atomic_corr.estimate();
+  if (new_trace == 0.0) {
+#ifdef EXT_DEBUG
+   std::cout << "trace == 0" << std::endl;
+#endif
+   return 0;
+  }
   auto trace_ratio = new_trace / data.trace;
 
   auto& det = data.dets[block_index];
@@ -106,8 +118,6 @@ class move_insert_c_cdag {
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Prefactor: " << t_ratio << '\t';
   std::cerr << "Weight: " << p* t_ratio << std::endl;
-  std::cerr << "* Configuration after: " << std::endl;
-  std::cerr << config;
 #endif
 
   return p * t_ratio;
@@ -116,21 +126,37 @@ class move_insert_c_cdag {
  //----------------
 
  mc_weight_type accept() {
-  inserted_ops.clear();
+
+  //  remove the temporary ordinary bst insertion
+  data.atomic_corr.confirm_trial_node_insertion();
+
+  // insert in the configuration 
+  config.insert(tau1, op1);
+  config.insert(tau2, op2);
+  
+  // determinant
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
   if (record_histograms) histos["length_accepted"] << delta_tau;
-  data.atomic_corr.cache_update();
-  //for (int i =0; i<100; ++i) data.atomic_corr.cache_update();
+
+#ifdef EXT_DEBUG
+  std::cerr << "* Configuration after: " << std::endl;
+  std::cerr << config;
+#endif
+
   return data.current_sign / data.old_sign;
  }
 
  //----------------
 
  void reject() {
-  for (auto& it : inserted_ops) config.erase(it);
-  inserted_ops.clear();
+  data.atomic_corr.trial_node_uninsert();
+#ifdef EXT_DEBUG
+  std::cerr << "* Configuration after: " << std::endl;
+  std::cerr << config;
+#endif
+
  }
 };
 }

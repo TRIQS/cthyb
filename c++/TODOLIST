@@ -1,0 +1,11 @@
+1) index -- use block_table.index to reduce number of blocks immediately
+2) exp underflow -- manipulate (a,b) instead of a exp (b)
+3) histo -- # blocks @ root, # blocks at given depth
+4) histo -- opcount, depth of tree
+5) histo -- FullTraceOverEstimate
+6) optimise 1x1 matrix manipulations, lapack
+7) profile
+###8) precompute min, max
+9) tree traversal truncation -- compare to epsilon
+10) rbt check
+

@@ -90,8 +90,8 @@ namespace utility {
   // We use utility::dressed_iterator to dress iterators
   // _cdress is a simple struct of refs to dress the iterators (Cf doc)
   struct _cdress {
-   scalar_t coef;
    monomial_t const& monomial;
+   scalar_t coef;
    _cdress(typename monomials_map_t::const_iterator _it) : monomial(_it->first), coef(_it->second) {}
   };
   using const_iterator = utility::dressed_iterator<typename monomials_map_t::const_iterator, _cdress>;

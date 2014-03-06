@@ -11,9 +11,9 @@ using namespace triqs::gfs;
 struct measure_perturbation_hist {
  using mc_sign_type = std::complex<double>;
 
- statistics::histogram histo_perturbation_order;
  qmc_data const& data;
  int block_index;
+ statistics::histogram histo_perturbation_order;
 
  measure_perturbation_hist(int block_index, qmc_data const& data, std::string hist_file_name)
     : data(data), block_index(block_index), histo_perturbation_order{100, hist_file_name} {

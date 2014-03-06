@@ -47,8 +47,8 @@ class fundamental_operator_set {
  // iterator on the tuples
  // for (auto & x : fops) { x.linear_index is linear_index, while x.index is the C multi-index.
  struct _cdress {
-  int linear_index;
   indices_t const& index;
+  int linear_index;
   _cdress(typename map_t::const_iterator _it) : index(_it->first), linear_index(_it->second) {}
  };
  using const_iterator = triqs::utility::dressed_iterator<typename map_t::const_iterator, _cdress>;

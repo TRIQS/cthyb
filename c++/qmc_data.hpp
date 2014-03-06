@@ -16,7 +16,7 @@ struct qmc_data {
  sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
  mutable atomic_correlators_worker atomic_corr; // Calculator of the trace
 
- using trace_t = atomic_correlators_worker::result_t;
+ using trace_t = atomic_correlators_worker::trace_t;
 
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {

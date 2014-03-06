@@ -1,0 +1,227 @@
+/*if (b < 12) {
+    std::cout << " b " << b << std::endl;
+    std::cout << " n->key " << n->key << std::endl;
+    std::cout << " get_block_emin(b1) " << get_block_emin(b1) << std::endl;
+    std::cout << " get_block_emin(b2) " << get_block_emin(b2) << std::endl;
+    std::cout << " dtau_l " << dtau_l << std::endl;
+    std::cout << " dtau_r " << dtau_r << std::endl;
+    std::cout << " a_r " << a_r << std::endl;
+    std::cout << " a_l " << a_l << std::endl;
+    std::cout << " ret.matrix_norms[b] " << ret.matrix_norms[b] << std::endl;
+    std::cout << " n->cache_tmp.matrix_norms[b] " << n->cache_tmp.matrix_norms[b] << std::endl;
+    std::cout << "--------" << std::endl;
+   }*/
+
+/*std::cout << " b " << b << std::endl;
+  std::cout << " n->key " << n->key << std::endl;
+  std::cout << " get_block_emin(b1) " << get_block_emin(b1) << std::endl;
+  std::cout << " get_block_emin(b2) " << get_block_emin(b2) << std::endl;
+  std::cout << " stoire _it " << store_it << std::endl;
+  std::cout << " updating " << updating << std::endl;
+  std::cout << " n->modified " << n->modified << std::endl;
+  std::cout << " n->cache_tmp.matrix_norms[b] " << n->cache_tmp.matrix_norms[b] << std::endl;
+  std::cout << " n->cache.matrix_norms[b] " << n->cache.matrix_norms[b] << std::endl;
+  std::cout << norm_induced_2(ret) << " < " << ca.matrix_norms[b] << std::endl;
+  */
+//---------------------
+int atomic_correlators_worker::compute_one_block_debug(node n, int b) {
+ if (b == -1) return -1;
+ if (n == nullptr) return identity_op.block_table.map[b]; // B --> B
+ if (!n->modified) {
+  std::cout << " in cache of " << n->key << " : " << n->cache.block_table.map[b] <<std::endl;
+  return n->cache.block_table.map[b];
+ }
+
+ double key = double(n->key);
+ int b1 = compute_one_block_debug(n->right, b);
+ std::cout << "block chain " << key << "  " << n->op.dagger << " " << n->op.linear_index << " | "<<b<< " -> " << b1 << std::endl;
+ if (b1 == -1) return -1;
+ int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
+ std::cout << "block chain " << key << "  " << n->op.dagger << " " << n->op.linear_index << " | "<<b <<" -> " << b1  << " -> " << b2 << std::endl;
+ if (b2 == -1) return -1;
+ auto l = compute_one_block_debug(n->left, b2);
+ int b3 = l; 
+ std::cout << "block chain " << key << "  " << n->op.dagger << " " << n->op.linear_index << " | "<<b <<" -> " << b1  << " -> " << b2 << " -> " << b3 << std::endl;
+ return b3;
+}
+
+/*
+   auto const& tl = get_block_table(n->left);
+ int b3 = tl.connection[b2];
+
+ std::cout  << "----------------------------------"<< std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b)  <<std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b1)  <<std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b2)  <<std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b3)  <<std::endl;
+  std::cout  << "first_dim(l) "<< first_dim(l) <<std::endl;
+ std::cout  << "second_dim(l) "<< second_dim(l) <<std::endl;
+ std::cout  << "first_dim(r) "<< first_dim(r) <<std::endl;
+ std::cout  << "second_dim(r) "<< second_dim(r) <<std::endl;
+ std::cout  << "first_dim(M) "<< first_dim(M) <<std::endl;
+ std::cout  << "second_dim(M) "<< second_dim(M) <<std::endl;
+ */
+
+/*
+int atomic_correlators_worker::compute_one_block_debug(node n, int b) {
+
+if (b == -1) return -1;
+
+ if (n == nullptr) return identity_op.block_table.connection[b]; // B --> B
+ //if (!n->modified) return n->cache.block_table.connection[b];
+
+ //std::cout << "block chain " << n->key<<std::endl;
+
+ auto  r = compute_one_block_debug(n->right, b);
+ auto& ret = n->cache_tmp;
+
+  ret.block_table.connection[b] = -1;
+  int b1 = r;//.block_table.connection[b];
+  if (b1 == -1) return -1;
+  int b2 = (n->soft_deleted ? b1 : get_op_block_connection(n, b1));
+  if (b2 == -1) return -1;
+
+  auto  l = compute_one_block_debug(n->left, b2);
+
+ int b3 = l;//.block_table.connection[b2];
+  if (b3 == -1) return -1;
+  ret.block_table.connection[b] = b3;
+  std::cout << "block chain " << n->key<<"  "<<n->op.dagger << " "<< n->op.linear_index << " :  " << b << " -> "<< b1 << " -> "<< b2 << " -> "<< b3 <<std::endl;
+ return ret.block_table.connection[b];
+}
+
+atomic_correlators_worker::cache_t const& atomic_correlators_worker::compute_block_table_and_bound2(node n) {
+
+ if (n == nullptr) return identity_op; // B --> B
+ if (!n->modified) return n->cache;
+
+ auto const& l = compute_block_table_and_bound2(n->left);
+ auto const& r = compute_block_table_and_bound2(n->right);
+ auto& ret = n->cache_tmp;
+
+ for (int b = 0; b < n_blocks; ++b) { // use the left index ?
+  ret.block_table.connection[b] = -1;
+  int b1 = r.block_table.connection[b];
+  if (b1 == -1) continue;
+  int b2 = (n->soft_deleted ? b1 : get_op_block_connection(n, b1));
+  if (b2 == -1) continue;
+  int b3 = l.block_table.connection[b2];
+  if (b3 == -1) continue;
+  ret.block_table.connection[b] = b3;
+  n->matrix_is_valid[b] = false; // invalidating all matrices
+  //std::cout << "block chain " << n->key<< " :  " << b << " -> "<< b1 << " -> "<< b2 << " -> "<< b3 <<std::endl;
+ }
+
+ return ret;
+}
+*/
+/*
+atomic_correlators_worker::cache_t const& atomic_correlators_worker::compute_block_table(node n, bool store_it) {
+
+ if (n == nullptr) return identity_op; // B --> B
+ if (!n->modified) return n->cache;
+
+ auto const& tl = compute_block_table(n->left, store_it);
+ auto const& tr = compute_block_table(n->right, store_it);
+ auto& ret = (store_it ? n->cache : n->cache_tmp);
+
+ for (int b = 0; b < n_blocks; ++b) {
+  ret.connection[b] = -1;
+  int bl = tl.connection[b];
+  if (bl == -1) continue;
+  if (!n->soft_deleted) bl = get_op_block_connection(n,bl);
+  if (bl == -1) continue;
+  bl = tr.connection[bl];
+  if (bl == -1) continue;
+  ret.block_table.connection[b] = bl;
+  n->matrix_is_valid[b] = false; // invalidating all matrices
+ }
+
+ return ret;
+}
+*/
+// ---------------------------------------------
+
+/*
+// underflow des exp
+double atomic_correlators_worker::compute_bound(node n, bool store_it, int b) { 
+
+ if (n == nullptr) return identity_op.matrix_norms[b]; 
+ if (!n->modified) return n->cache.matrix_norms[b];
+
+ auto const& tl = get_block_table(n->left);
+ auto& ret = (store_it ? n->cache.matrix_norms[b] : n->cache_tmp.matrix_norms[b]);
+
+ double dtau_l = (n->left ? double(n->key - tree.max_key(n->left)) : 0.0);
+ double dtau_r = (n->right ? double(tree.min_key(n->right) - n->key) : 0.0);
+
+ int b1 = tl.connection[b]; // can NOT be -1
+ if (b1 == -1) TRIQS_RUNTIME_ERROR << " Internal error : B = -1";
+ int b2 = (n->soft_deleted ? b1 : get_op_block_connection(n, b1));
+ if (b2 == -1) TRIQS_RUNTIME_ERROR << " Internal error : B = -1";
+
+ auto l = compute_bound(n->left, store_it, b);
+ auto r = compute_bound(n->right, store_it, b2);
+
+ double a_l = dtau_l * get_block_emin(b1);
+ double a_r = dtau_r * get_block_emin(b2);
+ ret = l * std::exp(-(a_l + a_r)) * r;
+
+ return ret;
+}
+*/
+// --------------- Computation of the matrix ------------------------------
+
+// underflow des exp
+arrays::matrix<double> const& atomic_correlators_worker::compute_matrices(node n, bool store_it, int b) {
+
+ if (n == nullptr) return identity_op.matrices[b]; // all 1
+ if ((!n->modified) && n->matrix_is_valid[b]) return n->cache.matrices[b];
+
+ auto const& tl = get_block_table(n->left);
+ bool updating = (store_it || ((!n->modified) && !n->matrix_is_valid[b]));
+ if (updating) n->matrix_is_valid[b] = true;
+ auto& ret = (updating ? n->cache.matrices[b] : n->cache_tmp.matrices[b]);
+
+ double dtau_l = (n->left ? double(n->key - tree.max_key(n->left)) : 0.0);
+ double dtau_r = (n->right ? double(tree.min_key(n->right) - n->key) : 0.0);
+
+ int b1 = tl.connection[b]; // can NOT be -1
+ if (b1 == -1) TRIQS_RUNTIME_ERROR << " Internal error : B = -1";
+ int b2 = (n->soft_deleted ? b1 : get_op_block_connection(n, b1));
+ if (b2 == -1) TRIQS_RUNTIME_ERROR << " Internal error : B = -1";
+ auto _ = arrays::range();
+ auto M = (!n->soft_deleted ? get_op_block_matrix(n, b1) : identity_op.matrices[b1]);
+
+ auto const& l = compute_matrices(n->left, store_it, b);
+ auto const& r = compute_matrices(n->right, store_it, b2);
+
+ /*auto const& tr = get_block_table(n->right);
+ int b3 = tr.connection[b2];
+
+ std::cout  << "----------------------------------"<< std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b)  <<std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b1)  <<std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b2)  <<std::endl;
+ std::cout  << "matrix compute "<< get_block_dim(b3)  <<std::endl;
+  std::cout  << "first_dim(l) "<< first_dim(l) <<std::endl;
+ std::cout  << "second_dim(l) "<< second_dim(l) <<std::endl;
+
+ std::cout  << "first_dim(M) "<< first_dim(M) <<std::endl;
+ std::cout  << "second_dim(M) "<< second_dim(M) <<std::endl;
+ */
+ if (n->left) {            // M <- l[b] * exp * M
+  auto dim = first_dim(M); // same as get_block_dim(b1);
+  for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b1, i));
+  M = l * M;
+ }
+ if (n->right) {            // M <- M* exp * r[b]
+  auto dim = second_dim(M); // same as get_block_dim(b2);
+  for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b2, i));
+  M = M * r; // optimise lapack call ?
+ }
+ ret = std::move(M);
+
+ return ret;
+}
+

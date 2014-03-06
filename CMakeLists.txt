@@ -28,6 +28,7 @@ set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 # Details of the krylov code
 option(Extended_Debug "Enable extended debugging output" OFF)
 option(Stats "Enable statistics collection" OFF)
+option(Tests "Enable Tests" OFF)
 
 if(Extended_Debug)
  add_definitions(-DEXT_DEBUG)
@@ -47,7 +48,9 @@ add_subdirectory(c++)
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
  add_subdirectory(python)
+ #if (${Tests}) 
  add_subdirectory(test)
+ #endif()
  option(BUILD_DOC "Build documentation" OFF)
  if(${BUILD_DOC})
    if(NOT TRIQS_WITH_DOCUMENTATION)

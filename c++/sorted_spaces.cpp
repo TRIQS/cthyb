@@ -25,10 +25,10 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
                              std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
                              fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
    : hamiltonian(h_, fops),
-     creation_operators(fops.n_operators()),
-     destruction_operators(fops.n_operators()),
      creation_connection(fops.n_operators()),
      destruction_connection(fops.n_operators()),
+     creation_operators(fops.n_operators()),
+     destruction_operators(fops.n_operators()),
      fops(fops) {
 
  std::map<indices_t, std::pair<int, int>> indices_to_ints;
@@ -259,13 +259,19 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
 // -----------------------------------------------------------------
 
-block_gf<imtime> sorted_spaces::atomic_gf(double beta) const {
-
- // First compute the partition function
+double sorted_spaces::partition_function(double beta) const {
  // we should revert the order,
  double z = 0;
  for (auto const& es : eigensystems)
   for (auto e : es.eigenvalues) z += std::exp(-beta * e);
+ return z;
+}
+
+// -----------------------------------------------------------------
+
+block_gf<imtime> sorted_spaces::atomic_gf(double beta) const {
+
+ double z = partition_function(beta);
 
  // std::cerr << "  Z = " << z << std::endl;
  auto n_times_pts = 100;

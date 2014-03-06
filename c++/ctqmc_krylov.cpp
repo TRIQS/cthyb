@@ -97,7 +97,7 @@ parameter_defaults ctqmc_krylov::solve_defaults() const {
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
      .optional("use_truncation", bool(true), " Use truncation in the trace calculation ")
      .optional("use_old_trace", bool(false), "Use old trace (matrix-vector mult)")
-     .optional("trace_estimator", std::string("None"), " None, Simple, WithCache ...")
+     .optional("trace_estimator", std::string("FullTrace"), " XXXXX ...")
      .optional("krylov_gs_energy_convergence", 1e-10, " double ")
      .optional("krylov_small_matrix_size", int(10), " unsigned int ");
  return pdef;

@@ -14,3 +14,5 @@ Documentation
    sorted_spaces
    operators
    benchmarks
+   pri/ess
+

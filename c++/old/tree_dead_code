@@ -1,3 +1,45 @@
+
+// for subtree at node n, return (B', bound)
+std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(node n, int b, double lnorm_threshold) {
+
+ if (b == -1) TRIQS_RUNTIME_ERROR << " b== -1"; 
+ //if (b == -1) return {-1, 0};
+ if (n == nullptr) TRIQS_RUNTIME_ERROR << " null ptr";
+ //if (n == nullptr) return {b, 0}; // identity
+ if (!n->modified) return {n->cache.block_table[b], n->cache.matrix_lnorms[b]};
+ 
+ double lnorm1 = 0, lnorm3 = 0;
+ double a_r = 0, a_l = 0;
+
+ int b1 = b;
+ if (n->right) {
+  auto p=n->right;
+  if (!p->modified)
+   std::tie(b1, lnorm1) = std::tie(p->cache.block_table[b], p->cache.matrix_lnorms[b]);
+  else
+   std::tie(b1, lnorm1) = compute_block_table_and_bound(n->right, b, lnorm_threshold);
+  if (b1 == -1) return {-1, 0};
+  a_r = double(n->key - tree.min_key(n->right)) * get_block_emin(b1);
+ }
+
+ int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
+ if (b2 == -1) return {-1, 0};
+
+ int b3 = b2;
+ if (n->left) {
+  auto p = n->left;
+  if (!p->modified)
+   std::tie(b3, lnorm3) = std::tie(p->cache.block_table[b2], p->cache.matrix_lnorms[b2]);
+  else
+   std::tie(b3, lnorm3) = compute_block_table_and_bound(n->left, b2, lnorm_threshold);
+  if (b3 == -1) return {-1, 0};
+  a_l = double(tree.max_key(n->left) - n->key) * get_block_emin(b2);
+ }
+
+ auto lnorm = lnorm3 + a_l + a_r + lnorm1;
+ if ((lnorm_threshold > 0) && (lnorm > lnorm_threshold)) return {-1, 0};
+ return {b3, lnorm};
+}
 /*if (b < 12) {
     std::cout << " b " << b << std::endl;
     std::cout << " n->key " << n->key << std::endl;

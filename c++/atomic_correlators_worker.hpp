@@ -44,7 +44,8 @@ class atomic_correlators_worker {
  // ------------------ Cache data ----------------
 
  struct cache_t {
-  std::vector<int16_t> block_table; //number of blocks limited to 2^15
+  double dtl = 0, dtr = 0;
+  std::vector<int> block_table; //number of blocks limited to 2^15
   std::vector<double> matrix_lnorms; // - ln (norm(matrix)) 
   std::vector<arrays::matrix<double>> matrices;
   std::vector<bool> matrix_norm_are_valid;
@@ -60,7 +61,10 @@ class atomic_correlators_worker {
 
  using rb_tree_t = rb_tree<time_pt, node_data_t, std::greater<time_pt>>;
  using node = rb_tree_t::node;
- 
+
+#ifdef EXT_DEBUG 
+ public:
+#endif
  rb_tree_t tree; // the red black tree and its nodes
  int n_modif; // number of node modified at the last change
  void cache_update();
@@ -117,7 +121,11 @@ class atomic_correlators_worker {
   n->reset(tau, op);                              // change the time and op of the node
   root = bst_ordinary_insert(root, n);            // insert it using a regular BST, no red black
   tree_size++;
- }
+ 
+  //recompute the dt
+  // n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
+  // n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
+  }
 
  // Remove all trial nodes from the tree
  void trial_node_uninsert() {
@@ -208,10 +216,9 @@ class atomic_correlators_worker {
  }
 
  //recursive function for tree traversal
- std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold);
- std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
- void update_cache_impl (node n);
  int compute_block_table(node n, int b);
+ std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold);//,double lnorm);
+ std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
 
  // integrity check
  void check_cache_integrity(bool temporary, bool print=false);
@@ -222,15 +229,50 @@ class atomic_correlators_worker {
  trace_t compute_trace(double epsilon = 1.e-15, bool estimator_only = false);
  trace_t last_estimate;
  
- void update_cache();
+ //void update_cache();
+ void update_cache_impl (node n);
+ void update_dt(node n);
+
  double trace_epsilon_estimator() { return 1.e-1; }
 
- // ---------------- Histograms ----------------
- bool make_histograms;                                            // Do we make the Histograms ?
- bool use_truncation;                                             //
- std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ int block_dominant = 0;
 
- statistics::histogram histo_n_block_kept;
+ // ---------------- Histograms ----------------
+ bool make_histograms;                       // Do we make the Histograms ?
+ bool use_truncation;                        //
+ //bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
+ bool use_norm_of_matrices_in_cache = false; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
+ //bool use_only_first_term_in_trace = true; // Use only the first term in the trace 
+ bool use_only_first_term_in_trace = false; //
+ double double_max = std::numeric_limits<double>::max(); // easier to read
+
+ //data for histo
+ int n_call=0;
+
+ // histograms
+ statistics::histogram histo_dims_1x1 = {2, "histo_dims_1x1.dat"};
+ statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};
+ statistics::histogram histo_n_block_kept = {sosp->n_subspaces(), "histo_n_block_kept.dat"};
+ statistics::histogram histo_n_block_examined_first_pass = {sosp->n_subspaces(), "histo_n_block_examined_first_pass.dat"};
+ statistics::histogram histo_dominant_block_bound = {sosp->n_subspaces(), "histo_dominant_block_bound.dat"};
+ statistics::histogram histo_dominant_block_trace = {sosp->n_subspaces(), "histo_dominant_block_trace.dat"};
+ statistics::histogram histo_opcount_total = {1000, "histo_opcount_total.dat"};
+ statistics::histogram histo_appel = {sosp->n_subspaces(), "histo_appel.dat"};
+ statistics::histogram histo_appel2 = {50, "histo_appel2.dat"};
+ statistics::histogram histo_appel3 = {50, "histo_appel3.dat"};
+ 
+ statistics::histogram histo_cut1 = {sosp->n_subspaces(), "histo_cut1.dat"};
+ statistics::histogram histo_cut2 = {sosp->n_subspaces(), "histo_cut2.dat"};
+
+ statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "hist_trace_over_bound.dat"};
+ //statistics::histogram_segment_bin histo_perte_prod = {0, 1.5, 100, "histo_perte_prod.dat"};
+ statistics::histogram_segment_bin histo_trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
+ statistics::histogram_segment_bin histo_trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
+ statistics::histogram_segment_bin histo_dominant_block_energy_bound = {0, 100, 100, "histo_dominant_block_energy_bound.dat"};
+ statistics::histogram_segment_bin histo_dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
+ statistics::histogram_segment_bin histo_cut2_energy = {0,100,100, "histo_cut2_energy.dat"};
+ 
  std::vector<statistics::histogram> histo_opcount;
+ //std::vector<statistics::histogram> histo_n_blocks_after_steps;
 };
 }

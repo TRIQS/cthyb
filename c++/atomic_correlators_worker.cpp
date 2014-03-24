@@ -208,8 +208,8 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   if (use_norm_of_matrices_in_cache) { // seems slower
    // std::cout  << first_dim(M) << " "<< second_dim(M) << std::endl;
    auto norm = norm_induced_2(M);
-   if (norm > 1 + 10 * std::numeric_limits<double>::epsilon())
-    TRIQS_RUNTIME_ERROR << " Internal Error: norm  >1 !" << norm << r.second;
+   if (norm > 1.000000001) // + 10 * std::numeric_limits<double>::epsilon())
+    TRIQS_RUNTIME_ERROR << " Internal Error: norm  >1 !" << norm << M;
    n->cache.matrix_lnorms[b] = -std::log(norm);
   }
  }

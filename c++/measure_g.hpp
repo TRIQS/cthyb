@@ -3,7 +3,7 @@
 #include "qmc_data.hpp"
 #include <boost/mpi/collectives.hpp>
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 using namespace triqs::gfs;
 

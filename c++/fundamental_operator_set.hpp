@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 using namespace triqs;
 

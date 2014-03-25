@@ -5,7 +5,7 @@
 #include "./state.hpp"
 #include <iostream>
 
-using namespace cthyb_krylov;
+using namespace cthyb_matrix;
 
 int main() {
 

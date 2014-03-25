@@ -1,4 +1,4 @@
-#include "./ctqmc_krylov.hpp"
+#include "./ctqmc_matrix.hpp"
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -7,7 +7,7 @@
 #include <triqs/gfs/imtime.hpp>
 #include <triqs/gfs/imfreq.hpp>
 
-using namespace cthyb_krylov;
+using namespace cthyb_matrix;
 using triqs::utility::many_body_operator;
 using triqs::utility::c;
 using triqs::utility::c_dag;
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
   std::vector<block_desc_t> block_structure {  {"up",{{"up"}} }, {"down",{{"down"}} } };
   
   // Construct CTQMC solver
-  ctqmc_krylov solver(p, H, qn, fops, block_structure);
+  ctqmc_matrix solver(p, H, qn, fops, block_structure);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;

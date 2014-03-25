@@ -189,7 +189,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
 
 //---------------- cache update ------------------------------------
 
-void atomic_correlators_worker::cache_update() {
+void atomic_correlators_worker::update_cache() {
  update_cache_impl(tree.get_root());
  // analysis
  if (make_histograms) {

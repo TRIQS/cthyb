@@ -5,7 +5,7 @@
 #include <triqs/utility/time_pt.hpp>
 #include <map>
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 using triqs::utility::time_pt;
 

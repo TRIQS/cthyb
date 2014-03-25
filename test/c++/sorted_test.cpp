@@ -3,7 +3,7 @@
 #include "./operator.hpp"
 #include "./fundamental_operator_set.hpp"
 
-using namespace cthyb_krylov;
+using namespace cthyb_matrix;
 using triqs::utility::many_body_operator;
 using triqs::utility::c;
 using triqs::utility::c_dag;

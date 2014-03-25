@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 // DOC TO BE WRITTEN
 // fock state convention:

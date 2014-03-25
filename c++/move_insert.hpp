@@ -1,7 +1,7 @@
 #pragma once
 #include "./qmc_data.hpp"
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 using mc_weight_type = std::complex<double>;
 

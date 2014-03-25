@@ -1,11 +1,11 @@
 # load triqs helper to set up tests
 find_package(TriqsTest)
 
-link_libraries(cthyb_krylov_c ${TRIQS_LIBRARY_ALL})
+link_libraries(cthyb_matrix_c ${TRIQS_LIBRARY_ALL})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests
-set(SIMPLE_TESTS hilbert_test operator_test sorted_test krylov_test rbt)
+set(SIMPLE_TESTS hilbert_test operator_test sorted_test rbt)
 foreach(t ${SIMPLE_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     triqs_set_rpath_for_target(${t})

@@ -11,7 +11,7 @@
 
 using namespace triqs::arrays;
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
  using namespace triqs::gfs;
 

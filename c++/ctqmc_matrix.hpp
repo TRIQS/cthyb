@@ -5,11 +5,11 @@
 
 #include "./qmc_data.hpp"
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 using namespace triqs::utility;
 
-class ctqmc_krylov {
+class ctqmc_matrix {
 
  using mc_sign_type = std::complex<double>;
 
@@ -20,7 +20,7 @@ class ctqmc_krylov {
  public:
  using real_operator_t = many_body_operator<double>;
 
- ctqmc_krylov(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
+ ctqmc_matrix(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
               fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure);
 
  void solve(parameters p_in);

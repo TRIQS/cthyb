@@ -3,7 +3,7 @@
 #include <boost/mpi/collectives.hpp>
 #include "triqs/statistics/histograms.hpp"
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 using namespace triqs::gfs;
 

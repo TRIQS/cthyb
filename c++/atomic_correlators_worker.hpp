@@ -5,7 +5,7 @@
 #include <triqs/parameters.hpp>
 #include "triqs/statistics/histograms.hpp"
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 /**
  * A worker that computes the trace using krylov method, for a given configuration.
@@ -67,7 +67,7 @@ class atomic_correlators_worker {
 #endif
  rb_tree_t tree; // the red black tree and its nodes
  int n_modif;    // number of node modified at the last change
- void cache_update();
+ void update_cache();
 
  /*************************************************************************
   *  Ordinary BST insertion of the trial nodes
@@ -145,7 +145,7 @@ class atomic_correlators_worker {
    tree.insert(n->key, {n->op, n_blocks});
   }
   trial_node_index = -1;
-  cache_update();
+  update_cache();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
   check_cache_integrity(false);
@@ -187,7 +187,7 @@ class atomic_correlators_worker {
  void confirm_soft_delete() {
   for (auto& n : removed_ops) tree.delete_node(n->key);
   removed_ops.clear();
-  cache_update();
+  update_cache();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
   check_cache_integrity(false);
@@ -229,7 +229,6 @@ class atomic_correlators_worker {
  trace_t compute_trace(double epsilon = 1.e-15, bool estimator_only = false);
  trace_t last_estimate;
 
- // void update_cache();
  void update_cache_impl(node n);
  void update_dt(node n);
 

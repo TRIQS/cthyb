@@ -4,7 +4,7 @@
 using namespace triqs::arrays;
 using std::string;
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 
 // define a more tolerant comparison between vectors for the quantum numbers
 struct lt_dbl {

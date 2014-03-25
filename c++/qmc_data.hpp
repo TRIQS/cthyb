@@ -4,7 +4,7 @@
 #include <triqs/det_manip.hpp>
 #include <triqs/utility/serialization.hpp>
 
-namespace cthyb_krylov {
+namespace cthyb_matrix {
 using namespace triqs::gfs;
 
 /**

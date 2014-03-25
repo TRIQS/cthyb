@@ -1,6 +1,6 @@
 #!/bin/env python
 
-from pytriqs.applications.impurity_solvers.cthyb_matrix import *
+from pytriqs.applications.impurity_solvers.cthyb_matrix2 import *
 import itertools
 
 C_list = [C(1,0),C(2,0),C(3,0)]

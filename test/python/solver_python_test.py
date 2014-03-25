@@ -5,7 +5,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
 from pytriqs.parameters.parameters import Parameters
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb_matrix.cthyb_matrix import *
+from pytriqs.applications.impurity_solvers.cthyb_matrix2 import *
 import itertools
 from collections import OrderedDict
 

@@ -121,10 +121,6 @@ class atomic_correlators_worker {
   n->reset(tau, op);                            // change the time and op of the node
   root = bst_ordinary_insert(root, n);          // insert it using a regular BST, no red black
   tree_size++;
-
-  // recompute the dt
-  // n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
-  // n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
  }
 
  // Remove all trial nodes from the tree
@@ -227,7 +223,7 @@ class atomic_correlators_worker {
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
 
  trace_t compute_trace(double epsilon = 1.e-15, bool estimator_only = false);
- trace_t last_estimate;
+ trace_t last_estimate = 0;
 
  void update_cache_impl(node n);
  void update_dt(node n);

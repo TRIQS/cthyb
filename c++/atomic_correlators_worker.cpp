@@ -66,8 +66,8 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::estimate() {
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
  trace_t r = 1;
- if (method == method_t::EstimateWithBounds) r = compute_trace(1.e-15, false) / last_estimate;
- if (method == method_t::EstimateTruncEps) r = compute_trace(1.e-15, false) / last_estimate;
+ if (method == method_t::EstimateWithBounds) r = compute_trace(1.e-15, false) / estimate();
+ if (method == method_t::EstimateTruncEps) r = compute_trace(1.e-15, false) / estimate();
  return r;
 }
 
@@ -286,7 +286,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
 
  if (estimator_only) {
   double esti = 0;
-  for (auto const& x : to_sort) esti += std::exp(-x.first);
+  for (auto const& x : to_sort) esti += get_block_dim(x.second) * std::exp(-x.first - dt * get_block_eigenval(x.second, 0));
   return esti;
  }
 

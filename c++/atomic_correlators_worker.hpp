@@ -38,15 +38,15 @@ class atomic_correlators_worker {
 
  const configuration* config;            // must exists longer than this object.
  const sorted_spaces* sosp;              // access to the diagonalization of Hloc
- int n_orbitals = sosp->n_c_operators(); // 
+ int n_orbitals = sosp->n_c_operators(); //
  int n_blocks = sosp->n_subspaces();     //
 
  // ------------------ Cache data ----------------
 
  struct cache_t {
   double dtl = 0, dtr = 0;
-  std::vector<int> block_table; //number of blocks limited to 2^15
-  std::vector<double> matrix_lnorms; // - ln (norm(matrix)) 
+  std::vector<int> block_table; // number of blocks limited to 2^15
+  std::vector<double> matrix_lnorms; // - ln (norm(matrix))
   std::vector<arrays::matrix<double>> matrices;
   std::vector<bool> matrix_norm_are_valid;
   cache_t(int n_blocks) : block_table(n_blocks), matrix_lnorms(n_blocks), matrices(n_blocks), matrix_norm_are_valid(n_blocks) {}
@@ -55,18 +55,18 @@ class atomic_correlators_worker {
  struct node_data_t {
   op_desc op;
   cache_t cache;
-  node_data_t(op_desc op, int n_blocks) : op(op), cache(n_blocks){}
+  node_data_t(op_desc op, int n_blocks) : op(op), cache(n_blocks) {}
   void reset(op_desc op1) { op = op1; }
  };
 
  using rb_tree_t = rb_tree<time_pt, node_data_t, std::greater<time_pt>>;
  using node = rb_tree_t::node;
 
-#ifdef EXT_DEBUG 
+#ifdef EXT_DEBUG
  public:
 #endif
  rb_tree_t tree; // the red black tree and its nodes
- int n_modif; // number of node modified at the last change
+ int n_modif;    // number of node modified at the last change
  void cache_update();
 
  /*************************************************************************
@@ -105,7 +105,7 @@ class atomic_correlators_worker {
  // unlink all glued trial nodes
  void unlink_trial_nodes() {
   for (int i = 0; i <= trial_node_index; ++i) {
-   auto & r = inserted_nodes[i];
+   auto& r = inserted_nodes[i];
    if (r.first != nullptr) (r.second ? r.first->left : r.first->right) = nullptr;
   }
   if (tree_size == trial_node_index + 1) tree.get_root() = nullptr;
@@ -115,17 +115,17 @@ class atomic_correlators_worker {
  // Put a trial node at tau, op, using an ordinary BST insertion (no red black)
  void trial_node_insert(time_pt const& tau, op_desc const& op) {
   if (trial_node_index > 3) TRIQS_RUNTIME_ERROR << "Error : more than 4 insertions ";
-  auto & root = tree.get_root();
+  auto& root = tree.get_root();
   inserted_nodes[++trial_node_index] = {nullptr, false};
   node n = trial_nodes[trial_node_index].get(); // get the next available node
-  n->reset(tau, op);                              // change the time and op of the node
-  root = bst_ordinary_insert(root, n);            // insert it using a regular BST, no red black
+  n->reset(tau, op);                            // change the time and op of the node
+  root = bst_ordinary_insert(root, n);          // insert it using a regular BST, no red black
   tree_size++;
- 
-  //recompute the dt
+
+  // recompute the dt
   // n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
   // n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
-  }
+ }
 
  // Remove all trial nodes from the tree
  void trial_node_uninsert() {
@@ -169,14 +169,14 @@ class atomic_correlators_worker {
   });
   removed_ops.push_back(x); // store the node
   tree.set_modified_from_root_to(x->key);
-  x->soft_deleted = true;   // mark the node for deletion
+  x->soft_deleted = true; // mark the node for deletion
   tree_size--;
   return x->key;
  }
 
  /// Clean all the soft deleted flags
  void clean_soft_delete() {
- for (auto& n : removed_ops) n->soft_deleted = false;
+  for (auto& n : removed_ops) n->soft_deleted = false;
   removed_ops.clear();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
@@ -203,7 +203,7 @@ class atomic_correlators_worker {
 
  // The dimension of block b
  int get_block_dim(int b) const { return sosp->get_eigensystems()[b].eigenvalues.size(); }
- 
+
  // the i-th eigenvalue of the block b
  double get_block_eigenval(int b, int i) const { return sosp->get_eigensystems()[b].eigenvalues[i]; }
 
@@ -215,64 +215,51 @@ class atomic_correlators_worker {
   return sosp->fundamental_operator_matrix_from_linear_index(n->op.dagger, n->op.linear_index, b);
  }
 
- //recursive function for tree traversal
+ // recursive function for tree traversal
  int compute_block_table(node n, int b);
- std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold);//,double lnorm);
+ std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold); //,double lnorm);
  std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
 
  // integrity check
- void check_cache_integrity(bool temporary, bool print=false);
+ void check_cache_integrity(bool temporary, bool print = false);
  void check_cache_integrity_one_node(node n, bool temporary, bool print);
  int check_one_block_table_linear(node n, int b, bool print);
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
 
  trace_t compute_trace(double epsilon = 1.e-15, bool estimator_only = false);
  trace_t last_estimate;
- 
- //void update_cache();
- void update_cache_impl (node n);
+
+ // void update_cache();
+ void update_cache_impl(node n);
  void update_dt(node n);
 
  double trace_epsilon_estimator() { return 1.e-1; }
 
- int block_dominant = 0;
-
  // ---------------- Histograms ----------------
  bool make_histograms;                       // Do we make the Histograms ?
  bool use_truncation;                        //
- //bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
  bool use_norm_of_matrices_in_cache = false; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
- //bool use_only_first_term_in_trace = true; // Use only the first term in the trace 
- bool use_only_first_term_in_trace = false; //
- double double_max = std::numeric_limits<double>::max(); // easier to read
+ bool use_only_first_term_in_trace = false;  // Use only the first term in the trace
 
- //data for histo
- int n_call=0;
-
- // histograms
- statistics::histogram histo_dims_1x1 = {2, "histo_dims_1x1.dat"};
+ // How many block non zero at root of the tree
  statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};
+
+ // how many block kept after the truncation with the bound
  statistics::histogram histo_n_block_kept = {sosp->n_subspaces(), "histo_n_block_kept.dat"};
- statistics::histogram histo_n_block_examined_first_pass = {sosp->n_subspaces(), "histo_n_block_examined_first_pass.dat"};
+
+ // What is the dominant block in the trace computation ? Sorted by number or energy
  statistics::histogram histo_dominant_block_bound = {sosp->n_subspaces(), "histo_dominant_block_bound.dat"};
  statistics::histogram histo_dominant_block_trace = {sosp->n_subspaces(), "histo_dominant_block_trace.dat"};
- statistics::histogram histo_opcount_total = {1000, "histo_opcount_total.dat"};
- statistics::histogram histo_appel = {sosp->n_subspaces(), "histo_appel.dat"};
- statistics::histogram histo_appel2 = {50, "histo_appel2.dat"};
- statistics::histogram histo_appel3 = {50, "histo_appel3.dat"};
- 
- statistics::histogram histo_cut1 = {sosp->n_subspaces(), "histo_cut1.dat"};
- statistics::histogram histo_cut2 = {sosp->n_subspaces(), "histo_cut2.dat"};
-
- statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "hist_trace_over_bound.dat"};
- //statistics::histogram_segment_bin histo_perte_prod = {0, 1.5, 100, "histo_perte_prod.dat"};
- statistics::histogram_segment_bin histo_trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
- statistics::histogram_segment_bin histo_trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
  statistics::histogram_segment_bin histo_dominant_block_energy_bound = {0, 100, 100, "histo_dominant_block_energy_bound.dat"};
  statistics::histogram_segment_bin histo_dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
- statistics::histogram_segment_bin histo_cut2_energy = {0,100,100, "histo_cut2_energy.dat"};
- 
+
+ // Perturbation order, total and by color
+ statistics::histogram histo_opcount_total = {1000, "histo_opcount_total.dat"};
  std::vector<statistics::histogram> histo_opcount;
- //std::vector<statistics::histogram> histo_n_blocks_after_steps;
+
+ // Various ratios : trace/bound, trace/first term of the trace, etc..
+ statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "hist_trace_over_bound.dat"};
+ statistics::histogram_segment_bin histo_trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
+ statistics::histogram_segment_bin histo_trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
 };
 }

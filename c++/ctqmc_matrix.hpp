@@ -8,10 +8,11 @@
 namespace cthyb_matrix {
 
 using namespace triqs::utility;
+using mc_weight_type = double;
 
 class ctqmc_matrix {
 
- using mc_sign_type = std::complex<double>;
+ using mc_sign_type = mc_weight_type;
 
  block_gf<imtime> deltat, gt; // Green's function containers: imaginary-time Green's functions
  boost::mpi::communicator c;  // define the communicator, here MPI_COMM_WORLD

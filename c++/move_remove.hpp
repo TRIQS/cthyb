@@ -4,8 +4,6 @@
 
 namespace cthyb_matrix {
 
-using mc_weight_type = std::complex<double>;
-
 // Removal of C, C^dagger operator
 class move_remove_c_cdag {
 

@@ -3,8 +3,6 @@
 
 namespace cthyb_matrix {
 
-using mc_weight_type = std::complex<double>;
-
 // Insertion of C, C^dagger operator
 class move_insert_c_cdag {
 

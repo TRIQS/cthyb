@@ -233,8 +233,8 @@ class atomic_correlators_worker {
  // ---------------- Histograms ----------------
  bool make_histograms;                       // Do we make the Histograms ?
  bool use_truncation;                        //
- bool use_norm_of_matrices_in_cache = false; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
- bool use_only_first_term_in_trace = false;  // Use only the first term in the trace
+ bool use_norm_of_matrices_in_cache;         // When a matrix is computed in cache, its spectral radius replaces the norm estimate
+ bool use_only_first_term_in_trace;          // Use only the first term in the trace
 
  // How many block non zero at root of the tree
  statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};

@@ -36,6 +36,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
  // Taking parameters from the inputs
  use_truncation = p["use_truncation"];
+ use_norm_of_matrices_in_cache = p["use_norm_of_matrices_in_cache"];
+ use_only_first_term_in_trace = p["use_only_first_term_in_trace"];
 
  std::string ms = p["trace_estimator"];
  try {

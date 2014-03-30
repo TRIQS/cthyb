@@ -345,6 +345,9 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
   histo_n_block_kept << n_block_kept;
   histo_trace_first_term_trace << std::abs(first_term) / std::abs(full_trace);
  }
+
+ if (!std::isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;
+ 
  return full_trace;
 }
 

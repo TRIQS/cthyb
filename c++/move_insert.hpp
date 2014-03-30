@@ -91,6 +91,7 @@ class move_insert_c_cdag {
   }
   auto trace_ratio = new_trace / data.trace;
 
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "not finite" << new_trace << "  "<< new_trace /data.trace ;
   auto& det = data.dets[block_index];
   int det_size = det.size();
 

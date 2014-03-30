@@ -38,6 +38,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   node_t& operator=(node_t const&) = delete;
   template <typename... T> void reset(Key const& k, T&&... x) {
    key = k;
+   left = nullptr; 
+   right = nullptr;
    Value::reset(std::forward<T>(x)...);
   }
  }; 
@@ -287,7 +289,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
  node deleteMax(node h) {
   if (is_red(h->left)) h = rotateRight(h);
   if (h->right == nullptr) {
-   // std::cout << " dealloc " << h.p << std::endl;
+   // std::cout << " deleting " << h->key << std::endl;
    delete h;
    return nullptr;
   }

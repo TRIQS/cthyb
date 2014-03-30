@@ -91,7 +91,10 @@ class atomic_correlators_worker {
 
  node bst_ordinary_insert(node h, node n) { // implementation
   if (h == nullptr) return n;
-  if (h->key == n->key) throw rbt_insert_error{};
+  if (h->key == n->key) {
+   //std::cerr << "insertion error "<< h->key <<  n->key;
+   throw rbt_insert_error{};
+  }
   auto smaller = tree.comparator()(n->key, h->key);
   if (smaller)
    h->left = bst_ordinary_insert(h->left, n);
@@ -152,6 +155,7 @@ class atomic_correlators_worker {
   *************************************************************************/
  private:
  std::vector<node> removed_ops;
+ std::vector<time_pt> removed_key;
 
  public:
  // Find and soft_delete the n-th operator with fixed dagger and block_index
@@ -163,7 +167,8 @@ class atomic_correlators_worker {
    if (no->op.dagger == dagger && no->op.block_index == block_index) ++i;
    return i == n + 1;
   });
-  removed_ops.push_back(x); // store the node
+  removed_ops.push_back(x);      // store the node
+  removed_key.push_back(x->key); // store the key
   tree.set_modified_from_root_to(x->key);
   x->soft_deleted = true; // mark the node for deletion
   tree_size--;
@@ -174,6 +179,7 @@ class atomic_correlators_worker {
  void clean_soft_delete() {
   for (auto& n : removed_ops) n->soft_deleted = false;
   removed_ops.clear();
+  removed_key.clear();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
   check_cache_integrity(false);
@@ -181,8 +187,9 @@ class atomic_correlators_worker {
 
  /// Confirm deletion : the soft deleted flagged node are truly deleted
  void confirm_soft_delete() {
-  for (auto& n : removed_ops) tree.delete_node(n->key);
+  for (auto& k : removed_key) tree.delete_node(k); // can NOT use the node here..
   removed_ops.clear();
+  removed_key.clear();
   update_cache();
   tree_size = tree.size();
   n_modif = tree.clear_modified();

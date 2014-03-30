@@ -91,7 +91,8 @@ class move_insert_c_cdag {
   }
   auto trace_ratio = new_trace / data.trace;
 
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "not finite" << new_trace << "  "<< new_trace /data.trace ;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+  if (!std::isnormal(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not normal" << new_trace << "  "<< data.trace <<"  "<< new_trace /data.trace ;
   auto& det = data.dets[block_index];
   int det_size = det.size();
 
@@ -119,6 +120,7 @@ class move_insert_c_cdag {
   std::cerr << "Weight: " << p* t_ratio << std::endl;
 #endif
 
+  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite" << p * t_ratio;
   return p * t_ratio;
  }
 

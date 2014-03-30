@@ -68,8 +68,17 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::estimate() {
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
  trace_t r = 1;
- if (method == method_t::EstimateWithBounds) r = compute_trace(1.e-15, false) / estimate();
- if (method == method_t::EstimateTruncEps) r = compute_trace(1.e-15, false) / estimate();
+ if ((method == method_t::EstimateWithBounds) || (method == method_t::EstimateTruncEps)) {
+  trace_t ft = compute_trace(1.e-15, false);
+  trace_t est = estimate();
+  r = ft / est;
+  if (!std::isnormal(est)) {
+   std::cerr << " full_trace_over_estimator : est is not normal " << est << std::endl;
+   return 0;
+  }
+  //if (!std::isnormal(est)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : est is not normal " << est << " " << est;
+  if (!std::isfinite(r)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : r not finite" << r << " " << ft << " " << est;
+ }
  return r;
 }
 
@@ -150,7 +159,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
 
  matrix<double> M = (!n->soft_deleted ? get_op_block_matrix(n, b1) : make_unit_matrix<double>(get_block_dim(b1)));
 
- if (n->right) { // M <- M* exp * r[b]
+ if (n->right) { // M <- M * exp * r[b]
   dtau_r = double(n->key - tree.min_key(n->right));
   auto dim = second_dim(M); // same as get_block_dim(b2);
   for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i));
@@ -289,6 +298,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
  if (estimator_only) {
   double esti = 0;
   for (auto const& x : to_sort) esti += get_block_dim(x.second) * std::exp(-x.first - dt * get_block_eigenval(x.second, 0));
+  if (!std::isfinite(esti)) TRIQS_RUNTIME_ERROR << " trace estimator not finite" << esti;
   return esti;
  }
 

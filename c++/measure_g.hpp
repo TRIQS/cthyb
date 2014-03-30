@@ -31,8 +31,7 @@ struct measure_g {
   if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
   auto corr = real(this->data.atomic_corr.full_trace_over_estimator());
-  // if (std::abs(corr) < 0.01) std::cout  << "corr " << corr << std::endl;
- if (!std::isfinite(corr)) TRIQS_RUNTIME_ERROR << " measure g :corr not finite" << corr;
+  if (!std::isfinite(corr)) TRIQS_RUNTIME_ERROR << " measure g :corr not finite" << corr;
 
   z += s * corr;
 

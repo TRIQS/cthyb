@@ -56,6 +56,9 @@ class move_remove_c_cdag {
   if (new_trace == 0.0) return 0;
   auto trace_ratio = new_trace / data.trace;
 
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+  if (!std::isnormal(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not normal" << new_trace << "  "<< data.trace <<"  "<< new_trace /data.trace ;
+ 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
   // acceptance probability
@@ -69,6 +72,8 @@ class move_remove_c_cdag {
   std::cerr << "Weight: " << p* t_ratio << std::endl;
 #endif
 
+  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p;
+  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite" << p* t_ratio;
   return p / t_ratio;
  }
 

@@ -1,3 +1,23 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2013, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
 #include "atomic_correlators_worker.hpp"
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
@@ -18,7 +38,6 @@ double double_max = std::numeric_limits<double>::max(); // easier to read
 // double norm_induced_2_impl(matrix_view<double> A, matrix_view<double> B) {
 double norm_induced_2_impl(matrix<double> const& A, matrix<double> const& B) {
  // WORKAROUND BUG !!
- // std::cout << A << B << std::endl;
  auto M = A * B;
  triqs::arrays::linalg::eigenelements_worker<matrix_view<double>, true> w(M());
  w.invoke();

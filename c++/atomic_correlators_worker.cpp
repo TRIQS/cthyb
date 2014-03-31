@@ -14,6 +14,7 @@ double double_max = std::numeric_limits<double>::max(); // easier to read
 
 // --------------- Computation of the matrix norm --> move into triqs::arrays ------------------------
 
+// this norm is too slow, need to change to another norm...
 // double norm_induced_2_impl(matrix_view<double> A, matrix_view<double> B) {
 double norm_induced_2_impl(matrix<double> const& A, matrix<double> const& B) {
  // WORKAROUND BUG !!
@@ -29,6 +30,8 @@ double norm_induced_2(matrix<double> const& A) {
  return (first_dim(A) < second_dim(A) ? norm_induced_2_impl(A, A.transpose()) : norm_induced_2_impl(A.transpose(), A));
 }
 
+// -----------------------------------------------
+
 namespace cthyb_matrix {
 
 atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, utility::parameters const& p)
@@ -36,13 +39,11 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
  // Taking parameters from the inputs
  use_truncation = p["use_truncation"];
- use_norm_of_matrices_in_cache = p["use_norm_of_matrices_in_cache"];
- use_only_first_term_in_trace = p["use_only_first_term_in_trace"];
 
  std::string ms = p["trace_estimator"];
  try {
   method =
-      std::map<std::string, method_t>{{"FullTrace", method_t::FullTrace}, {"EstimateWithBounds", method_t::EstimateWithBounds},
+      std::map<std::string, method_t>{{"FullTrace", method_t::FullTrace}, 
                                       {"EstimateTruncEps", method_t::EstimateTruncEps}}.at(ms);
  }
  catch (...) {
@@ -58,27 +59,22 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::estimate() {
- if (method == method_t::FullTrace) last_estimate = compute_trace(1.e-15, false);
- if (method == method_t::EstimateWithBounds) last_estimate = compute_trace(1.e-15, true);
- if (method == method_t::EstimateTruncEps) last_estimate = compute_trace(trace_epsilon_estimator(), false);
- return last_estimate;
+ if (method == method_t::FullTrace) return compute_trace(1.e-15);
+ //if (method == method_t::EstimateTruncEps) 
+ return compute_trace(0.333); // using epsilon = 1/3 for quick estimator
 }
 
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
  trace_t r = 1;
- if ((method == method_t::EstimateWithBounds) || (method == method_t::EstimateTruncEps)) {
-  trace_t ft = compute_trace(1.e-15, false);
+ if (method == method_t::EstimateTruncEps) {
+  trace_t ft = compute_trace(1.e-15);
   trace_t est = estimate();
   r = ft / est;
-  if (!std::isnormal(est)) {
-   std::cerr << " full_trace_over_estimator : est is not normal " << est << std::endl;
-   return 0;
-  }
-  //if (!std::isnormal(est)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : est is not normal " << est << " " << est;
   if (!std::isfinite(r)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : r not finite" << r << " " << ft << " " << est;
  }
+ if (make_histograms) histo_trace_over_estimator << r;
  return r;
 }
 
@@ -241,7 +237,7 @@ void atomic_correlators_worker::update_dt(node n) {
 
 //----------------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(double epsilon, bool estimator_only) {
+atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(double epsilon) {
 
  if (tree_size == 0) return sosp->partition_function(config->beta()); // simplifies later code
 
@@ -262,25 +258,15 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
 
  update_dt(root); // recompute the dt for modified nodes
 
-//#define NO_BOUND
-#ifndef NO_BOUND
  for (int b = 0; b < n_blocks; ++b) {
   auto block_lnorm_pair = compute_block_table_and_bound(root, b, lnorm_threshold);
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.
    double lnorm = block_lnorm_pair.second + dt * get_block_emin(b);
-   lnorm_threshold = std::min(lnorm_threshold, lnorm + (use_only_first_term_in_trace ? 0 : log_epsilon));
+   lnorm_threshold = std::min(lnorm_threshold, lnorm + log_epsilon);
    to_sort1.emplace_back(lnorm, b);
   }
  }
-#else
- for (int b = 0; b < n_blocks; ++b) {
-  auto bf = compute_block_table(root, b);
-  if (bf == b) { // final structural check B ---> returns to B.
-   to_sort1.emplace_back(1, b);
-  }
- }
-#endif
 
  // recut since lnorm_threshold has evolved during the previous computation
  for (auto const& b_b : to_sort1)
@@ -295,22 +281,23 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
  // Now sort the blocks non structurally 0 according to the bound
  std::sort(to_sort.begin(), to_sort.end());
 
- if (estimator_only) {
-  double esti = 0;
-  for (auto const& x : to_sort) esti += get_block_dim(x.second) * std::exp(-x.first - dt * get_block_eigenval(x.second, 0));
-  if (!std::isfinite(esti)) TRIQS_RUNTIME_ERROR << " trace estimator not finite" << esti;
-  return esti;
- }
-
  // loop on block, according to estimator, and truncation as Trace_epsilon
  trace_t full_trace = 0, first_term = 0;
- int n_block_kept = 0; // count the number of block that the trace will keep at the end (after truncation)
  auto trace_contrib_block = std::vector<std::pair<double, int>>{};
 
- for (auto const& b_b : to_sort) { // e_b is a tuple (bound, block_number)
+ int n_bl = to_sort.size();                        // number of blocks
+ auto bound_cumul = std::vector<double>(n_bl + 1); // cumulative sum of the bounds
+ bound_cumul[n_bl] = 0;
+ for (int i = n_bl - 1; i >= 0; --i)
+ bound_cumul[i] = bound_cumul[i + 1] + std::exp(-to_sort[i].first) * get_block_dim(to_sort[i].second);
 
-  if (use_truncation && (n_block_kept > 0) && (std::exp(-b_b.first) <= std::abs(full_trace) * epsilon)) break;
-  int block_index = b_b.second;
+ int bl;
+ for (bl = 0; bl < n_bl; ++bl) { // sum over all blocks
+
+  // stopping criterion 
+  if (use_truncation && (bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
+
+  int block_index = to_sort[bl].second;
 
   // computes the matrices, recursively along the modified path in the tree
   auto b_mat = compute_matrix(root, block_index);
@@ -326,38 +313,35 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
   auto dim = get_block_dim(block_index);
   for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dt * get_block_eigenval(block_index, u));
 
-  if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-b_b.first))
+  if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort[bl].first))
    TRIQS_RUNTIME_ERROR << "Matrix not bounded by the bound !!!";
 
-  if (make_histograms) histo_trace_over_bound << std::abs(trace_partial) / std::exp(-b_b.first);
-
   full_trace += trace_partial; // sum for all blocks
-  n_block_kept++;
 
   // Analysis
   if (make_histograms) {
+   histo_trace_over_bound << std::abs(trace_partial) / std::exp(-to_sort[bl].first);
    trace_contrib_block.emplace_back(std::abs(trace_partial), block_index);
-   if (n_block_kept == 1) {
+   if (bl == 1) {
     first_term = trace_partial;
     histo_dominant_block_bound << block_index;
     histo_dominant_block_energy_bound << get_block_emin(block_index);
    } else
     histo_trace_first_over_sec_term << trace_partial / first_term;
   }
-  if (use_only_first_term_in_trace) break; // only the first term in the trace
- }                                         // loop on block
+ } // loop on block
 
- if (n_block_kept == 0) TRIQS_RUNTIME_ERROR << "no block kept in trace computation !";
+  // Analysis
  if (make_histograms) {
   std::sort(trace_contrib_block.begin(), trace_contrib_block.end(), std::c14::greater<>());
   histo_dominant_block_trace << begin(trace_contrib_block)->second;
   histo_dominant_block_energy_trace << get_block_emin(begin(trace_contrib_block)->second);
-  histo_n_block_kept << n_block_kept;
+  histo_n_block_kept << bl;
   histo_trace_first_term_trace << std::abs(first_term) / std::abs(full_trace);
  }
 
  if (!std::isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;
- 
+
  return full_trace;
 }
 

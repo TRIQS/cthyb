@@ -29,7 +29,6 @@ class atomic_correlators_worker {
  // Various possible algorithms
  enum class method_t {
   FullTrace,
-  EstimateWithBounds,
   EstimateTruncEps
  };
  method_t method;
@@ -66,7 +65,7 @@ class atomic_correlators_worker {
  public:
 #endif
  rb_tree_t tree; // the red black tree and its nodes
- int n_modif;    // number of node modified at the last change
+ int n_modif;    // Analysis : number of node modified at the last change
  void update_cache();
 
  /*************************************************************************
@@ -92,7 +91,7 @@ class atomic_correlators_worker {
  node bst_ordinary_insert(node h, node n) { // implementation
   if (h == nullptr) return n;
   if (h->key == n->key) {
-   //std::cerr << "insertion error "<< h->key <<  n->key;
+   // std::cerr << "insertion error "<< h->key <<  n->key;
    throw rbt_insert_error{};
   }
   auto smaller = tree.comparator()(n->key, h->key);
@@ -229,19 +228,15 @@ class atomic_correlators_worker {
  int check_one_block_table_linear(node n, int b, bool print);
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
 
- trace_t compute_trace(double epsilon = 1.e-15, bool estimator_only = false);
- trace_t last_estimate = 0;
+ trace_t compute_trace(double epsilon); // = 1.e-15);
 
  void update_cache_impl(node n);
  void update_dt(node n);
 
- double trace_epsilon_estimator() { return 1.e-1; }
-
  // ---------------- Histograms ----------------
  bool make_histograms;                       // Do we make the Histograms ?
  bool use_truncation;                        //
- bool use_norm_of_matrices_in_cache;         // When a matrix is computed in cache, its spectral radius replaces the norm estimate
- bool use_only_first_term_in_trace;          // Use only the first term in the trace
+ bool use_norm_of_matrices_in_cache = false; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
 
  // How many block non zero at root of the tree
  statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};
@@ -260,6 +255,7 @@ class atomic_correlators_worker {
  std::vector<statistics::histogram> histo_opcount;
 
  // Various ratios : trace/bound, trace/first term of the trace, etc..
+ statistics::histogram_segment_bin histo_trace_over_estimator = {0, 2, 100, "histo_trace_over_estimator.dat"};
  statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "hist_trace_over_bound.dat"};
  statistics::histogram_segment_bin histo_trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
  statistics::histogram_segment_bin histo_trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};

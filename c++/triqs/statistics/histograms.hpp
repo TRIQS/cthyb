@@ -99,7 +99,7 @@ namespace statistics {
      //f << std::setw(4) << i++ << "  " << std::setw(10) << x << " " << std::setw(10) << cum << std::endl;
      f <<  i++ << "  " <<  x << " " <<  cum << std::endl;
     }
-    if (del) std::cerr << "Histogram : " << del << " points have been lost !" << std::endl;
+    if (del) std::cerr << "Histogram "<< s<< " : " << del << " points have been lost !" << std::endl;
    } else {
     //std::cout << "not dumping histo " << s <<" on node " << world.rank() << std::endl;
    }
@@ -156,7 +156,7 @@ namespace statistics {
      cum +=x;
      f << _a + (i++) / n_bin_over_len << "  " << x << "  " << cum << std::endl;
     }
-    if (histo.n_lost_pts() != 0) std::cerr << "Histogram : " << histo.n_lost_pts() << " points have been lost !" << std::endl;
+    if (histo.n_lost_pts() != 0) std::cerr << "Histogram "<<s<<" : " << histo.n_lost_pts() << " points have been lost !" << std::endl;
    } else {
     //std::cout << "not dumping histo "<< s << " on node " << world.rank() << std::endl;
    }

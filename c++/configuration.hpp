@@ -36,7 +36,7 @@ struct configuration {
  oplist_t::const_iterator end() const { return oplist.end(); }
  
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
-  out << " Config Id = "<< c.id<< std::endl;
+  out << " Config Id = "<< std::endl;
   for (auto const& op : c)
    out << "tau = " << op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","
        << op.second.inner_index << ")\n";
@@ -47,14 +47,6 @@ struct configuration {
   ar& boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta", beta_);
  }
 
- uint64_t id = 0;
- bool print_debug() const {
-  return false;
-  int n = 3743;
-  //return true; 
-   if (id > n) throw "";
-  return (id >= n) && (id < n + 1);
- }
  private:
  double beta_;
  oplist_t oplist;

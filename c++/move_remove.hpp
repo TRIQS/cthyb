@@ -26,8 +26,6 @@ class move_remove_c_cdag {
  mc_weight_type attempt() {
 
 #ifdef EXT_DEBUG
-  config.id++;
-  config.print_debug();
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
   std::cerr << "* Attempt for move_remove_c_cdag (block " << block_index << ")" << std::endl;
   std::cerr << "* Configuration before:" << std::endl << config;

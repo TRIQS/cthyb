@@ -2,6 +2,10 @@
 TRIQS fast hybridization-expansion solver
 Copyright (C) 2013, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
 
+**WARNING** : This code is alpha. While it is known to work on several tests, 
+it is not yet ready for production.
+
+
 1. Documentation
 
 You will find the documentation of this application under

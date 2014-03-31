@@ -1,5 +1,5 @@
 
-.. module:: pytriqs.applications.impurity_solvers.cthyb_krylov
+.. module:: pytriqs.applications.impurity_solvers.cthyb_matrix2
 
 .. _documentation:
 
@@ -10,9 +10,7 @@ Documentation
    :maxdepth: 2
 
    algorithm
-   krylov
+   matrix
    sorted_spaces
    operators
    benchmarks
-   pri/ess
-

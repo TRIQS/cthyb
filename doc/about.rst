@@ -2,8 +2,8 @@
 Authors
 =======
 
-The continuous-time hybridization-expansion Krylov solver has been written by
-I. Krivenko, M. Ferrero and O. Parcollet. It is based on a hybridization
+This continuous-time hybridization-expansion solver has been written by
+P. Seth, M. Ferrero and O. Parcollet. It is based on a hybridization
 expansion of the partition function as described in references [#ctqmc1]_,
 [#ctqmc2]_ and [#ctqmc3]_.
 
@@ -15,7 +15,7 @@ expansion of the partition function as described in references [#ctqmc1]_,
 License
 =======
 
-The Krylov solver is published under the `GNU General Public License, version 3
+The solver is published under the `GNU General Public License, version 3
 <http://www.gnu.org/licenses/gpl.html>`_.
 
 Quotation

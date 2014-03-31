@@ -1,5 +1,4 @@
 
-
 The hybridization-expansion algorithm
 =====================================
 

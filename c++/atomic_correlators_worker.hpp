@@ -1,7 +1,7 @@
 #pragma once
 #include "configuration.hpp"
 #include "sorted_spaces.hpp"
-#include "rbt.hpp"
+#include "triqs/utility/rbt.hpp"
 #include <triqs/parameters.hpp>
 #include "triqs/statistics/histograms.hpp"
 

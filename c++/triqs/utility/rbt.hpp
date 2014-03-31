@@ -218,7 +218,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   return nullptr;
  }
  /*************************************************************************
-   *  Standard find_if
+   * find_if, traversing in an order way (traversal order is fixed).
    *************************************************************************/
 
  // value associated with the given key; nullptr if no such key
@@ -352,7 +352,6 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
     h->Value::operator=(*x);
     h->modified=true; // not sure it is needed
     h->soft_deleted = false; // CRUCIAL !
-    //* (dynamic_cast<Value *>(h)) = * (dynamic_cast<Value *>(x));
     // h->val = x->val;
     // h->val = get(h->right, min(h->right).key);
     // h->key = min(h->right).key;

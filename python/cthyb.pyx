@@ -133,7 +133,7 @@ cdef class Solver:
         """Generate the documentation of the solver"""
         #cdef vector[vector[std_string]] h
         s = """ 
-Parameters of the Krylov CT-HYB solver :
+Parameters of the CT-HYB solver :
         
 Constructor :
 %s 

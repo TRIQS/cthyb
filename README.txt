@@ -1,5 +1,5 @@
 
-TRIQS hybridization-expansion Krylov solver
+TRIQS fast hybridization-expansion solver
 Copyright (C) 2013, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
 
 1. Documentation

@@ -1,5 +1,5 @@
 
-.. module:: pytriqs.applications.impurity_solvers.cthyb_matrix2
+.. module:: pytriqs.applications.impurity_solvers.cthyb
 
 .. _documentation:
 

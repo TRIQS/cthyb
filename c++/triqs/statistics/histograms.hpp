@@ -149,7 +149,6 @@ namespace statistics {
   void dump(std::string s) {
    boost::mpi::communicator world;
    if (world.rank() == 0) {
-    std::cout << "DUMPING HISTO" << std::endl;
     std::ofstream f(s);
     size_t i = 0;
     double cum=0;

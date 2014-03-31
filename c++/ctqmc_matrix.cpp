@@ -96,9 +96,7 @@ parameter_defaults ctqmc_matrix::solve_defaults() const {
      .optional("measure_pert_order", bool(false), "Whether to measure perturbation order")
      .optional("make_path_histograms", bool(false), " Make the analysis histograms of the trace computation ")
      .optional("use_truncation", bool(true), " Use truncation in the trace calculation ")
-     .optional("trace_estimator", std::string("FullTrace"), " XXXXX ...")
-     .optional("krylov_gs_energy_convergence", 1e-10, " double ")
-     .optional("krylov_small_matrix_size", int(10), " unsigned int ");
+     .optional("trace_estimator", std::string("FullTrace"), " XXXXX ...");
  return pdef;
 }
 

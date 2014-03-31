@@ -1,7 +1,7 @@
 # load triqs helper to set up tests
 find_package(TriqsTest)
 
-link_libraries(cthyb_matrix2_c ${TRIQS_LIBRARY_ALL})
+link_libraries(cthyb_c ${TRIQS_LIBRARY_ALL})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests

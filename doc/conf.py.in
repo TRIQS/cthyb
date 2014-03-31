@@ -10,7 +10,7 @@ extensions = ['sphinx.ext.autodoc',
 source_suffix = '.rst'
 
 project = u'TRIQS Hybridization Expansion Solver'
-copyright = u'2014, P. Seth, M. Ferrero, O. Parcollet'
+copyright = u'2014, P. Seth, I. Krivenko, M. Ferrero, O. Parcollet'
 version = '@CTHYB_VERSION@'
 release = '@CTHYB_RELEASE@'
 

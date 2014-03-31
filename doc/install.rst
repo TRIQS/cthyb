@@ -16,7 +16,7 @@ Installation steps
 
 #. Download the sources of the solver from github:: 
  
-     $ git clone https://bitbucket.org/Parcollet/cthyb_matrix2.git src
+     $ git clone https://github.com/TRIQS/cthyb.git src
  
 #. Create an empty build directory where you will compile the code:: 
  

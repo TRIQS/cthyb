@@ -1,16 +1,16 @@
 
 TRIQS hybridization-expansion Krylov solver
-Copyright (C) 2013, I. Krivenko, M. Ferrero and O. Parcollet
+Copyright (C) 2013, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
 
 1. Documentation
 
 You will find the documentation of this application under
-<http://ipht.cea.fr/triqs/applications/cthyb_krylov/>.
+<http://ipht.cea.fr/triqs/applications/cthyb/>.
 
 2. Installation
 
 The installation steps are described in
-<http://ipht.cea.fr/triqs/applications/cthyb_krylov/install.html>
+<http://ipht.cea.fr/triqs/applications/cthyb/install.html>
 
 3. Version
 

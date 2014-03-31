@@ -75,7 +75,6 @@ class move_remove_c_cdag {
   auto trace_ratio = new_trace / data.trace;
 
   if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
-  if (!std::isnormal(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not normal" << new_trace << "  "<< data.trace <<"  "<< new_trace /data.trace ;
  
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 

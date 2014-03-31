@@ -56,7 +56,6 @@ struct configuration {
  oplist_t::const_iterator end() const { return oplist.end(); }
  
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
-  out << " Config Id = "<< std::endl;
   for (auto const& op : c)
    out << "tau = " << op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","
        << op.second.inner_index << ")\n";

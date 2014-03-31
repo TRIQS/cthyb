@@ -69,7 +69,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
   TRIQS_RUNTIME_ERROR << "Trace method " << ms << " not recognized.";
  }
 
- make_histograms = p["make_path_histograms"];
+ make_histograms = p["make_histograms"];
  if (make_histograms) {
   for (int i = 0; i < n_orbitals; ++i) histo_opcount.emplace_back(100, "histo_opcount" + std::to_string(i) + ".dat");
  }

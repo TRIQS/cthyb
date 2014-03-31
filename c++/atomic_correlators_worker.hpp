@@ -28,8 +28,6 @@
 namespace cthyb_matrix {
 
 /**
- * A worker that computes the trace for a given configuration.
- * Has to live longer than the configuration...
  */
 class atomic_correlators_worker {
  public:

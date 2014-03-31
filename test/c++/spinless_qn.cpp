@@ -17,7 +17,7 @@ using namespace triqs::gfs;
 
 int main(int argc, char* argv[]) {
 
-  std::cout << "Welcome to the Krylov solver\n";
+  std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
   boost::mpi::environment env(argc, argv);
@@ -47,8 +47,6 @@ int main(int argc, char* argv[]) {
   p["n_cycles"] = 3000;
   p["n_tau_delta"] = 1000;
   p["n_tau_g"] = 1000;
-  p["krylov_bs_use_cutoff"] = true;
-  p["krylov_bs_prob_cutoff"] = .0;
 
   // define operators
   auto H = U*n("0")*n("1") - mu*(n("0")+n("1")) - t*c_dag("0")*c("1") - t*c_dag("1")*c("0");

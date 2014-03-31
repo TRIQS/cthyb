@@ -17,7 +17,7 @@ using namespace triqs::gfs;
 
 int main(int argc, char* argv[]) {
 
-  std::cout << "Welcome to the Krylov solver\n";
+  std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
   boost::mpi::environment env(argc, argv);

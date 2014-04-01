@@ -9,8 +9,9 @@ Documentation
 .. toctree::
    :maxdepth: 2
 
+   introduction
    algorithm
-   matrix
-   sorted_spaces
-   operators
+   user_manual
+   implementation_details
    benchmarks
+   future_work

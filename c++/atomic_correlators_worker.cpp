@@ -91,6 +91,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_es
   trace_t ft = compute_trace(1.e-15);
   trace_t est = estimate();
   r = ft / est;
+  if (std::abs(r - 2.0 / 3.0) > 2.0 / 3.0 + 0.001) TRIQS_RUNTIME_ERROR << " estimator out of bounds !! " << r;
   if (!std::isfinite(r)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : r not finite" << r << " " << ft << " " << est;
  }
  if (make_histograms) histo_trace_over_estimator << r;
@@ -272,6 +273,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
 #endif
 
  auto log_epsilon = -std::log(epsilon);
+ auto log_epsilon0 = -std::log(1.e-15);
  std::vector<std::pair<double, int>> to_sort1, to_sort;
  double lnorm_threshold = double_max - 100;
 
@@ -282,7 +284,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.
    double lnorm = block_lnorm_pair.second + dt * get_block_emin(b);
-   lnorm_threshold = std::min(lnorm_threshold, lnorm + log_epsilon);
+   lnorm_threshold = std::min(lnorm_threshold, lnorm + log_epsilon0);
    to_sort1.emplace_back(lnorm, b);
   }
  }
@@ -313,7 +315,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
  int bl;
  for (bl = 0; bl < n_bl; ++bl) { // sum over all blocks
 
-  // stopping criterion 
+  // stopping criterion
   if (use_truncation && (bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
 
   int block_index = to_sort[bl].second;

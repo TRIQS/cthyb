@@ -78,10 +78,10 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
 //------------------------------------------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::estimate() {
- if (method == method_t::FullTrace) return compute_trace(1.e-15);
+atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_yee) {
+ if (method == method_t::FullTrace) return compute_trace(1.e-15, p_yee);
  //if (method == method_t::EstimateTruncEps) 
- return compute_trace(0.333); // using epsilon = 1/3 for quick estimator
+ return compute_trace(0.333, p_yee); // using epsilon = 1/3 for quick estimator
 }
 
 //------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ void atomic_correlators_worker::update_dt(node n) {
 
 //----------------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(double epsilon) {
+atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(double epsilon, double p_yee) {
 
  if (tree_size == 0) return sosp->partition_function(config->beta()); // simplifies later code
 
@@ -321,6 +321,12 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
   if (use_truncation && (bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
 
   int block_index = to_sort[bl].second;
+
+  // additionnal Yee quick return criterion
+  if (p_yee >= 0.0) {
+   auto pmax = std::abs(p_yee) * (std::abs(full_trace) + bound_cumul[bl] * get_block_dim(block_index));
+   if (pmax < 1) return 0;
+  }
 
   // computes the matrices, recursively along the modified path in the tree
   auto b_mat = compute_matrix(root, block_index);

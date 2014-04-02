@@ -70,23 +70,29 @@ class move_remove_c_cdag {
   tau1 = data.atomic_corr.soft_delete_n_th_operator(num_c, block_index, false);
   tau2 = data.atomic_corr.soft_delete_n_th_operator(num_c_dag, block_index, true);
 
-  new_trace = data.atomic_corr.estimate();
-  if (new_trace == 0.0) return 0;
-  auto trace_ratio = new_trace / data.trace;
-
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
- 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
   // acceptance probability
-  mc_weight_type p = trace_ratio * det_ratio;
   double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2);
+  
+  // For quick abandon 
+  double random_num = rng.preview();
+  if (random_num == 0.0) return 0;
+  double p_yee = std::abs(det_ratio / t_ratio/ data.trace / random_num);
+
+  // recompute the trace
+  new_trace = data.atomic_corr.estimate(p_yee);
+  if (new_trace == 0.0) return 0;
+  auto trace_ratio = new_trace / data.trace;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+ 
+  mc_weight_type p = trace_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << trace_ratio << '\t';
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Prefactor: " << t_ratio << '\t';
-  std::cerr << "Weight: " << p* t_ratio << std::endl;
+  std::cerr << "Weight: " << p/ t_ratio << std::endl;
 #endif
 
   if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p;

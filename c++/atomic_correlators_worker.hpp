@@ -40,7 +40,7 @@ class atomic_correlators_worker {
  ~atomic_correlators_worker() { unlink_trial_nodes(); }
  // in case of an exception, we need to remove the trial node before cleaning the tree !!
 
- trace_t estimate();
+ trace_t estimate(double p_yee = -1);
  trace_t full_trace_over_estimator();
 
  private:
@@ -246,7 +246,7 @@ class atomic_correlators_worker {
  int check_one_block_table_linear(node n, int b, bool print);
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
 
- trace_t compute_trace(double epsilon); // = 1.e-15);
+ trace_t compute_trace(double epsilon, double p_yee = -1);
 
  void update_cache_impl(node n);
  void update_dt(node n);

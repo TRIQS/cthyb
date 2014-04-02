@@ -99,17 +99,8 @@ class move_insert_c_cdag {
    data.atomic_corr.trial_node_uninsert();
    return 0;
   }
-
-  new_trace = data.atomic_corr.estimate();
-  if (new_trace == 0.0) {
-#ifdef EXT_DEBUG
-   std::cout << "trace == 0" << std::endl;
-#endif
-   return 0;
-  }
-  auto trace_ratio = new_trace / data.trace;
-
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+ 
+  // Computation of det ratio
   auto& det = data.dets[block_index];
   int det_size = det.size();
 
@@ -127,14 +118,32 @@ class move_insert_c_cdag {
   auto det_ratio = det.try_insert(num_c_dag, num_c, {tau1, op1.inner_index}, {tau2, op2.inner_index});
 
   // acceptance probability
-  mc_weight_type p = trace_ratio * det_ratio;
   double t_ratio = std::pow(block_size * config.beta() / double(det.size() + 1), 2);
+
+  // For quick abandon 
+  double random_num = rng.preview();
+  if (random_num == 0.0) return 0;
+  double p_yee = std::abs(t_ratio * det_ratio / data.trace / random_num);
+
+  // computation of the new trace after insertion
+  new_trace = data.atomic_corr.estimate(p_yee);
+  if (new_trace == 0.0) {
+#ifdef EXT_DEBUG
+   std::cout << "trace == 0" << std::endl;
+#endif
+   return 0;
+  }
+  auto trace_ratio = new_trace / data.trace;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+
+  mc_weight_type p = trace_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << trace_ratio << '\t';
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Prefactor: " << t_ratio << '\t';
   std::cerr << "Weight: " << p* t_ratio << std::endl;
+  std::cerr << "p_yee* newtrace: " << p_yee * new_trace<< std::endl;
 #endif
 
   if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio;

@@ -180,6 +180,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   dtau_r = double(n->key - tree.min_key(n->right));
   auto dim = second_dim(M); // same as get_block_dim(b2);
   for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i));
+  //for (int i = 1; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * (get_block_eigenval(b1, i) - get_block_eigenval(b1, 0)));
   if ((first_dim(r.second) == 1) && (second_dim(r.second) == 1))
    M *= r.second(0, 0);
   else
@@ -194,6 +195,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   dtau_l = double(tree.max_key(n->left) - n->key);
   auto dim = first_dim(M); // same as get_block_dim(b1);
   for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b2, i));
+  //for (int i = 1; i < dim; ++i) M(i, _) *= std::exp(-dtau_l* ( get_block_eigenval(b2, i) - get_block_eigenval(b2, 0)));
   if ((first_dim(l.second) == 1) && (second_dim(l.second) == 1))
    M *= l.second(0, 0);
   else
@@ -273,7 +275,6 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
  tree.graphviz(std::ofstream("tree_start_compute_trace"));
 #endif
 
- auto log_epsilon = -std::log(epsilon);
  auto log_epsilon0 = -std::log(1.e-15);
  std::vector<std::pair<double, int>> to_sort1, to_sort;
  double lnorm_threshold = double_max - 100;
@@ -334,6 +335,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
   trace_t trace_partial = 0;
   auto dim = get_block_dim(block_index);
   for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dt * get_block_eigenval(block_index, u));
+  //trace_partial *= std::exp(dt * get_block_eigenval(block_index, 0) - to_sort[bl].first);
 
   if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort[bl].first))
    TRIQS_RUNTIME_ERROR << "Matrix not bounded by the bound ! test is " << std::abs(trace_partial) <<" < " << dim * std::exp(-to_sort[bl].first);

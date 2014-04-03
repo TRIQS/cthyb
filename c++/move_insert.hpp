@@ -137,7 +137,7 @@ class move_insert_c_cdag {
   std::cerr << "Weight: " << p* t_ratio << std::endl;
 #endif
 
-  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite" << p * t_ratio;
+  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio;
   return p * t_ratio;
  }
 

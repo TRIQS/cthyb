@@ -335,7 +335,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
   for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dt * get_block_eigenval(block_index, u));
 
   if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort[bl].first))
-   TRIQS_RUNTIME_ERROR << "Matrix not bounded by the bound !!!";
+   TRIQS_RUNTIME_ERROR << "Matrix not bounded by the bound ! test is " << std::abs(trace_partial) <<" < " << dim * std::exp(-to_sort[bl].first);
 
   full_trace += trace_partial; // sum for all blocks
 

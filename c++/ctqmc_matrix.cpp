@@ -116,12 +116,12 @@ parameter_defaults ctqmc_matrix::solve_defaults() const {
      .optional("random_seed", int(34788 + 928374 * c.rank()), "Seed for random number generator")
      .optional("random_name", std::string(""), "Name of random number generator")
      .optional("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
-     .optional("verbosity", int(3), "Verbosity level")
+     .optional("verbosity", (c.rank()==0 ? int(3) : int(0)), "Verbosity level")
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
      .optional("measure_pert_order", bool(false), "Whether to measure perturbation order")
-     .optional("make_histograms", bool(false), " Make the analysis histograms of the trace computation ")
-     .optional("use_truncation", bool(true), " Use truncation in the trace calculation ")
-     .optional("trace_estimator", std::string("FullTrace"), " XXXXX ...");
+     .optional("make_histograms", bool(false), "Make the analysis histograms of the trace computation")
+     .optional("use_truncation", bool(true), "Use truncation in the trace calculation")
+     .optional("trace_estimator", std::string("FullTrace"), "How to compute the trace");
  return pdef;
 }
 

@@ -274,7 +274,7 @@ class atomic_correlators_worker {
 
  // Various ratios : trace/bound, trace/first term of the trace, etc..
  statistics::histogram_segment_bin histo_trace_over_estimator = {0, 2, 100, "histo_trace_over_estimator.dat"};
- statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "hist_trace_over_bound.dat"};
+ statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "histo_trace_over_bound.dat"};
  statistics::histogram_segment_bin histo_trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
  statistics::histogram_segment_bin histo_trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
 };

@@ -38,7 +38,6 @@ namespace cthyb_matrix {
 class sorted_spaces {
 
  using indices_t = fundamental_operator_set::indices_t;
- using quantum_number_t = double;
 
  public:
  struct eigensystem_t {
@@ -72,10 +71,10 @@ class sorted_spaces {
  }
 
  // get fundamental operators
- imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator_from_linear_index(bool dagger,
-                                                                                                int linear_index) const {
-  return (dagger ? creation_operators[linear_index] : destruction_operators[linear_index]);
- }
+ //imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator_from_linear_index(bool dagger,
+ //                                                                                               int linear_index) const {
+ // return (dagger ? creation_operators[linear_index] : destruction_operators[linear_index]);
+// }
 
  // connections for fundamental operators
  long fundamental_operator_connect_from_linear_index(bool dagger, int linear_index, int n) const {
@@ -100,6 +99,7 @@ class sorted_spaces {
  /// The atomic green function
  block_gf<imtime> atomic_gf(double beta) const;
 
+
  private:
  /// ------------------  DATAS  -----------------
 
@@ -109,7 +109,7 @@ class sorted_spaces {
 
  // Given the linear index of the operator, return the table of operator/connection to other sub_hilbert_spaces
  std::vector<std::vector<long>> creation_connection, destruction_connection;
- std::vector<imperative_operator<sub_hilbert_space, true>> creation_operators, destruction_operators;
+ //std::vector<imperative_operator<sub_hilbert_space, true>> creation_operators, destruction_operators;
 
  // Given the linear index of the operator i, the matrice c_matrices[i][B] is the matrix from block B -> B'
  std::vector<std::vector<triqs::arrays::matrix<double>>> c_matrices, cdag_matrices;
@@ -120,11 +120,14 @@ class sorted_spaces {
  // Energy of the ground state
  double gs_energy;
 
- // Keep the QN, only for later printing ? OR MAKE THE STRING ...
- std::vector<std::vector<quantum_number_t>> quantum_numbers;
-
  // keep it to compute the local gf
  fundamental_operator_set fops;
+
+ void complete_init(triqs::utility::many_body_operator<double> const& h_); // reorder the blocks, compute the matrices, ....
+
+ void slice_hilbert_space_with_qn(triqs::utility::many_body_operator<double> const& h_,
+                                 std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
+                                 fundamental_operator_set const& fops);
 
  friend std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss);
 };

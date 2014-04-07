@@ -40,7 +40,7 @@ struct lt_dbl {
  }
 };
 
-//-----------------------------
+// -------------------------------------------------------------------------------------------------
 
 sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
                              std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
@@ -48,12 +48,24 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
    : hamiltonian(h_, fops),
      creation_connection(fops.n_operators()),
      destruction_connection(fops.n_operators()),
-     creation_operators(fops.n_operators()),
-     destruction_operators(fops.n_operators()),
+     //creation_operators(fops.n_operators()),
+     //destruction_operators(fops.n_operators()),
      fops(fops) {
+
+ slice_hilbert_space_with_qn(h_, qn_vector, fops);
+ complete_init(h_);
+}
+
+//-----------------------------
+
+void sorted_spaces::slice_hilbert_space_with_qn(triqs::utility::many_body_operator<double> const& h_,
+                                 std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
+                                 fundamental_operator_set const& fops) {
 
  // hilbert spaces and quantum numbers
  std::map<std::vector<double>, int, lt_dbl> map_qn_n;
+ using quantum_number_t = double;
+ std::vector<std::vector<quantum_number_t>> quantum_numbers;
 
  // the full Hilbert space
  hilbert_space full_hs(fops);
@@ -87,7 +99,7 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
 
   // if first time we meet these quantum numbers create partial Hilbert space
   if (map_qn_n.count(qn) == 0) {
-   auto n_blocks = n_subspaces();
+   auto n_blocks = sub_hilbert_spaces.size();
    sub_hilbert_spaces.emplace_back(n_blocks); // a new sub_hilbert_space
    quantum_numbers.push_back(qn);
    map_qn_n[qn] = n_blocks;
@@ -96,6 +108,84 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
   // add fock state to partial Hilbert space
   sub_hilbert_spaces[map_qn_n[qn]].add_fock_state(fs);
  }
+
+
+  /*
+   In this second part we want to derive the partial Hilbert space
+   mapping. Basically we want to know if we act on a partial Hilbert
+   space with a creation (destruction) operator, in which other
+   partial Hilbert space we end up.
+ */
+
+ auto creation_map = std::vector<std::vector<int>>(fops.n_operators(), std::vector<int>(sub_hilbert_spaces.size(), -1));
+ auto destruction_map = creation_map;
+
+ for (auto const& x : fops) {
+
+  // get the operators and their index
+  int n = x.linear_index;
+  auto create = triqs::utility::many_body_operator<double>::make_canonical(true, x.index);
+  auto destroy = triqs::utility::many_body_operator<double>::make_canonical(false, x.index);
+
+  // construct their imperative counterpart
+  imperative_operator<hilbert_space> op_c_dag(create, fops), op_c(destroy, fops);
+
+  // to avoid declaring every time in the loop below
+  std::vector<quantum_number_t> qn_before, qn_after;
+
+  // these will be mapping tables
+  creation_connection[n].resize(sub_hilbert_spaces.size(), -1);
+  destruction_connection[n].resize(sub_hilbert_spaces.size(), -1);
+
+  // now act on the state with the c, c_dag to see how quantum numbers change
+  for (int r = 0; r < full_hs.dimension(); ++r) {
+
+   // the state we'll act on and its quantum numbers
+   state<hilbert_space, double, true> s(full_hs);
+   s(r) = 1.0;
+   qn_before = get_quantum_numbers(s);
+
+   // apply creation on state to figure quantum numbers
+   qn_after = get_quantum_numbers(op_c_dag(s));
+
+   // insert in creation map checking whether it was already there
+   if (dot_product(op_c_dag(s), op_c_dag(s)) > 1.e-10) {
+    auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
+    auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
+    if (creation_map[n][origin] == -1)
+     creation_map[n][origin] = target;
+    else if (creation_map[n][origin] != target)
+     TRIQS_RUNTIME_ERROR << "Internal Error, Sorted Space, Creation";
+    creation_connection[n][map_qn_n[qn_before]] = map_qn_n[qn_after];
+   }
+
+   // apply destruction on state to figure quantum numbers
+   qn_after = get_quantum_numbers(op_c(s));
+
+   // insert in destruction map checking whether it was already there
+   if (dot_product(op_c(s), op_c(s)) > 1.e-10) {
+    auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
+    auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
+    if (destruction_map[n][origin] == -1)
+     destruction_map[n][origin] = target;
+    else if (destruction_map[n][origin] != target)
+     TRIQS_RUNTIME_ERROR << "Internal Error, Sorted Space, Creation";
+    destruction_connection[n][map_qn_n[qn_before]] = map_qn_n[qn_after];
+   }
+  }
+
+  // IF WE CHOOSE TO KEEP, we MUST reorder ??
+  // insert the creation and destruction operators in vectors. this is the fast version
+  // of the operators because we explicitly use the map
+  //creation_operators[n] = imperative_operator<sub_hilbert_space, true>(create, fops, creation_map[n], &sub_hilbert_spaces);
+  //destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n], &sub_hilbert_spaces);
+
+ }
+}
+
+// -------------------------------------------------------------------------------------------------
+ 
+ void sorted_spaces::complete_init(triqs::utility::many_body_operator<double> const& h_) { 
 
  /*
    Compute energy levels and eigenvectors of the local Hamiltonian
@@ -139,20 +229,26 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
  // Reorder the block along their minimal energy
  {
   auto tmp = sub_hilbert_spaces;
-  auto qns2 = quantum_numbers;
   std::map<int, int> remap;
   int i = 0;
   for (auto const& x : eign_map) { // in order of min energy !
    eigensystems[i] = x.second;
    tmp[i] = sub_hilbert_spaces[x.first.second];
    tmp[i].set_index(i);
-   qns2[i] = quantum_numbers[x.first.second];
    remap[x.first.second] = i;
    ++i;
   }
   std::swap(tmp, sub_hilbert_spaces);
-  std::swap(qns2, quantum_numbers);
-  for (auto& x : map_qn_n) x.second = remap[x.second];
+  //for (auto& x : map_qn_n) x.second = remap[x.second];
+  auto remap_connection = [&](std::vector<std::vector<long>> & connection) {
+   for (auto& cc : connection) {
+    auto cc2 = cc;
+    for (int i = 0; i < cc.size(); ++i) cc2[remap[i]] = remap[cc[i]];
+    cc = cc2;
+   }
+  };
+  remap_connection(creation_connection);
+  remap_connection(destruction_connection);
   // rematch the state which are NOT regular type !!
   for (int spn = 0; spn < n_subspaces(); ++spn) {
    for (auto& st : eigensystems[spn].eigenstates) st.set_hilbert(sub_hilbert_spaces[spn]);
@@ -163,76 +259,18 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
  for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
  hamiltonian = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
 
- /*
-   In this second part we want to derive the partial Hilbert space
-   mapping. Basically we want to know if we act on a partial Hilbert
-   space with a creation (destruction) operator, in which other
-   partial Hilbert space we end up.
- */
-
- auto creation_map = std::vector<std::vector<int>>(fops.n_operators(), std::vector<int>(n_subspaces(), -1));
- auto destruction_map = creation_map;
+  // the full Hilbert space
+ hilbert_space full_hs(fops);
 
  for (auto const& x : fops) {
-
   // get the operators and their index
   int n = x.linear_index;
   auto create = triqs::utility::many_body_operator<double>::make_canonical(true, x.index);
   auto destroy = triqs::utility::many_body_operator<double>::make_canonical(false, x.index);
-
   // construct their imperative counterpart
   imperative_operator<hilbert_space> op_c_dag(create, fops), op_c(destroy, fops);
 
-  // to avoid declaring every time in the loop below
-  std::vector<quantum_number_t> qn_before, qn_after;
-
-  // these will be mapping tables
-  creation_connection[n].resize(n_subspaces(), -1);
-  destruction_connection[n].resize(n_subspaces(), -1);
-
-  // now act on the state with the c, c_dag to see how quantum numbers change
-  for (int r = 0; r < full_hs.dimension(); ++r) {
-
-   // the state we'll act on and its quantum numbers
-   state<hilbert_space, double, true> s(full_hs);
-   s(r) = 1.0;
-   qn_before = get_quantum_numbers(s);
-
-   // apply creation on state to figure quantum numbers
-   qn_after = get_quantum_numbers(op_c_dag(s));
-
-   // insert in creation map checking whether it was already there
-   if (dot_product(op_c_dag(s), op_c_dag(s)) > 1.e-10) {
-    auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
-    auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
-    if (creation_map[n][origin] == -1)
-     creation_map[n][origin] = target;
-    else if (creation_map[n][origin] != target)
-     TRIQS_RUNTIME_ERROR << "Internal Error, Sorted Space, Creation";
-    creation_connection[n][map_qn_n[qn_before]] = map_qn_n[qn_after];
-   }
-
-   // apply destruction on state to figure quantum numbers
-   qn_after = get_quantum_numbers(op_c(s));
-
-   // insert in destruction map checking whether it was already there
-   if (dot_product(op_c(s), op_c(s)) > 1.e-10) {
-    auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
-    auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
-    if (destruction_map[n][origin] == -1)
-     destruction_map[n][origin] = target;
-    else if (destruction_map[n][origin] != target)
-     TRIQS_RUNTIME_ERROR << "Internal Error, Sorted Space, Creation";
-    destruction_connection[n][map_qn_n[qn_before]] = map_qn_n[qn_after];
-   }
-  }
-
-  // insert the creation and destruction operators in vectors. this is the fast version
-  // of the operators because we explicitly use the map
-  creation_operators[n] = imperative_operator<sub_hilbert_space, true>(create, fops, creation_map[n], &sub_hilbert_spaces);
-  destruction_operators[n] = imperative_operator<sub_hilbert_space, true>(destroy, fops, destruction_map[n], &sub_hilbert_spaces);
-
-  // Compute the matrices of c, c dagger in the diagonalization base of H_loc
+   // Compute the matrices of c, c dagger in the diagonalization base of H_loc
   // first a lambda, since it is almost the same code for c and cdag
   auto make_c_mat = [&](std::vector<long> const& connection, imperative_operator<hilbert_space> c_op) {
    std::vector<triqs::arrays::matrix<double>> cmat(connection.size());
@@ -320,8 +358,8 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
   os << "Block " << n << ", ";
   os << "relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
   os << "size = " << ss.sub_hilbert_spaces[n].dimension() << std::endl;
-  os << "qn = ";
-  for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
+  //os << "qn = ";
+  //for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
   os << std::endl;
   os << "index = " << ss.sub_hilbert_spaces[n].get_index() << std::endl;
   os << "-------------------------" << std::endl;

@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <triqs/arrays/linalg/eigenelements.hpp>
 
 #include "./imperative_operator.hpp"
 #include "./state.hpp"
@@ -34,18 +33,6 @@ using namespace triqs::arrays;
 namespace cthyb_matrix {
 
  using namespace triqs::gfs;
-
-/// ???
-struct block_desc_t {
- std::string name;
- std::vector<fundamental_operator_set::indices_t> indices;
- block_desc_t(std::string name, std::vector<fundamental_operator_set::indices_t> ind) : name(name), indices(ind){}
- block_desc_t(std::string name="") : name(name), indices(){}
- // for python interface only
- void indices_push_back(std::string a, std::string b) {
-  indices.push_back({a, b});
- }
-};
 
 // Division of Hilbert Space into sub hilbert spaces, using the quantum numbers.
 class sorted_spaces {
@@ -62,8 +49,7 @@ class sorted_spaces {
 
  // Constructor
  sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
-               std::vector<triqs::utility::many_body_operator<double>> const& qn_vector, fundamental_operator_set const& fops,
-               std::vector<block_desc_t> const& block_structure);
+               std::vector<triqs::utility::many_body_operator<double>> const& qn_vector, fundamental_operator_set const& fops);
 
  sorted_spaces(sorted_spaces const&) = delete;
  sorted_spaces(sorted_spaces&&) = default;
@@ -86,27 +72,9 @@ class sorted_spaces {
  }
 
  // get fundamental operators
- long get_fundamental_operator_linear_index(int block_index, int inner_index) const {
-  return int_pair_to_n.at({block_index, inner_index});
- }
-
- // get fundamental operators
- imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator(bool dagger, int block_index,
-                                                                              int inner_index) const {
-  auto p = int_pair_to_n.at({block_index, inner_index});
-  return (dagger ? creation_operators[p] : destruction_operators[p]);
- }
-
- // get fundamental operators
  imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator_from_linear_index(bool dagger,
                                                                                                 int linear_index) const {
   return (dagger ? creation_operators[linear_index] : destruction_operators[linear_index]);
- }
-
- // connections for fundamental operators
- long fundamental_operator_connect(bool dagger, int block_index, int inner_index, int n) const {
-  auto p = int_pair_to_n.at({block_index, inner_index});
-  return (dagger ? creation_connection[p][n] : destruction_connection[p][n]);
  }
 
  // connections for fundamental operators
@@ -136,10 +104,6 @@ class sorted_spaces {
  /// ------------------  DATAS  -----------------
 
  std::vector<sub_hilbert_space> sub_hilbert_spaces; // all blocks
-
- // a map (int,int) -> int identifying the operator. use a flat_map for quicker access.
- std::map<std::pair<int, int>, int> int_pair_to_n;
- // boost::container::flat_map<std::pair<int, int>, int> int_pair_to_n;
 
  imperative_operator<sub_hilbert_space, false> hamiltonian;
 

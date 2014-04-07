@@ -23,6 +23,7 @@
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <algorithm>
 #include <limits>
+#include <triqs/arrays/linalg/eigenelements.hpp>
 
 //#define CHECK_ALL
 #ifdef CHECK_ALL

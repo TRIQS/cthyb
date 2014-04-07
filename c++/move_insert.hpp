@@ -67,8 +67,8 @@ class move_insert_c_cdag {
 
   // Pick up the value of alpha and choose the operators
   auto rs1 = rng(block_size), rs2 = rng(block_size);
-  op1 = op_desc{block_index, rs1, true, data.sosp.get_fundamental_operator_linear_index(block_index, rs1)};
-  op2 = op_desc{block_index, rs2, false, data.sosp.get_fundamental_operator_linear_index(block_index, rs2)};
+  op1 = op_desc{block_index, rs1, true, data.gf_block_structure.get_fundamental_operator_linear_index(block_index, rs1)};
+  op2 = op_desc{block_index, rs2, false, data.gf_block_structure.get_fundamental_operator_linear_index(block_index, rs2)};
 
   // Choice of times for insertion. Find the time as double and them put them on the grid.
   tau1 = time_pt::random(rng, config.beta(), config.beta());

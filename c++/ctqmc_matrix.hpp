@@ -34,9 +34,10 @@ class ctqmc_matrix {
 
  using mc_sign_type = mc_weight_type;
 
- block_gf<imtime> deltat, gt; // Green's function containers: imaginary-time Green's functions
- boost::mpi::communicator c;  // define the communicator, here MPI_COMM_WORLD
- sorted_spaces sosp;          // Diagonalization of the atomic problem
+ block_gf<imtime> deltat, gt;             // Green's function containers: imaginary-time Green's functions
+ boost::mpi::communicator c;              // define the communicator, here MPI_COMM_WORLD
+ sorted_spaces sosp;                      // Diagonalization of the atomic problem
+ gf_block_structure_t gf_block_structure; // block structure of the local green function
 
  public:
  using real_operator_t = many_body_operator<double>;

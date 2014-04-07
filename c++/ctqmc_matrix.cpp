@@ -30,7 +30,7 @@ namespace cthyb_matrix {
 
 ctqmc_matrix::ctqmc_matrix(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
                            fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
-   : sosp(h_loc, quantum_numbers, fops, block_structure) {
+   : sosp(h_loc, quantum_numbers, fops), gf_block_structure(fops, block_structure) {
  p_in.update(constructor_defaults());//, utility::parameters::reject_key_without_default);
  auto const& params = p_in;
 
@@ -56,7 +56,7 @@ void ctqmc_matrix::solve(utility::parameters p_in) {
  p_in.update(solve_defaults());//, utility::parameters::reject_key_without_default);
  auto const& params = p_in;
 
- qmc_data data(params, sosp, deltat);
+ qmc_data data(params, sosp, gf_block_structure, deltat);
  mc_tools::mc_generic<mc_sign_type> qmc(params);
 
  // Moves

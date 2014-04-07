@@ -20,6 +20,7 @@
  ******************************************************************************/
 #include "sorted_spaces.hpp"
 #include <fstream>
+#include <triqs/arrays/linalg/eigenelements.hpp>
 
 using namespace triqs::arrays;
 using std::string;
@@ -43,7 +44,7 @@ struct lt_dbl {
 
 sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
                              std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
-                             fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
+                             fundamental_operator_set const& fops)
    : hamiltonian(h_, fops),
      creation_connection(fops.n_operators()),
      destruction_connection(fops.n_operators()),
@@ -51,19 +52,8 @@ sorted_spaces::sorted_spaces(triqs::utility::many_body_operator<double> const& h
      destruction_operators(fops.n_operators()),
      fops(fops) {
 
- std::map<indices_t, std::pair<int, int>> indices_to_ints;
- for (int bl = 0; bl < block_structure.size(); ++bl) {
-  auto const& indices = block_structure[bl].indices;
-  for (int i = 0; i < indices.size(); ++i) {
-   indices_to_ints[indices[i]] = std::make_pair(bl, i);
-  }
- }
-
  // hilbert spaces and quantum numbers
  std::map<std::vector<double>, int, lt_dbl> map_qn_n;
-
- // create the map int_pair_to_n : (int,int) --> int identifying operators
- for (auto x : fops) int_pair_to_n[indices_to_ints.at(x.index)] = x.linear_index;
 
  // the full Hilbert space
  hilbert_space full_hs(fops);

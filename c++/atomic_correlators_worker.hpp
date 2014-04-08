@@ -218,7 +218,7 @@ class atomic_correlators_worker {
 
  // node, block -> image of the block by n->op (the operator)
  int get_op_block_map(node n, int b) const {
-  return sosp->fundamental_operator_connect_from_linear_index(n->op.dagger, n->op.linear_index, b);
+  return sosp->fundamental_operator_connect(n->op.dagger, n->op.linear_index, b);
  }
 
  // The dimension of block b
@@ -232,7 +232,7 @@ class atomic_correlators_worker {
 
  // the matrix of n->op, from block b to its image
  matrix<double> const& get_op_block_matrix(node n, int b) const {
-  return sosp->fundamental_operator_matrix_from_linear_index(n->op.dagger, n->op.linear_index, b);
+  return sosp->fundamental_operator_matrix(n->op.dagger, n->op.linear_index, b);
  }
 
  // recursive function for tree traversal

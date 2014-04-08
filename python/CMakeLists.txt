@@ -7,7 +7,7 @@ triqs_prepare_local_pytriqs_merged_with_my_python(${python_destination})
 # Build the cython module
 triqs_cython_module(cthyb cthyb ${python_destination})
 target_link_libraries(cthyb ${TRIQS_LIBRARY_ALL} cthyb_c)
-include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_SOURCE_DIR})
+include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/c++)
 triqs_set_rpath_for_target(cthyb)
 
 # to be able to run from toplevel

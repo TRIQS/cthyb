@@ -7,10 +7,10 @@
 
 #include "./triqs/many_body_operator.hpp"
 #include "./space_partition.hpp"
-#include "./fundamental_operator_set.hpp"
-#include "./hilbert_space.hpp"
-#include "./imperative_operator.hpp"
-#include "./state.hpp"
+#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
+#include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
+#include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
+#include <triqs/draft/hilbert_space_tools/state.hpp>
 
 using namespace cthyb_matrix;
 using triqs::utility::many_body_operator;
@@ -167,7 +167,7 @@ int main() {
  // Expected matrix elements
  std::set<std::set<std::tuple<int, int, double>>> ref_melem{
      // N=0
-     {},
+     std::set<std::tuple<int, int, double>>{},
      // N=1
      {t(d0, d0, -mu)}, {t(d1, d1, -mu)}, {t(d2, d2, -mu)}, {t(u0, u0, -mu)}, {t(u1, u1, -mu)}, {t(u2, u2, -mu)},
      // N=2, same spin

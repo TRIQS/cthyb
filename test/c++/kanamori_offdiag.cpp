@@ -1,6 +1,6 @@
 #include "./ctqmc_matrix.hpp"
 #include "./operator.hpp"
-#include "./fundamental_operator_set.hpp"
+#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
 #include <triqs/parameters.hpp>
 #include <triqs/gfs/block.hpp>

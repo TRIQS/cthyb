@@ -24,19 +24,19 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "./imperative_operator.hpp"
-#include "./state.hpp"
-
-using namespace triqs::arrays;
+#include "triqs/draft/hilbert_space_tools/state.hpp"
 
 namespace cthyb_matrix {
 
- using namespace triqs::gfs;
+using namespace triqs::arrays;
+using namespace triqs::gfs;
+using triqs::arrays::matrix;
 
 // Division of Hilbert Space into sub hilbert spaces, using the quantum numbers.
 class sorted_spaces {
 
  using indices_t = fundamental_operator_set::indices_t;
+ using many_body_op_t = triqs::utility::many_body_operator<double>;
 
  public:
  struct eigensystem_t {
@@ -47,18 +47,13 @@ class sorted_spaces {
 
  // Constructor
  sorted_spaces() = default;
- sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
-               std::vector<triqs::utility::many_body_operator<double>> const& qn_vector, fundamental_operator_set const& fops);
-
- sorted_spaces(triqs::utility::many_body_operator<double> const& h_, fundamental_operator_set const& fops);
+ sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_t> const& qn_vector, fundamental_operator_set const& fops);
+ sorted_spaces(many_body_op_t const& h_, fundamental_operator_set const& fops);
 
  sorted_spaces(sorted_spaces const&) = delete;
  sorted_spaces(sorted_spaces&&) = default;
- sorted_spaces & operator=(sorted_spaces const&) = delete;
- sorted_spaces & operator=(sorted_spaces&&) = default;
-
- // Hamiltonian
- imperative_operator<sub_hilbert_space, false> const& get_hamiltonian() const { return hamiltonian; }
+ sorted_spaces& operator=(sorted_spaces const&) = delete;
+ sorted_spaces& operator=(sorted_spaces&&) = default;
 
  // Number of subspaces
  int n_subspaces() const { return sub_hilbert_spaces.size(); }
@@ -69,20 +64,14 @@ class sorted_spaces {
  // n-th subspace
  sub_hilbert_space const& subspace(int n) const { return sub_hilbert_spaces[n]; }
 
- // an 0 state in n-th subpace
- state<sub_hilbert_space, double, false> substate(int n) const {
-  return {subspace(n)};
+ // connections for fundamental operators
+ long fundamental_operator_connect(bool dagger, int index, int n) const {
+  return (dagger ? creation_connection[index][n] : annihilation_connection[index][n]);
  }
 
  // connections for fundamental operators
- long fundamental_operator_connect_from_linear_index(bool dagger, int linear_index, int n) const {
-  return (dagger ? creation_connection[linear_index][n] : annihilation_connection[linear_index][n]);
- }
-
- // connections for fundamental operators
- triqs::arrays::matrix<double> const& fundamental_operator_matrix_from_linear_index(bool dagger, int linear_index,
-                                                                                    int block_index) const {
-  return (dagger ? cdag_matrices[linear_index][block_index] : c_matrices[linear_index][block_index]);
+ matrix<double> const& fundamental_operator_matrix(bool dagger, int index, int block_index) const {
+  return (dagger ? cdag_matrices[index][block_index] : c_matrices[index][block_index]);
  }
 
  // eigensystems for all blocks
@@ -97,37 +86,25 @@ class sorted_spaces {
  /// The atomic green function
  block_gf<imtime> atomic_gf(double beta) const;
 
-
  private:
  /// ------------------  DATAS  -----------------
 
  std::vector<sub_hilbert_space> sub_hilbert_spaces; // all blocks
 
- imperative_operator<sub_hilbert_space, false> hamiltonian;
-
- // Given the linear index of the operator, return the table of operator/connection to other sub_hilbert_spaces
+ // For each operator (index), the table of operator/connection to other sub_hilbert_spaces
  std::vector<std::vector<long>> creation_connection, annihilation_connection;
 
- // Given the linear index of the operator i, the matrice c_matrices[i][B] is the matrix from block B -> B'
- std::vector<std::vector<triqs::arrays::matrix<double>>> c_matrices, cdag_matrices;
+ // For each operator (index), the matrice c_matrices[i][B] is the matrix from block B -> B'
+ std::vector<std::vector<matrix<double>>> c_matrices, cdag_matrices;
 
- // Eigensystem in each subspace
- std::vector<eigensystem_t> eigensystems;
+ std::vector<eigensystem_t> eigensystems; // Eigensystem in each subspace
+ double gs_energy;                        // Energy of the ground state
+ fundamental_operator_set fops;           // keep it to compute the local gf
 
- // Energy of the ground state
- double gs_energy;
-
- // keep it to compute the local gf
- fundamental_operator_set fops;
-
- void complete_init(triqs::utility::many_body_operator<double> const& h_); // reorder the blocks, compute the matrices, ....
-
- void autopartition(fundamental_operator_set const& fops, triqs::utility::many_body_operator<double> const& h);
-
- void slice_hilbert_space_with_qn(triqs::utility::many_body_operator<double> const& h_,
-                                 std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,
-                                 fundamental_operator_set const& fops);
-
+ void complete_init(many_body_op_t const& h_); // reorder the blocks, compute the matrices, ....
+ void autopartition(fundamental_operator_set const& fops, many_body_op_t const& h);
+ void slice_hilbert_space_with_qn(many_body_op_t const& h_, std::vector<many_body_op_t> const& qn_vector,
+                                  fundamental_operator_set const& fops);
  friend std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss);
 };
 }

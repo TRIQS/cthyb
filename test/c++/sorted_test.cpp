@@ -1,7 +1,7 @@
 #include <triqs/utility/first_include.hpp>
 #include "./sorted_spaces.hpp"
 #include "./operator.hpp"
-#include "./fundamental_operator_set.hpp"
+#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include "./gf_block_structure.hpp"
 
 using namespace cthyb_matrix;
@@ -34,19 +34,5 @@ int main() {
   sorted_spaces ss(H, qn_list, fops);
   std::cout << ss << std::endl;
 
-  // get a state in sub Hilbert space 0
-  auto st = ss.substate(0); st(0) = 1.0;
-
-  // get the imperative creation operator c_dag("up",1)
-  //auto op = ss.get_fundamental_operator(true,0,0);
-
-  // print connection map for that operator
-  for (int n=0; n<ss.n_subspaces(); ++n) {
-    //std::cout << n << " --> " << ss.fundamental_operator_connect(true,0,0,n) << std::endl;
-  }
-
-  // print action on state
-  //std::cout << st << " --> " << op(st)<< std::endl;
   return 0;
-
 }

@@ -12,7 +12,7 @@ include "many_body_operator.pyx"
 
 ctypedef many_body_operator[double] operator_c
 
-cdef extern from "c++/fundamental_operator_set.hpp" namespace "cthyb_matrix":
+cdef extern from "triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp" namespace "cthyb_matrix":
     cdef cppclass fundamental_operator_set:
         fundamental_operator_set() except +
         void insert(string, string)

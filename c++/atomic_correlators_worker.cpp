@@ -35,19 +35,23 @@ double double_max = std::numeric_limits<double>::max(); // easier to read
 
 // --------------- Computation of the matrix norm --> move into triqs::arrays ------------------------
 
-// this norm is too slow, need to change to another norm...
-// double norm_induced_2_impl(matrix_view<double> A, matrix_view<double> B) {
-double norm_induced_2_impl(matrix<double> const& A, matrix<double> const& B) {
- // WORKAROUND BUG !!
- auto M = A * B;
- triqs::arrays::linalg::eigenelements_worker<matrix_view<double>, true> w(M());
- w.invoke();
- auto const& Es = w.values();
- return std::sqrt(Es(first_dim(Es) - 1)); // ordered is guaranteed by lapack
-}
+namespace triqs {
+namespace arrays {
+ // this norm is too slow, need to change to another norm...
+ // double norm_induced_2_impl(matrix_view<double> A, matrix_view<double> B) {
+ double norm_induced_2_impl(matrix<double> const& A, matrix<double> const& B) {
+  // WORKAROUND BUG !!
+  auto M = A * B;
+  triqs::arrays::linalg::eigenelements_worker<matrix_view<double>, true> w(M());
+  w.invoke();
+  auto const& Es = w.values();
+  return std::sqrt(Es(first_dim(Es) - 1)); // ordered is guaranteed by lapack
+ }
 
-double norm_induced_2(matrix<double> const& A) {
- return (first_dim(A) < second_dim(A) ? norm_induced_2_impl(A, A.transpose()) : norm_induced_2_impl(A.transpose(), A));
+ double norm_induced_2(matrix<double> const& A) {
+  return (first_dim(A) < second_dim(A) ? norm_induced_2_impl(A, A.transpose()) : norm_induced_2_impl(A.transpose(), A));
+ }
+}
 }
 
 // -----------------------------------------------

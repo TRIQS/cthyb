@@ -25,7 +25,7 @@
 #include <vector>
 #include <map>
 
-#include "./fundamental_operator_set.hpp"
+#include "triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp"
 
 using namespace triqs::arrays;
 

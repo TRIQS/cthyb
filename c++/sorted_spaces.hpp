@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 #include <map>
-
 #include "./imperative_operator.hpp"
 #include "./state.hpp"
 
@@ -47,11 +46,16 @@ class sorted_spaces {
  };
 
  // Constructor
+ sorted_spaces() = default;
  sorted_spaces(triqs::utility::many_body_operator<double> const& h_,
                std::vector<triqs::utility::many_body_operator<double>> const& qn_vector, fundamental_operator_set const& fops);
 
+ sorted_spaces(triqs::utility::many_body_operator<double> const& h_, fundamental_operator_set const& fops);
+
  sorted_spaces(sorted_spaces const&) = delete;
  sorted_spaces(sorted_spaces&&) = default;
+ sorted_spaces & operator=(sorted_spaces const&) = delete;
+ sorted_spaces & operator=(sorted_spaces&&) = default;
 
  // Hamiltonian
  imperative_operator<sub_hilbert_space, false> const& get_hamiltonian() const { return hamiltonian; }
@@ -70,15 +74,9 @@ class sorted_spaces {
   return {subspace(n)};
  }
 
- // get fundamental operators
- //imperative_operator<sub_hilbert_space, true> const& get_fundamental_operator_from_linear_index(bool dagger,
- //                                                                                               int linear_index) const {
- // return (dagger ? creation_operators[linear_index] : destruction_operators[linear_index]);
-// }
-
  // connections for fundamental operators
  long fundamental_operator_connect_from_linear_index(bool dagger, int linear_index, int n) const {
-  return (dagger ? creation_connection[linear_index][n] : destruction_connection[linear_index][n]);
+  return (dagger ? creation_connection[linear_index][n] : annihilation_connection[linear_index][n]);
  }
 
  // connections for fundamental operators
@@ -108,8 +106,7 @@ class sorted_spaces {
  imperative_operator<sub_hilbert_space, false> hamiltonian;
 
  // Given the linear index of the operator, return the table of operator/connection to other sub_hilbert_spaces
- std::vector<std::vector<long>> creation_connection, destruction_connection;
- //std::vector<imperative_operator<sub_hilbert_space, true>> creation_operators, destruction_operators;
+ std::vector<std::vector<long>> creation_connection, annihilation_connection;
 
  // Given the linear index of the operator i, the matrice c_matrices[i][B] is the matrix from block B -> B'
  std::vector<std::vector<triqs::arrays::matrix<double>>> c_matrices, cdag_matrices;
@@ -124,6 +121,8 @@ class sorted_spaces {
  fundamental_operator_set fops;
 
  void complete_init(triqs::utility::many_body_operator<double> const& h_); // reorder the blocks, compute the matrices, ....
+
+ void autopartition(fundamental_operator_set const& fops, triqs::utility::many_body_operator<double> const& h);
 
  void slice_hilbert_space_with_qn(triqs::utility::many_body_operator<double> const& h_,
                                  std::vector<triqs::utility::many_body_operator<double>> const& qn_vector,

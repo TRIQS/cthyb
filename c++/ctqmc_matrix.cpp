@@ -30,9 +30,14 @@ namespace cthyb_matrix {
 
 ctqmc_matrix::ctqmc_matrix(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
                            fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
-   : sosp(h_loc, quantum_numbers, fops), gf_block_structure(fops, block_structure) {
+   : gf_block_structure(fops, block_structure) {
  p_in.update(constructor_defaults());//, utility::parameters::reject_key_without_default);
  auto const& params = p_in;
+
+ if (params["use_quantum_numbers"]) 
+  sosp = {h_loc, quantum_numbers, fops};
+ else 
+  sosp = {h_loc, fops};
 
  std::vector<std::string> block_names;
  std::vector<gf<imtime>> deltat_blocks;
@@ -94,8 +99,8 @@ parameter_defaults ctqmc_matrix::constructor_defaults() const {
  pdef.required("beta", double(), "Inverse temperature")
      .optional("n_tau_delta", int(10001), "Number of time slices for Delta(tau)")
      .optional("n_tau_g", int(10001), "Number of time slices for G(tau)")
-     .optional("n_w", int(1025), "Number of Matsubara frequencies");
-
+     .optional("n_w", int(1025), "Number of Matsubara frequencies")
+     .optional("use_quantum_numbers", bool(false), " Use the quantum numbers");
  return pdef;
 }
 

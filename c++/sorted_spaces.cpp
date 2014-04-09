@@ -287,7 +287,7 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
   auto remap_connection = [&](std::vector<std::vector<long>>& connection) {
    for (auto& cc : connection) {
     auto cc2 = cc;
-    for (int i = 0; i < cc.size(); ++i) cc2[remap[i]] = remap[cc[i]];
+    for (int i = 0; i < cc.size(); ++i) cc2[remap[i]] = (cc[i] == -1 ? -1 : remap[cc[i]]);
     cc = cc2;
    }
   };
@@ -404,6 +404,9 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
   // for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
   os << std::endl;
   os << "index = " << ss.sub_hilbert_spaces[n].get_index() << std::endl;
+  // os << "             --------------" << std::endl;
+  // for (auto const & cc : ss.creation_connection)  for (auto const & x : cc)  os << x << std::endl;
+  // for (auto const& cc : ss.annihilation_connection) for (auto const & x : cc)  os << x << std::endl;
   os << "-------------------------" << std::endl;
  }
  return os;

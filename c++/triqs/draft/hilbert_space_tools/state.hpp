@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays.hpp>
+#include <triqs/arrays/blas_lapack/dot.hpp>
 #include <algorithm>
 #include <unordered_map>
 #include <cmath>

@@ -36,9 +36,9 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
 
  imperative_operator<hilbert_space, false> hamiltonian(h, fops);
  hilbert_space full_hs(fops);
- state<hilbert_space, double, true> st(full_hs);
+ state<hilbert_space, double, false> st(full_hs);
 
- using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<hilbert_space, false>>;
+ using space_partition_t = space_partition<state<hilbert_space, double, false>, imperative_operator<hilbert_space, false>>;
  // Split the Hilbert space
  space_partition_t SP(st, hamiltonian, false);
 
@@ -130,7 +130,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
  for (auto& qn : qn_vector) qn_operators.emplace_back(qn, fops);
 
  // Helper function to get quantum numbers
- auto get_quantum_numbers = [&qn_operators](state<hilbert_space, double, true> const& s) {
+ auto get_quantum_numbers = [&qn_operators](state<hilbert_space, double, false> const& s) {
   std::vector<quantum_number_t> qn;
   for (auto const& op : qn_operators) qn.push_back(dot_product(s, op(s)));
   return qn;
@@ -146,7 +146,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
   fock_state_t fs = full_hs.get_fock_state(r);
 
   // the state we'll act on
-  state<hilbert_space, double, true> s(full_hs);
+  state<hilbert_space, double, false> s(full_hs);
   s(r) = 1.0;
 
   // create the vector with the quantum numbers
@@ -190,7 +190,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
   for (int r = 0; r < full_hs.dimension(); ++r) {
 
    // the state we'll act on and its quantum numbers
-   state<hilbert_space, double, true> s(full_hs);
+   state<hilbert_space, double, false> s(full_hs);
    s(r) = 1.0;
    qn_before = get_quantum_numbers(s);
 
@@ -325,7 +325,7 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
     M() = 0;
     // put the permutation matrix
     for (auto fs : sub_hilbert_spaces[B].get_all_fock_states()) { // loop on all fock states of the blocks
-     state<hilbert_space, double, true> s(full_hs);
+     state<hilbert_space, double, false> s(full_hs);
      s(fs) = 1.0;
      auto s2 = c_op(s);
      int nonzeros_in_s2 = 0;

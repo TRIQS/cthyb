@@ -120,13 +120,13 @@ class move_insert_c_cdag {
   // acceptance probability
   double t_ratio = std::pow(block_size * config.beta() / double(det.size() + 1), 2);
 
-  // For quick abandon 
-  double random_num = rng.preview();
-  if (random_num == 0.0) return 0;
-  double p_yee = std::abs(t_ratio * det_ratio / data.trace / random_num);
+  // For quick abandon
+  double random_number = rng.preview();
+  if (random_number == 0.0) return 0;
+  double p_yee = std::abs(t_ratio * det_ratio / data.trace);
 
   // computation of the new trace after insertion
-  new_trace = data.atomic_corr.estimate(p_yee);
+  new_trace = data.atomic_corr.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
    std::cout << "trace == 0" << std::endl;

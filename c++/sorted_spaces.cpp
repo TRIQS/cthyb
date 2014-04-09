@@ -93,7 +93,7 @@ sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_
 //-----------------------------
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, fundamental_operator_set const& fops)
    : creation_connection(fops.n_operators()), annihilation_connection(fops.n_operators()), fops(fops) {
- std::cout << "Using autopartition algorithm to parition the local Hilbert space" << std::endl;
+ std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
  autopartition(fops, h_);
  complete_init(h_);
 }

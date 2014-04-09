@@ -29,6 +29,7 @@
 #ifdef CHECK_ALL
 #define CHECK_CACHE
 #define CHECK_AGAINST_LINEAR_COMPUTATION
+#define CHECK_MATRIX_BOUNDED_BY_BOUND
 #endif
 
 double double_max = std::numeric_limits<double>::max(); // easier to read
@@ -82,10 +83,10 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
 //------------------------------------------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_yee) {
- if (method == method_t::FullTrace) return compute_trace(1.e-15, p_yee);
- //if (method == method_t::EstimateTruncEps) 
- return compute_trace(0.333, p_yee); // using epsilon = 1/3 for quick estimator
+atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_yee, double u_yee) {
+ if (method == method_t::FullTrace) return compute_trace(false, p_yee, u_yee);
+ //if (method == method_t::EstimateTruncEps)
+ return compute_trace(true, p_yee, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -93,8 +94,8 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_
 atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
  trace_t r = 1;
  if (method == method_t::EstimateTruncEps) {
-  trace_t ft = compute_trace(1.e-15);
-  trace_t est = estimate();
+  trace_t ft = compute_trace(false, -1, 0);
+  trace_t est = estimate(-1, 0);
   r = ft / est;
   if (std::abs(r - 2.0 / 3.0) > 2.0 / 3.0 + 0.001) TRIQS_RUNTIME_ERROR << " estimator out of bounds !! " << r;
   if (!std::isfinite(r)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : r not finite" << r << " " << ft << " " << est;
@@ -211,7 +212,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   n->cache.matrix_norm_are_valid[b] = true;
 
   // improve the norm
-  if (use_norm_of_matrices_in_cache) { // seems slower
+  if ((method == method_t::FullTrace) && use_norm_of_matrices_in_cache) { // seems slower
    auto norm = norm_induced_2(M);
    if (norm > 1.000000001) TRIQS_RUNTIME_ERROR << " Internal Error: norm  >1 !" << norm << M;
    n->cache.matrix_lnorms[b] = -std::log(norm);
@@ -264,7 +265,9 @@ void atomic_correlators_worker::update_dt(node n) {
 
 //----------------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(double epsilon, double p_yee) {
+atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool truncated, double p_yee, double u_yee) {
+
+ double epsilon = (truncated ? 0.333 : 1.e-15);
 
  if (tree_size == 0) return sosp->partition_function(config->beta()); // simplifies later code
 
@@ -328,8 +331,14 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
 
   // additionnal Yee quick return criterion
   if (p_yee >= 0.0) {
-   auto pmax = std::abs(p_yee) * (std::abs(full_trace) + bound_cumul[bl] * get_block_dim(block_index));
-   if (pmax < 1) return 0;
+   if (!truncated) {
+    auto pmax = std::abs(p_yee) * (std::abs(full_trace) + bound_cumul[bl] * get_block_dim(block_index));
+    if (pmax < u_yee) return 0; // pmax < u, we can reject
+   } else {
+    // correct but then the bound of the estimator may not be fullfilled.
+    //auto pmin = std::abs(p_yee) * (std::abs(full_trace) - bound_cumul[bl] * get_block_dim(block_index));
+    //if (pmin > 1) return full_trace; // pmin > 1 > u, we will accept and GET THIS ESTIMATION OF THE TRACE WHATEVER u
+   }
   }
 
   // computes the matrices, recursively along the modified path in the tree
@@ -347,8 +356,10 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(doub
   for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dt * get_block_eigenval(block_index, u));
   //trace_partial *= std::exp(dt * get_block_eigenval(block_index, 0) - to_sort[bl].first);
 
+#ifdef CHECK_MATRIX_BOUNDED_BY_BOUND
   if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort[bl].first))
    TRIQS_RUNTIME_ERROR << "Matrix not bounded by the bound ! test is " << std::abs(trace_partial) <<" < " << dim * std::exp(-to_sort[bl].first);
+#endif
 
   full_trace += trace_partial; // sum for all blocks
 

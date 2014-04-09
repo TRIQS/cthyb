@@ -76,12 +76,12 @@ class move_remove_c_cdag {
   double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2);
   
   // For quick abandon 
-  double random_num = rng.preview();
-  if (random_num == 0.0) return 0;
-  double p_yee = std::abs(det_ratio / t_ratio/ data.trace / random_num);
+  double random_number = rng.preview();
+  if (random_number == 0.0) return 0;
+  double p_yee = std::abs(det_ratio / t_ratio/ data.trace);
 
   // recompute the trace
-  new_trace = data.atomic_corr.estimate(p_yee);
+  new_trace = data.atomic_corr.estimate(p_yee, random_number);
   if (new_trace == 0.0) return 0;
   auto trace_ratio = new_trace / data.trace;
   if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;

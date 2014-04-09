@@ -254,7 +254,7 @@ class atomic_correlators_worker {
  // ---------------- Histograms ----------------
  bool make_histograms;                       // Do we make the Histograms ?
  bool use_truncation;                        //
- bool use_norm_of_matrices_in_cache = false; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
+ bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
 
  // How many block non zero at root of the tree
  statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};

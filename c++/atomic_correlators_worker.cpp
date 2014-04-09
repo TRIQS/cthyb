@@ -38,19 +38,12 @@ double double_max = std::numeric_limits<double>::max(); // easier to read
 
 namespace triqs {
 namespace arrays {
- // this norm is too slow, need to change to another norm...
- // double norm_induced_2_impl(matrix_view<double> A, matrix_view<double> B) {
- double norm_induced_2_impl(matrix<double> const& A, matrix<double> const& B) {
-  // WORKAROUND BUG !!
-  auto M = A * B;
-  triqs::arrays::linalg::eigenelements_worker<matrix_view<double>, true> w(M());
-  w.invoke();
-  auto const& Es = w.values();
-  return std::sqrt(Es(first_dim(Es) - 1)); // ordered is guaranteed by lapack
- }
 
- double norm_induced_2(matrix<double> const& A) {
-  return (first_dim(A) < second_dim(A) ? norm_induced_2_impl(A, A.transpose()) : norm_induced_2_impl(A.transpose(), A));
+ double frobenius_norm(matrix<double> const& a) {
+  return std::sqrt(fold([](double r, double x)->double {
+   auto ab = std::abs(x);
+   return r + ab * ab;
+  })(a));
  }
 }
 }
@@ -213,8 +206,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
 
   // improve the norm
   if ((method == method_t::FullTrace) && use_norm_of_matrices_in_cache) { // seems slower
-   auto norm = norm_induced_2(M);
-   if (norm > 1.000000001) TRIQS_RUNTIME_ERROR << " Internal Error: norm  >1 !" << norm << M;
+   auto norm = frobenius_norm(M);
    n->cache.matrix_lnorms[b] = -std::log(norm);
   }
  }

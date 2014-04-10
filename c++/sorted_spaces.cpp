@@ -330,10 +330,11 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
      auto s2 = c_op(s);
      int nonzeros_in_s2 = 0;
      foreach(s2, [&](int i, double ampl) {
-      if (nonzeros_in_s2 >= 1) TRIQS_RUNTIME_ERROR << "Internal consistency error ";
-      M(sub_hilbert_spaces[Bp].get_state_index(i /*full_hs.get_fock_state(i)==i*/), sub_hilbert_spaces[B].get_state_index(fs)) =
-          ampl;
-      nonzeros_in_s2++;
+      if (nonzeros_in_s2 > 1) TRIQS_RUNTIME_ERROR << "Internal consistency error ";
+      if(std::abs(ampl) > std::numeric_limits<double>::epsilon()) {
+        M(sub_hilbert_spaces[Bp].get_state_index(i /*full_hs.get_fock_state(i)==i*/), sub_hilbert_spaces[B].get_state_index(fs)) = ampl;
+        nonzeros_in_s2++;
+      }
      });
     }
     cmat[B] = eigensystems[Bp].unitary_matrix.transpose() * M * eigensystems[B].unitary_matrix;

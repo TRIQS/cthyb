@@ -120,7 +120,6 @@ parameter_defaults ctqmc_matrix::solve_defaults() const {
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
      .optional("measure_pert_order", bool(false), "Whether to measure perturbation order")
      .optional("make_histograms", bool(false), "Make the analysis histograms of the trace computation")
-     .optional("use_truncation", bool(true), "Use truncation in the trace calculation")
      .optional("trace_estimator", std::string("FullTrace"), "How to compute the trace");
  return pdef;
 }

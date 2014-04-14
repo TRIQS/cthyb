@@ -246,14 +246,13 @@ class atomic_correlators_worker {
  int check_one_block_table_linear(node n, int b, bool print);
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
 
- trace_t compute_trace(bool truncated, double p_yee, double u_yee);
+ trace_t compute_trace(bool to_machine_precision, double p_yee, double u_yee);
 
  void update_cache_impl(node n);
  void update_dt(node n);
 
  // ---------------- Histograms ----------------
  bool make_histograms;                       // Do we make the Histograms ?
- bool use_truncation;                        //
  bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
 
  // How many block non zero at root of the tree

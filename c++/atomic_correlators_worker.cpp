@@ -56,8 +56,6 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    : config(&c), sosp(&sosp_) {
 
  // Taking parameters from the inputs
- use_truncation = p["use_truncation"];
-
  std::string ms = p["trace_estimator"];
  try {
   method =
@@ -77,9 +75,9 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 //------------------------------------------------------------------------------
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_yee, double u_yee) {
- if (method == method_t::FullTrace) return compute_trace(false, p_yee, u_yee);
+ if (method == method_t::FullTrace) return compute_trace(true, p_yee, u_yee);
  //if (method == method_t::EstimateTruncEps)
- return compute_trace(true, p_yee, 0);
+ return compute_trace(false, p_yee, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -87,7 +85,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_
 atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
  trace_t r = 1;
  if (method == method_t::EstimateTruncEps) {
-  trace_t ft = compute_trace(false, -1, 0);
+  trace_t ft = compute_trace(true, -1, 0);
   trace_t est = estimate(-1, 0);
   r = ft / est;
   if (std::abs(r - 2.0 / 3.0) > 2.0 / 3.0 + 0.001) TRIQS_RUNTIME_ERROR << " estimator out of bounds !! " << r;
@@ -257,9 +255,9 @@ void atomic_correlators_worker::update_dt(node n) {
 
 //----------------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool truncated, double p_yee, double u_yee) {
+atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool to_machine_precision, double p_yee, double u_yee) {
 
- double epsilon = (truncated ? 0.333 : 1.e-15);
+ double epsilon = (to_machine_precision ? 1.e-15 : 0.333);
 
  if (tree_size == 0) return sosp->partition_function(config->beta()); // simplifies later code
 
@@ -317,13 +315,13 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool
  for (bl = 0; bl < n_bl; ++bl) { // sum over all blocks
 
   // stopping criterion
-  if (use_truncation && (bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
+  if ((bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
 
   int block_index = to_sort[bl].second;
 
   // additionnal Yee quick return criterion
   if (p_yee >= 0.0) {
-   if (!truncated) {
+   if (to_machine_precision) {
     auto pmax = std::abs(p_yee) * (std::abs(full_trace) + bound_cumul[bl] * get_block_dim(block_index));
     if (pmax < u_yee) return 0; // pmax < u, we can reject
    } else {

@@ -5,7 +5,7 @@ import numpy
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.parameters.parameters import Parameters
-from pytriqs.applications.impurity_solvers.cthyb_krylov import *
+from pytriqs.applications.impurity_solvers.cthyb import 
 from pytriqs.gf.local import *
 
 # import parameters from cwd

@@ -3,7 +3,7 @@
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.parameters.parameters import Parameters
-from pytriqs.applications.impurity_solvers.cthyb_krylov import *
+from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import *
 from matplotlib.backends.backend_pdf import PdfPages
@@ -33,12 +33,6 @@ for modes in range(1,10+1):
 	p["n_cycles"] = 1200000
 	p["n_tau_delta"] = 1000
         p["n_tau_g"] = 400
-        p["use_truncation"] = True
-        p["use_old_trace"] = False
-        p["use_quick_trace_estimator"] = False
-        p["trace_estimator_n_blocks_guess"] = -1
-	p["krylov_gs_energy_convergence"] = 1e-8
-	p["krylov_small_matrix_size"] = 100
 
 	pp = Parameters()
 	for k in p: pp[k] = p[k]
@@ -87,7 +81,7 @@ for modes in range(1,10+1):
     			g_theor[0,0] <<= InverseFourier(g_theor_w)
 
     			plt.clf()
-			oplot(S.G_tau[b][0,0], name="Krylov")
+			oplot(S.G_tau[b][0,0], name="cthyb")
     			oplot(g_theor[0,0], name="Theory")
     
     			pdf.savefig(plt.gcf())

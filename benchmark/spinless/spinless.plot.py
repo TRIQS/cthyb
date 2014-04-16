@@ -30,7 +30,7 @@ for plot_objs in objects_to_plot:
 
             if type(obj) is tuple:
                 filename = params.results_file_name(*obj)
-                name = 'Krylov'
+                name = 'cthyb'
                 if obj[0]: name += '(QN)'
             else:
                 filename = 'spinless.' + obj + '.h5'

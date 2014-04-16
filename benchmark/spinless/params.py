@@ -23,12 +23,6 @@ p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
 p["n_tau_delta"] = 1000
 p["n_tau_g"] = 200
-p["use_truncation"] = True
-p["use_old_trace"] = False
-p["use_quick_trace_estimator"] = False
-p["trace_estimator_n_blocks_guess"] = -1
-p["krylov_gs_energy_convergence"] = 1e-8
-p["krylov_small_matrix_size"] = 100
 
 def results_file_name(use_qn):
     name = "spinless."

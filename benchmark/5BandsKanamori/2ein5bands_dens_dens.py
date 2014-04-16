@@ -1,7 +1,7 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.parameters.parameters import Parameters
-from pytriqs.applications.impurity_solvers.cthyb_krylov import *
+from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
 from collections import OrderedDict
@@ -33,18 +33,9 @@ p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 5000
 p["n_tau_delta"] = 5000
 p["n_tau_g"] = 5000
-p["krylov_bs_use_cutoff"] = True
-p["krylov_bs_prob_cutoff"] = -1.0
-p["krylov_small_matrix_size"] = 100
-p["use_quick_trace_estimator"] = False
-#p["trace_estimator_n_blocks_guess"] = 1
 p["make_histograms"] = True
-p["use_old_trace"] = False
-p["use_truncation"] = True
 p["measure_gt"] = False
-p["trace_estimator"] = "WithCache"
-#p["trace_estimator"] = "Simple"
-#p["trace_estimator"] = "None"
+p["trace_estimator"] = "FullTrace"
 
 # Block structure of GF
 gf_struct = OrderedDict()

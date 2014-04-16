@@ -23,7 +23,7 @@
 #include <vector>
 #include <map>
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 using namespace triqs;
 

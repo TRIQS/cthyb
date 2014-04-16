@@ -12,7 +12,7 @@
 #include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/state.hpp>
 
-using namespace cthyb_matrix;
+using namespace cthyb;
 using triqs::utility::many_body_operator;
 using triqs::utility::c;
 using triqs::utility::c_dag;

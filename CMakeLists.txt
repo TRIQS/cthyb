@@ -27,7 +27,7 @@ set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
 # Details of the code
 option(Extended_Debug "Enable extended debugging output" OFF)
-option(Tests "Enable Tests" OFF)
+option(Tests "Enable Tests" ON)
 
 if(Extended_Debug)
  add_definitions(-DEXT_DEBUG)

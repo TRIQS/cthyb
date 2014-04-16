@@ -24,7 +24,7 @@
 #include <triqs/utility/time_pt.hpp>
 #include <map>
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 using triqs::utility::time_pt;
 

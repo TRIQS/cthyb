@@ -27,7 +27,7 @@
 #include <boost/operators.hpp>
 #include "hilbert_space.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 inline double conj(double x) { return x; } // questionable : collides with std::conj !!
 

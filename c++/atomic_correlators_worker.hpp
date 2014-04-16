@@ -25,7 +25,7 @@
 #include <triqs/parameters.hpp>
 #include "triqs/statistics/histograms.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 /**
  */

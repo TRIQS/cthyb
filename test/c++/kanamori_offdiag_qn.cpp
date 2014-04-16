@@ -1,11 +1,11 @@
 #include <triqs/gfs.hpp>
-#include "./ctqmc_matrix.hpp"
+#include "./ctqmc.hpp"
 #include "./operator.hpp"
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
 #include <triqs/parameters.hpp>
 
-using namespace cthyb_matrix;
+using namespace cthyb;
 using triqs::utility::many_body_operator;
 using triqs::utility::c;
 using triqs::utility::c_dag;
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Construct CTQMC solver
-  ctqmc_matrix solver(p, H, qn, fops, block_structure);
+  ctqmc solver(p, H, qn, fops, block_structure);
   
   // Set hybridization function
   auto delta_w = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};

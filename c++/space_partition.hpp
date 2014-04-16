@@ -6,7 +6,7 @@
 #include <boost/pending/disjoint_sets.hpp>
 #include <boost/functional/hash.hpp>
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 // Requirements
 // ------------

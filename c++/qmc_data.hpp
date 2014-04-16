@@ -25,7 +25,7 @@
 #include <triqs/det_manip.hpp>
 #include <triqs/utility/serialization.hpp>
 
-namespace cthyb_matrix {
+namespace cthyb {
 using namespace triqs::gfs;
 
 /**

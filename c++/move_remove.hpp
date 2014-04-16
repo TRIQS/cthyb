@@ -22,7 +22,7 @@
 #include <algorithm>
 #include "./qmc_data.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 // Removal of C, C^dagger operator
 class move_remove_c_cdag {

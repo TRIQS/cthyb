@@ -23,7 +23,7 @@
 #include <boost/mpi/collectives.hpp>
 #include "triqs/statistics/histograms.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 using namespace triqs::gfs;
 

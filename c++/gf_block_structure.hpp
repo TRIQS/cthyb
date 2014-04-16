@@ -29,7 +29,7 @@
 
 using namespace triqs::arrays;
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 /// ???
 struct block_desc_t {

@@ -48,3 +48,26 @@ skipped altogether (the mappings are precomputed and stored at the very beginnin
 This solver implements two partitioning strategies: partitioning with user-supplied quantum numbers
 and the automatic partitioning. The latter strategy is more universal and is chosen by default.
 One can override the choice by setting the parameter ``use_quantum_numbers`` to ``True``.
+
+Quantum numbers
+===============
+
+This is the traditional approach to partitioning of the Hilbert space. User passes a list of abelian
+integrals of motion (operators) :math:`Q_1,\ldots,Q_L` as ``quantum_numbers`` parameter on construction
+of the solver. Expectation values of these operators are calculated for each basis state :math:`\psi`, which
+gives a combination of quantum numbers associated with the state:
+
+    .. math::
+        
+        \langle\psi|Q_1|\psi\rangle, \ldots, \langle\psi|Q_L|\psi\rangle\ \Rightarrow q_1,\ldots, q_L
+        
+All states sharing the same combination of quantum numbers belong to the same subspace.
+
+The first condition is obviously fulfilled by the obtained subspaces, because the Hamiltonian cannot
+connect states with different quantum numbers by definition. If all operators :math:`Q_l` correspond
+to abelian symmetries of the system (like particle number and :math:`S_z`), the second condition is also
+fulfilled.
+
+This approach works well, but it requires some prior analysis of the local Hamiltonian from the user.
+It may be difficult to discover an exhaustive set of integrals of motion, if the dimension of the local
+Hilbert space is large and the interaction form is complicated.

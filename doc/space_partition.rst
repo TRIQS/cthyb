@@ -52,7 +52,7 @@ One can override the choice by setting the parameter ``use_quantum_numbers`` to 
 Quantum numbers
 ===============
 
-This is the traditional approach to partitioning of the Hilbert space. User passes a list of abelian
+This is the traditional approach to partitioning of the Hilbert space. User passes a list of Abelian
 integrals of motion (operators) :math:`Q_1,\ldots,Q_L` as ``quantum_numbers`` parameter on construction
 of the solver. Expectation values of these operators are calculated for each basis state :math:`\psi`, which
 gives a combination of quantum numbers associated with the state:
@@ -65,7 +65,7 @@ All states sharing the same combination of quantum numbers belong to the same su
 
 The first condition is obviously fulfilled by the obtained subspaces, because the Hamiltonian cannot
 connect states with different quantum numbers by definition. If all operators :math:`Q_l` correspond
-to abelian symmetries of the system (like particle number and :math:`S_z`), the second condition is also
+to Abelian symmetries of the system (like particle number and :math:`S_z`), the second condition is also
 fulfilled.
 
 This approach works well, but it requires some prior analysis of the local Hamiltonian from the user.
@@ -78,11 +78,11 @@ Automatic partitioning
 The automatic partitioning algorithm employs no additional *a priori* information about the Hamiltonian
 :math:`\mathcal{H}`. The only input data are the full set of basis states and the Hamiltonian itself.
 
-The algorithm consists of two consequent steps. On the first step it constructs the finest possible partition
+The algorithm consists of two consequent steps (parts). On the first step it constructs the finest possible partition
 which satisfies condition (1) alone. During the second step this partition is modified in a way to become
 compatible also with condition (2).
 
-**Step 1**
+**Part 1**
 
 In the beginning the algorithm creates a data structure, which stores information about how the :math:`N` basis
 vectors are partitioned into a number of subsets. Initially each basis vector resides alone in its own subset.
@@ -95,48 +95,37 @@ The algorithm iterates (inner loop) over all those basis vectors with non-zero c
 If the initial state and the final state reside in different subsets, these subsets are merged together.
 
 Once the main loop is over, the partition of the basis is done. Two basis vectors are guaranteed to be in different subsets,
-if they cannot be reached from each other by application of H any number of times.
+if they cannot be reached from each other by application of :math:`\mathcal{H}` any number of times.
 
-*Pseudocode of step 1*
-    
-|   **for** :math:`|\psi\rangle` **in** :math:`\{\psi\}`
-|       k := make_subset()
-|       k.insert_element(:math:`|\psi\rangle`)
-|
-|   **for** :math:`|\psi_i\rangle` **in** :math:`\{\psi\}`
-|       i := find_subset(:math:`|\psi_i\rangle`)
-|       :math:`|\phi\rangle = \mathcal{H}|\psi_i\rangle`
-|       **for** :math:`|\psi_f\rangle` **in** :math:`\{\psi\}`
-|           **if** :math:`\langle\psi_f|\phi\rangle` == 0 **then** **continue**
-|           f := find_subset(:math:`|\psi_f\rangle`)
-|           **if** i != f **then** merge_subsets(i,f)
+All matrix elements of :math:`\mathcal{H}` are implicitly calculated along the line and stored for later use.
 
-**Step 2**
+**Part 2**
 
-On this step some subsets are additionally merged. The algorithm is applied in turn to all
+In this part some subsets are additionally merged. The algorithm is applied in turn to all
 :math:`c^\dagger_\alpha, c_\alpha` -pairs and for each pair it proceeds as follows:
 
 1. Choose one of existing subsets, say :math:`\{\psi\}_m`.
 2. Apply :math:`c_\alpha^\dagger` to all basis states in :math:`\{\psi\}_m`.
-3. Iterate over all non-zero amplitudes of all resulting states and find all subspaces, the corresponding basis states belong to.
-4. Merge all found subspaces to form a bigger subspace :math:`\{\psi\}_{m'}`.
+3. Iterate over all non-zero amplitudes of all resulting states and find all subsets, the corresponding basis states belong to.
+   If no such amplitudes are present, skip to step 9.
+4. Merge all found subsets to form a bigger subset :math:`\{\psi\}_{m'}`.
 5. Apply :math:`c_\alpha` to all basis states in :math:`\{\psi\}_{m'}`.
-6. Iterate over all non-zero amplitudes of all resulting states and find all subspaces, the corresponding basis states belong to.
-7. Merge all found subspaces to form a bigger subspace :math:`\{\psi\}_{m''}`.
+6. Iterate over all non-zero amplitudes of all resulting states and find all subsets, the corresponding basis states belong to.
+   If no such amplitudes are present, skip to step 9.
+7. Merge all found subsets to form a bigger subset :math:`\{\psi\}_{m''}`.
 8. Repeat steps 2-7 starting with :math:`\{\psi\}_{m''}`. Continue repeating those steps until no merges occur during the last iteration. 
-9. Repeat steps 1-8 using another initial subset :math:`\{\psi\}_m`. If all subspaces are exhausted, stop.
+9. Repeat steps 1-8 using another initial subset :math:`\{\psi\}_m`. If all subsets are exhausted, stop.
 
-This procedure guarantees, that all creation and annihilation operators connect exactly one subspace to one subspace or to numerical zero. 
+This procedure guarantees, that all creation and annihilation operators connect exactly one subspace to one subspace or to numerical zero.
+The connections are stored (on step 8) and used afterwards to construct strings in the dynamical trace.
 
-*Pseudocode of step 2*
+An important remark should be made about the data structure which maintains the partition of :math:`\{\psi\}`.
+We use a *disjoint-set data structure* designed especially for fast ``find_set``, ``union_set`` and ``make_set``
+operations [#ds]_, [#ds_boost]_. This structure is usually implemented as a forest with trees representing
+disjoint subsets. Thanks to two special techniques called 'union by rank' and 'path compression', the amortized time
+per operation is only :math:`O(\alpha(n))`. Here :math:`n` is the total number of ``find_set``, ``union_set`` and ``make_set``
+operations, and :math:`\alpha(n)` is the extremely slowly-growing inverse Ackermann function. :math:`\alpha(n) < 5` for any
+practical value of :math:`n`.
 
-|   **foreach** :math:`\alpha`
-|       **foreach** :math:`\{\psi\}_m`
-|           **for** :math:`|\psi_i\rangle` **in** :math:`\{\psi\}_m`
-|               :math:`|\phi\rangle` := :math:`c_\alpha^\dagger |\psi_i\rangle`
-|               subsets_to_merge = {}
-|               **for** :math:`|\psi_f\rangle` **in** :math:`\{\psi\}`
-|                   **if** :math:`\langle\psi_f|\phi\rangle` == 0 **then** **continue**
-|                   f := find_subset(:math:`|\psi_f\rangle`)
-|                   subsets_to_merge.insert(f)
-|               **if** subsets_to_merge.size() > 1 **then** merge_subsets(subsets_to_merge)
+.. [#ds] R.E.Tarjan. *Data Structures and Network Algorithms.* Society for Industrial and Applied Mathematics, 1983.
+.. [#ds_boost] Boost Disjoint Sets (http://www.boost.org/doc/libs/release/libs/disjoint_sets/disjoint_sets.html).

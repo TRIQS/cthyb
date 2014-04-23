@@ -45,7 +45,7 @@ for sn in spin_names:
         plt.clf()
         
         # Plot the results
-        oplot(arch[mkind(sn,cn)[0]], name="Krylov")
+        oplot(arch[mkind(sn,cn)[0]], name="cthyb")
         # Plot the reference curve
 	if use_interaction:
             oplot(g_ref[nc,nc], name="ED")

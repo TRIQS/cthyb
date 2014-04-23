@@ -34,7 +34,7 @@ for plot_objs in objects_to_plot:
                 name_parts = []
                 if obj[0]: name_parts.append('Block')
                 if obj[1]: name_parts.append('QN')
-                name = 'Krylov' + (' (' + ', '.join(name_parts) + ')' if len(name_parts) else '')
+                name = 'cthyb' + (' (' + ', '.join(name_parts) + ')' if len(name_parts) else '')
                 
             else:
                 filename = 'anderson.' + obj + '.h5'

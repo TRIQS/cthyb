@@ -5,7 +5,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb_matrix.cthyb_matrix import *
+from pytriqs.applications.impurity_solvers.cthyb_matrix import *
 import itertools
 
 from pytriqs.plot.mpl_interface import plt, oplot

@@ -5,7 +5,7 @@
 #include <triqs/draft/hilbert_space_tools/state.hpp>
 #include <iostream>
 
-using namespace cthyb_matrix;
+using namespace cthyb;
 
 int main() {
 

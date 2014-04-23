@@ -12,12 +12,12 @@ include "many_body_operator.pyx"
 
 ctypedef many_body_operator[double] operator_c
 
-cdef extern from "triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp" namespace "cthyb_matrix":
+cdef extern from "triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp" namespace "cthyb":
     cdef cppclass fundamental_operator_set:
         fundamental_operator_set() except +
         void insert(string, string)
         
-cdef extern from "c++/sorted_spaces.hpp" namespace "cthyb_matrix":
+cdef extern from "c++/sorted_spaces.hpp" namespace "cthyb":
     cdef cppclass variant_t "boost::variant<int,std::string>":
         variant_t(string)
 
@@ -28,9 +28,9 @@ cdef extern from "c++/sorted_spaces.hpp" namespace "cthyb_matrix":
 
         block_desc_t() except +
 
-cdef extern from "c++/ctqmc_matrix.hpp" namespace "cthyb_matrix":
+cdef extern from "c++/ctqmc.hpp" namespace "cthyb":
 
-    cdef cppclass solver_c "cthyb_matrix::ctqmc_matrix":
+    cdef cppclass solver_c "cthyb::ctqmc":
         
       solver_c(parameters p,
               const operator_c& h_loc,

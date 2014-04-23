@@ -26,7 +26,7 @@
 #include <map>
 #include "triqs/draft/hilbert_space_tools/state.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 using namespace triqs::arrays;
 using namespace triqs::gfs;

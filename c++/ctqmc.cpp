@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "ctqmc_matrix.hpp"
+#include "ctqmc.hpp"
 #include <triqs/utility/callbacks.hpp>
 
 #include "move_insert.hpp"
@@ -26,9 +26,9 @@
 #include "measure_g.hpp"
 #include "measure_perturbation_hist.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
-ctqmc_matrix::ctqmc_matrix(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
+ctqmc::ctqmc(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
                            fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
    : gf_block_structure(fops, block_structure) {
  p_in.update(constructor_defaults());//, utility::parameters::reject_key_without_default);
@@ -56,7 +56,7 @@ ctqmc_matrix::ctqmc_matrix(parameters p_in, real_operator_t const& h_loc, std::v
 
 //-----------------------------------
 
-void ctqmc_matrix::solve(utility::parameters p_in) {
+void ctqmc::solve(utility::parameters p_in) {
 
  p_in.update(solve_defaults());//, utility::parameters::reject_key_without_default);
  auto const& params = p_in;
@@ -92,7 +92,7 @@ void ctqmc_matrix::solve(utility::parameters p_in) {
 }
 
 //----------------------------------------------------------------------------------------------
-parameter_defaults ctqmc_matrix::constructor_defaults() const {
+parameter_defaults ctqmc::constructor_defaults() const {
 
  parameter_defaults pdef;
 
@@ -106,7 +106,7 @@ parameter_defaults ctqmc_matrix::constructor_defaults() const {
 
 //----------------------------------------------------------------------------------------------
 
-parameter_defaults ctqmc_matrix::solve_defaults() const {
+parameter_defaults ctqmc::solve_defaults() const {
 
  parameter_defaults pdef;
 
@@ -124,7 +124,7 @@ parameter_defaults ctqmc_matrix::solve_defaults() const {
  return pdef;
 }
 
-void ctqmc_matrix::help() const {
+void ctqmc::help() const {
  // TODO
 }
 }

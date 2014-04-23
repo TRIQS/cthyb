@@ -5,7 +5,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
 from pytriqs.parameters.parameters import Parameters
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb_krylov.cthyb_krylov import *
+from pytriqs.applications.impurity_solvers.cthyb import *
 import itertools
 from collections import OrderedDict
 
@@ -38,12 +38,6 @@ p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
 p["n_tau_delta"] = 1000
 p["n_tau_g"] = 1000
-p["use_truncation"] = True
-p["use_old_trace"] = False
-p["use_quick_trace_estimator"] = False
-p["trace_estimator_n_blocks_guess"] = -1
-p["krylov_gs_energy_convergence"] = 1e-8
-p["krylov_small_matrix_size"] = 4
 
 # Block structure of GF
 gf_struct = OrderedDict()

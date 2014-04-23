@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "gf_block_structure.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 gf_block_structure_t::gf_block_structure_t(fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure) {
 

@@ -33,10 +33,8 @@ p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 5000
 p["n_tau_delta"] = 100000
 p["n_tau_g"] = 100000
-p["make_path_histograms"] = False
-p["use_old_trace"] = False
-p["use_truncation"] = False
 p["measure_gt"] = True
+p["make_histograms"] = False
 p["trace_estimator"] = "FullTrace"
 
 # Block structure of GF

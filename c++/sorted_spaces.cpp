@@ -27,7 +27,7 @@
 using namespace triqs::arrays;
 using std::string;
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 
 //---------------------------------------------------------------------------------

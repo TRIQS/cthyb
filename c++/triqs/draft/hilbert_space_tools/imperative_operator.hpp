@@ -24,7 +24,7 @@
 
 #include <vector>
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 // DOC TO BE WRITTEN
 // fock state convention:

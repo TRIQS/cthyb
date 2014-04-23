@@ -21,7 +21,7 @@
 #pragma once
 #include "./qmc_data.hpp"
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 // Insertion of C, C^dagger operator
 class move_insert_c_cdag {

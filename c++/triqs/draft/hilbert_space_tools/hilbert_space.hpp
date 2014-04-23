@@ -24,7 +24,7 @@
 #include "fundamental_operator_set.hpp"
 #include <boost/container/flat_map.hpp>
 
-namespace cthyb_matrix {
+namespace cthyb {
 
 using fock_state_t = uint64_t; // The coding of the Fock state : 64 bits word in binary
 

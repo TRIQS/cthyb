@@ -22,19 +22,19 @@ These subsets are subject to two conditions:
 
     .. math::
 
-        \forall k,\ \forall \phi\in\mathrm{span}(\{\psi\}_k),\quad \mathcal{H}\phi \in\mathrm{span}(\{\psi\}_k)
+        \forall k,\ \forall |\phi\rangle\in\mathrm{span}(\{\psi\}_k),\quad \mathcal{H}|\phi\rangle \in\mathrm{span}(\{\psi\}_k)
 
 #. All creation and annihilation operators found within the dynamical traces map one subspace to one subspace or to zero.
 
     .. math::
 
-        \forall \alpha,\ \forall k,\ \forall \phi\in\mathrm{span}(\{\psi\}_k),\ \exists l,
-        \quad c_\alpha \phi \in\mathrm{span}(\{\psi\}_l)\\
-        \forall \alpha,\ \forall k,\ \forall \phi\in\mathrm{span}(\{\psi\}_k),\ \exists l,
-        \quad c^\dagger_\alpha \phi \in\mathrm{span}(\{\psi\}_l)
+        \forall \alpha,\ \forall k,\ \forall |\phi\rangle\in\mathrm{span}(\{\psi\}_k),\ \exists l,
+        \quad c_\alpha |\phi\rangle \in\mathrm{span}(\{\psi\}_l)\\
+        \forall \alpha,\ \forall k,\ \forall |\phi\rangle\in\mathrm{span}(\{\psi\}_k),\ \exists l,
+        \quad c^\dagger_\alpha |\phi\rangle \in\mathrm{span}(\{\psi\}_l)
 
 The problem can be slightly reformulated. One has to find a permutation of basis vectors, after which
-1) the local Hamiltonian is block-diagonal and 2) all :math:`c` and :math:`c^\dagger` operators
+(1) the local Hamiltonian is block-diagonal and (2) all :math:`c` and :math:`c^\dagger` operators
 are block matrices with at most one non-zero block in each row and column. Such a permutation would group
 basis states belonging to the same :math:`\{\psi\}_k` together.
         
@@ -45,7 +45,7 @@ creation/annihilation operators map a subspace to zero (for example, annihilatio
 a state with no particles). All strings including such mappings are immediately zero and can be
 skipped altogether (the mappings are precomputed and stored at the very beginning of the simulation).
 
-This solver implements two partitioning strategies: partitioning with user-supplied quantum numbers
+The present solver implements two partitioning strategies: partitioning with user-supplied quantum numbers
 and the automatic partitioning. The latter strategy is more universal and is chosen by default.
 One can override the choice by setting the parameter ``use_quantum_numbers`` to ``True``.
 
@@ -71,3 +71,72 @@ fulfilled.
 This approach works well, but it requires some prior analysis of the local Hamiltonian from the user.
 It may be difficult to discover an exhaustive set of integrals of motion, if the dimension of the local
 Hilbert space is large and the interaction form is complicated.
+
+Automatic partitioning
+======================
+
+The automatic partitioning algorithm employs no additional *a priori* information about the Hamiltonian
+:math:`\mathcal{H}`. The only input data are the full set of basis states and the Hamiltonian itself.
+
+The algorithm consists of two consequent steps. On the first step it constructs the finest possible partition
+which satisfies condition (1) alone. During the second step this partition is modified in a way to become
+compatible also with condition (2).
+
+**Step 1**
+
+In the beginning the algorithm creates a data structure, which stores information about how the :math:`N` basis
+vectors are partitioned into a number of subsets. Initially each basis vector resides alone in its own subset.
+
+Then comes the main loop of the algorithm. The Hamiltonian is sequentially applied to each basis state
+(initial state). Each application gives a linear combination of the basis states with only a few non-zero
+coefficients, since H is normally sparse.
+The algorithm iterates (inner loop) over all those basis vectors with non-zero coefficients (final states).
+
+If the initial state and the final state reside in different subsets, these subsets are merged together.
+
+Once the main loop is over, the partition of the basis is done. Two basis vectors are guaranteed to be in different subsets,
+if they cannot be reached from each other by application of H any number of times.
+
+*Pseudocode of step 1*
+    
+|   **for** :math:`|\psi\rangle` **in** :math:`\{\psi\}`
+|       k := make_subset()
+|       k.insert_element(:math:`|\psi\rangle`)
+|
+|   **for** :math:`|\psi_i\rangle` **in** :math:`\{\psi\}`
+|       i := find_subset(:math:`|\psi_i\rangle`)
+|       :math:`|\phi\rangle = \mathcal{H}|\psi_i\rangle`
+|       **for** :math:`|\psi_f\rangle` **in** :math:`\{\psi\}`
+|           **if** :math:`\langle\psi_f|\phi\rangle` == 0 **then** **continue**
+|           f := find_subset(:math:`|\psi_f\rangle`)
+|           **if** i != f **then** merge_subsets(i,f)
+
+**Step 2**
+
+On this step some subsets are additionally merged. The algorithm is applied in turn to all
+:math:`c^\dagger_\alpha, c_\alpha` -pairs and for each pair it proceeds as follows:
+
+1. Choose one of existing subsets, say :math:`\{\psi\}_m`.
+2. Apply :math:`c_\alpha^\dagger` to all basis states in :math:`\{\psi\}_m`.
+3. Iterate over all non-zero amplitudes of all resulting states and find all subspaces, the corresponding basis states belong to.
+4. Merge all found subspaces to form a bigger subspace :math:`\{\psi\}_{m'}`.
+5. Apply :math:`c_\alpha` to all basis states in :math:`\{\psi\}_{m'}`.
+6. Iterate over all non-zero amplitudes of all resulting states and find all subspaces, the corresponding basis states belong to.
+7. Merge all found subspaces to form a bigger subspace :math:`\{\psi\}_{m''}`.
+8. Repeat steps 2-7 starting with :math:`\{\psi\}_{m''}`. Continue repeating those steps until no merges occur during the last iteration. 
+9. Repeat steps 1-8 using another initial subset :math:`\{\psi\}_m`. If all subspaces are exhausted, stop.
+
+This procedure guarantees, that all creation and annihilation operators connect exactly one subspace to one subspace or to numerical zero. 
+
+*Pseudocode of step 2*
+
+|   **foreach** :math:`\alpha`
+|       **foreach** :math:`\{\psi\}_m`
+|           **for** :math:`|\psi_i\rangle` **in** :math:`\{\psi\}_m`
+|               :math:`|\phi\rangle` := :math:`c_\alpha^\dagger |\psi_i\rangle`
+|               subsets_to_merge = {}
+|               **for** :math:`|\psi_f\rangle` **in** :math:`\{\psi\}`
+|                   **if** :math:`\langle\psi_f|\phi\rangle` == 0 **then** **continue**
+|                   f := find_subset(:math:`|\psi_f\rangle`)
+|                   subsets_to_merge.insert(f)
+|               **if** subsets_to_merge.size() > 1 **then** merge_subsets(subsets_to_merge)

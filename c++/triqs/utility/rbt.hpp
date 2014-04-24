@@ -132,16 +132,22 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
 
  void graphviz(std::ostream&& out) const { graphviz(out); }
 
+ static std::string color_node_to_string(node n) {
+  if (n->soft_deleted) return "green";
+  if (n->modified) return "red";
+  return "black";
+ }
+
  void graphviz(std::ostream& out) const {
   out << "digraph G{ graph [ordering=\"out\"];" << std::endl;
-  if (root) out << double(root->key) << "[color = " << (root->modified ? "red" : "black") << "];" << std::endl;
+  if (root) out << double(root->key) << "[color = " << color_node_to_string(root) << "];" << std::endl;
   auto f = [&out](node n) {
    if (!n) return;
    if (n->left)
-    out << double(n->left->key) << "[color = " << (n->left->modified ? "red" : "black") << "];\n" <<  double(n->key) << " -> " << double(n->left->key)
+    out << double(n->left->key) << "[color = " << color_node_to_string(n->left) << "];\n" <<  double(n->key) << " -> " << double(n->left->key)
         << (n->left->color == RED ? "[color = red];" : ";") << std::endl;
    if (n->right)
-    out <<  double(n->right->key) << "[color = " << (n->right->modified ? "red" : "black") << "];\n" << double(n->key) << " -> " << double(n->right->key)
+    out <<  double(n->right->key) << "[color = " << color_node_to_string(n->right) << "];\n" << double(n->key) << " -> " << double(n->right->key)
         << (n->right->color == RED ? "[color = red];" : ";") << std::endl;
   };
   foreach(*this,f);

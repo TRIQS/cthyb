@@ -25,7 +25,7 @@
 #include <limits>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
-#define CHECK_ALL
+//#define CHECK_ALL
 #ifdef CHECK_ALL
 #define CHECK_CACHE
 #define CHECK_AGAINST_LINEAR_COMPUTATION
@@ -148,6 +148,8 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
  }
 
  if (lnorm > lnorm_threshold) return {-1, 0};
+ if (!std::isfinite(lnorm)) TRIQS_RUNTIME_ERROR  << "Infinite lnorm is compute_block_table_and_bound! ";
+
  return {b3, lnorm};
 }
 
@@ -197,7 +199,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   else
    M = l.second * M;
  }
-
+ 
  if (updating) {
   n->cache.matrices[b] = M;
   n->cache.matrix_norm_are_valid[b] = true;
@@ -206,6 +208,10 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   if ((method == method_t::FullTrace) && use_norm_of_matrices_in_cache) { // seems slower
    auto norm = frobenius_norm(M);
    n->cache.matrix_lnorms[b] = -std::log(norm);
+   if (!std::isfinite(-std::log(norm))) {
+    //std::cerr << "norm is not finite "<< norm <std::endl;
+    n->cache.matrix_lnorms[b] = double_max;
+   }
   }
  }
 
@@ -236,7 +242,7 @@ void atomic_correlators_worker::update_cache_impl(node n) {
  n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
  n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
  for (int b = 0; b < n_blocks; ++b) {
-  auto r = compute_block_table_and_bound(n, b, double_max); 
+  auto r = compute_block_table_and_bound(n, b, double_max);
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
   n->cache.matrix_norm_are_valid[b] = false;

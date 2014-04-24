@@ -25,7 +25,7 @@
 #include <limits>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 
-//#define CHECK_ALL
+#define CHECK_ALL
 #ifdef CHECK_ALL
 #define CHECK_CACHE
 #define CHECK_AGAINST_LINEAR_COMPUTATION
@@ -117,7 +117,7 @@ int atomic_correlators_worker::compute_block_table(node n, int b) {
 
 // for subtree at node n, return (B', bound)
 // precondition: b !=-1, n != null
-// returns -1 if cancellation structural, -2 if due to threshold
+// returns -1 for structural and/or threshold cancellation
 std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(node n, int b, double lnorm_threshold) {
 
  if (b < 0) TRIQS_RUNTIME_ERROR << " b <0";
@@ -132,7 +132,7 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
   if (b1 < 0) return {b1, 0};
   lnorm += n->cache.dtr * get_block_emin(b1);
  }
- if (lnorm > lnorm_threshold) return {-2, 0};
+ if (lnorm > lnorm_threshold) return {-1, 0};
 
  int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
  if (b2 < 0) return {b2, 0};
@@ -140,14 +140,14 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
  int b3 = b2;
  if (n->left) {
   lnorm += n->cache.dtl * get_block_emin(b2);
-  if (lnorm > lnorm_threshold) return {-2, 0};
+  if (lnorm > lnorm_threshold) return {-1, 0};
   double lnorm3;
   std::tie(b3, lnorm3) = compute_block_table_and_bound(n->left, b2, lnorm_threshold);
   if (b3 < 0) return {b3, 0};
   lnorm += lnorm3;
  }
 
- if (lnorm > lnorm_threshold) return {-2, 0};
+ if (lnorm > lnorm_threshold) return {-1, 0};
  return {b3, lnorm};
 }
 

@@ -1,10 +1,9 @@
 #pragma once
 
 #include <limits>
-#include <unordered_set>
-#include <unordered_map>
+#include <set>
+#include <map>
 #include <boost/pending/disjoint_sets.hpp>
-#include <boost/functional/hash.hpp>
 
 namespace cthyb {
 
@@ -20,7 +19,7 @@ template <typename StateType, typename OperatorType> class space_partition {
  using operator_t = OperatorType;
  using amplitude_t = typename state_t::value_type;
  using matrix_element_map_t =
-     std::unordered_map<std::pair<int, int>, typename state_t::value_type, boost::hash<std::pair<int, int>>>;
+     std::map<std::pair<int, int>, typename state_t::value_type>;
 
  static constexpr amplitude_t tolerance = std::numeric_limits<amplitude_t>::epsilon();
 
@@ -57,7 +56,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
   matrix_element_map_t Cd_elements, C_elements;
 
-  std::unordered_set<int> initial_basis_states;
+  std::set<int> initial_basis_states;
   for (int i = 0; i < tmp_state.size(); ++i) initial_basis_states.insert(i);
 
   do {
@@ -150,6 +149,6 @@ template <typename StateType, typename OperatorType> class space_partition {
  // Matrix elements of the Hamiltonian
  matrix_element_map_t matrix_elements;
  // Map representative basis state to subspace index
- std::unordered_map<int, int> representative_to_index;
+ std::map<int, int> representative_to_index;
 };
 }

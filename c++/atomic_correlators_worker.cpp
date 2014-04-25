@@ -56,15 +56,11 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
    : config(&c), sosp(&sosp_) {
 
  // Taking parameters from the inputs
- std::string ms = p["trace_estimator"];
- try {
-  method =
-      std::map<std::string, method_t>{{"FullTrace", method_t::FullTrace}, 
-                                      {"EstimateTruncEps", method_t::EstimateTruncEps}}.at(ms);
- }
- catch (...) {
-  TRIQS_RUNTIME_ERROR << "Trace method " << ms << " not recognized.";
- }
+ use_trace_estimator = p["use_trace_estimator"];
+ if (!use_trace_estimator) 
+  method = method_t::Estimate;
+ else
+  method = method_t::FullTrace;
 
  make_histograms = p["make_histograms"];
  if (make_histograms) {
@@ -76,7 +72,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_yee, double u_yee) {
  if (method == method_t::FullTrace) return compute_trace(true, p_yee, u_yee);
- //if (method == method_t::EstimateTruncEps)
+ //if (method == method_t::Estimate)
  return compute_trace(false, p_yee, 0);
 }
 
@@ -84,7 +80,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_
 
 atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
  trace_t r = 1;
- if (method == method_t::EstimateTruncEps) {
+ if (method == method_t::Estimate) {
   trace_t ft = compute_trace(true, -1, 0);
   trace_t est = estimate(-1, 0);
   r = ft / est;

@@ -45,9 +45,10 @@ class atomic_correlators_worker {
 
  private:
  // Various possible algorithms
+ bool use_trace_estimator;
  enum class method_t {
   FullTrace,
-  EstimateTruncEps
+  Estimate
  };
  method_t method;
 
@@ -251,9 +252,10 @@ class atomic_correlators_worker {
  void update_cache_impl(node n);
  void update_dt(node n);
 
+ bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
+
  // ---------------- Histograms ----------------
  bool make_histograms;                       // Do we make the Histograms ?
- bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
 
  // How many block non zero at root of the tree
  statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};

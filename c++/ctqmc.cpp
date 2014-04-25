@@ -117,10 +117,10 @@ parameter_defaults ctqmc::solve_defaults() const {
      .optional("random_name", std::string(""), "Name of random number generator")
      .optional("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
      .optional("verbosity", (c.rank()==0 ? int(3) : int(0)), "Verbosity level")
+     .optional("use_trace_estimator", bool(false), "Calculate the full trace or use an estimate?")
      .optional("measure_gt", bool(true), "Whether to measure G(tau)")
      .optional("measure_pert_order", bool(false), "Whether to measure perturbation order")
-     .optional("make_histograms", bool(false), "Make the analysis histograms of the trace computation")
-     .optional("trace_estimator", std::string("FullTrace"), "How to compute the trace");
+     .optional("make_histograms", bool(false), "Make the analysis histograms of the trace computation");
  return pdef;
 }
 

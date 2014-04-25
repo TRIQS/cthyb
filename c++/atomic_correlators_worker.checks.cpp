@@ -21,12 +21,12 @@
 
 //-------------------- Cache integrity check --------------------------------
 
-void atomic_correlators_worker::check_cache_integrity(bool temporary, bool print) {
+void atomic_correlators_worker::check_cache_integrity(bool print) {
 #ifdef CHECK_CACHE
- if (print) std::cout << " ---- Cache integrity check ---- " << temporary << std::endl;
+ if (print) std::cout << " ---- Cache integrity check ---- " << std::endl;
  if (print) tree.graphviz(std::ofstream("tree_cache_check"));
- foreach_subtree_first(tree, [&](node y) { this->check_cache_integrity_one_node(y, temporary, print); });
- if (print) std::cout << " ---- Cache integrity completed ---- " << temporary << std::endl;
+ foreach_subtree_first(tree, [&](node y) { this->check_cache_integrity_one_node(y, print); });
+ if (print) std::cout << " ---- Cache integrity completed ---- " << std::endl;
 #endif
 }
 
@@ -77,7 +77,7 @@ matrix<double> atomic_correlators_worker::check_one_block_matrix_linear(node top
 }
 //-------------------- Cache integrity check for one node --------------------------------
 
-void atomic_correlators_worker::check_cache_integrity_one_node(node n, bool temporary, bool print) {
+void atomic_correlators_worker::check_cache_integrity_one_node(node n, bool print) {
  if (n == nullptr) return;
  if (print) std::cout << " ... checking cache integrity for node " << n->key << std::endl;
 

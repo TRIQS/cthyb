@@ -150,7 +150,7 @@ class atomic_correlators_worker {
   trial_node_index = -1;
   tree_size = tree.size();
   n_modif = tree.clear_modified();
-  check_cache_integrity(false);
+  check_cache_integrity();
  }
 
  // confirm the insertion of the nodes, with red black balance
@@ -165,7 +165,7 @@ class atomic_correlators_worker {
   update_cache();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
-  check_cache_integrity(false);
+  check_cache_integrity();
  }
 
  /*************************************************************************
@@ -200,7 +200,7 @@ class atomic_correlators_worker {
   removed_key.clear();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
-  check_cache_integrity(false);
+  check_cache_integrity();
  }
 
  /// Confirm deletion : the soft deleted flagged node are truly deleted
@@ -211,7 +211,7 @@ class atomic_correlators_worker {
   update_cache();
   tree_size = tree.size();
   n_modif = tree.clear_modified();
-  check_cache_integrity(false);
+  check_cache_integrity();
  }
 
  private:
@@ -242,8 +242,8 @@ class atomic_correlators_worker {
  std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
 
  // integrity check
- void check_cache_integrity(bool temporary, bool print = false);
- void check_cache_integrity_one_node(node n, bool temporary, bool print);
+ void check_cache_integrity(bool print = false);
+ void check_cache_integrity_one_node(node n, bool print);
  int check_one_block_table_linear(node n, int b, bool print);
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
 

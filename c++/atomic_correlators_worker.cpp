@@ -57,7 +57,7 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
 
  // Taking parameters from the inputs
  use_trace_estimator = p["use_trace_estimator"];
- if (!use_trace_estimator) 
+ if (use_trace_estimator) 
   method = method_t::Estimate;
  else
   method = method_t::FullTrace;

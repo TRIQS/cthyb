@@ -21,13 +21,7 @@ def print_master(msg):
 # Remove cthyb-specific parameters 
 cthyb_only_params = [
     'beta',
-    'verbosity',
-    'use_old_trace',
-    'trace_estimator_n_blocks_guess',
-    'use_truncation',
-    'use_quick_trace_estimator',
-    'cthyb_gs_energy_convergence',
-    'cthyb_small_matrix_size']
+    'verbosity']
 p = {k:v for k, v in p.items() if not k in cthyb_only_params}
 
 print_master("Welcome to Anderson (1 correlated site + symmetric bath) test, matrix version.")

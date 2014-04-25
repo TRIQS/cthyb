@@ -65,4 +65,4 @@ p["n_tau_g"] = 200
 p["measure_gt"] = True
 p["measure_pert_order"] = False
 p["make_histograms"] = False
-p["trace_estimator"] = "FullTrace"
+p["use_trace_estimator"] = False

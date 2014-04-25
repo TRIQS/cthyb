@@ -35,7 +35,7 @@ p["n_tau_delta"] = 5000
 p["n_tau_g"] = 5000
 p["make_histograms"] = True
 p["measure_gt"] = False
-p["trace_estimator"] = "FullTrace"
+p["use_trace_estimator"] = False
 
 # Block structure of GF
 gf_struct = OrderedDict()

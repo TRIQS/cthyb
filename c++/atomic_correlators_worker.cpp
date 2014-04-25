@@ -118,7 +118,7 @@ int atomic_correlators_worker::compute_block_table(node n, int b) {
 // for subtree at node n, return (B', bound)
 // precondition: b !=-1, n != null
 // returns -1 for structural and/or threshold cancellation
-std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(node n, int b, double lnorm_threshold) {
+std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(node n, int b, double lnorm_threshold, bool use_threshold) {
 
  if (b < 0) TRIQS_RUNTIME_ERROR << " b <0";
  // if (n == nullptr) TRIQS_RUNTIME_ERROR << " null ptr";
@@ -128,11 +128,11 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
 
  int b1 = b;
  if (n->right) {
-  std::tie(b1, lnorm) = compute_block_table_and_bound(n->right, b, lnorm_threshold);
+  std::tie(b1, lnorm) = compute_block_table_and_bound(n->right, b, lnorm_threshold, use_threshold);
   if (b1 < 0) return {b1, 0};
   lnorm += n->cache.dtr * get_block_emin(b1);
  }
- if (lnorm > lnorm_threshold) return {-1, 0};
+ if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
 
  int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
  if (b2 < 0) return {b2, 0};
@@ -140,15 +140,19 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
  int b3 = b2;
  if (n->left) {
   lnorm += n->cache.dtl * get_block_emin(b2);
-  if (lnorm > lnorm_threshold) return {-1, 0};
+  if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
   double lnorm3;
-  std::tie(b3, lnorm3) = compute_block_table_and_bound(n->left, b2, lnorm_threshold);
+  std::tie(b3, lnorm3) = compute_block_table_and_bound(n->left, b2, lnorm_threshold, use_threshold);
   if (b3 < 0) return {b3, 0};
   lnorm += lnorm3;
  }
 
- if (lnorm > lnorm_threshold) return {-1, 0};
- if (!std::isfinite(lnorm)) TRIQS_RUNTIME_ERROR  << "Infinite lnorm is compute_block_table_and_bound! ";
+ if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
+
+ if (std::isinf(lnorm)){
+  lnorm = double_max;
+  if (lnorm<0) TRIQS_RUNTIME_ERROR << "Negative lnorm in compute_block_table_and_bound!";
+ }
 
  return {b3, lnorm};
 }
@@ -242,7 +246,7 @@ void atomic_correlators_worker::update_cache_impl(node n) {
  n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
  n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
  for (int b = 0; b < n_blocks; ++b) {
-  auto r = compute_block_table_and_bound(n, b, double_max);
+  auto r = compute_block_table_and_bound(n, b, double_max, false);
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
   n->cache.matrix_norm_are_valid[b] = false;

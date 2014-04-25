@@ -237,7 +237,7 @@ class atomic_correlators_worker {
 
  // recursive function for tree traversal
  int compute_block_table(node n, int b);
- std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold); //,double lnorm);
+ std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true); //,double lnorm);
  std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
 
  // integrity check

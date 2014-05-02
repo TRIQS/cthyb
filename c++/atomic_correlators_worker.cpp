@@ -85,7 +85,13 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_es
   trace_t est = estimate(-1, 0);
   r = ft / est;
   if (std::abs(r - 2.0 / 3.0) > 2.0 / 3.0 + 0.001) TRIQS_RUNTIME_ERROR << " estimator out of bounds !! " << r;
-  if (!std::isfinite(r)) TRIQS_RUNTIME_ERROR << " full_trace_over_estimator : r not finite" << r << " " << ft << " " << est;
+  if (!std::isfinite(r)) {
+    // it might be that both ft and est are zero. This is still OK and r should be 1
+    if (std::abs(est) < std::numeric_limits<trace_t>::epsilon() && std::abs(ft) < std::numeric_limits<trace_t>::epsilon())
+      r = 1;
+    else
+      TRIQS_RUNTIME_ERROR << "full_trace_over_estimator: r not finite" << r << " " << ft << " " << est << " " << *config;
+  }
  }
  if (make_histograms) histo_trace_over_estimator << r;
  return r;

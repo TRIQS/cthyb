@@ -95,7 +95,7 @@ class move_insert_c_cdag {
    data.atomic_corr.trial_node_insert(tau2, op2);
   }
   catch (rbt_insert_error const&) {
-   std::cerr << "Insert error : recovering ... " << std::endl;
+   //std::cerr << "Insert error : recovering ... " << std::endl;
    data.atomic_corr.trial_node_uninsert();
    return 0;
   }

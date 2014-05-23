@@ -13,3 +13,7 @@ triqs_set_rpath_for_target(cthyb)
 # to be able to run from toplevel
 execute_process(COMMAND ln -fs ${CMAKE_CURRENT_BINARY_DIR}/cthyb.so ${CMAKE_BINARY_DIR}/pytriqs/${python_destination})
 
+# add version file
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py)
+install (FILES ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
+

@@ -22,6 +22,10 @@ if(NOT CTHYB_VERSION EQUAL TRIQS_VERSION)
   message(FATAL_ERROR "The application version is not compatible with the TRIQS library (TRIQS library version: ${TRIQS_VERSION} while this application version: ${CTHYB_VERSION})")
 endif()
 
+# Get hash
+triqs_get_git_hash(${CMAKE_SOURCE_DIR} "CTHYB")
+message(STATUS "Hash: ${CTHYB_GIT_HASH}")
+
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 

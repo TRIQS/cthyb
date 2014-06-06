@@ -1,6 +1,6 @@
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
-#include "./operator.hpp"
+#include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/state.hpp>
 #include <iostream>

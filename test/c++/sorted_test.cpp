@@ -1,8 +1,7 @@
 #include <triqs/utility/first_include.hpp>
 #include "./sorted_spaces.hpp"
-#include "./operator.hpp"
+#include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include "./gf_block_structure.hpp"
 
 using namespace cthyb;
 using triqs::utility::many_body_operator;
@@ -25,12 +24,7 @@ int main() {
   fops.insert("up");
   fops.insert("down");
 
-  // Block structure
-  std::vector<block_desc_t> block_structure;
-  block_structure.push_back({"up",{{"up"}}});
-  block_structure.push_back({"down",{{"down"}}});
-
-  // divide the full Hilbert space
+  // Divide the full Hilbert space
   sorted_spaces ss(H, qn_list, fops);
   std::cout << ss << std::endl;
 

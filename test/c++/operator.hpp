@@ -1,1 +1,1 @@
-#include "../../c++/triqs/many_body_operator.hpp"
+#include <triqs/operators/many_body_operator.hpp>

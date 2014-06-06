@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <sstream>
 
-#include "./triqs/many_body_operator.hpp"
 #include "./space_partition.hpp"
+#include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/draft/hilbert_space_tools/hilbert_space.hpp>
 #include <triqs/draft/hilbert_space_tools/imperative_operator.hpp>

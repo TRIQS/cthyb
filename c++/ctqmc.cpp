@@ -26,42 +26,53 @@
 #include "measure_g.hpp"
 #include "measure_perturbation_hist.hpp"
 
+
+
 namespace cthyb {
 
-ctqmc::ctqmc(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
-                           fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure)
-   : gf_block_structure(fops, block_structure) {
- p_in.update(constructor_defaults());//, utility::parameters::reject_key_without_default);
- auto const& params = p_in;
+ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_tau_delta, int n_tau_g):
+  beta(beta_), gf_struct(gf_struct_) {
 
- if (params["use_quantum_numbers"]) 
-  sosp = {h_loc, quantum_numbers, fops};
- else 
-  sosp = {h_loc, fops};
+  std::vector<std::string> block_names;
+  std::vector<gf<imtime>> deltat_blocks;
+  std::vector<gf<imtime>> gt_blocks;
 
- std::vector<std::string> block_names;
- std::vector<gf<imtime>> deltat_blocks;
- std::vector<gf<imtime>> gt_blocks;
+  for (auto const& block : gf_struct) {
+    block_names.push_back(block.first);
+    int n = block.second.size();
+    deltat_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau_delta, half_bins}, {n, n}});
+    gt_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau_g, half_bins}, {n, n}});
+  }
 
- for (auto const& block : block_structure) {
-  block_names.push_back(block.name);
-  int n = block.indices.size();
-  deltat_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_delta"], half_bins}, {n, n}});
-  gt_blocks.push_back(gf<imtime>{{params["beta"], Fermion, params["n_tau_g"], half_bins}, {n, n}});
- }
+  deltat = make_block_gf(block_names, deltat_blocks);
+  gt = make_block_gf(block_names, gt_blocks);
 
- deltat = make_block_gf(block_names, deltat_blocks);
- gt = make_block_gf(block_names, gt_blocks);
 }
 
-//-----------------------------------
 
-void ctqmc::solve(utility::parameters p_in) {
+void ctqmc::solve(real_operator_t const & h_loc, params::parameters params,
+                  std::vector<real_operator_t> const & quantum_numbers, bool use_quantum_numbers) {
 
- p_in.update(solve_defaults());//, utility::parameters::reject_key_without_default);
- auto const& params = p_in;
+  // basis of operators to use
+  fundamental_operator_set fops;
+  std::map<std::pair<int,int>,int> linindex;
+  int block_index = 0;
+  for (auto const & b: gf_struct) {
+    int internal_index = 0;
+    for (auto const & a: b.second) {
+      fops.insert(b.first, a);
+      linindex[std::make_pair(block_index, internal_index)] = fops[{b.first,a}];
+      internal_index++;
+    }
+    block_index++;
+  }
 
- qmc_data data(params, sosp, gf_block_structure, deltat);
+  if (use_quantum_numbers)
+   sosp = {h_loc, quantum_numbers, fops};
+  else 
+   sosp = {h_loc, fops};
+
+ qmc_data data(beta, params, sosp, linindex, deltat);
  mc_tools::mc_generic<mc_sign_type> qmc(params);
 
  // Moves
@@ -92,39 +103,31 @@ void ctqmc::solve(utility::parameters p_in) {
 }
 
 //----------------------------------------------------------------------------------------------
-parameter_defaults ctqmc::constructor_defaults() const {
 
- parameter_defaults pdef;
+parameters_t ctqmc::solve_parameters() {
 
- pdef.required("beta", double(), "Inverse temperature")
-     .optional("n_tau_delta", int(10001), "Number of time slices for Delta(tau)")
-     .optional("n_tau_g", int(10001), "Number of time slices for G(tau)")
-     .optional("n_w", int(1025), "Number of Matsubara frequencies")
-     .optional("use_quantum_numbers", bool(false), " Use the quantum numbers");
+ auto pdef = parameters_t{};
+ boost::mpi::communicator world;
+
+ pdef.add_field("n_cycles", no_default<int>(), "Number of QMC cycles")
+     .add_field("length_cycle", int(50), "Length of a single QMC cycle")
+     .add_field("n_warmup_cycles", int(5000), "Number of cycles for thermalization")
+     .add_field("random_seed", int(34788 + 928374 * world.rank()), "Seed for random number generator")
+     .add_field("random_name", std::string(""), "Name of random number generator")
+     .add_field("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
+     .add_field("verbosity", (world.rank()==0 ? int(3) : int(0)), "Verbosity level")
+     .add_field("use_trace_estimator", bool(false), "Calculate the full trace or use an estimate?")
+     .add_field("measure_gt", bool(true), "Whether to measure G(tau)")
+     .add_field("measure_pert_order", bool(false), "Whether to measure perturbation order")
+     .add_field("make_histograms", bool(false), "Make the analysis histograms of the trace computation");
+
  return pdef;
 }
 
 //----------------------------------------------------------------------------------------------
 
-parameter_defaults ctqmc::solve_defaults() const {
-
- parameter_defaults pdef;
-
- pdef.required("n_cycles", int(), "Number of QMC cycles")
-     .optional("length_cycle", int(50), "Length of a single QMC cycle")
-     .optional("n_warmup_cycles", int(5000), "Number of cycles for thermalization")
-     .optional("random_seed", int(34788 + 928374 * c.rank()), "Seed for random number generator")
-     .optional("random_name", std::string(""), "Name of random number generator")
-     .optional("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
-     .optional("verbosity", (c.rank()==0 ? int(3) : int(0)), "Verbosity level")
-     .optional("use_trace_estimator", bool(false), "Calculate the full trace or use an estimate?")
-     .optional("measure_gt", bool(true), "Whether to measure G(tau)")
-     .optional("measure_pert_order", bool(false), "Whether to measure perturbation order")
-     .optional("make_histograms", bool(false), "Make the analysis histograms of the trace computation");
- return pdef;
-}
-
-void ctqmc::help() const {
+void ctqmc::help() {
  // TODO
 }
+
 }

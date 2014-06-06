@@ -52,7 +52,7 @@ namespace arrays {
 
 namespace cthyb {
 
-atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, utility::parameters const& p)
+atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, params::parameters const& p)
    : config(&c), sosp(&sosp_) {
 
  // Taking parameters from the inputs

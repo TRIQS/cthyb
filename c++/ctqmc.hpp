@@ -27,25 +27,29 @@
 
 namespace cthyb {
 
+using namespace triqs::params;
 using namespace triqs::utility;
 using mc_weight_type = double;
+using parameters_t = triqs::params::parameters;
 
 class ctqmc {
 
  using mc_sign_type = mc_weight_type;
 
+ double beta;
+ sorted_spaces sosp;
+ std::map<std::string,std::vector<int>> gf_struct;
  block_gf<imtime> deltat, gt;             // Green's function containers: imaginary-time Green's functions
  boost::mpi::communicator c;              // define the communicator, here MPI_COMM_WORLD
- sorted_spaces sosp;                      // Diagonalization of the atomic problem
- gf_block_structure_t gf_block_structure; // block structure of the local green function
 
  public:
  using real_operator_t = many_body_operator<double>;
 
- ctqmc(parameters p_in, real_operator_t const& h_loc, std::vector<real_operator_t> const& quantum_numbers,
-              fundamental_operator_set const& fops, std::vector<block_desc_t> const& block_structure);
+ ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_tau_delta=10001, int n_tau_g=10001);
 
- void solve(parameters p_in);
+ void solve(real_operator_t const & h_loc, params::parameters params,
+            std::vector<real_operator_t> const & quantum_numbers = {},
+            bool use_quantum_numbers = false);
 
  // input containers
  block_gf_view<imtime> deltat_view() { return deltat; }
@@ -54,11 +58,11 @@ class ctqmc {
  block_gf_view<imtime> gt_view() { return gt; }
 
  // specify all required and optional parameters and generate help from them
- parameter_defaults constructor_defaults() const;
- parameter_defaults solve_defaults() const;
- void help() const;
+ static parameters constructor_parameters();
+ static parameters solve_parameters();
+ static void help();
 
- block_gf_view<imtime> atomic_gf(double beta) const { return sosp.atomic_gf(beta); }
+ block_gf_view<imtime> atomic_gf(double beta_) const { return sosp.atomic_gf(beta_); }
 
 };
 }

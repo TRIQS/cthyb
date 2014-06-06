@@ -35,7 +35,7 @@ class atomic_correlators_worker {
  // using trace_t = std::complex<double>;
 
  // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
- atomic_correlators_worker(configuration& c, sorted_spaces const& sosp, utility::parameters const& p);
+ atomic_correlators_worker(configuration& c, sorted_spaces const& sosp, params::parameters const& p);
 
  ~atomic_correlators_worker() { unlink_trial_nodes(); }
  // in case of an exception, we need to remove the trial node before cleaning the tree !!

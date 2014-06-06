@@ -19,8 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./atomic_correlators_worker.hpp"
-#include "./gf_block_structure.hpp"
+#include "atomic_correlators_worker.hpp"
 #include <triqs/gfs.hpp>
 #include <triqs/det_manip.hpp>
 #include <triqs/utility/serialization.hpp>
@@ -34,7 +33,7 @@ using namespace triqs::gfs;
 struct qmc_data {
 
  configuration config;                          // Configuration
- gf_block_structure_t const &gf_block_structure;
+ std::map<std::pair<int,int>,int> linindex;
  sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
  mutable atomic_correlators_worker atomic_corr; // Calculator of the trace
 
@@ -63,11 +62,11 @@ struct qmc_data {
  trace_t trace;                                               // The current value of the trace
 
  // construction and the basics stuff. value semantics, except = ?
- qmc_data(utility::parameters const &p, sorted_spaces const &sosp, gf_block_structure_t const &gf_block_structure,
+ qmc_data(double beta, params::parameters const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
           block_gf_const_view<imtime> delta)
-    : config(p["beta"]),
+    : config(beta),
       sosp(sosp),
-      gf_block_structure(gf_block_structure),
+      linindex(linindex),
       atomic_corr(config, sosp, p),
       current_sign(1),
       old_sign(1) {

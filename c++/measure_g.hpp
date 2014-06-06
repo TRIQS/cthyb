@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/gfs.hpp>
 #include "qmc_data.hpp"
+#include <boost/serialization/complex.hpp>
 #include <boost/mpi/collectives.hpp>
 
 namespace cthyb {

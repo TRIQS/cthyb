@@ -1,3 +1,7 @@
+SET(PYTHON_SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/cthyb_solver.py
+)
+
 # where will the python end up in triqs?
 set(python_destination applications/impurity_solvers/cthyb)
 
@@ -16,4 +20,5 @@ execute_process(COMMAND ln -fs ${CMAKE_CURRENT_BINARY_DIR}/cthyb.so ${CMAKE_BINA
 # add version file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py)
 install (FILES ${CMAKE_BINARY_DIR}/pytriqs/${python_destination}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
 

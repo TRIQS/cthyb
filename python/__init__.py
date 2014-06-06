@@ -23,6 +23,7 @@ r"""
 DOC
 
 """
-from cthyb import Solver
+from cthyb_solver import Solver
+from cthyb import SolverCore
 
-__all__ = ['Solver']
+__all__ = ['Solver', 'SolverCore']

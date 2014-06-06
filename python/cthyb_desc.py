@@ -10,7 +10,7 @@ module.add_using("namespace cthyb")
 
 # The Solver class
 cthyb = class_(
-        py_type = "Solver",
+        py_type = "SolverCore",
         c_type = "ctqmc"
         )
 

@@ -58,7 +58,6 @@ class ctqmc {
  block_gf_view<imtime> gt_view() { return gt; }
 
  // specify all required and optional parameters and generate help from them
- static parameters constructor_parameters();
  static parameters solve_parameters();
  static void help();
 

@@ -28,7 +28,7 @@ gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 
 # Construct solver    
-S = Solver(beta=beta, gf_struct=gf_struct, n_tau_delta=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_delta=1000, n_tau_g=1000)
 
 # Hamiltonian
 H = c_dag("up",0) - c_dag("up",0)
@@ -68,7 +68,7 @@ S.Delta_tau["up"] <<= InverseFourier(delta_w)
 S.Delta_tau["down"] <<= InverseFourier(delta_w)
 
 # Parameters
-p = Solver.solve_parameters()
+p = SolverCore.solve_parameters()
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567

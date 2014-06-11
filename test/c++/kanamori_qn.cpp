@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "ctqmc.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -36,76 +36,54 @@ int main(int argc, char* argv[]) {
   double V = 1.0;
   double epsilon = 2.3;
 
-  // Put in the class
-  parameters p;
-  p["beta"] = beta;
-  p["max_time"] = -1;
-  p["random_name"] = "";
-  p["random_seed"] = 123 * rank + 567;
-  p["verbosity"] = 3;
-  p["length_cycle"] = 50;
-  p["n_warmup_cycles"] = 50;
-  p["n_cycles"] = 500;
-  p["n_tau_delta"] = 1000;
-  p["n_tau_g"] = 1000;
-  p["krylov_bs_use_cutoff"] = true;
-  p["krylov_bs_prob_cutoff"] = .0;
-  
-  // basis of operators to use  
-  fundamental_operator_set fops;
-  for(int o = 0; o < num_orbitals; ++o){
-      fops.insert("up",o);
-      fops.insert("down",o);
-  }
+  auto N = [] (std::string sn, int an) { return n(sn+'-'+std::to_string(an),0); }; 
+  auto C = [] (std::string sn, int an) { return c(sn+'-'+std::to_string(an),0); }; 
+  auto C_dag = [] (std::string sn, int an) { return c_dag(sn+'-'+std::to_string(an),0); }; 
 
-  // block structure of GF
-  std::vector<block_desc_t> block_structure;
-  for(int o = 0; o < num_orbitals; ++o){
-    std::stringstream bup; bup << "up-" << o;
-    block_structure.push_back({bup.str(),{{"up",o}}});
-  }
-  for(int o = 0; o < num_orbitals; ++o){
-    std::stringstream bdown; bdown << "down-" << o;
-    block_structure.push_back({bdown.str(),{{"down",o}}});
-  }
-    
   // Hamiltonian
   many_body_operator<double> H;
   for(int o = 0; o < num_orbitals; ++o){
-      H += -mu*(n("up",o) + n("down",o));
+      H += -mu*(N("up",o) + N("down",o));
   }
   for(int o = 0; o < num_orbitals; ++o){
-      H += U *n("up",o)*n("down",o);
+      H += U *N("up",o)*N("down",o);
   }
   for(int o1 = 0; o1 < num_orbitals; ++o1)
   for(int o2 = 0; o2 < num_orbitals; ++o2){
       if(o1==o2) continue;
-      H += (U-2*J)*n("up",o1)*n("down",o2);
+      H += (U-2*J)*N("up",o1)*N("down",o2);
   }
   for(int o1 = 0; o1 < num_orbitals; ++o1)
   for(int o2 = 0; o2 < num_orbitals; ++o2){
       if(o2>=o1) continue;
-      H += (U-3*J)*n("up",o1)*n("up",o2);
-      H += (U-3*J)*n("down",o1)*n("down",o2);
+      H += (U-3*J)*N("up",o1)*N("up",o2);
+      H += (U-3*J)*N("down",o1)*N("down",o2);
   }
-  
+
   for(int o1 = 0; o1 < num_orbitals; ++o1)
   for(int o2 = 0; o2 < num_orbitals; ++o2){
       if(o1==o2) continue;
-      H += -J*c_dag("up",o1)*c_dag("down",o1)*c("up",o2)*c("down",o2);
-      H += -J*c_dag("up",o1)*c_dag("down",o2)*c("up",o2)*c("down",o1);
+      H += -J*C_dag("up",o1)*C_dag("down",o1)*C("up",o2)*C("down",o2);
+      H += -J*C_dag("up",o1)*C_dag("down",o2)*C("up",o2)*C("down",o1);
   }
 
   // quantum numbers
   std::vector<many_body_operator<double>> qn;
   qn.resize(2);
   for(int o = 0; o < num_orbitals; ++o){
-      qn[0] += n("up",o);
-      qn[1] += n("down",o);
+      qn[0] += N("up",o);
+      qn[1] += N("down",o);
+  }
+
+  // gf structure
+  std::map<std::string, std::vector<int>> gf_struct; 
+  for(int o = 0; o < num_orbitals; ++o){
+    gf_struct["up-"+std::to_string(o)] = {0};
+    gf_struct["down-"+std::to_string(o)] = {0};
   }
 
   // Construct CTQMC solver
-  ctqmc solver(p, H, qn, fops, block_structure);
+  ctqmc solver(beta, gf_struct, 1000, 1000);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
@@ -115,8 +93,18 @@ int main(int argc, char* argv[]) {
     solver.deltat_view()[o] = triqs::gfs::inverse_fourier(delta_w);
   }
 
+  // Solve parameters
+  auto p = ctqmc::solve_parameters();
+  p["max_time"] = -1;
+  p["random_name"] = "";
+  p["random_seed"] = 123 * rank + 567;
+  p["verbosity"] = 3;
+  p["length_cycle"] = 50;
+  p["n_warmup_cycles"] = 50;
+  p["n_cycles"] = 500;
+
   // Solve!
-  solver.solve(p);
+  solver.solve(H, p, qn, true);
   
   // Save the results
   if(rank==0){

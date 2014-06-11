@@ -13,11 +13,11 @@ foreach(t ${SIMPLE_TESTS})
 endforeach(t)
 
 # HDF5 tests
-set(HDF5_TESTS anderson)
-    #anderson anderson_block anderson_qn anderson_block_qn
-    #spinless spinless_qn
-    #kanamori kanamori_qn
-    #kanamori_offdiag kanamori_offdiag_qn)
+set(HDF5_TESTS
+    anderson anderson_block anderson_qn anderson_block_qn
+    spinless spinless_qn
+    kanamori kanamori_qn
+    kanamori_offdiag kanamori_offdiag_qn)
 
 foreach(t ${HDF5_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)

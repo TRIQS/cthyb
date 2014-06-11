@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
   delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
   solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
-  
+
   // Solve parameters
   auto p = ctqmc::solve_parameters();
   p["random_name"] = "";
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   p["length_cycle"] = 50;
   p["n_warmup_cycles"] = 10;
   p["n_cycles"] = 5000;
-    
+
   // Solve!
   solver.solve(H, p, qn, true);
   

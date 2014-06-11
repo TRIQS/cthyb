@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "ctqmc.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -35,8 +35,26 @@ int main(int argc, char* argv[]) {
   double V = 1.0;
   double epsilon = 2.3;
 
-  parameters p;
-  p["beta"] = beta;
+  // define operators
+  auto H = U*n("tot",0)*n("tot",1) + (-mu+h)*n("tot",0) + (-mu-h)*n("tot",1);
+  // quantum numbers
+  std::vector<many_body_operator<double>> qn;
+  qn.push_back(n("tot",0));
+  qn.push_back(n("tot",1));
+  // gf structure
+  std::map<std::string, std::vector<int>> gf_struct{{"tot",{0,1}}};
+
+  // Construct CTQMC solver
+  ctqmc solver(beta, gf_struct, 1000, 1000);
+
+  // Set hybridization function
+  triqs::clef::placeholder<0> om_;
+  auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
+  delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
+  solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
+
+  // Solve parameters
+  auto p = ctqmc::solve_parameters();
   p["random_name"] = "";
   p["random_seed"] = 123 * rank + 567;
   p["max_time"] = -1;
@@ -44,39 +62,9 @@ int main(int argc, char* argv[]) {
   p["length_cycle"] = 50;
   p["n_warmup_cycles"] = 10;
   p["n_cycles"] = 5000;
-  p["n_tau_delta"] = 1000;
-  p["n_tau_g"] = 1000;
-  p["krylov_bs_use_cutoff"] = true;
-  p["krylov_bs_prob_cutoff"] = .0;
-  
-  // define operators
-  auto H = U*n("up")*n("down") + (-mu+h)*n("up") + (-mu-h)*n("down");
 
-  // quantum numbers
-  std::vector<many_body_operator<double>> qn;
-  qn.push_back(n("up"));
-  qn.push_back(n("down"));
-
-  // basis of operators to use
-  fundamental_operator_set fops;
-  fops.insert("up");
-  fops.insert("down");
- 
-  // block structure of GF
-  std::vector<block_desc_t> block_structure;
-  block_structure.push_back({"tot", {{"up"}, {"down"}}});
-
-  // Construct CTQMC solver
-  ctqmc solver(p, H, qn, fops, block_structure);
-
-  // Set hybridization function
-  triqs::clef::placeholder<0> om_;
-  auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
-  delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
-  solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
-  
   // Solve!
-  solver.solve(p);
+  solver.solve(H, p, qn, true);
   
   // Save the results
   if(rank==0){

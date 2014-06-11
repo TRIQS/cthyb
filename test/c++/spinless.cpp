@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "ctqmc.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -34,39 +34,13 @@ int main(int argc, char* argv[]) {
   double epsilon = 2.3;
   double t = 0.1;
 
-  // Put in the class
-  parameters p;
-  p["beta"] = beta;
-  p["max_time"] = -1;
-  p["random_name"] = "";
-  p["random_seed"] = 123 * rank + 567;
-  p["max_time"] = -1;
-  p["verbosity"] = 3;
-  p["length_cycle"] = 50;
-  p["n_warmup_cycles"] = 50;
-  p["n_cycles"] = 3000;
-  p["n_tau_delta"] = 1000;
-  p["n_tau_g"] = 1000;
-  p["krylov_bs_use_cutoff"] = true;
-  p["krylov_bs_prob_cutoff"] = .0;
-
-  // define operators
-  auto H = U*n("0")*n("1") - mu*(n("0")+n("1")) - t*c_dag("0")*c("1") - t*c_dag("1")*c("0");
-
-  // quantum numbers
+  // define operators and QN
+  auto H = U*n("tot",0)*n("tot",1) - mu*(n("tot",0)+n("tot",1)) - t*c_dag("tot",0)*c("tot",1) - t*c_dag("tot",1)*c("tot",0);
   std::vector<many_body_operator<double>> qn;
-
-  // basis of operators to use
-  fundamental_operator_set fops;
-  fops.insert("0");
-  fops.insert("1");
-
-  // block structure of GF
-  std::vector<block_desc_t> block_structure;
-  block_structure.push_back({"tot", {{"0"}, {"1"}}});
+  std::map<std::string, std::vector<int>> gf_struct{{"tot",{0,1}}};
 
   // Construct CTQMC solver
-  ctqmc solver(p, H, qn, fops, block_structure);
+  ctqmc solver(beta, gf_struct, 1000, 1000);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
@@ -80,9 +54,19 @@ int main(int argc, char* argv[]) {
   d01(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d10(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   solver.deltat_view()[0] = inverse_fourier(delta_w);
-  
+
+  // Solve parameters
+  auto p = ctqmc::solve_parameters();
+  p["random_name"] = "";
+  p["random_seed"] = 123 * rank + 567;
+  p["max_time"] = -1;
+  p["verbosity"] = 3;
+  p["length_cycle"] = 50;
+  p["n_warmup_cycles"] = 50;
+  p["n_cycles"] = 3000;
+
   // Solve!
-  solver.solve(p);
+  solver.solve(H, p, qn, true);
   
   // Save the results
   if(rank==0){

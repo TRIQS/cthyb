@@ -1,4 +1,4 @@
-#include "./ctqmc.hpp"
+#include "ctqmc.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -53,37 +53,6 @@ int main(int argc, char* argv[]) {
     
   assert(epsilon.size() == V.size());
   
-  // Put in the class
-  parameters p;
-  p["beta"] = beta;
-  p["max_time"] = -1;
-  p["random_name"] = "";
-  p["random_seed"] = 123 * rank + 567;
-  p["verbosity"] = 3;
-  p["length_cycle"] = 50;
-  p["n_warmup_cycles"] = 50;
-  p["n_cycles"] = 500;
-  p["n_tau_delta"] = 1000;
-  p["n_tau_g"] = 1000;
-  p["krylov_bs_use_cutoff"] = true;
-  p["krylov_bs_prob_cutoff"] = .0;
-
-  // basis of operators to use  
-  fundamental_operator_set fops;
-  for(int o = 0; o < num_orbitals; ++o){
-      fops.insert("up",o);
-      fops.insert("down",o);
-  }
-  
-  // block structure of GF
-  std::vector<block_desc_t> block_structure;
-  block_structure.push_back({"up"});
-  block_structure.push_back({"down"});
-  for(int o = 0; o < num_orbitals; ++o){
-      block_structure[0].indices.push_back({"up",o});
-      block_structure[1].indices.push_back({"down",o});
-  }
-
   // Hamiltonian
   many_body_operator<double> H;
   for(int o = 0; o < num_orbitals; ++o){
@@ -116,12 +85,19 @@ int main(int argc, char* argv[]) {
   // quantum numbers
   std::vector<many_body_operator<double>> qn;
 
+  // gf structure
+  std::map<std::string, std::vector<int>> gf_struct{{"up",{}},{"down",{}}}; 
+  for(int o = 0; o < num_orbitals; ++o){
+    gf_struct["up"].push_back(o); 
+    gf_struct["down"].push_back(o); 
+  }
+
   // Construct CTQMC solver
-  ctqmc solver(p, H, qn, fops, block_structure);
-  
+  ctqmc solver(beta, gf_struct, 1000, 1000);
+
   // Set hybridization function
   auto delta_w = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
-    
+
   auto w_mesh = delta_w.mesh();
   for(std::size_t w_index = 0; w_index < w_mesh.size(); ++w_index){
       auto iw = w_mesh.index_to_point(w_index);
@@ -135,8 +111,18 @@ int main(int argc, char* argv[]) {
   solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
   solver.deltat_view()[1] = triqs::gfs::inverse_fourier(delta_w);
   
+  // Solve parameters
+  auto p = ctqmc::solve_parameters();
+  p["max_time"] = -1;
+  p["random_name"] = "";
+  p["random_seed"] = 123 * rank + 567;
+  p["verbosity"] = 3;
+  p["length_cycle"] = 50;
+  p["n_warmup_cycles"] = 50;
+  p["n_cycles"] = 500;
+
   // Solve!
-  solver.solve(p);
+  solver.solve(H, p, qn, true);
   
   // Save the results
   if(rank==0){

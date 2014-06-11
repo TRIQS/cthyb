@@ -58,11 +58,11 @@ void ctqmc::solve(real_operator_t const & h_loc, params::parameters params,
   std::map<std::pair<int,int>,int> linindex;
   int block_index = 0;
   for (auto const & b: gf_struct) {
-    int internal_index = 0;
+    int inner_index = 0;
     for (auto const & a: b.second) {
       fops.insert(b.first, a);
-      linindex[std::make_pair(block_index, internal_index)] = fops[{b.first,a}];
-      internal_index++;
+      linindex[std::make_pair(block_index, inner_index)] = fops[{b.first,a}];
+      inner_index++;
     }
     block_index++;
   }

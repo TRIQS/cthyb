@@ -1,11 +1,12 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
-from pytriqs.parameters.parameters import Parameters
-from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
+from pytriqs.parameters.parameters import Parameters
+from pytriqs.operators.operators2 import *
 from pytriqs.archive import HDFArchive
-from collections import OrderedDict
+from pytriqs.applications.impurity_solvers.cthyb import *
 import itertools
+from collections import OrderedDict
 import time
 import os
 
@@ -22,8 +23,7 @@ half_bandwidth = 1.0
 mu = (U/2.0)*((2.0 * num_orbitals) - 1.0) - (5.0*J/2.0)*(num_orbitals - 1.0)
 
 # Parameters
-p = Parameters()
-p["beta"] = beta
+p = SolverCore.solve_parameters()
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -31,11 +31,6 @@ p["verbosity"] = 2
 p["length_cycle"] = 10
 p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 5000
-p["n_tau_delta"] = 100000
-p["n_tau_g"] = 100000
-p["measure_gt"] = True
-p["make_histograms"] = False
-p["use_trace_estimator"] = False
 
 # Block structure of GF
 gf_struct = OrderedDict()
@@ -43,38 +38,30 @@ for o in range(0,num_orbitals):
   gf_struct['up-%s'%o] = [0,]
   gf_struct['down-%s'%o] = [0,]
 
+# Construct solver    
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_delta=1000, n_tau_g=1000)
+
 # Hamiltonian -- must include both quadratic and quartic terms
-H = Operator()
+H = c_dag("up-0",0) - c_dag("up-0",0)
 for o in range(0,num_orbitals):
-    H += -mu*(N("up-%s"%o,0) + N("down-%s"%o,0))
+    H += -mu*(n("up-%s"%o,0) + n("down-%s"%o,0))
 
 for o in range(0,num_orbitals):
-    H += U*N("up-%s"%o,0)*N("down-%s"%o,0)
+    H += U*n("up-%s"%o,0)*n("down-%s"%o,0)
 
 for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     if o1==o2: continue
-    H += (U-2*J)*N("up-%s"%o1,0)*N("down-%s"%o2,0)
+    H += (U-2*J)*n("up-%s"%o1,0)*n("down-%s"%o2,0)
 
 for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     if o2>=o1: continue;
-    H += (U-3*J)*N("up-%s"%o1,0)*N("up-%s"%o2,0)
-    H += (U-3*J)*N("down-%s"%o1,0)*N("down-%s"%o2,0)
+    H += (U-3*J)*n("up-%s"%o1,0)*n("up-%s"%o2,0)
+    H += (U-3*J)*n("down-%s"%o1,0)*n("down-%s"%o2,0)
 
 for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     if o1==o2: continue
-    H += -J*C_dag("up-%s"%o1,0)*C_dag("down-%s"%o1,0)*C("up-%s"%o2,0)*C("down-%s"%o2,0)
-    H += -J*C_dag("up-%s"%o1,0)*C_dag("down-%s"%o2,0)*C("up-%s"%o2,0)*C("down-%s"%o1,0)
-
-# Quantum numbers
-qn = []
-for o in range(0,num_orbitals+2): qn.append(Operator())
-for o in range(0,num_orbitals):
-    qn[0] += N("up-%s"%o,0) + N("down-%s"%o,0) # Ntot
-    qn[1] += (N("up-%s"%o,0) - N("down-%s"%o,0)) # Sz
-    qn[2+o] += (N("up-%s"%o,0) - N("down-%s"%o,0))*(N("up-%s"%o,0) - N("down-%s"%o,0)) # Seniority number = Sz^2
-
-# Construct the solver
-S = Solver(parameters=p, H_local=H, quantum_numbers=qn, gf_struct=gf_struct)
+    H += -J*c_dag("up-%s"%o1,0)*c_dag("down-%s"%o1,0)*c("up-%s"%o2,0)*c("down-%s"%o2,0)
+    H += -J*c_dag("up-%s"%o1,0)*c_dag("down-%s"%o2,0)*c("up-%s"%o2,0)*c("down-%s"%o1,0)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)
@@ -105,7 +92,7 @@ for IterNum in range(n_loops):
     for name, d0block in S.Delta_tau:
       d0block <<= InverseFourier( (half_bandwidth/2.0)**2 * g_w )
 
-  S.solve(parameters = p)
+  S.solve(h_loc=H, params=p)
 
   endtime = time.clock()
   print( "Time for loop %s: "%IterNum, endtime - starttime, " seconds" )

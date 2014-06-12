@@ -4,6 +4,7 @@ import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
 from pytriqs.parameters.parameters import Parameters
+from pytriqs.operators.operators2 import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 import itertools
@@ -27,8 +28,7 @@ epsilon = [0.0,0.1,0.2,0.3,0.4,0.5]
 V = 0.2
 
 # Parameters
-p = Parameters()
-p["beta"] = beta
+p = SolverCore.solve_parameters()
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -36,8 +36,6 @@ p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
-p["n_tau_delta"] = 1000
-p["n_tau_g"] = 1000
 
 # Block structure of GF
 gf_struct = OrderedDict()
@@ -45,14 +43,15 @@ gf_struct['up'] = [0]
 gf_struct['down'] = [0]
 
 # Hamiltonian
-H = ed*(N("up",0) + N("down",0)) + U*N("up",0)*N("down",0)
+H = ed*(n("up",0) + n("down",0)) + U*n("up",0)*n("down",0)
 
 # Quantum numbers
 qn = []
-qn.append(N("up",0))
-qn.append(N("down",0))
+qn.append(n("up",0))
+qn.append(n("down",0))
     
-S = Solver(parameters=p, H_local=H, quantum_numbers=qn, gf_struct=gf_struct)
+# Construct solver    
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
 
 if mpi.rank==0:
     arch = HDFArchive('asymm_bath.h5','w')
@@ -66,7 +65,7 @@ for e in epsilon:
     S.Delta_tau["up"] <<= InverseFourier(delta_w)
     S.Delta_tau["down"] <<= InverseFourier(delta_w)
 
-    S.solve(parameters=p)
+    S.solve(h_loc=H, params=p)
   
     if mpi.rank==0:
         arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "down":S.G_tau["down"]}

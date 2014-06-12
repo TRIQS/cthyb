@@ -25,7 +25,7 @@ mu = 35.0
 length_cycle = 50
 n_warmup_cycles = 1000
 n_cycles = 5000
-n_tau_delta = 5000
+n_tau_g0 = 5000
 n_tau_g = 5000
 
 names = ['up-0','down-0','up-1','down-1','up-2','down-2']
@@ -40,7 +40,7 @@ for i in range(0,num_orbitals):
       Umat[2*j:2*j+2,2*i:2*i+2] = Uinter # off diagonal
 
 # Construct the solver
-S = Solver(beta = beta, block_names = names, n_tau_delta = n_tau_delta, n_tau_g = n_tau_g)
+S = Solver(beta = beta, block_names = names, n_tau_g0 = n_tau_g0, n_tau_g = n_tau_g)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)

@@ -20,7 +20,6 @@ use_blocks = True
 use_qn = True
 
 p = {}
-p["beta"] = beta
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -28,8 +27,6 @@ p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50000
 p["n_cycles"] = 5000000
-p["n_tau_delta"] = 1000
-p["n_tau_g"] = 200
 
 def results_file_name(use_blocks,use_qn):
     name = "anderson."

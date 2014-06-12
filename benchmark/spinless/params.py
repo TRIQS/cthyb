@@ -13,7 +13,6 @@ t = 0.1
 use_qn = True
 
 p = {}
-p["beta"] = beta
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -21,8 +20,6 @@ p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
-p["n_tau_delta"] = 1000
-p["n_tau_g"] = 200
 
 def results_file_name(use_qn):
     name = "spinless."

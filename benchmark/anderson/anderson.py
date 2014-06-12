@@ -3,6 +3,7 @@
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.parameters.parameters import Parameters
+from pytriqs.operators.operators2 import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 
@@ -16,16 +17,16 @@ del path[0]
 def print_master(msg):
     if mpi.rank==0: print msg
 
-pp = Parameters()
+pp = SolverCore.solve_parameters()
 for k in p: pp[k] = p[k]
 
 print_master("Welcome to Anderson (1 correlated site + symmetric bath) test.")
 
-H = U*N(*mkind("up"))*N(*mkind("dn")) + (-mu+h)*N(*mkind("up")) + (-mu-h)*N(*mkind("dn"))
+H = U*n(*mkind("up"))*n(*mkind("dn")) + (-mu+h)*n(*mkind("up")) + (-mu-h)*n(*mkind("dn"))
   
 QN = []
 if use_qn:
-    for spin in spin_names: QN.append(N(*mkind(spin)))
+    for spin in spin_names: QN.append(n(*mkind(spin)))
 
 gf_struct = {}
 for spin in spin_names:
@@ -35,7 +36,7 @@ for spin in spin_names:
 print_master("Constructing the solver...")
 
 # Construct the solver
-S = Solver(parameters=pp, H_local=H, quantum_numbers=QN, gf_struct=gf_struct)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
 
 print_master("Preparing the hybridization function...")
 
@@ -49,7 +50,7 @@ for spin in spin_names:
 print_master("Running the simulation...")
 
 # Solve the problem
-S.solve(parameters=pp)
+S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=True)
 
 # Save the results  
 if mpi.rank==0:

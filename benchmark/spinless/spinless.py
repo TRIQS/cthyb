@@ -5,7 +5,8 @@ import numpy
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.parameters.parameters import Parameters
-from pytriqs.applications.impurity_solvers.cthyb import 
+from pytriqs.applications.impurity_solvers.cthyb import *
+from pytriqs.operators.operators2 import *
 from pytriqs.gf.local import *
 
 # import parameters from cwd
@@ -18,22 +19,22 @@ del path[0]
 def print_master(msg):
     if mpi.rank==0: print msg
 
-pp = Parameters()
+pp = SolverCore.solve_parameters()
 for k in p: pp[k] = p[k]
 
 print_master("Welcome to spinless (spinless electrons on a correlated dimer) test.")
 
-H = U*N("tot",0)*N("tot",1) -mu*(N("tot",0) + N("tot",1)) -t*(C_dag("tot",0)*C("tot",1) + C_dag("tot",1)*C("tot",0))
+H = U*n("tot",0)*n("tot",1) -mu*(n("tot",0) + n("tot",1)) -t*(c_dag("tot",0)*c("tot",1) + c_dag("tot",1)*c("tot",0))
   
-QN = []
-if use_qn: QN.append(N("tot",0)+N("tot",1))
+Qn = []
+if use_qn: Qn.append(n("tot",0)+n("tot",1))
 
 gf_struct = {"tot":[0,1]}
 
 print_master("Constructing the solver...")
 
 ## Construct the solver
-S = Solver(parameters=pp, H_local=H, quantum_numbers=QN, gf_struct=gf_struct)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
 
 print_master("Preparing the hybridization function...")
 
@@ -45,7 +46,7 @@ S.Delta_tau["tot"] <<= InverseFourier(delta_w)
 print_master("Running the simulation...")
 
 ## Solve the problem
-S.solve(parameters=pp)
+S.solve(h_loc=H, params=p, quantum_numbers=Qn, use_quantum_numbers=True)
 
 ## Save the results  
 if mpi.rank==0:

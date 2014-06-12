@@ -52,7 +52,6 @@ atomic_levels = {('up_xy',0) :        -0.2,
 use_PS_quantum_numbers = False
 
 p = {}
-p["beta"] = beta
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -60,8 +59,6 @@ p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 30000
-p["n_tau_delta"] = 1000
-p["n_tau_g"] = 200
 p["measure_gt"] = True
 p["measure_pert_order"] = False
 p["make_histograms"] = False

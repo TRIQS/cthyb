@@ -1,6 +1,7 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.parameters.parameters import Parameters
+from pytriqs.operators.operators2 import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
@@ -22,8 +23,7 @@ mu = 35.0
 # mu = (U/2.0)*((2.0 * num_orbitals) - 1.0) - (5.0*J/2.0)*(num_orbitals - 1.0)
 
 # Parameters
-p = Parameters()
-p["beta"] = beta
+p = SolverCore.solve_parameters()
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -31,8 +31,6 @@ p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 10000
 p["n_cycles"] = 100000
-p["n_tau_delta"] = 5000
-p["n_tau_g"] = 5000
 p["make_histograms"] = True
 p["measure_gt"] = False
 p["use_trace_estimator"] = False
@@ -74,7 +72,7 @@ for o in range(0,num_orbitals):
     qn[2+o] += (N("up-%s"%o,0) - N("down-%s"%o,0))*(N("up-%s"%o,0) - N("down-%s"%o,0)) # Seniority number = Sz^2
 
 # Construct the solver
-S = Solver(parameters=p, H_local=H, quantum_numbers=qn, gf_struct=gf_struct)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)
@@ -105,7 +103,7 @@ for IterNum in range(n_loops):
     for name, d0block in S.Delta_tau:
       d0block <<= InverseFourier( (half_bandwidth/2.0)**2 * g_w )
 
-  S.solve(parameters = p)
+  S.solve(h_loc=H, params=p)
 
   endtime = time.clock()
   print( "Time for loop %s: "%IterNum, endtime - starttime, " seconds" )

@@ -28,7 +28,7 @@ gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 
 # Construct solver    
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_delta=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
 
 # Hamiltonian
 H = c_dag("up",0) - c_dag("up",0)

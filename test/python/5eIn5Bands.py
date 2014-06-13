@@ -39,7 +39,7 @@ for o in range(0,num_orbitals):
   gf_struct['down-%s'%o] = [0,]
 
 # Construct solver    
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_delta=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
 
 # Hamiltonian -- must include both quadratic and quartic terms
 H = c_dag("up-0",0) - c_dag("up-0",0)

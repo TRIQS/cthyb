@@ -20,6 +20,7 @@
  ******************************************************************************/
 #include "ctqmc.hpp"
 #include <triqs/utility/callbacks.hpp>
+#include <triqs/gfs.hpp>
 
 #include "move_insert.hpp"
 #include "move_remove.hpp"
@@ -27,30 +28,44 @@
 #include "measure_perturbation_hist.hpp"
 
 
-
 namespace cthyb {
 
-ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_tau_delta, int n_tau_g):
+ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_tau_g0, int n_tau_g):
   beta(beta_), gf_struct(gf_struct_) {
 
   std::vector<std::string> block_names;
-  std::vector<gf<imtime>> deltat_blocks;
+  std::vector<gf<imtime>> g0t_blocks;
   std::vector<gf<imtime>> gt_blocks;
 
   for (auto const& block : gf_struct) {
     block_names.push_back(block.first);
     int n = block.second.size();
-    deltat_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau_delta, half_bins}, {n, n}});
+    g0t_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau_g0, half_bins}, {n, n}});
     gt_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau_g, half_bins}, {n, n}});
   }
 
-  deltat = make_block_gf(block_names, deltat_blocks);
+  g0t = make_block_gf(block_names, g0t_blocks);
   gt = make_block_gf(block_names, gt_blocks);
 
 }
 
+// TODO Move functions below to triqs library
+template<typename F, typename T>
+//std::vector<decltype(f(V[0]))> map(F && f, std::vector<T> const & V) {
+std::vector<std14::result_of_t<F(T)>> map(F && f, std::vector<T> const & V) {
+  std::vector<std14::result_of_t<F(T)>> res;
+  res.reserve(V.size());
+   auto xxx = f(V[0]);  
+for(auto & x : V) res.emplace_back(f(x));
+  return res;
+}
 
-void ctqmc::solve(real_operator_t const & h_loc, params::parameters params,
+template<typename F, typename G>
+gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g) {
+  return make_block_gf(map(f, g.data()));
+}
+
+void ctqmc::solve(real_operator_t h_loc, params::parameters params,
                   std::vector<real_operator_t> const & quantum_numbers, bool use_quantum_numbers) {
 
   // basis of operators to use
@@ -65,6 +80,34 @@ void ctqmc::solve(real_operator_t const & h_loc, params::parameters params,
       inner_index++;
     }
     block_index++;
+  }
+
+  // Determine terms deltaw from g0w and ensure that the 1/iw behaviour of g0w is correct
+  auto g0w = map([](gf_const_view<imtime> x){return make_gf_from_fourier(x);}, g0t);
+  auto g0w_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, g0w);
+  auto deltaw = g0w_inv;
+
+  triqs::clef::placeholder<0> iw_;
+  int b = 0;
+  for (auto const & bl: gf_struct) {
+    deltaw[b](iw_) << g0w_inv[b].singularity()(-1)*iw_ + g0w_inv[b].singularity()(0);
+    deltaw[b] = deltaw[b] - g0w_inv[b];
+    g0w[b](iw_) << iw_ + g0w_inv[b].singularity()(0) ;
+    g0w[b] = g0w[b] - deltaw[b];
+    b++;
+  }
+  g0t = map([](gf_const_view<imfreq> x){return make_gf_from_inverse_fourier(inverse(x));}, g0w);
+  deltat = map([](gf_const_view<imfreq> x){return make_gf_from_inverse_fourier(x);}, deltaw);
+
+  // add quadratic terms to h_loc
+  b = 0;
+  for (auto const & bl: gf_struct) {
+    for (auto const & a1: bl.second) {
+      for (auto const & a2: bl.second) {
+        h_loc = h_loc + g0w_inv[b].singularity()(0)(a1,a2).real() * c_dag(b,a1)*c(b,a2);
+      }
+    }
+    b++;
   }
 
   if (use_quantum_numbers)
@@ -99,7 +142,7 @@ void ctqmc::solve(real_operator_t const & h_loc, params::parameters params,
 
  // run!! The empty configuration has sign = 1
  qmc.start(1.0, triqs::utility::clock_callback(params["max_time"]));
- qmc.collect_results(c);
+ qmc.collect_results(_comm);
 }
 
 //----------------------------------------------------------------------------------------------

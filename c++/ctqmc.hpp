@@ -39,19 +39,20 @@ class ctqmc {
  double beta;
  sorted_spaces sosp;
  std::map<std::string,std::vector<int>> gf_struct;
- block_gf<imtime> deltat, gt;             // Green's function containers: imaginary-time Green's functions
- boost::mpi::communicator c;              // define the communicator, here MPI_COMM_WORLD
+ block_gf<imtime> g0t, deltat, gt;        // Green's function containers: imaginary-time Green's functions
+ boost::mpi::communicator _comm;          // define the communicator, here MPI_COMM_WORLD
 
  public:
  using real_operator_t = many_body_operator<double>;
 
- ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_tau_delta=10001, int n_tau_g=10001);
+ ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_tau_g0=10001, int n_tau_g=10001);
 
- void solve(real_operator_t const & h_loc, params::parameters params,
+ void solve(real_operator_t h_loc, params::parameters params,
             std::vector<real_operator_t> const & quantum_numbers = {},
             bool use_quantum_numbers = false);
 
  // input containers
+ block_gf_view<imtime> g0t_view() { return g0t; }
  block_gf_view<imtime> deltat_view() { return deltat; }
 
  // imaginary-time measurements

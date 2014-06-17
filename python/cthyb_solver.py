@@ -1,4 +1,5 @@
 from cthyb import SolverCore
+import pytriqs.utility.mpi as mpi
 
 class Solver(SolverCore):
 
@@ -19,11 +20,15 @@ class Solver(SolverCore):
 
     def solve(self, h_loc, params=None, **params_kw):
         """ Solve the impurity problem """
+            
 
         if params==None:
+            if mpi.rank == 0: print "Using keyword arguments provided as parameters."
             p = self.S.solve_parameters()
             for i in params_kw:
                 params[i] = params_kw[i]
+        else:
+            if mpi.rank == 0: print "Using parameter list."
 
         # Call the core solver's core routine
         self.S.solve(h_loc=H, params=p)

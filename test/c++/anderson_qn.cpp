@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   
   // Save the results
   if(rank==0){
-    H5::H5File G_file("anderson_qn.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file("anderson_qn.output.h5",H5F_ACC_TRUNC);
     h5_write(G_file,"G_tot",solver.gt_view()[0]);
   }
 

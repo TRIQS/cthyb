@@ -19,7 +19,7 @@ module.add_class(cthyb)
 cthyb.add_constructor(signature = "(double beta, std::map<std::string, std::vector<int>> gf_struct, int n_tau_g0=10001, int n_tau_g=10001)", doc = """ """)
 
 cthyb.add_method(name = "solve",
-             signature = "void(triqs::utility::many_body_operator<double> h_loc, params::parameters params, std::vector<triqs::utility::many_body_operator<double>> quantum_numbers = {}, bool use_quantum_numbers = false)",
+             signature = "void(triqs::utility::many_body_operator<double> h_loc, params::parameters params, std::vector<triqs::utility::many_body_operator<double>> quantum_numbers = std::vector<triqs::utility::many_body_operator<double>>{}, bool use_quantum_numbers = false)",
              doc = """ """)
 
 cthyb.add_method(name = "solve_parameters",

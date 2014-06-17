@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
   
   // Save the results
   if(rank==0){
-    H5::H5File G_file("anderson_block.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file("anderson_block.output.h5",H5F_ACC_TRUNC);
     h5_write(G_file,"G_up",solver.gt_view()[0]);
     h5_write(G_file,"G_down",solver.gt_view()[1]);
   }

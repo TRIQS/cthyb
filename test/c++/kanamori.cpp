@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
   
   // Save the results
   if(rank==0){
-    H5::H5File G_file("kanamori.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file("kanamori.output.h5",H5F_ACC_TRUNC);
     for(int o = 0; o < num_orbitals; ++o) {
       std::stringstream bup; bup << "G_up-" << o;
       h5_write(G_file, bup.str(), solver.gt_view()[o]);

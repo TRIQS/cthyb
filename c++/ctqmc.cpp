@@ -103,7 +103,7 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   for (auto const & bl: gf_struct) {
     for (auto const & a1: bl.second) {
       for (auto const & a2: bl.second) {
-        h_loc = h_loc + g0w_inv[b].singularity()(0)(a1,a2).real() * c_dag(b,a1)*c(b,a2);
+        h_loc = h_loc + g0w_inv[b].singularity()(0)(a1,a2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
       }
     }
     b++;
@@ -119,6 +119,7 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
 
  // Moves
  auto& delta_names = deltat.domain().names();
+ std::cout << "HMMM: " << deltat.domain().size() << std::endl;
  for (size_t block = 0; block < deltat.domain().size(); ++block) {
   int block_size = deltat[block].data().shape()[1];
   qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), false), "Insert Delta_" + delta_names[block]);

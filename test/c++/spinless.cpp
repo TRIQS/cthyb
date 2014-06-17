@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
   
   // Save the results
   if(rank==0){
-    H5::H5File G_file("spinless.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file("spinless.output.h5",H5F_ACC_TRUNC);
     h5_write(G_file,"G_tau",solver.gt_view()[0]);
   }
 

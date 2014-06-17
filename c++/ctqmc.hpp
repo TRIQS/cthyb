@@ -48,7 +48,7 @@ class ctqmc {
  ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_tau_g0=10001, int n_tau_g=10001);
 
  void solve(real_operator_t h_loc, params::parameters params,
-            std::vector<real_operator_t> const & quantum_numbers = {},
+            std::vector<real_operator_t> const & quantum_numbers = std::vector<real_operator_t> {},
             bool use_quantum_numbers = false);
 
  // input containers

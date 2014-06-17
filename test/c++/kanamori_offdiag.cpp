@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
   std::vector<many_body_operator<double>> qn;
 
   // gf structure
-  std::map<std::string, std::vector<int>> gf_struct{{"up",{}},{"down",{}}}; 
+  std::map<std::string, std::vector<int>> gf_struct{{"up",std::vector<int>{}},{"down",std::vector<int>{}}}; 
   for(int o = 0; o < num_orbitals; ++o){
     gf_struct["up"].push_back(o); 
     gf_struct["down"].push_back(o); 
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
   
   // Save the results
   if(rank==0){
-    H5::H5File G_file("kanamori_offdiag.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file("kanamori_offdiag.output.h5",H5F_ACC_TRUNC);
     h5_write(G_file,"G_up",solver.gt_view()[0]);
     h5_write(G_file,"G_down",solver.gt_view()[1]);
   }

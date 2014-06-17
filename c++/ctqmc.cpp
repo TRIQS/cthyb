@@ -55,8 +55,7 @@ template<typename F, typename T>
 std::vector<std14::result_of_t<F(T)>> map(F && f, std::vector<T> const & V) {
   std::vector<std14::result_of_t<F(T)>> res;
   res.reserve(V.size());
-   auto xxx = f(V[0]);  
-for(auto & x : V) res.emplace_back(f(x));
+  for(auto & x : V) res.emplace_back(f(x));
   return res;
 }
 

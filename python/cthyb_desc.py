@@ -16,7 +16,7 @@ cthyb = class_(
 
 module.add_class(cthyb)
 
-cthyb.add_constructor(signature = "(double beta, std::map<std::string, std::vector<int>> gf_struct, int n_tau_g0=10001, int n_tau_g=10001)", doc = """ """)
+cthyb.add_constructor(signature = "(double beta, std::map<std::string, std::vector<int>> gf_struct, int n_iw=5000, int n_tau=10001)", doc = """ """)
 
 cthyb.add_method(name = "solve",
              signature = "void(triqs::utility::many_body_operator<double> h_loc, params::parameters params, std::vector<triqs::utility::many_body_operator<double>> quantum_numbers = std::vector<triqs::utility::many_body_operator<double>>{}, bool use_quantum_numbers = false)",
@@ -27,9 +27,9 @@ cthyb.add_method(name = "solve_parameters",
                  is_static = True,
                  doc = """Get the form of solve parameters""")
 
-cthyb.add_property(name = "G0_tau",
-                   getter = cfunction("block_gf_view<imtime> g0t_view()"),
-                   doc = "G0(tau) in imaginary time")
+cthyb.add_property(name = "G0_w",
+                   getter = cfunction("block_gf_view<imfreq> g0w_view()"),
+                   doc = "G0(w) in imaginary frequencies")
 
 cthyb.add_property(name = "Delta_tau",
                    getter = cfunction("block_gf_view<imtime> deltat_view()"),

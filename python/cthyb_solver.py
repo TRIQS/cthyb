@@ -3,7 +3,7 @@ import pytriqs.utility.mpi as mpi
 
 class Solver(SolverCore):
 
-    def __init__(self, beta, gf_struct, n_iw=1025, n_tau_g0=1000, n_tau_g=1000):
+    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001):
         """
         :param beta: Inverse temperature.
         :param gf_struct: Structure of the Green's functions. It must be a
@@ -13,10 +13,12 @@ class Solver(SolverCore):
                           For example: { 'up': [1,2,3], 'down', [1,2,3] }.
         :param n_iw: (optional, default = 1025) Number of Matsubara frequencies
                      used for the Green's functions.
+        :param n_tau: (optional, default = 10001) Number of imaginary time points
+                     used for the Green's functions.
         """
 
         # Initialise the core solver
-        self.S = SolverCore(beta, gf_struct, n_tau_g0=n_tau_g0, n_tau_g=n_tau_g)
+        self.S = SolverCore(beta, gf_struct, n_iw=n_iw, n_tau=n_tau)
 
     def solve(self, h_loc, params=None, **params_kw):
         """ Solve the impurity problem """

@@ -15,7 +15,6 @@ endforeach(t)
 # HDF5 tests
 set(HDF5_TESTS
     anderson anderson_block anderson_qn anderson_block_qn
-    anderson_new
     spinless spinless_qn
     kanamori kanamori_qn
     kanamori_offdiag kanamori_offdiag_qn)

@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
   double epsilon = 2.3;
 
   // define operators
-  auto H = U*n("tot",0)*n("tot",1) + (-mu+h)*n("tot",0) + (-mu-h)*n("tot",1);
+  auto H = U*n("tot",0)*n("tot",1) + h*n("tot",0) - h*n("tot",1);
   // quantum numbers
   std::vector<many_body_operator<double>> qn;
   qn.push_back(n("tot",0));
@@ -45,13 +45,13 @@ int main(int argc, char* argv[]) {
   std::map<std::string, std::vector<int>> gf_struct{{"tot",{0,1}}};
 
   // Construct CTQMC solver
-  ctqmc solver(beta, gf_struct, 1000, 1000);
+  ctqmc solver(beta, gf_struct, 1025, 10001);
 
-  // Set hybridization function
+  // Set G0
   triqs::clef::placeholder<0> om_;
-  auto delta_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
-  delta_iw(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
-  solver.Delta_tau_view()[0] = triqs::gfs::inverse_fourier(delta_iw);
+  auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
+  g0_iw(om_) << om_ + mu - ( V*V / (om_ - epsilon) + V*V / (om_ + epsilon));
+  solver.G0_iw_view()[0] = triqs::gfs::inverse( g0_iw );
 
   // Solve parameters
   auto p = ctqmc::solve_parameters();

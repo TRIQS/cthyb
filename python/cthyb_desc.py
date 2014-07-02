@@ -27,16 +27,16 @@ cthyb.add_method(name = "solve_parameters",
                  is_static = True,
                  doc = """Get the form of solve parameters""")
 
-cthyb.add_property(name = "G0_w",
-                   getter = cfunction("block_gf_view<imfreq> g0w_view()"),
-                   doc = "G0(w) in imaginary frequencies")
+cthyb.add_property(name = "G0_iw",
+                   getter = cfunction("block_gf_view<imfreq> G0_iw_view()"),
+                   doc = "G0(iw) in imaginary frequencies")
 
 cthyb.add_property(name = "Delta_tau",
-                   getter = cfunction("block_gf_view<imtime> deltat_view()"),
+                   getter = cfunction("block_gf_view<imtime> Delta_tau_view()"),
                    doc = "Delta(tau) in imaginary time")
 
 cthyb.add_property(name = "G_tau",
-                   getter = cfunction("block_gf_view<imtime> gt_view()"),
+                   getter = cfunction("block_gf_view<imtime> G_tau_view()"),
                    doc = "G(tau) in imaginary time")
 
 

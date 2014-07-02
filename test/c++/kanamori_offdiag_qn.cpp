@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
   ctqmc solver(beta, gf_struct, 1000, 1000);
 
   // Set hybridization function
-  auto delta_w = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
+  auto delta_iw = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
 
   triqs::clef::placeholder<0> om_;
   auto term = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
@@ -117,11 +117,11 @@ int main(int argc, char* argv[]) {
           m = term.singularity()(tail_o);
           term.singularity()(tail_o) = conj(V[j]) * m * V[j];
       }
-      delta_w = delta_w + term;
+      delta_iw = delta_iw + term;
   }
   
-  solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
-  solver.deltat_view()[1] = triqs::gfs::inverse_fourier(delta_w);
+  solver.Delta_tau_view()[0] = triqs::gfs::inverse_fourier(delta_iw);
+  solver.Delta_tau_view()[1] = triqs::gfs::inverse_fourier(delta_iw);
   
   // Solve parameters
   auto p = ctqmc::solve_parameters();
@@ -139,8 +139,8 @@ int main(int argc, char* argv[]) {
   // Save the results
   if(rank==0){
     triqs::h5::file G_file("kanamori_offdiag_qn.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_up",solver.gt_view()[0]);
-    h5_write(G_file,"G_down",solver.gt_view()[1]);
+    h5_write(G_file,"G_up",solver.G_tau_view()[0]);
+    h5_write(G_file,"G_down",solver.G_tau_view()[1]);
   }
 
   return 0;

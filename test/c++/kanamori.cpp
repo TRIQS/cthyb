@@ -82,10 +82,10 @@ int main(int argc, char* argv[]) {
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_w = gf<imfreq>{{beta, Fermion}, {1,1}};
-  delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
+  auto delta_iw = gf<imfreq>{{beta, Fermion}, {1,1}};
+  delta_iw(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);  
   for (int o = 0; o < 2*num_orbitals; ++o){
-    solver.deltat_view()[o] = triqs::gfs::inverse_fourier(delta_w);
+    solver.Delta_tau_view()[o] = triqs::gfs::inverse_fourier(delta_iw);
   }
 
   // Solve parameters
@@ -106,9 +106,9 @@ int main(int argc, char* argv[]) {
     triqs::h5::file G_file("kanamori.output.h5",H5F_ACC_TRUNC);
     for(int o = 0; o < num_orbitals; ++o) {
       std::stringstream bup; bup << "G_up-" << o;
-      h5_write(G_file, bup.str(), solver.gt_view()[o]);
+      h5_write(G_file, bup.str(), solver.G_tau_view()[o]);
       std::stringstream bdown; bdown << "G_down-" << o;
-      h5_write(G_file, bdown.str(), solver.gt_view()[num_orbitals+o]);
+      h5_write(G_file, bdown.str(), solver.G_tau_view()[num_orbitals+o]);
     }
   }
 

@@ -96,20 +96,20 @@ int main(int argc, char* argv[]) {
   ctqmc solver(beta, gf_struct, 1000, 1000);
 
   // Set hybridization function
-  auto delta_w = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
+  auto delta_iw = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
 
-  auto w_mesh = delta_w.mesh();
+  auto w_mesh = delta_iw.mesh();
   for(std::size_t w_index = 0; w_index < w_mesh.size(); ++w_index){
       auto iw = w_mesh.index_to_point(w_index);
       
-      auto m = delta_w[w_index];
+      auto m = delta_iw[w_index];
       for(int j=0; j < epsilon.size(); ++j){
           for(int o = 0; o < num_orbitals; ++o) m(o,o) = 1.0/(iw - epsilon[j]);
           m = conj(V[j]) * m * V[j];
       }
   }
-  solver.deltat_view()[0] = triqs::gfs::inverse_fourier(delta_w);
-  solver.deltat_view()[1] = triqs::gfs::inverse_fourier(delta_w);
+  solver.Delta_tau_view()[0] = triqs::gfs::inverse_fourier(delta_iw);
+  solver.Delta_tau_view()[1] = triqs::gfs::inverse_fourier(delta_iw);
   
   // Solve parameters
   auto p = ctqmc::solve_parameters();
@@ -127,8 +127,8 @@ int main(int argc, char* argv[]) {
   // Save the results
   if(rank==0){
     triqs::h5::file G_file("kanamori_offdiag.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_up",solver.gt_view()[0]);
-    h5_write(G_file,"G_down",solver.gt_view()[1]);
+    h5_write(G_file,"G_up",solver.G_tau_view()[0]);
+    h5_write(G_file,"G_down",solver.G_tau_view()[1]);
   }
 
   return 0;

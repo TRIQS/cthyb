@@ -46,9 +46,9 @@ int main(int argc, char* argv[]) {
 
   // Set G0 
   triqs::clef::placeholder<0> om_;
-  auto g0_w = gf<imfreq>{{beta, Fermion}, {2,2}};
-  g0_w(om_) << om_ + mu - ( V*V / (om_ - epsilon) + V*V / (om_ + epsilon));
-  solver.g0w_view()[0] = triqs::gfs::inverse( g0_w );
+  auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
+  g0_iw(om_) << om_ + mu - ( V*V / (om_ - epsilon) + V*V / (om_ + epsilon));
+  solver.G0_iw_view()[0] = triqs::gfs::inverse( g0_iw );
 
   // Solve parameters
   auto p = ctqmc::solve_parameters();
@@ -66,8 +66,8 @@ int main(int argc, char* argv[]) {
   // Save the results
   if(rank==0){
     triqs::h5::file G_file("anderson.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"delta_tot",solver.deltat_view()[0]); //DEBUG
-    h5_write(G_file,"G_tot",solver.gt_view()[0]);
+    h5_write(G_file,"delta_tot",solver.Delta_tau_view()[0]); //DEBUG
+    h5_write(G_file,"G_tot",solver.G_tau_view()[0]);
   }
 
   return 0;

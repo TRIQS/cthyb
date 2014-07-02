@@ -49,16 +49,16 @@ int main(int argc, char* argv[]) {
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
-  auto d00 = slice_target(delta_w, triqs::arrays::range(0,1), triqs::arrays::range(0,1));
-  auto d11 = slice_target(delta_w, triqs::arrays::range(1,2), triqs::arrays::range(1,2));
-  auto d01 = slice_target(delta_w, triqs::arrays::range(0,1), triqs::arrays::range(1,2));
-  auto d10 = slice_target(delta_w, triqs::arrays::range(1,2), triqs::arrays::range(0,1));
+  auto delta_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
+  auto d00 = slice_target(delta_iw, triqs::arrays::range(0,1), triqs::arrays::range(0,1));
+  auto d11 = slice_target(delta_iw, triqs::arrays::range(1,2), triqs::arrays::range(1,2));
+  auto d01 = slice_target(delta_iw, triqs::arrays::range(0,1), triqs::arrays::range(1,2));
+  auto d10 = slice_target(delta_iw, triqs::arrays::range(1,2), triqs::arrays::range(0,1));
   d00(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d11(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d01(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
   d10(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
-  solver.deltat_view()[0] = inverse_fourier(delta_w);
+  solver.Delta_tau_view()[0] = inverse_fourier(delta_iw);
 
   // Solve parameters
   auto p = ctqmc::solve_parameters();
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
   // Save the results
   if(rank==0){
     triqs::h5::file G_file("spinless_qn.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_tau",solver.gt_view()[0]);
+    h5_write(G_file,"G_tau",solver.G_tau_view()[0]);
   }
 
   return 0;

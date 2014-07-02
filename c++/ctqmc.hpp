@@ -39,8 +39,8 @@ class ctqmc {
  double beta;
  sorted_spaces sosp;
  std::map<std::string,std::vector<int>> gf_struct;
- block_gf<imtime> deltat, gt;             // Green's function containers: imaginary-time Green's functions
- block_gf<imfreq> g0w;                    // Green's function containers: imaginary-freq Green's functions
+ block_gf<imfreq> G0_iw;                  // Green's function containers: imaginary-freq Green's functions
+ block_gf<imtime> Delta_tau, G_tau;       // Green's function containers: imaginary-time Green's functions
  boost::mpi::communicator _comm;          // define the communicator, here MPI_COMM_WORLD
 
  public:
@@ -53,11 +53,11 @@ class ctqmc {
             bool use_quantum_numbers = false);
 
  // input containers
- block_gf_view<imfreq> g0w_view() { return g0w; }
- block_gf_view<imtime> deltat_view() { return deltat; }
+ block_gf_view<imfreq> G0_iw_view() { return G0_iw; }
+ block_gf_view<imtime> Delta_tau_view() { return Delta_tau; }
 
  // imaginary-time measurements
- block_gf_view<imtime> gt_view() { return gt; }
+ block_gf_view<imtime> G_tau_view() { return G_tau; }
 
  // specify all required and optional parameters and generate help from them
  static parameters solve_parameters();

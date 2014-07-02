@@ -38,21 +38,21 @@ ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_str
   if ( n_tau <= 2*n_iw ) TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau << ".";
 
   std::vector<std::string> block_names;
-  std::vector<gf<imfreq>> g0w_blocks;
-  std::vector<gf<imtime>> gt_blocks;
-  std::vector<gf<imtime>> deltat_blocks;
+  std::vector<gf<imfreq>> g0_iw_blocks;
+  std::vector<gf<imtime>> g_tau_blocks;
+  std::vector<gf<imtime>> delta_tau_blocks;
 
   for (auto const& block : gf_struct) {
     block_names.push_back(block.first);
     int n = block.second.size();
-    g0w_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}});
-    gt_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, half_bins}, {n, n}});
-    deltat_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, half_bins}, {n, n}});
+    g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}});
+    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, half_bins}, {n, n}});
+    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, half_bins}, {n, n}});
   }
 
-  g0w = make_block_gf(block_names, g0w_blocks);
-  gt = make_block_gf(block_names, gt_blocks);
-  deltat = make_block_gf(block_names, deltat_blocks);
+  G0_iw = make_block_gf(block_names, g0_iw_blocks);
+  G_tau = make_block_gf(block_names, g_tau_blocks);
+  Delta_tau = make_block_gf(block_names, delta_tau_blocks);
 
 }
 
@@ -88,44 +88,44 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   }
 
   // Calculate imfreq quantities
-  auto g0w_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, g0w);
-  auto deltaw = g0w_inv;
+  auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, G0_iw);
+  auto Delta_iw = G0_iw_inv;
 
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
     for (auto const & a1: bl.second) {
       for (auto const & a2: bl.second) {
-        h_loc = h_loc + g0w[b].singularity()(2)(a1,a2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
+        h_loc = h_loc + G0_iw[b].singularity()(2)(a1,a2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
       }
     }
     b++;
   }
 
-  // Determine terms deltaw from g0w and ensure that the 1/iw behaviour of g0w is correct
+  // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
   b = 0;
   triqs::clef::placeholder<0> iw_;
   for (auto const & bl: gf_struct) {
-    deltaw[b](iw_) << g0w_inv[b].singularity()(-1)*iw_ + g0w_inv[b].singularity()(0);
-    deltaw[b] = deltaw[b] - g0w_inv[b];
-    deltat[b]() = inverse_fourier(deltaw[b]); 
-    g0w[b](iw_) << iw_ + g0w_inv[b].singularity()(0) ;
-    g0w[b] = g0w[b] - deltaw[b];
-    g0w[b]() = triqs::gfs::inverse(g0w[b]);
+    Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
+    Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
+    Delta_tau[b]() = inverse_fourier(Delta_iw[b]); 
+    G0_iw[b](iw_) << iw_ + G0_iw_inv[b].singularity()(0) ;
+    G0_iw[b] = G0_iw[b] - Delta_iw[b];
+    G0_iw[b]() = triqs::gfs::inverse(G0_iw[b]);
     b++;
   }
 
 // DEBUG
-//  deltat = map([](gf_const_view<imfreq> x){return make_gf_from_inverse_fourier(x);}, deltaw);
-//auto deltat2 = make_gf_from_inverse_fourier(deltaw[0]);
+//  Delta_tau = map([](gf_const_view<imfreq> x){return make_gf_from_inverse_fourier(x);}, Delta_iw);
+//auto delta_tau2 = make_gf_from_inverse_fourier(Delta_iw[0]);
 //std::cout << "h_loc = " << h_loc << std::endl;
-//std::cout << "g0w tail= " << g0w[0].singularity() << std::endl;
-//std::cout << "deltaw tail= " << deltaw[0].singularity() << std::endl;
-//std::cout << "g0w = " << g0w[0].data()(range(0,10),range(),range()) << std::endl;
-//std::cout << "deltat = " << deltat[0].data()(range(0,10),range(),range()) << std::endl;
-//std::cout << "deltat = " << deltat[0].data() << std::endl;
-//std::cout << "deltaw = " << deltaw[0].data()(range(0,10),range(),range()) << std::endl;
-//std::cout << "deltat2 = " << deltat2.data()(range(0,10),range(),range()) << std::endl;
+//std::cout << "G0_iw tail= " << G0_iw[0].singularity() << std::endl;
+//std::cout << "Delta_iw tail= " << Delta_iw[0].singularity() << std::endl;
+//std::cout << "G0_iw = " << G0_iw[0].data()(range(0,10),range(),range()) << std::endl;
+//std::cout << "Delta_tau = " << Delta_tau[0].data()(range(0,10),range(),range()) << std::endl;
+//std::cout << "Delta_tau = " << Delta_tau[0].data() << std::endl;
+//std::cout << "Deltaw = " << Deltaw[0].data()(range(0,10),range(),range()) << std::endl;
+//std::cout << "delta_tau2 = " << delta_tau2.data()(range(0,10),range(),range()) << std::endl;
 
 // DEBUG
 // Set hybridization function
@@ -134,11 +134,11 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
 //triqs::clef::placeholder<0> om_;
 //auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
 //delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);
-//deltat[0]() = triqs::gfs::inverse_fourier(delta_w);
+//Delta_tau[0]() = triqs::gfs::inverse_fourier(delta_w);
 // MORE DEBUG
 //triqs::h5::file G_file("kondo_anderson.h5",H5F_ACC_RDONLY);
 //triqs::h5::group gp(G_file);
-//h5_read(G_file,"delta_tot",deltat[0]);//deltat_view()[0]);
+//h5_read(G_file,"delta_tot",Delta_tau[0]);//Delta_tau_view()[0]);
 
   // Determine block structure
   if (use_quantum_numbers)
@@ -146,28 +146,28 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   else 
    sosp = {h_loc, fops};
 
-  qmc_data data(beta, params, sosp, linindex, deltat);
+  qmc_data data(beta, params, sosp, linindex, Delta_tau);
   mc_tools::mc_generic<mc_sign_type> qmc(params);
  
   // Moves
-  auto& delta_names = deltat.domain().names();
-  for (size_t block = 0; block < deltat.domain().size(); ++block) {
-   int block_size = deltat[block].data().shape()[1];
+  auto& delta_names = Delta_tau.domain().names();
+  for (size_t block = 0; block < Delta_tau.domain().size(); ++block) {
+   int block_size = Delta_tau[block].data().shape()[1];
    qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), false), "Insert Delta_" + delta_names[block]);
    qmc.add_move(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block]);
   }
  
   // Measurements
-  if (params["measure_gt"]) {
-   auto& gt_names = gt.domain().names();
-   for (size_t block = 0; block < gt.domain().size(); ++block) {
-    qmc.add_measure(measure_g(block, gt[block], data), "G measure (" + gt_names[block] + ")");
+  if (params["measure_g_tau"]) {
+   auto& g_names = G_tau.domain().names();
+   for (size_t block = 0; block < G_tau.domain().size(); ++block) {
+    qmc.add_measure(measure_g(block, G_tau[block], data), "G measure (" + g_names[block] + ")");
    }
   }
   if (params["measure_pert_order"]) {
-   auto& gt_names = gt.domain().names();
-   for (size_t block = 0; block < gt.domain().size(); ++block) {
-    qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + gt_names[block] + ".dat"), "Perturbation order (" + gt_names[block] + ")");
+   auto& g_names = G_tau.domain().names();
+   for (size_t block = 0; block < G_tau.domain().size(); ++block) {
+    qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + g_names[block] + ".dat"), "Perturbation order (" + g_names[block] + ")");
    }
   }
  
@@ -191,7 +191,7 @@ parameters_t ctqmc::solve_parameters() {
      .add_field("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
      .add_field("verbosity", (world.rank()==0 ? int(3) : int(0)), "Verbosity level")
      .add_field("use_trace_estimator", bool(false), "Calculate the full trace or use an estimate?")
-     .add_field("measure_gt", bool(true), "Whether to measure G(tau)")
+     .add_field("measure_g_tau", bool(true), "Whether to measure G(tau)")
      .add_field("measure_pert_order", bool(false), "Whether to measure perturbation order")
      .add_field("make_histograms", bool(false), "Make the analysis histograms of the trace computation");
 

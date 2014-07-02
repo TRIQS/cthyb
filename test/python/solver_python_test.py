@@ -28,12 +28,10 @@ gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 
 # Construct solver    
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=10001)
 
 # Hamiltonian
-H = c_dag("up",0) - c_dag("up",0)
-for o in range(0,num_orbitals):
-    H += -mu*(n("up",o) + n("down",o))
+H = Operator() 
 
 for o in range(0,num_orbitals):
     H += U*n("up",o)*n("down",o)
@@ -64,8 +62,8 @@ delta_w = GfImFreq(indices = range(0,num_orbitals), beta=beta)
 delta_w <<= inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon)
 delta_w.from_L_G_R(V, delta_w, V)
 
-S.Delta_tau["up"] <<= InverseFourier(delta_w)
-S.Delta_tau["down"] <<= InverseFourier(delta_w)
+S.G0_iw["up"] <<= inverse(iOmega_n + mu - delta_w)
+S.G0_iw["down"] <<= inverse(iOmega_n + mu - delta_w)
 
 # Parameters
 p = SolverCore.solve_parameters()

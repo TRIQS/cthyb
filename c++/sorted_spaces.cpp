@@ -36,9 +36,9 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
 
  imperative_operator<hilbert_space, false> hamiltonian(h, fops);
  hilbert_space full_hs(fops);
- state<hilbert_space, double, false> st(full_hs);
+ state<hilbert_space, double, true> st(full_hs);
 
- using space_partition_t = space_partition<state<hilbert_space, double, false>, imperative_operator<hilbert_space, false>>;
+ using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<hilbert_space, false>>;
  // Split the Hilbert space
  space_partition_t SP(st, hamiltonian, false);
 

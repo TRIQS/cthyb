@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 
   // Set G0
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
-  g0_iw(om_) << om_ + mu + (-1)*delta_iw(om_);
+  g0_iw(om_) << om_ + mu - delta_iw(om_);
   solver.G0_iw_view()[0] = triqs::gfs::inverse( g0_iw );
 
   // Solve parameters

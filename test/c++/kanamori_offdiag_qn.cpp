@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
   }
   
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {num_orbitals,num_orbitals}};
-  g0_iw(om_) << om_ + mu + (-1)*delta_iw(om_);
+  g0_iw(om_) << om_ + mu - delta_iw(om_);
   solver.G0_iw_view()[0] = triqs::gfs::inverse( g0_iw );
   solver.G0_iw_view()[1] = triqs::gfs::inverse( g0_iw );
 

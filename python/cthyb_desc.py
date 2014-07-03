@@ -16,7 +16,7 @@ cthyb = class_(
 
 module.add_class(cthyb)
 
-cthyb.add_constructor(signature = "(double beta, std::map<std::string, std::vector<int>> gf_struct, int n_iw=5000, int n_tau=10001)", doc = """ """)
+cthyb.add_constructor(signature = "(double beta, std::map<std::string, std::vector<int>> gf_struct, int n_iw=5000, int n_tau=10001, int n_l=50)", doc = """ """)
 
 cthyb.add_method(name = "solve",
              signature = "void(triqs::utility::many_body_operator<double> h_loc, params::parameters params, std::vector<triqs::utility::many_body_operator<double>> quantum_numbers = std::vector<triqs::utility::many_body_operator<double>>{}, bool use_quantum_numbers = false)",
@@ -39,6 +39,9 @@ cthyb.add_property(name = "G_tau",
                    getter = cfunction("block_gf_view<imtime> G_tau_view()"),
                    doc = "G(tau) in imaginary time")
 
+cthyb.add_property(name = "G_l",
+                   getter = cfunction("block_gf_view<legendre> G_l_view()"),
+                   doc = "G_l in Legendre polynomials representation")
 
 # generate the module code
 module.generate_code()

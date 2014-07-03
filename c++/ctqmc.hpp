@@ -41,12 +41,13 @@ class ctqmc {
  std::map<std::string,std::vector<int>> gf_struct;
  block_gf<imfreq> G0_iw;                  // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> Delta_tau, G_tau;       // Green's function containers: imaginary-time Green's functions
+ block_gf<legendre> G_l;                  // Green's function containers: Legendre coefficients
  boost::mpi::communicator _comm;          // define the communicator, here MPI_COMM_WORLD
 
  public:
  using real_operator_t = many_body_operator<double>;
 
- ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001);
+ ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
  void solve(real_operator_t h_loc, params::parameters params,
             std::vector<real_operator_t> const & quantum_numbers = std::vector<real_operator_t> {},
@@ -58,6 +59,9 @@ class ctqmc {
 
  // imaginary-time measurements
  block_gf_view<imtime> G_tau_view() { return G_tau; }
+ 
+ // Legendre measurements
+ block_gf_view<legendre> G_l_view() { return G_l; }
 
  // specify all required and optional parameters and generate help from them
  static parameters solve_parameters();

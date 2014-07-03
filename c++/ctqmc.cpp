@@ -26,11 +26,12 @@
 #include "move_insert.hpp"
 #include "move_remove.hpp"
 #include "measure_g.hpp"
+#include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
 
 namespace cthyb {
 
-ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_iw, int n_tau):
+ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_iw, int n_tau, int n_l):
   beta(beta_), gf_struct(gf_struct_) {
 
   if ( n_tau < 2*n_iw ) TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau << ".";
@@ -38,6 +39,7 @@ ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_str
   std::vector<std::string> block_names;
   std::vector<gf<imfreq>> g0_iw_blocks;
   std::vector<gf<imtime>> g_tau_blocks;
+  std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
 
   for (auto const& block : gf_struct) {
@@ -45,11 +47,13 @@ ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_str
     int n = block.second.size();
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}});
     g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
+    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}});
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
   }
 
   G0_iw = make_block_gf(block_names, g0_iw_blocks);
   G_tau = make_block_gf(block_names, g_tau_blocks);
+  G_l = make_block_gf(block_names, g_l_blocks);
   Delta_tau = make_block_gf(block_names, delta_tau_blocks);
 
 }
@@ -137,6 +141,12 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
     qmc.add_measure(measure_g(block, G_tau[block], data), "G measure (" + g_names[block] + ")");
    }
   }
+  if (params["measure_g_l"]) {
+   auto& g_names = G_l.domain().names();
+   for (size_t block = 0; block < G_l.domain().size(); ++block) {
+    qmc.add_measure(measure_g_legendre(block, G_l[block], data), "G_l measure (" + g_names[block] + ")");
+   }
+  }
   if (params["measure_pert_order"]) {
    auto& g_names = G_tau.domain().names();
    for (size_t block = 0; block < G_tau.domain().size(); ++block) {
@@ -165,6 +175,7 @@ parameters_t ctqmc::solve_parameters() {
      .add_field("verbosity", (world.rank()==0 ? int(3) : int(0)), "Verbosity level")
      .add_field("use_trace_estimator", bool(false), "Calculate the full trace or use an estimate?")
      .add_field("measure_g_tau", bool(true), "Whether to measure G(tau)")
+     .add_field("measure_g_l", bool(false), "Whether to measure G_l (Legendre)")
      .add_field("measure_pert_order", bool(false), "Whether to measure perturbation order")
      .add_field("make_histograms", bool(false), "Make the analysis histograms of the trace computation");
 

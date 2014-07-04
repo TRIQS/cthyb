@@ -33,7 +33,7 @@ namespace cthyb {
 ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_iw, int n_tau):
   beta(beta_), gf_struct(gf_struct_) {
 
-  if ( n_tau <= 2*n_iw ) TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau << ".";
+  if ( n_tau < 2*n_iw ) TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau << ".";
 
   std::vector<std::string> block_names;
   std::vector<gf<imfreq>> g0_iw_blocks;
@@ -44,8 +44,8 @@ ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_str
     block_names.push_back(block.first);
     int n = block.second.size();
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}});
-    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, half_bins}, {n, n}});
-    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, half_bins}, {n, n}});
+    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
+    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
   }
 
   G0_iw = make_block_gf(block_names, g0_iw_blocks);

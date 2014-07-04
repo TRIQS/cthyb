@@ -65,12 +65,6 @@ for cn in cubic_names:
     for sn in spin_names:
         QN['N_'+sn] += N(*mkind(sn,cn))
 
-# Use PS quantum numbers (see arXiv:1209.0915)
-if use_PS_quantum_numbers:
-	for cn in cubic_names:
-	   dN = N(*mkind(spin_names[0],cn)) - N(*mkind(spin_names[1],cn))
-	   QN['PS_'+cn] = dN*dN
-
 print_master("Constructing the solver...")
 
 # Construct the solver

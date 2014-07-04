@@ -16,14 +16,14 @@ for line in open(ref_file_name,'r'):
     tau.append(float(cols[0]))
     data.append([-float(c) for c in cols[1:]])
 
-g_ref = GfImTime(indices = range(len(data[0])), beta=tau[-1], n_points=len(tau), kind='F')
+g_ref = GfImTime(indices = range(len(data[0])), beta=tau[-1], n_points=len(tau), kind='full_bins')
 for nt, d in enumerate(data):
     for nc, val in enumerate(d):
         g_ref.data[nt,nc,nc] = val
 
 # Calculate theoretical curves
 if not use_interaction:
-    g_theor = GfImTime(indices = range(len(cubic_names)), beta=beta, n_points=p["n_tau_g"])
+    g_theor = GfImTime(indices = range(len(cubic_names)), beta=beta, n_points=n_tau)
     for nc, cn in enumerate(cubic_names):
         V = delta_params[cn]['V']
         e = delta_params[cn]['e']

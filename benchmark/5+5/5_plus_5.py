@@ -38,22 +38,8 @@ for sn, cn in product(spin_names,cubic_names):
 H = Operator()
 H_term = Operator()
 
-# Chemical potential
-for b in gf_struct:
-    for c in gf_struct[b]:
-        H += -mu*n(b,c)
-
-# Atomic levels
-for i in atomic_levels:
-    H += atomic_levels[i] * n(*i)
-
 # Dump quadratic terms of H
-if H_dump:
-    H_dump_file = open(H_dump,'w')
-    for b in gf_struct:
-        H_dump_file.write(b + '\t')
-        H_dump_file.write(b + '\t')
-        H_dump_file.write(str(atomic_levels[(b,0)]-mu) + '\n')
+if H_dump: H_dump_file = open(H_dump,'w')
 
 if use_interaction:
     print_master("Preparing the interaction matrix...")
@@ -82,20 +68,13 @@ if use_interaction:
 # Quantum numbers (N_up and N_down)
 QN=[Operator(),Operator()]
 for cn in cubic_names:
-    for n, sn in enumerate(spin_names):
-        QN[n] += n(*mkind(sn,cn))
-
-# Use PS quantum numbers (see arXiv:1209.0915)
-if use_PS_quantum_numbers:
-    for cn in cubic_names:
-        QN += [Operator()]
-        dN = n(*mkind(spin_names[0],cn)) - n(*mkind(spin_names[1],cn))
-        QN[-1] = dN*dN
+    for i, sn in enumerate(spin_names):
+        QN[i] += n(*mkind(sn,cn))
         
 print_master("Constructing the solver...")
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 print_master("Preparing the hybridization function...")
 
@@ -108,7 +87,8 @@ for sn, cn in product(spin_names,cubic_names):
     
     delta_w = GfImFreq(indices = [i], beta=beta)
     delta_w <<= (V**2) * inverse(iOmega_n - e)
-    S.Delta_tau[bn][i,i] <<= InverseFourier(delta_w)
+    
+    S.G0_iw[bn][i,i] <<= inverse(iOmega_n +mu - atomic_levels[(bn,i)] - delta_w)
 
     # Dump Delta parameters
     if Delta_dump:
@@ -119,7 +99,7 @@ for sn, cn in product(spin_names,cubic_names):
 print_master("Running the simulation...")
 
 # Solve the problem
-S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=True)
+S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=use_quantum_numbers)
 
 # Save the results  
 if mpi.rank==0:

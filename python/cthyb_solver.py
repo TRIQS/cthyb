@@ -23,7 +23,6 @@ class Solver(SolverCore):
     def solve(self, h_loc, params=None, **params_kw):
         """ Solve the impurity problem """
             
-
         if params==None:
             if mpi.rank == 0: print "Using keyword arguments provided as parameters."
             p = SolverCore.solve_parameters()

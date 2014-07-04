@@ -12,6 +12,9 @@ t = 0.1
 # Use quantum numbers
 use_qn = True
 
+n_iw = 1025
+n_tau = 10001
+
 p = {}
 p["max_time"] = -1
 p["random_name"] = ""

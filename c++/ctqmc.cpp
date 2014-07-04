@@ -27,8 +27,6 @@
 #include "move_remove.hpp"
 #include "measure_g.hpp"
 #include "measure_perturbation_hist.hpp"
-//DEBUG
-#include <triqs/h5.hpp>
 
 namespace cthyb {
 
@@ -114,31 +112,6 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
     G0_iw[b]() = triqs::gfs::inverse(G0_iw[b]);
     b++;
   }
-
-// DEBUG
-//  Delta_tau = map([](gf_const_view<imfreq> x){return make_gf_from_inverse_fourier(x);}, Delta_iw);
-//auto delta_tau2 = make_gf_from_inverse_fourier(Delta_iw[0]);
-//std::cout << "h_loc = " << h_loc << std::endl;
-//std::cout << "G0_iw tail= " << G0_iw[0].singularity() << std::endl;
-//std::cout << "Delta_iw tail= " << Delta_iw[0].singularity() << std::endl;
-//std::cout << "G0_iw = " << G0_iw[0].data()(range(0,10),range(),range()) << std::endl;
-//std::cout << "Delta_tau = " << Delta_tau[0].data()(range(0,10),range(),range()) << std::endl;
-//std::cout << "Delta_tau = " << Delta_tau[0].data() << std::endl;
-//std::cout << "Deltaw = " << Deltaw[0].data()(range(0,10),range(),range()) << std::endl;
-//std::cout << "delta_tau2 = " << delta_tau2.data()(range(0,10),range(),range()) << std::endl;
-
-// DEBUG
-// Set hybridization function
-//double V = 1.0;
-//double epsilon = 2.3;
-//triqs::clef::placeholder<0> om_;
-//auto delta_w = gf<imfreq>{{beta, Fermion}, {2,2}};
-//delta_w(om_) << V*V / (om_ - epsilon) + V*V / (om_ + epsilon);
-//Delta_tau[0]() = triqs::gfs::inverse_fourier(delta_w);
-// MORE DEBUG
-//triqs::h5::file G_file("kondo_anderson.h5",H5F_ACC_RDONLY);
-//triqs::h5::group gp(G_file);
-//h5_read(G_file,"delta_tot",Delta_tau[0]);//Delta_tau_view()[0]);
 
   // Determine block structure
   if (use_quantum_numbers)

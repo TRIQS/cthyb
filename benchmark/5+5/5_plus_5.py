@@ -38,7 +38,6 @@ for sn, cn in product(spin_names,cubic_names):
 H = Operator()
 H_term = Operator()
 
-# Dump quadratic terms of H
 if H_dump: H_dump_file = open(H_dump,'w')
 
 if use_interaction:
@@ -87,7 +86,7 @@ for sn, cn in product(spin_names,cubic_names):
     
     delta_w = GfImFreq(indices = [i], beta=beta)
     delta_w <<= (V**2) * inverse(iOmega_n - e)
-    
+
     S.G0_iw[bn][i,i] <<= inverse(iOmega_n +mu - atomic_levels[(bn,i)] - delta_w)
 
     # Dump Delta parameters

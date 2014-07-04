@@ -51,8 +51,8 @@ atomic_levels = {('up_xy',0) :        -0.2,
 
 use_quantum_numbers = False
 
-n_iw=1025
-n_tau=100001
+n_iw = 1025
+n_tau = 10001
 
 p = {}
 p["max_time"] = -1

@@ -64,9 +64,6 @@ int main(int argc, char* argv[]) {
       H += -J*C_dag("up",o1)*C_dag("down",o2)*C("up",o2)*C("down",o1);
   }
 
-  // quantum numbers
-  std::vector<many_body_operator<double>> qn;
-
   // gf structure
   std::map<std::string, std::vector<int>> gf_struct; 
   for(int o = 0; o < num_orbitals; ++o){
@@ -75,7 +72,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Construct CTQMC solver
-  ctqmc solver(beta, gf_struct, 1025, 10001);
+  ctqmc solver(beta, gf_struct, 1025, 2500);
 
   // Set G0
   triqs::clef::placeholder<0> om_;
@@ -93,10 +90,10 @@ int main(int argc, char* argv[]) {
   p["verbosity"] = 3;
   p["length_cycle"] = 50;
   p["n_warmup_cycles"] = 50;
-  p["n_cycles"] = 500;
+  p["n_cycles"] = 5000;
 
   // Solve!
-  solver.solve(H, p, qn, true);
+  solver.solve(H, p);
   
   // Save the results
   if(rank==0){

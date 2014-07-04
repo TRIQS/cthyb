@@ -22,7 +22,7 @@ set(HDF5_TESTS
 foreach(t ${HDF5_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     triqs_set_rpath_for_target(${t})
-    triqs_add_test_C_hdf(${t} " -d 1.e-7")
+    triqs_add_test_C_hdf(${t} " -d 1.e-8")
 endforeach(t)
 
 #add_subdirectory(long_tests)

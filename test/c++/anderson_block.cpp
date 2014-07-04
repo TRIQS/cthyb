@@ -35,13 +35,12 @@ int main(int argc, char* argv[]) {
   double V = 1.0;
   double epsilon = 2.3;
 
-  // define operators and QN
+  // define operators
   auto H = U*n("up",0)*n("down",0) + h*n("up",0) - h*n("down",0);
-  std::vector<many_body_operator<double>> qn;
   std::map<std::string, std::vector<int>> gf_struct{{"up",{0}},{"down",{0}}};
 
   // Construct CTQMC solver
-  ctqmc solver(beta, gf_struct, 1025, 10001);
+  ctqmc solver(beta, gf_struct, 1025, 2500);
 
   // Set G0
   triqs::clef::placeholder<0> om_;
@@ -56,11 +55,11 @@ int main(int argc, char* argv[]) {
   p["max_time"] = -1;
   p["verbosity"] = 3;
   p["length_cycle"] = 50;
-  p["n_warmup_cycles"] = 10;
+  p["n_warmup_cycles"] = 50;
   p["n_cycles"] = 5000;
 
   // Solve!
-  solver.solve(H, p, qn, true);
+  solver.solve(H, p);
   
   // Save the results
   if(rank==0){

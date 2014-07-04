@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   std::map<std::string, std::vector<int>> gf_struct{{"tot",{0,1}}};
 
   // Construct CTQMC solver
-  ctqmc solver(beta, gf_struct, 1025, 10001);
+  ctqmc solver(beta, gf_struct, 1025, 2500);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
   p["verbosity"] = 3;
   p["length_cycle"] = 50;
   p["n_warmup_cycles"] = 50;
-  p["n_cycles"] = 3000;
+  p["n_cycles"] = 5000;
 
   // Solve!
   solver.solve(H, p, qn, true);

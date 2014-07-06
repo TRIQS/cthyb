@@ -28,6 +28,9 @@ epsilon = [0.0,0.1,0.2,0.3,0.4,0.5]
 V = 0.2
 
 # Parameters
+n_iw = 1025
+n_tau = 10001
+
 p = SolverCore.solve_parameters()
 p["max_time"] = -1
 p["random_name"] = ""
@@ -40,18 +43,18 @@ p["n_cycles"] = 1000000
 # Block structure of GF
 gf_struct = OrderedDict()
 gf_struct['up'] = [0]
-gf_struct['down'] = [0]
+gf_struct['dn'] = [0]
 
 # Hamiltonian
-H = ed*(n("up",0) + n("down",0)) + U*n("up",0)*n("down",0)
+H = U*n("up",0)*n("dn",0)
 
 # Quantum numbers
 qn = []
 qn.append(n("up",0))
-qn.append(n("down",0))
+qn.append(n("dn",0))
     
 # Construct solver    
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 if mpi.rank==0:
     arch = HDFArchive('asymm_bath.h5','w')
@@ -62,17 +65,17 @@ for e in epsilon:
     delta_w = GfImFreq(indices = [0], beta=beta)
     delta_w <<= (V**2) * inverse(iOmega_n - e)
 
-    S.Delta_tau["up"] <<= InverseFourier(delta_w)
-    S.Delta_tau["down"] <<= InverseFourier(delta_w)
+    S.G0_iw["up"] <<= inverse(iOmega_n - ed - delta_w)
+    S.G0_iw["dn"] <<= inverse(iOmega_n - ed - delta_w)
 
     S.solve(h_loc=H, params=p)
   
     if mpi.rank==0:
-        arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "down":S.G_tau["down"]}
+        arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "dn":S.G_tau["dn"]}
 
         plt.clf()
         oplot(S.G_tau["up"], name="$\uparrow\uparrow$")
-        oplot(S.G_tau["down"],name="$\downarrow\downarrow$")
+        oplot(S.G_tau["dn"],name="$\downarrow\downarrow$")
         
         axes = plt.gca()
         axes.set_ylabel('$G(\\tau)$')

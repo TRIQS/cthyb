@@ -33,7 +33,7 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
-p["n_tau_g0"] = 1000
+p["n_tau_delta"] = 1000
 p["n_tau_g"] = 1000
 p['legendre_accumulation'] = False
 p['time_accumulation'] = True
@@ -41,16 +41,16 @@ p['time_accumulation'] = True
 # Block structure of GF
 gf_struct = {}
 gf_struct['up'] = [0]
-gf_struct['down'] = [0]
+gf_struct['dn'] = [0]
 
 # Hamiltonian
-H = ed*(N("up",0) + N("down",0)) + U*N("up",0)*N("down",0)
+H = U*N("up",0)*N("dn",0)
 p['H_local'] = H
 
 # Quantum numbers
 qn = {}
 qn['N_up'] = N("up",0)
-qn['N_down'] = N("down",0)
+qn['N_dn'] = N("dn",0)
 p['quantum_numbers'] = qn
     
 S = Solver(beta=beta, gf_struct=gf_struct.items())
@@ -64,17 +64,17 @@ for e in epsilon:
     delta_w = GfImFreq(indices = [0], beta=beta)
     delta_w <<= (V**2) * inverse(iOmega_n - e)
 
-    S.G0["up"] <<= inverse(iOmega_n - delta_w)
-    S.G0["down"] <<= inverse(iOmega_n - delta_w)
+    S.G0["up"] <<= inverse(iOmega_n - ed - delta_w)
+    S.G0["dn"] <<= inverse(iOmega_n - ed - delta_w)
 
     S.solve(**p)
   
     if mpi.rank==0:
-        arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "down":S.G_tau["down"]}
+        arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "dn":S.G_tau["dn"]}
 
         plt.clf()
         oplot(S.G_tau["up"], name="$\uparrow\uparrow$")
-        oplot(S.G_tau["down"],name="$\downarrow\downarrow$")
+        oplot(S.G_tau["dn"],name="$\downarrow\downarrow$")
         
         axes = plt.gca()
         axes.set_ylabel('$G(\\tau)$')

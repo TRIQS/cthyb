@@ -18,66 +18,67 @@ print_master("This test is aimed to reveal excessive state truncation issues.")
 beta = 40.0
 
 for modes in range(1,10+1):
-	V = [0.2]*modes
-	e = [-0.2]*modes
+    V = [0.2]*modes
+    e = [-0.2]*modes
 
-gf_struct = {str(n):[0] for n in range(0,len(V))}
+    gf_struct = {str(n):[0] for n in range(0,len(V))}
 
-p = SolverCore.solve_parameters()
-p["max_time"] = -1
-p["random_name"] = ""
-p["random_seed"] = 123 * mpi.rank + 567
-p["verbosity"] = 2
-p["length_cycle"] = 50
-p["n_warmup_cycles"] = 50000
-p["n_cycles"] = 1200000
+    n_iw = 1025
+    n_tau = 10001
 
-# Local Hamiltonian
-H = Operator()
-for n, b in enumerate(sorted(gf_struct.keys())):
-	H += e[n]*n(b,0)
+    p = SolverCore.solve_parameters()
+    p["max_time"] = -1
+    p["random_name"] = ""
+    p["random_seed"] = 123 * mpi.rank + 567
+    p["verbosity"] = 2
+    p["length_cycle"] = 50
+    p["n_warmup_cycles"] = 50000
+    p["n_cycles"] = 1200000
 
-# Quantum numbers (N_up and N_down)
-QN=[]
-for b in sorted(gf_struct.keys()): QN.append(n(b,0))
+    # Local Hamiltonian
+    H = Operator()
 
-print_master("Constructing the solver...")
+    # Quantum numbers (N_up and N_down)
+    QN=[]
+    for b in sorted(gf_struct.keys()): QN.append(n(b,0))
 
-# Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
+    print_master("Constructing the solver...")
 
-print_master("Preparing the hybridization function...")
+    # Construct the solver
+    S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
-# Set hybridization function
-for n, b in enumerate(sorted(gf_struct.keys())):
-    delta_w = GfImFreq(indices = [0], beta=beta)
-    delta_w <<= (V[n]**2) * inverse(iOmega_n - e[n])
-    S.Delta_tau[b][0,0] <<= InverseFourier(delta_w)
+    print_master("Preparing the hybridization function...")
 
-print_master("Running the simulation...")
+    # Set hybridization function
+    for m, b in enumerate(sorted(gf_struct.keys())):
+        delta_w = GfImFreq(indices = [0], beta=beta)
+        delta_w <<= (V[m]**2) * inverse(iOmega_n - e[m])
+        S.G0_iw[b][0,0] <<= inverse(iOmega_n - e[m] - delta_w)
 
-# Solve the problem
-S.solve(h_loc=H, params=p, quantum_numbers=QN, use_quantum_numbers=True)
+    print_master("Running the simulation...")
 
-# Save and plot the results  
-if mpi.rank==0:
-    Results = HDFArchive('nonint_%i.h5'%len(V),'w')
-    pdf = PdfPages("G_nonint_%i.pdf"%len(V))
+    # Solve the problem
+    S.solve(h_loc=H, params=p, quantum_numbers=QN, use_quantum_numbers=True)
 
-    for n, b in enumerate(sorted(gf_struct.keys())):
-       Results['G_'+b] = S.G_tau[b]
+    # Save and plot the results
+    if mpi.rank==0:
+        Results = HDFArchive('nonint_%i.h5'%len(V),'w')
+        pdf = PdfPages("G_nonint_%i.pdf"%len(V))
+
+        for m, b in enumerate(sorted(gf_struct.keys())):
+            Results['G_'+b] = S.G_tau[b]
        
-       g_theor = GfImTime(indices = [0], beta=beta, n_points=p["n_tau_g"])
-       e1 = e[n] - V[n]
-       e2 = e[n] + V[n]
-       g_theor_w = GfImFreq(indices = [0], beta=beta)
-       g_theor_w <<= 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
-       g_theor[0,0] <<= InverseFourier(g_theor_w)
+            g_theor = GfImTime(indices = [0], beta=beta, n_points=n_tau)
+            e1 = e[m] - V[m]
+            e2 = e[m] + V[m]
+            g_theor_w = GfImFreq(indices = [0], beta=beta)
+            g_theor_w <<= 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
+            g_theor[0,0] <<= InverseFourier(g_theor_w)
        
-       plt.clf()
-       oplot(S.G_tau[b][0,0], name="cthyb")
-       oplot(g_theor[0,0], name="Theory")
+            plt.clf()
+            oplot(S.G_tau[b][0,0], name="cthyb")
+            oplot(g_theor[0,0], name="Theory")
 
-    pdf.savefig(plt.gcf())
+        pdf.savefig(plt.gcf())
 
-    pdf.close()
+        pdf.close()

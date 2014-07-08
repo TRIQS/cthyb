@@ -26,7 +26,7 @@ p = {k:v for k, v in p.items() if not k in cthyb_only_params}
 
 print_master("Welcome to Anderson (1 correlated site + symmetric bath) test, matrix version.")
 
-H = U*N("up",0)*N("dn",0) + (-mu+h)*N("up",0) + (-mu-h)*N("dn",0)
+H = U*N("up",0)*N("dn",0)
   
 QN = {}
 for spin in spin_names: QN['N_'+spin] = N(spin,0)
@@ -45,7 +45,7 @@ print_master("Preparing the hybridization function...")
 delta_w = GfImFreq(indices = [0], beta=beta)
 delta_w <<= (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
 for spin in spin_names:
-    S.G0[spin][0,0] <<= inverse(iOmega_n - delta_w)
+    S.G0[spin][0,0] <<= inverse(iOmega_n + mu -{'up':h,'dn':-h}[spin] - delta_w)
 
 print_master("Running the simulation...")
 

@@ -21,6 +21,14 @@ def setup_fig():
     axes.set_ylabel('$G(\\tau)$')
     axes.legend(loc='lower center',prop={'size':10})
 
+def downsample(gf_tau): # Not reliable
+    indices = range(gf_tau.data.shape[1])
+    gf_iw = GfImFreq(indices = indices, beta=gf_tau.mesh.beta, n_points=500)
+    gf_iw <<= Fourier(gf_tau)
+    res = GfImTime(indices = indices, beta=gf_tau.mesh.beta, n_points=1000)
+    res <<= InverseFourier(gf_iw)
+    return res
+
 pp = PdfPages('G.pdf')
 for plot_objs in objects_to_plot:
     try:
@@ -45,7 +53,9 @@ for plot_objs in objects_to_plot:
             
             for spin in params.spin_names:
                 bn, i = params.mkind(spin)
-                oplot(arch[bn][i,i], name=name + "," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
+                
+                GF = arch[bn] if name=="ED" else downsample(arch[bn])
+                oplot(GF[i,i], name=name + "," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
                             
         setup_fig()
         pp.savefig(plt.gcf())

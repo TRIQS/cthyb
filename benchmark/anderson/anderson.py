@@ -22,7 +22,7 @@ for k in p: pp[k] = p[k]
 
 print_master("Welcome to Anderson (1 correlated site + symmetric bath) test.")
 
-H = U*n(*mkind("up"))*n(*mkind("dn")) + (-mu+h)*n(*mkind("up")) + (-mu-h)*n(*mkind("dn"))
+H = U*n(*mkind("up"))*n(*mkind("dn"))
   
 QN = []
 if use_qn:
@@ -36,7 +36,7 @@ for spin in spin_names:
 print_master("Constructing the solver...")
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 print_master("Preparing the hybridization function...")
 
@@ -45,7 +45,7 @@ delta_w = GfImFreq(indices = [0], beta=beta)
 delta_w <<= (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
 for spin in spin_names:
     bn, i = mkind(spin)
-    S.Delta_tau[bn][i,i] <<= InverseFourier(delta_w)
+    S.G0_iw[bn][i,i] <<= inverse(iOmega_n + mu - {'up':h,'dn':-h}[spin] - delta_w)
 
 print_master("Running the simulation...")
 

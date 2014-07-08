@@ -32,7 +32,7 @@ p["length_cycle"] = 50
 p["n_warmup_cycles"] = 10000
 p["n_cycles"] = 100000
 p["make_histograms"] = True
-p["measure_gt"] = False
+p["measure_g_tau"] = False
 p["use_trace_estimator"] = False
 
 # Block structure of GF
@@ -44,43 +44,43 @@ for o in range(0,num_orbitals):
 # Hamiltonian -- must include both quadratic and quartic terms
 H = Operator()
 for o in range(0,num_orbitals):
-    H += -mu*(N("up-%s"%o,0) + N("down-%s"%o,0))
+    H += -mu*(n("up-%s"%o,0) + n("down-%s"%o,0))
 
 for o in range(0,num_orbitals):
-    H += U*N("up-%s"%o,0)*N("down-%s"%o,0)
+    H += U*n("up-%s"%o,0)*n("down-%s"%o,0)
 
 for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     if o1==o2: continue
-    H += (U-2*J)*N("up-%s"%o1,0)*N("down-%s"%o2,0)
+    H += (U-2*J)*n("up-%s"%o1,0)*n("down-%s"%o2,0)
 
 for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     if o2>=o1: continue;
-    H += (U-3*J)*N("up-%s"%o1,0)*N("up-%s"%o2,0)
-    H += (U-3*J)*N("down-%s"%o1,0)*N("down-%s"%o2,0)
+    H += (U-3*J)*n("up-%s"%o1,0)*n("up-%s"%o2,0)
+    H += (U-3*J)*n("down-%s"%o1,0)*n("down-%s"%o2,0)
 
 for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     if o1==o2: continue
-    H += -J*C_dag("up-%s"%o1,0)*C_dag("down-%s"%o1,0)*C("up-%s"%o2,0)*C("down-%s"%o2,0)
-    H += -J*C_dag("up-%s"%o1,0)*C_dag("down-%s"%o2,0)*C("up-%s"%o2,0)*C("down-%s"%o1,0)
+    H += -J*c_dag("up-%s"%o1,0)*c_dag("down-%s"%o1,0)*c("up-%s"%o2,0)*c("down-%s"%o2,0)
+    H += -J*c_dag("up-%s"%o1,0)*c_dag("down-%s"%o2,0)*c("up-%s"%o2,0)*c("down-%s"%o1,0)
 
 # Quantum numbers
 qn = []
 for o in range(0,num_orbitals+2): qn.append(Operator())
 for o in range(0,num_orbitals):
-    qn[0] += N("up-%s"%o,0) + N("down-%s"%o,0) # Ntot
-    qn[1] += (N("up-%s"%o,0) - N("down-%s"%o,0)) # Sz
-    qn[2+o] += (N("up-%s"%o,0) - N("down-%s"%o,0))*(N("up-%s"%o,0) - N("down-%s"%o,0)) # Seniority number = Sz^2
+    qn[0] += n("up-%s"%o,0) + n("down-%s"%o,0) # Ntot
+    qn[1] += (n("up-%s"%o,0) - n("down-%s"%o,0)) # Sz
+    qn[2+o] += (n("up-%s"%o,0) - n("down-%s"%o,0))*(n("up-%s"%o,0) - n("down-%s"%o,0)) # Seniority number = Sz^2
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau_g0=1000, n_tau_g=1000)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=10001, n_iw=1025)
 
 # Set hybridization function
-delta_w = GfImFreq(indices = [0], beta=beta)
+delta_w = GfImFreq(indices = [0], beta=beta, n_points=1025)
 delta_w <<= (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
 
 for o in range(0,num_orbitals):
-    S.Delta_tau["up-%s"%o] <<= InverseFourier(delta_w)
-    S.Delta_tau["down-%s"%o] <<= InverseFourier(delta_w)
+    S.G0_iw["up-%s"%o] <<= inverse(iOmega_n - delta_w)
+    S.G0_iw["down-%s"%o] <<= inverse(iOmega_n - delta_w)
 
 n_loops=3
 # Now do the DMFT loop
@@ -89,7 +89,7 @@ for IterNum in range(n_loops):
   starttime = time.clock()
 
   g_tau = S.G_tau.copy()
-  g_w = GfImFreq(indices = [0], beta=beta)
+  g_w = GfImFreq(indices = [0], beta=beta, n_points=1025)
 
   if IterNum > 0:
     # Compute S.Delta_tau with the self-consistency condition while imposing
@@ -100,8 +100,8 @@ for IterNum in range(n_loops):
 # first three moments (w, const, 1/w), number of moments, range of freq to fit
     g_w.fit_tail([[[0.0,0.0,1.0]]],5,100,500)
 
-    for name, d0block in S.Delta_tau:
-      d0block <<= InverseFourier( (half_bandwidth/2.0)**2 * g_w )
+    for name, g0block in S.G0_iw:
+      g0block <<= inverse(iOmega_n - (half_bandwidth/2.0)**2 * g_w )
 
   S.solve(h_loc=H, params=p)
 

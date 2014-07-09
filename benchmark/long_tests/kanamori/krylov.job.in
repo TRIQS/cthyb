@@ -1,9 +1,0 @@
-#!/bin/sh
-#$ -S /bin/sh
-#$ -pe mpi @krylov_ncpus@
-#$ -q amd
-#$ -cwd
-
-pushd @CMAKE_CURRENT_BINARY_DIR@
-mpirun -machinefile $TMPDIR/machines -np @krylov_ncpus@ ./kanamori @use_qn@ > @krylov_log_file@
-popd

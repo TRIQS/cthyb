@@ -77,8 +77,7 @@ struct measure_g_legendre {
     
   auto g_l_copy = make_clone(g_l);
   boost::mpi::all_reduce(c, g_l_copy, g_l_copy, std::c14::plus<>());
-  
-  for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(z)*beta)) * g_l[l];
+  for (auto l : g_l_copy.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(z)*beta)) * g_l_copy[l];
  }
 };
 }

@@ -106,11 +106,14 @@ if mpi.rank==0:
     Results = HDFArchive(results_file_name,'w')
     for b in gf_struct: Results[b] = S.G_tau[b]
 
-    import pytriqs.version as version
+    import pytriqs.applications.impurity_solvers.cthyb.version as version
     import inspect
     import __main__
     Results.create_group("log")
     log = Results["log"]
-    log["code_version"] = version.release
+    log["version"] = version.version
+    log["release"] = version.release
+    log["triqs_hash"] = version.triqs_hash
+    log["cthyb_hash"] = version.cthyb_hash
     log["script"] = inspect.getsource(__main__)
     log["params"] = inspect.getsource(params)

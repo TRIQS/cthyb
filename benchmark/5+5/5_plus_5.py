@@ -15,6 +15,7 @@ from collections import OrderedDict
 from os import getcwd
 from sys import path
 path.insert(0,getcwd())
+import params
 from params import *
 del path[0]
 
@@ -104,3 +105,12 @@ S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=use_quantum_
 if mpi.rank==0:
     Results = HDFArchive(results_file_name,'w')
     for b in gf_struct: Results[b] = S.G_tau[b]
+
+    import pytriqs.version as version
+    import inspect
+    import __main__
+    Results.create_group("log")
+    log = Results["log"]
+    log["code_version"] = version.release
+    log["script"] = inspect.getsource(__main__)
+    log["params"] = inspect.getsource(params)

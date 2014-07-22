@@ -69,6 +69,9 @@ struct measure_g {
   boost::mpi::all_reduce(c, z, z, std::c14::plus<>());
   boost::mpi::all_reduce(c, num, num, std::c14::plus<>());
   average_sign = z / num;
+  // Multiply first and last bins by 2 to account for full bins
+  g_tau[0] = g_tau[0] * 2;
+  g_tau[g_tau.mesh().size()-1] = g_tau[g_tau.mesh().size()-1] * 2;
   // Need a copy, because all_reduce wants default-constructible types
   auto g_tau_copy = make_clone(g_tau);
   boost::mpi::all_reduce(c, g_tau_copy, g_tau_copy, std::c14::plus<>());

@@ -28,7 +28,7 @@ gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 
 # Construct solver    
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
 
 # Hamiltonian
 H = Operator() 
@@ -51,12 +51,6 @@ if not n_n_only: # spin flips and pair hopping
         H += -J*c_dag("up",o1)*c_dag("down",o1)*c("up",o2)*c("down",o2)
         H += -J*c_dag("up",o1)*c_dag("down",o2)*c("up",o2)*c("down",o1)
 
-# Quantum numbers
-qn = [Operator(),Operator()]
-for o in range(0,num_orbitals):
-    qn[0] += n("up",o)
-    qn[1] += n("down",o)
-
 # Set hybridization function
 delta_w = GfImFreq(indices = range(0,num_orbitals), beta=beta)
 delta_w <<= inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon)
@@ -75,9 +69,9 @@ p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50
 p["n_cycles"] = 5000
 
-S.solve(h_loc=H, params=p, use_quantum_numbers=False)
+S.solve(h_loc=H, params=p)
   
 if mpi.rank==0:
-    Results = HDFArchive("solver_python_test.output.h5",'w')
+    Results = HDFArchive("solver_params.output.h5",'w')
     Results["G_up"] = S.G_tau["up"]
     Results["G_down"] = S.G_tau["down"]

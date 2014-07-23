@@ -28,7 +28,7 @@ gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 
 # Construct solver    
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
 
 # Hamiltonian
 H = Operator() 
@@ -60,7 +60,7 @@ S.G0_iw["up"] <<= inverse(iOmega_n + mu - delta_w)
 S.G0_iw["down"] <<= inverse(iOmega_n + mu - delta_w)
 
 # Parameters
-p = SolverCore.solve_parameters()
+p = {}
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -69,9 +69,9 @@ p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50
 p["n_cycles"] = 5000
 
-S.solve(h_loc=H, params=p, use_quantum_numbers=False)
+S.solve(h_loc=H, **p)
   
 if mpi.rank==0:
-    Results = HDFArchive("solvercore_python_test.output.h5",'w')
+    Results = HDFArchive("solver_kwargs.output.h5",'w')
     Results["G_up"] = S.G_tau["up"]
     Results["G_down"] = S.G_tau["down"]

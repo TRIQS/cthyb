@@ -18,18 +18,18 @@ class Solver(SolverCore):
         """
 
         # Initialise the core solver
-        SolverCore.__init__(beta, gf_struct, n_iw=n_iw, n_tau=n_tau)
+        SolverCore.__init__(self, beta, gf_struct, n_iw=n_iw, n_tau=n_tau)
 
     def solve(self, h_loc, params=None, **params_kw):
         """ Solve the impurity problem """
             
         if params==None:
-            if mpi.rank == 0: print "Using keyword arguments provided as parameters."
-            p = SolverCore.solve_parameters()
+            if mpi.rank == 0: print "Using keyword arguments provided as parameters in the solver."
+            params = SolverCore.solve_parameters()
             for i in params_kw:
-                p[i] = params_kw[i]
+                params[i] = params_kw[i]
         else:
-            if mpi.rank == 0: print "Using parameter list."
+            if mpi.rank == 0: print "Using parameter list in the solver."
 
         # Call the core solver's core routine
-        SolverCore.solve(h_loc=H, params=p)
+        SolverCore.solve(self, h_loc, params)

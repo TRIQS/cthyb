@@ -28,19 +28,19 @@ cthyb.add_method(name = "solve_parameters",
                  doc = """Get the form of solve parameters""")
 
 cthyb.add_property(name = "G0_iw",
-                   getter = cfunction("block_gf_view<imfreq> G0_iw_view()"),
+                   getter = cfunction("block_gf_view<imfreq> G0_iw()"),
                    doc = "G0(iw) in imaginary frequencies")
 
 cthyb.add_property(name = "Delta_tau",
-                   getter = cfunction("block_gf_view<imtime> Delta_tau_view()"),
+                   getter = cfunction("block_gf_view<imtime> Delta_tau()"),
                    doc = "Delta(tau) in imaginary time")
 
 cthyb.add_property(name = "G_tau",
-                   getter = cfunction("block_gf_view<imtime> G_tau_view()"),
+                   getter = cfunction("block_gf_view<imtime> G_tau()"),
                    doc = "G(tau) in imaginary time")
 
 cthyb.add_property(name = "G_l",
-                   getter = cfunction("block_gf_view<legendre> G_l_view()"),
+                   getter = cfunction("block_gf_view<legendre> G_l()"),
                    doc = "G_l in Legendre polynomials representation")
 
 # generate the module code

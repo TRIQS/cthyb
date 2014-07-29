@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   // Set G0
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
   g0_iw(om_) << om_ + mu - delta_iw(om_);
-  solver.G0_iw_view()[0] = triqs::gfs::inverse( g0_iw );
+  solver.G0_iw()[0] = triqs::gfs::inverse( g0_iw );
 
   // Solve parameters
   auto p = ctqmc::solve_parameters();
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   // Save the results
   if(rank==0){
     triqs::h5::file G_file("spinless.output.h5",H5F_ACC_TRUNC);
-    h5_write(G_file,"G_tau",solver.G_tau_view()[0]);
+    h5_write(G_file,"G_tau",solver.G_tau()[0]);
   }
 
   return 0;

@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {1,1}};
   g0_iw(om_) << om_ + mu - ( V / (om_ - epsilon) + V / (om_ + epsilon));
   for (int o = 0; o < 2*num_orbitals; ++o){
-    solver.G0_iw_view()[o] = triqs::gfs::inverse( g0_iw );
+    solver.G0_iw()[o] = triqs::gfs::inverse( g0_iw );
   }
 
   // Solve parameters
@@ -100,9 +100,9 @@ int main(int argc, char* argv[]) {
     triqs::h5::file G_file("kanamori.output.h5",H5F_ACC_TRUNC);
     for(int o = 0; o < num_orbitals; ++o) {
       std::stringstream bup; bup << "G_up-" << o;
-      h5_write(G_file, bup.str(), solver.G_tau_view()[o]);
+      h5_write(G_file, bup.str(), solver.G_tau()[o]);
       std::stringstream bdown; bdown << "G_down-" << o;
-      h5_write(G_file, bdown.str(), solver.G_tau_view()[num_orbitals+o]);
+      h5_write(G_file, bdown.str(), solver.G_tau()[num_orbitals+o]);
     }
   }
 

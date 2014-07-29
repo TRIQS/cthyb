@@ -39,10 +39,10 @@ class ctqmc {
  double beta;
  sorted_spaces sosp;
  std::map<std::string,std::vector<int>> gf_struct;
- block_gf<imfreq> G0_iw;                  // Green's function containers: imaginary-freq Green's functions
- block_gf<imtime> Delta_tau, G_tau;       // Green's function containers: imaginary-time Green's functions
- block_gf<legendre> G_l;                  // Green's function containers: Legendre coefficients
- boost::mpi::communicator _comm;          // define the communicator, here MPI_COMM_WORLD
+ block_gf<imfreq> _G0_iw;                  // Green's function containers: imaginary-freq Green's functions
+ block_gf<imtime> _Delta_tau, _G_tau;      // Green's function containers: imaginary-time Green's functions
+ block_gf<legendre> _G_l;                  // Green's function containers: Legendre coefficients
+ boost::mpi::communicator _comm;           // define the communicator, here MPI_COMM_WORLD
 
  public:
  using real_operator_t = many_body_operator<double>;
@@ -54,14 +54,14 @@ class ctqmc {
             bool use_quantum_numbers = false);
 
  // input containers
- block_gf_view<imfreq> G0_iw_view() { return G0_iw; }
- block_gf_view<imtime> Delta_tau_view() { return Delta_tau; }
+ block_gf_view<imfreq> G0_iw() { return _G0_iw; }
+ block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
  // imaginary-time measurements
- block_gf_view<imtime> G_tau_view() { return G_tau; }
+ block_gf_view<imtime> G_tau() { return _G_tau; }
  
  // Legendre measurements
- block_gf_view<legendre> G_l_view() { return G_l; }
+ block_gf_view<legendre> G_l() { return _G_l; }
 
  // specify all required and optional parameters and generate help from them
  static parameters solve_parameters();

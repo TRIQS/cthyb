@@ -51,10 +51,10 @@ ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_str
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
   }
 
-  G0_iw = make_block_gf(block_names, g0_iw_blocks);
-  G_tau = make_block_gf(block_names, g_tau_blocks);
-  G_l = make_block_gf(block_names, g_l_blocks);
-  Delta_tau = make_block_gf(block_names, delta_tau_blocks);
+  _G0_iw = make_block_gf(block_names, g0_iw_blocks);
+  _G_tau = make_block_gf(block_names, g_tau_blocks);
+  _G_l = make_block_gf(block_names, g_l_blocks);
+  _Delta_tau = make_block_gf(block_names, delta_tau_blocks);
 
 }
 
@@ -90,7 +90,7 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   }
 
   // Calculate imfreq quantities
-  auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, G0_iw);
+  auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
 
   // Add quadratic terms to h_loc
@@ -98,7 +98,7 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   for (auto const & bl: gf_struct) {
     for (auto const & a1: bl.second) {
       for (auto const & a2: bl.second) {
-        h_loc = h_loc + G0_iw[b].singularity()(2)(a1,a2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
+        h_loc = h_loc + _G0_iw[b].singularity()(2)(a1,a2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
       }
     }
     b++;
@@ -110,10 +110,10 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   for (auto const & bl: gf_struct) {
     Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
     Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
-    Delta_tau[b]() = inverse_fourier(Delta_iw[b]); 
-    G0_iw[b](iw_) << iw_ + G0_iw_inv[b].singularity()(0) ;
-    G0_iw[b] = G0_iw[b] - Delta_iw[b];
-    G0_iw[b]() = triqs::gfs::inverse(G0_iw[b]);
+    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]); 
+    _G0_iw[b](iw_) << iw_ + G0_iw_inv[b].singularity()(0) ;
+    _G0_iw[b] = _G0_iw[b] - Delta_iw[b];
+    _G0_iw[b]() = triqs::gfs::inverse(_G0_iw[b]);
     b++;
   }
 
@@ -123,33 +123,33 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
   else 
    sosp = {h_loc, fops};
 
-  qmc_data data(beta, params, sosp, linindex, Delta_tau);
+  qmc_data data(beta, params, sosp, linindex, _Delta_tau);
   mc_tools::mc_generic<mc_sign_type> qmc(params);
  
   // Moves
-  auto& delta_names = Delta_tau.domain().names();
-  for (size_t block = 0; block < Delta_tau.domain().size(); ++block) {
-   int block_size = Delta_tau[block].data().shape()[1];
+  auto& delta_names = _Delta_tau.domain().names();
+  for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
+   int block_size = _Delta_tau[block].data().shape()[1];
    qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), false), "Insert Delta_" + delta_names[block]);
    qmc.add_move(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block]);
   }
  
   // Measurements
   if (params["measure_g_tau"]) {
-   auto& g_names = G_tau.domain().names();
-   for (size_t block = 0; block < G_tau.domain().size(); ++block) {
-    qmc.add_measure(measure_g(block, G_tau[block], data), "G measure (" + g_names[block] + ")");
+   auto& g_names = _G_tau.domain().names();
+   for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
+    qmc.add_measure(measure_g(block, _G_tau[block], data), "G measure (" + g_names[block] + ")");
    }
   }
   if (params["measure_g_l"]) {
-   auto& g_names = G_l.domain().names();
-   for (size_t block = 0; block < G_l.domain().size(); ++block) {
-    qmc.add_measure(measure_g_legendre(block, G_l[block], data), "G_l measure (" + g_names[block] + ")");
+   auto& g_names = _G_l.domain().names();
+   for (size_t block = 0; block < _G_l.domain().size(); ++block) {
+    qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
    }
   }
   if (params["measure_pert_order"]) {
-   auto& g_names = G_tau.domain().names();
-   for (size_t block = 0; block < G_tau.domain().size(); ++block) {
+   auto& g_names = _G_tau.domain().names();
+   for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
     qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + g_names[block] + ".dat"), "Perturbation order (" + g_names[block] + ")");
    }
   }

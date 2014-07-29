@@ -76,6 +76,8 @@ struct measure_g {
   auto g_tau_copy = make_clone(g_tau);
   boost::mpi::all_reduce(c, g_tau_copy, g_tau_copy, std::c14::plus<>());
   g_tau = g_tau_copy / (-real(z) * data.config.beta() * g_tau_copy.mesh().delta());
+  // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
+  g_tau.singularity()(1) = 1.0;
  }
 };
 }

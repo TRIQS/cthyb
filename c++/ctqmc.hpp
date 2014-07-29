@@ -49,21 +49,27 @@ class ctqmc {
 
  ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
+ /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
  void solve(real_operator_t h_loc, params::parameters params,
             std::vector<real_operator_t> const & quantum_numbers = std::vector<real_operator_t> {},
             bool use_quantum_numbers = false);
 
  // input containers
+ /// G0(iw) in imaginary frequencies
  block_gf_view<imfreq> G0_iw() { return _G0_iw; }
+ /// Delta(tau) in imaginary time
  block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
  // imaginary-time measurements
+ /// G(tau) in imaginary time
  block_gf_view<imtime> G_tau() { return _G_tau; }
  
  // Legendre measurements
+ /// G_l in Legendre polynomials representation
  block_gf_view<legendre> G_l() { return _G_l; }
 
  // specify all required and optional parameters and generate help from them
+ /// Get the form of solve parameters
  static parameters solve_parameters();
  static void help();
 

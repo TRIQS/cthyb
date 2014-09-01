@@ -362,34 +362,40 @@ double sorted_spaces::partition_function(double beta) const {
 
 // -----------------------------------------------------------------
 
-block_gf<imtime> sorted_spaces::atomic_gf(double beta) const {
+block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,std::vector<int>> const& gf_struct, int n_tau) const {
 
  double z = partition_function(beta);
 
- auto n_times_pts = 100;
- std::vector<gf<imtime>> res;
+ std::vector<std::string> block_names;
+ std::vector<gf<imtime>> gf_blocks;
 
- // this only valid if Gf is 1x1 matrices....
- for (auto const& x : fops) {
+ for (auto const& block : gf_struct) {
+  block_names.push_back(block.first);
+  int bl_size = block.second.size();
+  auto g = gf<imtime>{{beta, Fermion, n_tau, full_bins}, {bl_size,bl_size}};
 
-  int n = x.linear_index;
-  auto g = gf<imtime>{{beta, Fermion, n_times_pts}, {1, 1}};
+  for(int inner_index1 = 0; inner_index1 < bl_size; ++inner_index1)
+   for(int inner_index2 = 0; inner_index2 < bl_size; ++inner_index2){
+    int n1 = fops[{block.first,block.second[inner_index1]}];    // linear_index of c
+    int n2 = fops[{block.first,block.second[inner_index2]}];    // linear_index of c_dag
 
-  for (int A = 0; A < sub_hilbert_spaces.size(); ++A) { // index of the A block. sum over all
-   int B = creation_connection[n][A];                   // index of the block connected to A by operator c_n
-   if (B == -1) continue;                               // no matrix element
-   for (int ia = 0; ia < sub_hilbert_spaces[A].dimension(); ++ia)
-    for (int ib = 0; ib < sub_hilbert_spaces[B].dimension(); ++ib) {
-     auto Ea = eigensystems[A].eigenvalues[ia];
-     auto Eb = eigensystems[B].eigenvalues[ib];
-     for (auto tau : g.mesh())
-      g[tau](0, 0) += -cdag_matrices[n][A](ib, ia) * c_matrices[n][B](ia, ib) * std::exp(-(Eb - Ea) * tau - beta * Ea) / z;
+    for (int A = 0; A < sub_hilbert_spaces.size(); ++A) { // index of the A block. sum over all
+     int B = creation_connection[n2][A];                  // index of the block connected to A by operator c_n
+     if (B == -1) continue;                               // no matrix element
+     for (int ia = 0; ia < sub_hilbert_spaces[A].dimension(); ++ia)
+      for (int ib = 0; ib < sub_hilbert_spaces[B].dimension(); ++ib){
+       auto Ea = eigensystems[A].eigenvalues[ia];
+       auto Eb = eigensystems[B].eigenvalues[ib];
+       for (auto tau : g.mesh())
+        g[tau](inner_index1,inner_index2) += -cdag_matrices[n2][A](ib, ia) * c_matrices[n1][B](ia, ib) * std::exp(-(Eb - Ea) * tau - beta * Ea) / z;
+      }
     }
   }
-  res.push_back(g);
+  g.singularity()(1) = 1.0;
+  gf_blocks.push_back(g);
  }
 
- return make_block_gf(res);
+ return make_block_gf(block_names, gf_blocks);
 }
 
 // -----------------------------------------------------------------

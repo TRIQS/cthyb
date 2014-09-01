@@ -73,7 +73,9 @@ class ctqmc {
  static parameters solve_parameters();
  static void help();
 
- block_gf_view<imtime> atomic_gf(double beta_) const { return sosp.atomic_gf(beta_); }
+ // Atomic GF (without hybridization)
+ /// Atomic G(tau) in imaginary time
+ block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
 
 };
 }

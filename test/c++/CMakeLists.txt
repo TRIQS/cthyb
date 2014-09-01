@@ -18,7 +18,7 @@ set(HDF5_TESTS
     spinless spinless_qn
     kanamori kanamori_qn
     kanamori_offdiag kanamori_offdiag_qn
-    legendre)
+    legendre atomic_gf)
 
 foreach(t ${HDF5_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)

@@ -84,7 +84,7 @@ class sorted_spaces {
  double partition_function(double beta) const;
 
  /// The atomic green function
- block_gf<imtime> atomic_gf(double beta) const;
+ block_gf<imtime> atomic_gf(double beta, std::map<std::string,std::vector<int>> const& gf_struct, int n_tau) const;
 
  private:
  /// ------------------  DATAS  -----------------

@@ -43,5 +43,9 @@ cthyb.add_property(name = "G_l",
                    getter = cfunction("block_gf_view<legendre> G_l()"),
                    doc = "G_l in Legendre polynomials representation")
 
+cthyb.add_property(name = "atomic_gf",
+                   getter = cfunction("block_gf_view<imtime> atomic_gf()"),
+                   doc = "Atomic G(tau) in imaginary time")
+
 # generate the module code
 module.generate_code()

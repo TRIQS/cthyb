@@ -254,11 +254,10 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
    auto f_state = hamiltonian(i_state);
    h_matrix(range(), i) = f_state.amplitudes();
   }
-  linalg::eigenelements_worker<matrix_view<double>, true> ew(h_matrix);
 
-  ew.invoke();
-  eigensystem.eigenvalues = ew.values();
-  eigensystem.unitary_matrix = h_matrix.transpose();
+  auto eig = linalg::eigenelements(h_matrix);
+  eigensystem.eigenvalues = eig.first;
+  eigensystem.unitary_matrix = eig.second.transpose();
   gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
 
   eigensystem.eigenstates.reserve(sp.dimension());

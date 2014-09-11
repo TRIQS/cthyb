@@ -8,7 +8,6 @@ from pytriqs.operators.operators2 import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 import itertools
-from collections import OrderedDict
 
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
@@ -41,7 +40,7 @@ p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
 
 # Block structure of GF
-gf_struct = OrderedDict()
+gf_struct = {} 
 gf_struct['up'] = [0]
 gf_struct['dn'] = [0]
 

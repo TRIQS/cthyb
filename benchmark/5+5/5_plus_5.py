@@ -9,7 +9,6 @@ from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators.operators2 import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
-from collections import OrderedDict
 
 # import parameters from cwd
 from os import getcwd
@@ -30,7 +29,7 @@ print_master("Welcome to 5+5 (5 orbitals + 5 bath sites) test.")
 cubic_names, W = spherical2cubic(L)
 N_comp = len(cubic_names)
 
-gf_struct = OrderedDict()
+gf_struct = {} 
 for sn, cn in product(spin_names,cubic_names):
     bn, i = mkind(sn,cn)
     gf_struct[bn] = [i]

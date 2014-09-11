@@ -6,7 +6,6 @@ from pytriqs.operators.operators2 import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 import itertools
-from collections import OrderedDict
 
 # H_loc parameters
 beta = 10.0
@@ -23,7 +22,7 @@ epsilon = 2.3
 V = 1.0 * np.eye(num_orbitals) + 0.1 * (np.ones(num_orbitals) - np.eye(num_orbitals))
 
 # Block structure of GF
-gf_struct = OrderedDict()
+gf_struct = {}
 gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 

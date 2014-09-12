@@ -20,7 +20,6 @@
  ******************************************************************************/
 #include "sorted_spaces.hpp"
 #include "./space_partition.hpp"
-#include <fstream>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include "triqs/draft/hilbert_space_tools/imperative_operator.hpp"
 
@@ -346,8 +345,6 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
   cdag_matrices.push_back(make_c_mat(creation_connection[n], op_c_dag));
 
  } // end of loop on operators
-
- std::ofstream("Diagonalization_atomic_pb") << *this;
 }
 
 // -----------------------------------------------------------------

@@ -18,6 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include <fstream>
 #include "ctqmc.hpp"
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
@@ -122,6 +123,8 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
    sosp = {h_loc, quantum_numbers, fops};
   else 
    sosp = {h_loc, fops};
+
+  if(params["make_histograms"]) std::ofstream("Diagonalization_atomic_pb") << sosp;
 
   qmc_data data(beta, params, sosp, linindex, _Delta_tau);
   mc_tools::mc_generic<mc_sign_type> qmc(params);

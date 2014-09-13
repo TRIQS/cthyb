@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
+#include <memory>
 #include "configuration.hpp"
 #include "sorted_spaces.hpp"
 #include "triqs/utility/rbt.hpp"
@@ -255,28 +256,33 @@ class atomic_correlators_worker {
  bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
 
  // ---------------- Histograms ----------------
- bool make_histograms;                       // Do we make the Histograms ?
+ struct histograms_t {
 
- // How many block non zero at root of the tree
- statistics::histogram histo_nblock_at_root = {sosp->n_subspaces(), "histo_nblock_at_root.dat"};
+  histograms_t(int n_subspaces) : n_subspaces(n_subspaces) {};
+  int n_subspaces;
 
- // how many block kept after the truncation with the bound
- statistics::histogram histo_n_block_kept = {sosp->n_subspaces(), "histo_n_block_kept.dat"};
+  // How many block non zero at root of the tree
+  statistics::histogram nblock_at_root = {n_subspaces, "histo_nblock_at_root.dat"};
 
- // What is the dominant block in the trace computation ? Sorted by number or energy
- statistics::histogram histo_dominant_block_bound = {sosp->n_subspaces(), "histo_dominant_block_bound.dat"};
- statistics::histogram histo_dominant_block_trace = {sosp->n_subspaces(), "histo_dominant_block_trace.dat"};
- statistics::histogram_segment_bin histo_dominant_block_energy_bound = {0, 100, 100, "histo_dominant_block_energy_bound.dat"};
- statistics::histogram_segment_bin histo_dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
+  // how many block kept after the truncation with the bound
+  statistics::histogram n_block_kept = {n_subspaces, "histo_n_block_kept.dat"};
 
- // Perturbation order, total and by color
- statistics::histogram histo_opcount_total = {1000, "histo_opcount_total.dat"};
- std::vector<statistics::histogram> histo_opcount;
+  // What is the dominant block in the trace computation ? Sorted by number or energy
+  statistics::histogram dominant_block_bound = {n_subspaces, "histo_dominant_block_bound.dat"};
+  statistics::histogram dominant_block_trace = {n_subspaces, "histo_dominant_block_trace.dat"};
+  statistics::histogram_segment_bin dominant_block_energy_bound = {0, 100, 100, "histo_dominant_block_energy_bound.dat"};
+  statistics::histogram_segment_bin dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
 
- // Various ratios : trace/bound, trace/first term of the trace, etc..
- statistics::histogram_segment_bin histo_trace_over_estimator = {0, 2, 100, "histo_trace_over_estimator.dat"};
- statistics::histogram_segment_bin histo_trace_over_bound = {0, 1.5, 100, "histo_trace_over_bound.dat"};
- statistics::histogram_segment_bin histo_trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
- statistics::histogram_segment_bin histo_trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
+  // Perturbation order, total and by color
+  statistics::histogram opcount_total = {1000, "histo_opcount_total.dat"};
+  std::vector<statistics::histogram> opcount;
+
+  // Various ratios : trace/bound, trace/first term of the trace, etc..
+  statistics::histogram_segment_bin trace_over_estimator = {0, 2, 100, "histo_trace_over_estimator.dat"};
+  statistics::histogram_segment_bin trace_over_bound = {0, 1.5, 100, "histo_trace_over_bound.dat"};
+  statistics::histogram_segment_bin trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
+  statistics::histogram_segment_bin trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
+ };
+ std::unique_ptr<histograms_t> histo;
 };
 }

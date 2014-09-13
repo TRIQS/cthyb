@@ -53,7 +53,7 @@ namespace arrays {
 namespace cthyb {
 
 atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, params::parameters const& p)
-   : config(&c), sosp(&sosp_) {
+   : config(&c), sosp(&sosp_), histo(p["make_histograms"] ? new histograms_t(sosp_.n_subspaces()) : nullptr) {
 
  // Taking parameters from the inputs
  use_trace_estimator = p["use_trace_estimator"];
@@ -62,9 +62,8 @@ atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_sp
  else
   method = method_t::FullTrace;
 
- make_histograms = p["make_histograms"];
- if (make_histograms) {
-  for (int i = 0; i < n_orbitals; ++i) histo_opcount.emplace_back(100, "histo_opcount" + std::to_string(i) + ".dat");
+ if (histo) {
+  for (int i = 0; i < n_orbitals; ++i) histo->opcount.emplace_back(100, "histo_opcount" + std::to_string(i) + ".dat");
  }
 }
 
@@ -93,7 +92,7 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_es
       TRIQS_RUNTIME_ERROR << "full_trace_over_estimator: r not finite" << r << " " << ft << " " << est << " " << *config;
   }
  }
- if (make_histograms) histo_trace_over_estimator << r;
+ if (histo) histo->trace_over_estimator << r;
  return r;
 }
 
@@ -229,11 +228,11 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
 void atomic_correlators_worker::update_cache() {
  update_cache_impl(tree.get_root());
  // analysis
- if (make_histograms) {
-  histo_opcount_total << config->size() / 2;
+ if (histo) {
+  histo->opcount_total << config->size() / 2;
   std::vector<int> opcount(n_orbitals, 0); // maximum number of orbitals is n_orbitals
   for (auto const& p : *config) opcount[p.second.linear_index]++;
-  for (int i = 0; i < n_orbitals; ++i) histo_opcount[i] << opcount[i] / 2;
+  for (int i = 0; i < n_orbitals; ++i) histo->opcount[i] << opcount[i] / 2;
  }
 }
 
@@ -304,8 +303,8 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool
  for (auto const& b_b : to_sort1)
   if (b_b.first <= lnorm_threshold) to_sort.push_back(b_b);
 
- if (make_histograms) {
-  histo_nblock_at_root << to_sort.size();
+ if (histo) {
+  histo->nblock_at_root << to_sort.size();
  }
 
  if (to_sort.size() == 0) return 0.0; // structural 0
@@ -366,25 +365,25 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool
   full_trace += trace_partial; // sum for all blocks
 
   // Analysis
-  if (make_histograms) {
-   histo_trace_over_bound << std::abs(trace_partial) / std::exp(-to_sort[bl].first);
+  if (histo) {
+   histo->trace_over_bound << std::abs(trace_partial) / std::exp(-to_sort[bl].first);
    trace_contrib_block.emplace_back(std::abs(trace_partial), block_index);
    if (bl == 1) {
     first_term = trace_partial;
-    histo_dominant_block_bound << block_index;
-    histo_dominant_block_energy_bound << get_block_emin(block_index);
+    histo->dominant_block_bound << block_index;
+    histo->dominant_block_energy_bound << get_block_emin(block_index);
    } else
-    histo_trace_first_over_sec_term << trace_partial / first_term;
+    histo->trace_first_over_sec_term << trace_partial / first_term;
   }
  } // loop on block
 
   // Analysis
- if (make_histograms) {
+ if (histo) {
   std::sort(trace_contrib_block.begin(), trace_contrib_block.end(), std::c14::greater<>());
-  histo_dominant_block_trace << begin(trace_contrib_block)->second;
-  histo_dominant_block_energy_trace << get_block_emin(begin(trace_contrib_block)->second);
-  histo_n_block_kept << bl;
-  histo_trace_first_term_trace << std::abs(first_term) / std::abs(full_trace);
+  histo->dominant_block_trace << begin(trace_contrib_block)->second;
+  histo->dominant_block_energy_trace << get_block_emin(begin(trace_contrib_block)->second);
+  histo->n_block_kept << bl;
+  histo->trace_first_term_trace << std::abs(first_term) / std::abs(full_trace);
  }
 
  if (!std::isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;

@@ -1,7 +1,7 @@
 from wrap_generator import *
 
 # The cthyb module
-module = module_(full_name = "pytriqs.applications.cthyb", doc = "The cthyb matrix solver")
+module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb matrix solver")
 module.use_module('gf')
 module.use_module('parameters')
 module.use_module('operators2')

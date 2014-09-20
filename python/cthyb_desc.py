@@ -47,5 +47,8 @@ cthyb.add_property(name = "atomic_gf",
                    getter = cfunction("block_gf_view<imtime> atomic_gf()"),
                    doc = "Atomic G(tau) in imaginary time")
 
+module.add_function("gf_view<imtime> change_mesh(gf_view<imtime> old_gf, int new_n_tau)")
+module.add_function("block_gf_view<imtime> change_mesh(block_gf_view<imtime> old_gf, int new_n_tau)")
+
 # generate the module code
 module.generate_code()

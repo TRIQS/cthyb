@@ -4,6 +4,7 @@ from pytriqs.archive import *
 from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
+from pytriqs.applications.impurity_solvers.cthyb import change_mesh
 
 # import parameters from cwd
 from os import getcwd
@@ -21,14 +22,6 @@ def setup_fig():
     axes.set_ylabel('$G(\\tau)$')
     axes.legend(loc='lower center',prop={'size':10})
 
-def downsample(gf_tau): # Not reliable
-    indices = range(gf_tau.data.shape[1])
-    gf_iw = GfImFreq(indices = indices, beta=gf_tau.mesh.beta, n_points=500)
-    gf_iw <<= Fourier(gf_tau)
-    res = GfImTime(indices = indices, beta=gf_tau.mesh.beta, n_points=1000)
-    res <<= InverseFourier(gf_iw)
-    return res
-
 pp = PdfPages('G.pdf')
 for plot_objs in objects_to_plot:
     try:
@@ -38,25 +31,25 @@ for plot_objs in objects_to_plot:
             if type(obj) is tuple:
                 filename = params.results_file_name(*obj)
                 params.use_blocks = obj[0]
-                
+
                 name_parts = []
                 if obj[0]: name_parts.append('Block')
                 if obj[1]: name_parts.append('QN')
                 name = 'cthyb' + (' (' + ', '.join(name_parts) + ')' if len(name_parts) else '')
-                
+
             else:
                 filename = 'anderson.' + obj + '.h5'
                 name = {'ed':'ED', 'matrix':'Matrix'}[obj]
                 params.use_blocks = True
-            
+
             arch = HDFArchive(filename,'r')
-            
+
             for spin in params.spin_names:
                 bn, i = params.mkind(spin)
-                
-                GF = arch[bn] if name=="ED" else downsample(arch[bn])
+
+                GF = arch[bn] if name=="ED" else change_mesh(arch[bn],500)
                 oplot(GF[i,i], name=name + "," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
-                            
+
         setup_fig()
         pp.savefig(plt.gcf())
 

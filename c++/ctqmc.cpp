@@ -191,4 +191,29 @@ void ctqmc::help() {
  // TODO
 }
 
+using namespace triqs::gfs;
+
+gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau) {
+    auto const& old_m = old_gf.mesh();
+    gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau, old_m.kind()}, old_gf.get_data_shape().front_pop()};
+    auto const& new_m = new_gf.mesh();
+
+    new_gf.data()() = 0;
+    double f = old_m.delta()/new_m.delta();
+    // FIXME: closest_mesh_pt(double(tau)) maps only one point tau=beta to the point tau=beta on the new mesh
+    for(auto tau : old_m) new_gf[closest_mesh_pt(double(tau))] += f*old_gf[tau];
+
+    new_gf.singularity() = old_gf.singularity();
+
+    return new_gf;
+}
+
+block_gf<imtime> change_mesh(block_gf_const_view<imtime> old_gf, int new_n_tau) {
+    std::vector<gf<imtime>> blocks;
+    for(size_t bl = 0; bl < old_gf.domain().size(); ++bl){
+        blocks.push_back(change_mesh(old_gf[bl],new_n_tau));
+    }
+    return make_block_gf(old_gf.domain().names(), blocks);
+}
+
 }

@@ -78,4 +78,9 @@ class ctqmc {
  block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
 
 };
+
+// Change imaginary-time mesh of a GF
+gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau);
+block_gf<imtime> change_mesh(block_gf_const_view<imtime> old_gf, int new_n_tau);
+
 }

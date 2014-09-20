@@ -4,20 +4,10 @@ from pytriqs.archive import *
 from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import *
 from matplotlib.backends.backend_pdf import PdfPages
+from pytriqs.applications.impurity_solvers.cthyb import change_mesh
 
 from multiorbital import *
 from params import *
-
-# Super-lame solution
-def downsample(gf, new_n_tau):
-    new_gf = GfImTime(indices = range(len(gf.indices)+1), beta=gf.beta, n_points=new_n_tau)
-
-    sparse_points=[t for n,t in enumerate(new_gf.mesh)]
-    for n,t in enumerate(gf.mesh):
-        sparse_n = min(range(len(sparse_points)), key=lambda i: abs(sparse_points[i]-t))
-        new_gf.data[sparse_n] += gf.data[n]*float(len(new_gf.mesh))/float(len(gf.mesh))
-
-    return new_gf
 
 # Read the reference table file
 tau = []
@@ -55,7 +45,7 @@ for sn in spin_names:
     for nc, cn in enumerate(cubic_names):
         plt.clf()
 
-        gf = downsample(arch[mkind(sn,cn)[0]],200)
+        gf = change_mesh(arch[mkind(sn,cn)[0]],200)
 
         # Plot the results
         oplot(gf, name="cthyb")

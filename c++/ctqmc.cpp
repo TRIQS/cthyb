@@ -53,6 +53,9 @@ ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_str
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
+// FIXME G_iw is not visible at the python level yet.
+  _G_iw = make_block_gf(block_names, g0_iw_blocks);
+  _Sigma_iw = make_block_gf(block_names, g0_iw_blocks);
   _G_tau = make_block_gf(block_names, g_tau_blocks);
   _G_l = make_block_gf(block_names, g_l_blocks);
   _Delta_tau = make_block_gf(block_names, delta_tau_blocks);
@@ -156,10 +159,20 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
     qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + g_names[block] + ".dat"), "Perturbation order (" + g_names[block] + ")");
    }
   }
- 
-  // run!! The empty configuration has sign = 1
+
+  // Run! The empty configuration has sign = 1
   qmc.start(1.0, triqs::utility::clock_callback(params["max_time"]));
   qmc.collect_results(_comm);
+
+  // Post-processing:
+  // Calculate Sigma
+  if (params["measure_g_tau"]) {
+   for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
+    _G_iw[block]() = fourier(_G_tau[block]);
+    _Sigma_iw[block] = triqs::gfs::inverse(_G0_iw[block]) - triqs::gfs::inverse(_G_iw[block]);
+   }
+  }
+
 }
 
 //----------------------------------------------------------------------------------------------

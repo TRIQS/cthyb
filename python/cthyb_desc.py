@@ -31,6 +31,10 @@ cthyb.add_property(name = "G0_iw",
                    getter = cfunction("block_gf_view<imfreq> G0_iw()"),
                    doc = "G0(iw) in imaginary frequencies")
 
+cthyb.add_property(name = "Sigma_iw",
+                   getter = cfunction("block_gf_view<imfreq> Sigma_iw()"),
+                   doc = "Sigma(iw) in imaginary frequencies")
+
 cthyb.add_property(name = "Delta_tau",
                    getter = cfunction("block_gf_view<imtime> Delta_tau()"),
                    doc = "Delta(tau) in imaginary time")

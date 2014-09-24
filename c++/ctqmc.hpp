@@ -39,7 +39,7 @@ class ctqmc {
  double beta;
  sorted_spaces sosp;
  std::map<std::string,std::vector<int>> gf_struct;
- block_gf<imfreq> _G0_iw, _G_iw, _Sigma_iw;// Green's function containers: imaginary-freq Green's functions
+ block_gf<imfreq> _G0_iw;                  // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;      // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                  // Green's function containers: Legendre coefficients
  boost::mpi::communicator _comm;           // define the communicator, here MPI_COMM_WORLD
@@ -61,10 +61,6 @@ class ctqmc {
  block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
  // imaginary-time measurements
- /// G(iw) in imaginary frequencies
- block_gf_view<imfreq> G_iw() { return _G_iw; }
- /// Sigma(iw) in imaginary frequencies
- block_gf_view<imfreq> Sigma_iw() { return _Sigma_iw; }
  /// G(tau) in imaginary time
  block_gf_view<imtime> G_tau() { return _G_tau; }
  

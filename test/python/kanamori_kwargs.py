@@ -65,8 +65,8 @@ p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
 p["verbosity"] = 3
 p["length_cycle"] = 50
-p["n_warmup_cycles"] = 50
-p["n_cycles"] = 5000
+p["n_warmup_cycles"] = 5000
+p["n_cycles"] = 50000
 
 S.solve(h_loc=H, **p)
   

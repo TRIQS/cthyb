@@ -47,7 +47,7 @@ class fundamental_operator_set {
  }
 
  template <typename... IndexType> void insert(IndexType const&... ind) {
-  map_index_n.insert({{ind...}, n_operators()});
+  map_index_n.insert({{ind...}, size()});
   // reorder the indices which are always given in the order of the indices tuple
   map_t m;
   int i = 0;
@@ -55,11 +55,8 @@ class fundamental_operator_set {
   std::swap(m, map_index_n);
  }
 
- // return the dimension of the space spanned by the operators
- int dimension() const { return 1ull << n_operators(); } // 2^ n_ops
-
  // return the number of operators
- int n_operators() const { return map_index_n.size(); }
+ int size() const { return map_index_n.size(); }
 
  // flatten (a,alpha) --> n
  int operator[](indices_t const& t) const { return map_index_n.at(t); }

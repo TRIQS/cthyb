@@ -62,7 +62,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
 
  // Dimension of the Hilbert space
  // What if hs == nullptr ?
- int size() const { return hs->dimension(); }
+ int size() const { return hs->size(); }
 
  // Access to data
  value_type& operator()(int i) { return ampli[i]; }
@@ -147,11 +147,11 @@ class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpac
  using value_type = ScalarType;
 
  state() : hs(nullptr) {}
- state(HilbertSpace const& hs_) : hs(&hs_), ampli(hs_.dimension(), 0.0) {}
+ state(HilbertSpace const& hs_) : hs(&hs_), ampli(hs_.size(), 0.0) {}
 
  // Dimension of the Hilbert space
  // What if hs == nullptr ?
- int size() const { return hs->dimension(); }
+ int size() const { return hs->size(); }
 
  // Access to data
  value_type& operator()(int i) { return ampli[i]; }

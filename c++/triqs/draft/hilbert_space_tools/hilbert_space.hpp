@@ -38,10 +38,10 @@ class hilbert_space {
  hilbert_space() : dim(0) {}
 
  // construct for a given basis
- hilbert_space(fundamental_operator_set const &fops) : dim(fops.dimension()) {}
+ hilbert_space(fundamental_operator_set const &fops) : dim(1ull << fops.size()) {}
 
  // size of the hilbert space
- int dimension() const { return dim; }
+ int size() const { return dim; }
 
  // find the index of a given fock state
  int get_state_index(fock_state_t f) const {
@@ -74,7 +74,7 @@ class sub_hilbert_space {
  }
 
  // dimension
- int dimension() const { return fock_states.size(); }
+ int size() const { return fock_states.size(); }
 
  // find the index of a given state
  int get_state_index(fock_state_t f) const { return fock_to_index.find(f)->second; }

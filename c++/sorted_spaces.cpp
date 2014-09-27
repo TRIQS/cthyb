@@ -41,8 +41,8 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
  // Split the Hilbert space
  space_partition_t SP(st, hamiltonian, false);
 
- std::vector<space_partition_t::matrix_element_map_t> creation_melem(fops.n_operators());
- std::vector<space_partition_t::matrix_element_map_t> annihilation_melem(fops.n_operators());
+ std::vector<space_partition_t::matrix_element_map_t> creation_melem(fops.size());
+ std::vector<space_partition_t::matrix_element_map_t> annihilation_melem(fops.size());
  // Merge subspaces
  for (auto const& o : fops) {
   auto create = many_body_op_t::make_canonical(true, o.index);
@@ -61,8 +61,8 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
  foreach(SP, [this](fock_state_t s, int spn) { this->sub_hilbert_spaces[spn].add_fock_state(s); });
 
  // Fill connections
- creation_connection = std::vector<std::vector<long>>(fops.n_operators(), std::vector<long>(SP.n_subspaces(), -1));
- annihilation_connection = std::vector<std::vector<long>>(fops.n_operators(), std::vector<long>(SP.n_subspaces(), -1));
+ creation_connection = std::vector<std::vector<long>>(fops.size(), std::vector<long>(SP.n_subspaces(), -1));
+ annihilation_connection = std::vector<std::vector<long>>(fops.size(), std::vector<long>(SP.n_subspaces(), -1));
 
  for (auto const& o : fops) {
   int n = o.linear_index;
@@ -83,7 +83,7 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
 
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_t> const& qn_vector,
                              fundamental_operator_set const& fops)
-   : creation_connection(fops.n_operators()), annihilation_connection(fops.n_operators()), fops(fops) {
+   : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
  std::cout << "Using Quantum Numbers to partition the local Hilbert space" << std::endl;
  slice_hilbert_space_with_qn(h_, qn_vector, fops);
  complete_init(h_);
@@ -91,7 +91,7 @@ sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_
 
 //-----------------------------
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, fundamental_operator_set const& fops)
-   : creation_connection(fops.n_operators()), annihilation_connection(fops.n_operators()), fops(fops) {
+   : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
  std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
  autopartition(fops, h_);
  complete_init(h_);
@@ -125,13 +125,13 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
  hilbert_space full_hs(fops);
 
  // The QN as operators : a vector of imperative operators for the quantum numbers
- std::vector<imperative_operator<hilbert_space>> qn_operators;
- for (auto& qn : qn_vector) qn_operators.emplace_back(qn, fops);
+ std::vector<imperative_operator<hilbert_space>> qsize;
+ for (auto& qn : qn_vector) qsize.emplace_back(qn, fops);
 
  // Helper function to get quantum numbers
- auto get_quantum_numbers = [&qn_operators](state<hilbert_space, double, false> const& s) {
+ auto get_quantum_numbers = [&qsize](state<hilbert_space, double, false> const& s) {
   std::vector<quantum_number_t> qn;
-  for (auto const& op : qn_operators) qn.push_back(dot_product(s, op(s)));
+  for (auto const& op : qsize) qn.push_back(dot_product(s, op(s)));
   return qn;
  };
 
@@ -139,7 +139,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
    The first part consists in dividing the full Hilbert space
    into smaller subspaces using the quantum numbers
  */
- for (int r = 0; r < full_hs.dimension(); ++r) {
+ for (int r = 0; r < full_hs.size(); ++r) {
 
   // fock_state corresponding to r
   fock_state_t fs = full_hs.get_fock_state(r);
@@ -165,7 +165,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
 
  // ----  now make the creation map -----
 
- auto creation_map = std::vector<std::vector<int>>(fops.n_operators(), std::vector<int>(sub_hilbert_spaces.size(), -1));
+ auto creation_map = std::vector<std::vector<int>>(fops.size(), std::vector<int>(sub_hilbert_spaces.size(), -1));
  auto annihilation_map = creation_map;
 
  for (auto const& x : fops) {
@@ -186,7 +186,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
   annihilation_connection[n].resize(sub_hilbert_spaces.size(), -1);
 
   // now act on the state with the c, c_dag to see how quantum numbers change
-  for (int r = 0; r < full_hs.dimension(); ++r) {
+  for (int r = 0; r < full_hs.size(); ++r) {
 
    // the state we'll act on and its quantum numbers
    state<hilbert_space, double, false> s(full_hs);
@@ -245,9 +245,9 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
   eigensystem_t eigensystem;
 
   state<sub_hilbert_space, double, false> i_state(sp);
-  matrix<double> h_matrix(sp.dimension(), sp.dimension());
+  matrix<double> h_matrix(sp.size(), sp.size());
 
-  for (int i = 0; i < sp.dimension(); ++i) {
+  for (int i = 0; i < sp.size(); ++i) {
    i_state.amplitudes()() = 0;
    i_state(i) = 1;
    auto f_state = hamiltonian(i_state);
@@ -259,8 +259,8 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
   eigensystem.unitary_matrix = eig.second.transpose();
   gs_energy = std::min(gs_energy, eigensystem.eigenvalues[0]);
 
-  eigensystem.eigenstates.reserve(sp.dimension());
-  for (int e = 0; e < sp.dimension(); ++e) {
+  eigensystem.eigenstates.reserve(sp.size());
+  for (int e = 0; e < sp.size(); ++e) {
    eigensystem.eigenstates.emplace_back(sp);
    eigensystem.eigenstates.back().amplitudes() = h_matrix(e, range());
   }
@@ -319,7 +319,7 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
    for (int B = 0; B < connection.size(); ++B) {
     auto Bp = connection[B];
     if (Bp == -1) continue;
-    auto M = matrix<double>(sub_hilbert_spaces[Bp].dimension(), sub_hilbert_spaces[B].dimension());
+    auto M = matrix<double>(sub_hilbert_spaces[Bp].size(), sub_hilbert_spaces[B].size());
     M() = 0;
     // put the permutation matrix
     for (auto fs : sub_hilbert_spaces[B].get_all_fock_states()) { // loop on all fock states of the blocks
@@ -378,8 +378,8 @@ block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,std:
     for (int A = 0; A < sub_hilbert_spaces.size(); ++A) { // index of the A block. sum over all
      int B = creation_connection[n2][A];                  // index of the block connected to A by operator c_n
      if (B == -1) continue;                               // no matrix element
-     for (int ia = 0; ia < sub_hilbert_spaces[A].dimension(); ++ia)
-      for (int ib = 0; ib < sub_hilbert_spaces[B].dimension(); ++ib){
+     for (int ia = 0; ia < sub_hilbert_spaces[A].size(); ++ia)
+      for (int ib = 0; ib < sub_hilbert_spaces[B].size(); ++ib){
        auto Ea = eigensystems[A].eigenvalues[ia];
        auto Eb = eigensystems[B].eigenvalues[ib];
        for (auto tau : g.mesh())
@@ -402,7 +402,7 @@ std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
  for (int n = 0; n < ss.sub_hilbert_spaces.size(); ++n) {
   os << "Block " << n << ", ";
   os << "relative gs energy : " << ss.get_eigensystems()[n].eigenvalues[0] << std::endl;
-  os << "size = " << ss.sub_hilbert_spaces[n].dimension() << std::endl;
+  os << "size = " << ss.sub_hilbert_spaces[n].size() << std::endl;
   // os << "qn = ";
   // for (auto const& x : ss.quantum_numbers[n]) os << x << " ";
   os << std::endl;

@@ -24,6 +24,8 @@ Part II: the complete_hilbert_space class
 dim = 256
 fock state for index 120 = 120
 index of fock state 120 = 120
+fock state for vacuum = 0
+fock state for c^+(0,1)c^+(1,3)|vac> = 130
 dim = 256
 
 

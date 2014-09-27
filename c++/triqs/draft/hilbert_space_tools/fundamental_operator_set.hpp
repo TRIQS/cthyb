@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/operators/many_body_operator.hpp>
 #include <vector>
+#include <set>
 #include <map>
 
 namespace cthyb {
@@ -44,6 +45,11 @@ class fundamental_operator_set {
  fundamental_operator_set(std::vector<int> const& v) {
   for (int i = 0; i < v.size(); ++i)
    for (int j = 0; j < v[i]; ++j) insert(i, j);
+ }
+
+ // construct on a set of indices
+ template <typename IndexType> fundamental_operator_set(std::set<IndexType> const& s) {
+  for(auto const& i : s) insert(i);
  }
 
  template <typename... IndexType> void insert(IndexType const&... ind) {

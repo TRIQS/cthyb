@@ -57,6 +57,9 @@ class ctqmc {
  // input containers
  /// G0(iw) in imaginary frequencies
  block_gf_view<imfreq> G0_iw() { return _G0_iw; }
+ void set_G0_iw(block_gf_view<imfreq> G0) { _G0_iw = G0; }
+
+
  /// Delta(tau) in imaginary time
  block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 

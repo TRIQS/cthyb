@@ -29,6 +29,7 @@ cthyb.add_method(name = "solve_parameters",
 
 cthyb.add_property(name = "G0_iw",
                    getter = cfunction("block_gf_view<imfreq> G0_iw()"),
+                   setter = cfunction("void set_G0_iw(block_gf_view<imfreq> G0)"),
                    doc = "G0(iw) in imaginary frequencies")
 
 cthyb.add_property(name = "Delta_tau",

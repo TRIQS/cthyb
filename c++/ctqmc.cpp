@@ -202,6 +202,7 @@ gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau) {
     new_gf.data()() = 0;
     double f = old_m.delta()/new_m.delta();
     for(auto tau : old_m) new_gf[closest_mesh_pt(double(tau))] += f*old_gf[tau];
+    new_gf[0] *= 2.0; new_gf[new_n_tau-1] *= 2.0;
 
     new_gf.singularity() = old_gf.singularity();
 

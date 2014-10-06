@@ -66,16 +66,19 @@ struct measure_g {
 
  void collect_results(boost::mpi::communicator const& c) {
 
-  boost::mpi::all_reduce(c, z, z, std::c14::plus<>());
-  boost::mpi::all_reduce(c, num, num, std::c14::plus<>());
-  average_sign = z / num;
+  int64_t total_num;
+  mc_sign_type total_z;
+  boost::mpi::all_reduce(c, z, total_z, std::c14::plus<>());
+  boost::mpi::all_reduce(c, num, total_num, std::c14::plus<>());
+  average_sign = total_z / total_num;
   // Multiply first and last bins by 2 to account for full bins
   g_tau[0] = g_tau[0] * 2;
   g_tau[g_tau.mesh().size()-1] = g_tau[g_tau.mesh().size()-1] * 2;
-  // Need a copy, because all_reduce wants default-constructible types
-  auto g_tau_copy = make_clone(g_tau);
-  boost::mpi::all_reduce(c, g_tau_copy, g_tau_copy, std::c14::plus<>());
-  g_tau = g_tau_copy / (-real(z) * data.config.beta() * g_tau_copy.mesh().delta());
+  // Need copies, because all_reduce wants default-constructible types
+  auto g_tau_in = make_clone(g_tau);
+  auto g_tau_out = make_clone(g_tau);
+  boost::mpi::all_reduce(c, g_tau_in, g_tau_out, std::c14::plus<>());
+  g_tau = g_tau_out / (-real(total_z) * data.config.beta() * g_tau_out.mesh().delta());
   // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
   g_tau.singularity()(1) = 1.0;
  }

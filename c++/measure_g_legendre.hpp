@@ -71,13 +71,16 @@ struct measure_g_legendre {
 
  void collect_results(boost::mpi::communicator const& c) {
 
-  boost::mpi::all_reduce(c, z, z, std::c14::plus<>());
-  boost::mpi::all_reduce(c, num, num, std::c14::plus<>());
-  average_sign = z / num;
-    
-  auto g_l_copy = make_clone(g_l);
-  boost::mpi::all_reduce(c, g_l_copy, g_l_copy, std::c14::plus<>());
-  for (auto l : g_l_copy.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(z)*beta)) * g_l_copy[l];
+  int64_t total_num;
+  mc_sign_type total_z;
+  boost::mpi::all_reduce(c, z, total_z, std::c14::plus<>());
+  boost::mpi::all_reduce(c, num, total_num, std::c14::plus<>());
+  average_sign = total_z / total_num;
+
+  auto g_l_in = make_clone(g_l);
+  auto g_l_out = make_clone(g_l);
+  boost::mpi::all_reduce(c, g_l_in, g_l_out, std::c14::plus<>());
+  for (auto l : g_l_out.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(total_z)*beta)) * g_l_out[l];
  }
 };
 }

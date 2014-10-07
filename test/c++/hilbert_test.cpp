@@ -41,7 +41,7 @@ int main() {
   std::cout << "dim = " << h.size() << std::endl;
   std::cout << "fock state for index 120 = " << h.get_fock_state(120) << std::endl;
   std::cout << "index of fock state 120 = " << h.get_state_index(h.get_fock_state(120)) << std::endl;
-  std::cout << "fock state for vacuum = " << h.get_fock_state(f1,{}) << std::endl;
+  std::cout << "fock state for vacuum = " << h.get_fock_state(f1,std::set<fundamental_operator_set::indices_t>{}) << std::endl;
   std::cout << "fock state for c^+(0,1)c^+(1,3)|vac> = " << h.get_fock_state(f1,{{0,1},{1,3}}) << std::endl;
   hilbert_space h2;
   h2 = h;

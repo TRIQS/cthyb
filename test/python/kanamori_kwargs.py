@@ -73,5 +73,5 @@ S.solve(h_loc=H, **p)
 if mpi.rank==0:
     Results = HDFArchive("kanamori_kwargs.output.h5",'w')
     Results["G_tau"] = S.G_tau
-    Results["G_iw"] = S.G_iw
-    Results["Sigma_iw"] = S.Sigma_iw
+    #Results["G_iw"] = S.G_iw
+    #Results["Sigma_iw"] = S.Sigma_iw

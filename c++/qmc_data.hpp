@@ -36,6 +36,7 @@ struct qmc_data {
  std::map<std::pair<int,int>,int> linindex;
  sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
  mutable impurity_trace imp_trace; // Calculator of the trace
+ std::vector<int> n_inner; 
 
  using trace_t = impurity_trace::trace_t;
 
@@ -64,13 +65,14 @@ struct qmc_data {
 
  // construction and the basics stuff. value semantics, except = ?
  qmc_data(double beta, solve_parameters_t const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
-          block_gf_const_view<imtime> delta)
+          block_gf_const_view<imtime> delta, std::vector<int> n_inner)
     : config(beta),
       sosp(sosp),
       linindex(linindex),
       imp_trace(config, sosp, p),
       current_sign(1),
-      old_sign(1) {
+      old_sign(1),
+      n_inner(n_inner) {
   trace = imp_trace.estimate();
   dets.clear();
   for (auto const &bl : delta.mesh()) dets.emplace_back(delta_block_adaptor(delta[bl]), 100);

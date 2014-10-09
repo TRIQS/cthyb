@@ -26,6 +26,7 @@
 
 #include "move_insert.hpp"
 #include "move_remove.hpp"
+#include "move_shift.hpp"
 #include "measure_g.hpp"
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
@@ -91,6 +92,12 @@ void solver_core::solve(solve_parameters_t const & params) {
     block_index++;
   }
 
+  // Make list of block sizes
+  std::vector<int> n_inner;
+  for (auto const& block : gf_struct) {
+    n_inner.push_back(block.second.size());
+  }
+
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
@@ -139,7 +146,7 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   if (params.make_histograms) std::ofstream("Diagonalization_atomic_pb") << sosp;
 
-  qmc_data data(beta, params, sosp, linindex, _Delta_tau);
+  qmc_data data(beta, params, sosp, linindex, _Delta_tau, n_inner);
   auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
                                                 params.random_seed, params.verbosity);
 
@@ -147,9 +154,11 @@ void solver_core::solve(solve_parameters_t const & params) {
   auto& delta_names = _Delta_tau.domain().names();
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
    int block_size = _Delta_tau[block].data().shape()[1];
-   qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), false), "Insert Delta_" + delta_names[block]);
+   qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + delta_names[block]);
    qmc.add_move(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block]);
   }
+  qmc.add_move(move_shift_operator(data, qmc.rng(), params.make_histograms), "Shift Operator");
+  std::cout << " finished adding moves " << std::endl; // FIXME DEBUG
  
   // Measurements
   if (params.measure_g_tau) {

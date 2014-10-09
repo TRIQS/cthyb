@@ -48,8 +48,8 @@ class move_insert_c_cdag {
       block_size(block_size),
       record_histograms(record_histograms) {
   if (record_histograms) {
-   histos.insert({"length_proposed", {0, config.beta(), 100, "hist_length_proposed.dat"}});
-   histos.insert({"length_accepted", {0, config.beta(), 100, "hist_length_accepted.dat"}});
+   histos.insert({"shift_length_proposed", {0, config.beta(), 100, "hist_shift_length_proposed.dat"}});
+   histos.insert({"shift_length_accepted", {0, config.beta(), 100, "hist_shift_length_accepted.dat"}});
   }
  }
 
@@ -84,7 +84,7 @@ class move_insert_c_cdag {
 
   // record the length of the proposed insertion
   delta_tau = double(tau2 - tau1);
-  if (record_histograms) histos["length_proposed"] << delta_tau;
+  if (record_histograms) histos["shfit_length_proposed"] << delta_tau;
 
   // Insert the operators op1 and op2 at time tau1, tau2
   // 1- In the very exceptional case where the insert has failed because an operator is already sitting here
@@ -154,18 +154,18 @@ class move_insert_c_cdag {
 
  mc_weight_type accept() {
 
-  //  remove the temporary ordinary bst insertion
+  // insert in the tree
   data.imp_trace.confirm_insert();
 
-  // insert in the configuration 
+  // insert in the configuration
   config.insert(tau1, op1);
   config.insert(tau2, op2);
   
-  // determinant
+  // insert in the determinant
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
-  if (record_histograms) histos["length_accepted"] << delta_tau;
+  if (record_histograms) histos["shift_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;

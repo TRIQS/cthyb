@@ -52,7 +52,7 @@ class impurity_trace {
  };
  method_t method;
 
- //------- data ----------------
+ // ------- Configuration and h_loc data ----------------
 
  const configuration* config;            // config object does exist longer (temporally) than this object.
  const sorted_spaces* sosp;              // access to the diagonalization of h_loc
@@ -222,7 +222,7 @@ class impurity_trace {
  std::vector<time_pt> removed_key;
 
  public:
- // Find and mark as deleted the n-th operator with fixed dagger and block_index
+ // Find and mark as deleted the nth operator with fixed dagger and block_index
  // n=0 : first operator, n=1, second, etc...
  time_pt try_delete(int n, int block_index, bool dagger) {
   // traverse the tree, looking for the nth operator of the correct dagger, block_index
@@ -249,11 +249,59 @@ class impurity_trace {
   check_cache_integrity();
  }
 
- // Confirm deletion : the nodes flagged for deletion are truly deleted
+ // Confirm deletion: the nodes flagged for deletion are truly deleted
  void confirm_delete() {
-  for (auto& k : removed_key) tree.delete_node(k); // can NOT use the node here..
+  for (auto& k : removed_key) tree.delete_node(k); // CANNOT use the node here
   removed_ops.clear();
   removed_key.clear();
+  update_cache();
+  tree_size = tree.size();
+  n_modif = tree.clear_modified();
+  check_cache_integrity();
+ }
+
+ /*************************************************************************
+  * Node shift (=insertion+deletion)
+  *************************************************************************/
+
+ // No try_shift implemented. Use combination of try_insert and try_delete instead.
+
+ // Cancel the shift
+ void cancel_shift() {
+
+  // Inserted nodes
+  cancel_insert_impl();
+  trial_node_index = -1;
+
+  // Deleted nodes
+  for (auto& n : removed_ops) n->delete_flag = false;
+  removed_ops.clear();
+  removed_key.clear();
+
+  tree_size = tree.size();
+  n_modif = tree.clear_modified();
+  check_cache_integrity();
+ }
+
+ // Confirm the shift of the node, with red black balance
+ void confirm_shift() {
+
+  // Inserted nodes
+  //  first remove BST inserted nodes
+  cancel_insert_impl();
+  //  then reinsert the nodes used for real in rb tree
+  for (int i = 0; i <= trial_node_index; ++i) {
+   node n = trial_nodes[i].get();
+   tree.insert(n->key, {n->op, n_blocks});
+  }
+  trial_node_index = -1;
+
+  // Deleted nodes
+  for (auto& k : removed_key) tree.delete_node(k); // CANNOT use the node here
+  removed_ops.clear();
+  removed_key.clear();
+
+  // update cache only at the end
   update_cache();
   tree_size = tree.size();
   n_modif = tree.clear_modified();

@@ -52,7 +52,7 @@ class move_remove_c_cdag {
   data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
-  // the det has to be recomputed each time, since global moves will change it
+  // the det has to be recomputed each time, since global moves will change it //FIXME ??
   auto& det = data.dets[block_index];
 
   // Pick up a couple of C, Cdagger to remove at random
@@ -73,16 +73,21 @@ class move_remove_c_cdag {
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
   // acceptance probability
-  double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2);
+  double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // FIXME det_size or det.size()
   
   // For quick abandon 
   double random_number = rng.preview();
   if (random_number == 0.0) return 0;
-  double p_yee = std::abs(det_ratio / t_ratio/ data.trace);
+  double p_yee = std::abs(det_ratio / t_ratio / data.trace);
 
   // recompute the trace
   new_trace = data.imp_trace.estimate(p_yee, random_number);
-  if (new_trace == 0.0) return 0;
+  if (new_trace == 0.0) {
+#ifdef EXT_DEBUG
+   std::cout << "trace == 0" << std::endl;
+#endif
+   return 0;
+  }
   auto trace_ratio = new_trace / data.trace;
   if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
  
@@ -104,17 +109,18 @@ class move_remove_c_cdag {
 
  mc_weight_type accept() {
 
+  // remove from the tree
+  data.imp_trace.confirm_delete();
+
   // remove from the configuration
   config.erase(tau1);
   config.erase(tau2);
-
-  // remove in the cache tree  
-  data.imp_trace.confirm_delete();
   
-  // remove in the config
+  // remove from the determinants
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
+
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;

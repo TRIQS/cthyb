@@ -118,6 +118,10 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
     b++;
   }
 
+  // Report what h_loc we are using
+  if(int(params["verbosity"])>=2)
+   std::cout << "The local Hamiltonian of the problem:" << std::endl << h_loc << std::endl;
+
   // Determine block structure
   if (use_quantum_numbers)
    sosp = {h_loc, quantum_numbers, fops};

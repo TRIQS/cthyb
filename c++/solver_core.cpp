@@ -73,8 +73,11 @@ gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g
   return make_block_gf(map(f, g.data()));
 }
 
-void solver_core::solve(real_operator_t h_loc, params::parameters params,
-                  std::vector<real_operator_t> const & quantum_numbers, bool use_quantum_numbers) {
+/// -------------------------------------------------------------------------------------------
+
+//void solver_core::solve(real_operator_t h_loc, params::parameters params,
+//                  std::vector<real_operator_t> const & quantum_numbers, bool use_quantum_numbers) {
+void solver_core::solve(solve_parameters_t const & params) { 
 
   // determine basis of operators to use
   fundamental_operator_set fops;
@@ -93,6 +96,7 @@ void solver_core::solve(real_operator_t h_loc, params::parameters params,
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
+  auto h_loc = params.h_loc;
 
   // Add quadratic terms to h_loc
   int b = 0;
@@ -119,20 +123,20 @@ void solver_core::solve(real_operator_t h_loc, params::parameters params,
   }
 
   // Report what h_loc we are using
-  if(int(params["verbosity"])>=2)
-   std::cout << "The local Hamiltonian of the problem:" << std::endl << h_loc << std::endl;
+  if (params.verbosity >= 2) std::cout << "The local Hamiltonian of the problem:" << std::endl << h_loc << std::endl;
 
   // Determine block structure
-  if (use_quantum_numbers)
-   sosp = {h_loc, quantum_numbers, fops};
-  else 
+  if (params.use_quantum_numbers)
+   sosp = {h_loc, params.quantum_numbers, fops};
+  else
    sosp = {h_loc, fops};
 
-  if(params["make_histograms"]) std::ofstream("Diagonalization_atomic_pb") << sosp;
+  if (params.make_histograms) std::ofstream("Diagonalization_atomic_pb") << sosp;
 
   qmc_data data(beta, params, sosp, linindex, _Delta_tau);
-  mc_tools::mc_generic<mc_sign_type> qmc(params);
- 
+  auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
+                                                params.random_seed, params.verbosity);
+
   // Moves
   auto& delta_names = _Delta_tau.domain().names();
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
@@ -142,19 +146,19 @@ void solver_core::solve(real_operator_t h_loc, params::parameters params,
   }
  
   // Measurements
-  if (params["measure_g_tau"]) {
+  if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
     qmc.add_measure(measure_g(block, _G_tau[block], data), "G measure (" + g_names[block] + ")");
    }
   }
-  if (params["measure_g_l"]) {
+  if (params.measure_g_l) {
    auto& g_names = _G_l.domain().names();
    for (size_t block = 0; block < _G_l.domain().size(); ++block) {
     qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
    }
   }
-  if (params["measure_pert_order"]) {
+  if (params.measure_pert_order) {
    auto& g_names = _G_tau.domain().names();
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
     qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + g_names[block] + ".dat"), "Perturbation order (" + g_names[block] + ")");
@@ -162,45 +166,18 @@ void solver_core::solve(real_operator_t h_loc, params::parameters params,
   }
 
   // Run! The empty configuration has sign = 1
-  qmc.start(1.0, triqs::utility::clock_callback(params["max_time"]));
+  qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
 }
 
 //----------------------------------------------------------------------------------------------
 
-parameters_t solver_core::solve_parameters() {
-
- auto pdef = parameters_t{};
- boost::mpi::communicator world;
-
- pdef.add_field("n_cycles", no_default<int>(), "Number of QMC cycles")
-     .add_field("length_cycle", int(50), "Length of a single QMC cycle")
-     .add_field("n_warmup_cycles", int(5000), "Number of cycles for thermalization")
-     .add_field("random_seed", int(34788 + 928374 * world.rank()), "Seed for random number generator")
-     .add_field("random_name", std::string(""), "Name of random number generator")
-     .add_field("max_time", int(-1), "Maximum runtime in seconds, use -1 to set infinite")
-     .add_field("verbosity", (world.rank()==0 ? int(3) : int(0)), "Verbosity level")
-     .add_field("use_trace_estimator", bool(false), "Calculate the full trace or use an estimate?")
-     .add_field("measure_g_tau", bool(true), "Whether to measure G(tau)")
-     .add_field("measure_g_l", bool(false), "Whether to measure G_l (Legendre)")
-     .add_field("measure_pert_order", bool(false), "Whether to measure perturbation order")
-     .add_field("make_histograms", bool(false), "Make the analysis histograms of the trace computation");
-
- return pdef;
-}
-
-//----------------------------------------------------------------------------------------------
-
-void solver_core::help() {
- // TODO
-}
-
 using namespace triqs::gfs;
 
 gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau) {
     auto const& old_m = old_gf.mesh();
-    gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau, old_m.kind()}, old_gf.get_data_shape().front_pop()};
+    gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau, old_m.kind()}, get_target_shape(old_gf)};
     auto const& new_m = new_gf.mesh();
 
     new_gf.data()() = 0;

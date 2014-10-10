@@ -30,7 +30,7 @@ class Solver(SolverCore):
         self.n_iw = n_iw
         self.n_tau = n_tau
 
-    def solve(self, h_loc, params=None, **params_kw):
+    def solve(self, h_loc, **params_kw):
         """ Solve the impurity problem """
 
         # Default tail fitting parameters
@@ -43,23 +43,26 @@ class Solver(SolverCore):
         fit_min_n = int(0.8 * self.n_iw) # Fit last 80% of frequencies
         fit_max_n = self.n_iw
 
-        if params==None:
-            if mpi.rank == 0: print "Using keyword arguments provided as parameters in the solver."
-            params = SolverCore.solve_parameters()
-            for i in params_kw:
-                params[i] = params_kw[i]
-        else:
-            if mpi.rank == 0: print "Using parameter list in the solver."
+        #if params==None:
+        #    if mpi.rank == 0: print "Using keyword arguments provided as parameters in the solver."
+        #    params = {} #SolverCore.solve_parameters()
+        #    for i in params_kw:
+        #        params[i] = params_kw[i]
+        #else:
+        #    if mpi.rank == 0: print "Using parameter list in the solver."
 
         # Call the core solver's core routine
-        SolverCore.solve(self, h_loc, params)
+        #SolverCore.solve(self, h_loc, params)
+        SolverCore.solve(self, h_loc = h_loc, **params_kw)
 
         # Post-processing: 
         # (only supported for G_tau, to permit compatibility with dft_tools)
         # Fourier transform G_tau to obtain G_iw and fit the tail
         for name, g in self.G_tau:
-	    self.G_iw[name] <<= Fourier(g)
+            self.G_iw[name] <<= Fourier(g)
             self.G_iw[name].fit_tail(fit_known_moments[name], fit_n_moments, fit_min_n, fit_max_n)
 
         # Solve Dyson's eq to obtain Sigma_iw
+        print self.G_tau['up'].data
+        print self.G_iw['up'].data
         self.Sigma_iw = inverse(self.G0_iw) - inverse(self.G_iw)

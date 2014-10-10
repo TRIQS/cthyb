@@ -20,10 +20,10 @@
  ******************************************************************************/
 #pragma once
 #include <memory>
-#include "configuration.hpp"
-#include "sorted_spaces.hpp"
+#include "./configuration.hpp"
+#include "./sorted_spaces.hpp"
+#include "./solve_parameters.hpp"
 #include "triqs/utility/rbt.hpp"
-#include <triqs/parameters.hpp>
 #include "triqs/statistics/histograms.hpp"
 
 namespace cthyb {
@@ -36,7 +36,7 @@ class impurity_trace {
  // using trace_t = std::complex<double>; TODO
 
  // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
- impurity_trace(configuration& c, sorted_spaces const& sosp, params::parameters const& p);
+ impurity_trace(configuration& c, sorted_spaces const& sosp, solve_parameters_t const& p);
 
  ~impurity_trace() { cancel_insert_impl(); } // in case of an exception, we need to remove any trial nodes before cleaning the tree!
 

@@ -53,11 +53,11 @@ namespace arrays {
 namespace cthyb {
 
 // -------- Constructor --------
-impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, params::parameters const& p)
-   : config(&c), sosp(&sosp_), histo(p["make_histograms"] ? new histograms_t(sosp_.n_subspaces()) : nullptr) {
+impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, solve_parameters_t const& p)
+   : config(&c), sosp(&sosp_), histo(p.make_histograms ? new histograms_t(sosp_.n_subspaces()) : nullptr) {
 
  // Taking parameters from the inputs
- use_trace_estimator = p["use_trace_estimator"];
+ use_trace_estimator = p.use_trace_estimator;
  if (use_trace_estimator) 
   method = method_t::estimate;
  else

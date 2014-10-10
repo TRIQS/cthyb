@@ -1,11 +1,7 @@
 #include "solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/gfs/local/fourier_matsubara.hpp>
-#include <triqs/parameters.hpp>
-#include <triqs/gfs/block.hpp>
-#include <triqs/gfs/imtime.hpp>
-#include <triqs/gfs/imfreq.hpp>
+#include <triqs/gfs.hpp>
 
 using namespace cthyb;
 using triqs::utility::many_body_operator;
@@ -54,17 +50,19 @@ int main(int argc, char* argv[]) {
   for (int bl=0; bl<2; ++bl) solver.G0_iw()[bl] = triqs::gfs::inverse( g0_iw );
 
   // Solve parameters
-  auto p = solver_core::solve_parameters();
-  p["random_name"] = "";
-  p["random_seed"] = 123 * rank + 567;
-  p["max_time"] = -1;
-  p["verbosity"] = 3;
-  p["length_cycle"] = 50;
-  p["n_warmup_cycles"] = 50;
-  p["n_cycles"] = 5000;
-
+  int n_cycles = 5000;
+  auto p = solve_parameters_t(H,n_cycles);
+  p.random_name = "";
+  p.random_seed = 123 * rank + 567;
+  p.max_time = -1;
+  p.verbosity = 3;
+  p.length_cycle = 50;
+  p.n_warmup_cycles = 50;
+  p.use_quantum_numbers = true;
+  p.quantum_numbers = qn;
+ 
   // Solve!
-  solver.solve(H, p, qn, true);
+  solver.solve(p);
   
   // Save the results
   if(rank==0){

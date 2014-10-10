@@ -1,6 +1,5 @@
 from itertools import product
 import pytriqs.utility.mpi as mpi
-from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators.operators2 import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
@@ -25,7 +24,7 @@ cubic_names=['%s'%i for i in range(num_orbitals)]
 U_matrix = U_matrix(L, radial_integrals=[F0,F2,F4], basis="cubic")
 
 # Parameters
-p = SolverCore.solve_parameters()
+p = {}
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -63,7 +62,7 @@ delta_w <<= (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
 for name, g0 in S.G0_iw:
     g0 <<= inverse(iOmega_n + mu - delta_w)
 
-S.solve(h_loc=H, params=p)
+S.solve(h_loc=H, **p)
 
 if mpi.rank==0:
     Results = HDFArchive("slater.output.h5",'w')

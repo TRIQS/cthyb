@@ -1,9 +1,7 @@
 #include "solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
-#include <triqs/parameters.hpp>
-#include <triqs/gfs/imfreq.hpp>
-#include <triqs/gfs/block.hpp>
+#include <triqs/gfs.hpp>
 
 using namespace cthyb;
 using triqs::utility::many_body_operator;
@@ -44,10 +42,9 @@ int main(int argc, char* argv[]) {
   solver_core solver(beta, gf_struct, 1025, 2051);
 
   // Solve parameters
-  auto p = solver_core::solve_parameters();
-  p["length_cycle"] = 1;
-  p["n_warmup_cycles"] = 1;
-  p["n_cycles"] = 1;
+  auto p = solve_parameters_t(H, 1);
+  p.length_cycle = 1;
+  p.n_warmup_cycles = 1;
 
   triqs::clef::placeholder<0> om_;
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
@@ -56,7 +53,7 @@ int main(int argc, char* argv[]) {
   solver.G0_iw()[1] = triqs::gfs::inverse(g0_iw);
 
   // Solve!
-  solver.solve(H, p);
+  solver.solve(p);
 
   // Save the results
   if(rank==0){

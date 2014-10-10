@@ -22,7 +22,8 @@
 #include <triqs/mc_tools.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <boost/mpi/communicator.hpp>
-
+#include <triqs/operators/many_body_operator.hpp>
+#include "solve_parameters.hpp"
 #include "./qmc_data.hpp"
 
 namespace cthyb {
@@ -30,7 +31,6 @@ namespace cthyb {
 using namespace triqs::params;
 using namespace triqs::utility;
 using mc_weight_type = double;
-using parameters_t = triqs::params::parameters;
 
 class solver_core {
 
@@ -45,20 +45,24 @@ class solver_core {
  boost::mpi::communicator _comm;           // define the communicator, here MPI_COMM_WORLD
 
  public:
- using real_operator_t = many_body_operator<double>;
 
- solver_core(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
+ solver_core(double beta, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
+
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
- void solve(real_operator_t h_loc, params::parameters params,
-            std::vector<real_operator_t> const & quantum_numbers = std::vector<real_operator_t> {},
-            bool use_quantum_numbers = false);
+ //void solve(real_operator_t h_loc, params::parameters params,
+ //           std::vector<real_operator_t> const & quantum_numbers = std::vector<real_operator_t> {},
+ //           bool use_quantum_numbers = false);
+
+
+ /// Solve from param
+ __attribute__((annotate("use_parameter_class")))
+ void solve(solve_parameters_t const & p);
 
  // input containers
  /// G0(iw) in imaginary frequencies
  block_gf_view<imfreq> G0_iw() { return _G0_iw; }
- void set_G0_iw(block_gf_view<imfreq> G0) { _G0_iw = G0; }
-
+ //void set_G0_iw(block_gf_view<imfreq> G0) { _G0_iw = G0; }
 
  /// Delta(tau) in imaginary time
  block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
@@ -70,11 +74,6 @@ class solver_core {
  // Legendre measurements
  /// G_l in Legendre polynomials representation
  block_gf_view<legendre> G_l() { return _G_l; }
-
- // specify all required and optional parameters and generate help from them
- /// Get the form of solve parameters
- static parameters solve_parameters();
- static void help();
 
  // Atomic GF (without hybridization)
  /// Atomic G(tau) in imaginary time

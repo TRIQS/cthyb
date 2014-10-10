@@ -1,7 +1,6 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
-from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators.operators2 import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
@@ -59,7 +58,7 @@ S.G0_iw["up"] <<= inverse(iOmega_n + mu - delta_w)
 S.G0_iw["down"] <<= inverse(iOmega_n + mu - delta_w)
 
 # Parameters
-p = SolverCore.solve_parameters()
+p = {}
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -69,7 +68,7 @@ p["n_warmup_cycles"] = 50
 p["n_cycles"] = 5000
 p["measure_g_l"] = True
 
-S.solve(h_loc=H, params=p, use_quantum_numbers=False)
+S.solve(h_loc=H, use_quantum_numbers=False, **p)
   
 if mpi.rank==0:
     Results = HDFArchive("kanamori_core.output.h5",'w')

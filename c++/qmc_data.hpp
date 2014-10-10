@@ -43,6 +43,7 @@ struct qmc_data {
  struct delta_block_adaptor {
   gf_const_view<imtime> delta_block;
 
+  // COMMENT : can remove all of this, the const prevent = anyway ...
   delta_block_adaptor(gf_const_view<imtime> const &delta_block) : delta_block(delta_block) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
@@ -62,7 +63,7 @@ struct qmc_data {
  trace_t trace;                                               // The current value of the trace
 
  // construction and the basics stuff. value semantics, except = ?
- qmc_data(double beta, params::parameters const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
+ qmc_data(double beta, solve_parameters_t const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
           block_gf_const_view<imtime> delta)
     : config(beta),
       sosp(sosp),

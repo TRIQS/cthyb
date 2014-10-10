@@ -30,15 +30,15 @@ namespace cthyb {
 
 /**
  */
-class atomic_correlators_worker {
+class impurity_trace {
  public:
  using trace_t = double;
- // using trace_t = std::complex<double>;
+ // using trace_t = std::complex<double>; TODO
 
  // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
- atomic_correlators_worker(configuration& c, sorted_spaces const& sosp, params::parameters const& p);
+ impurity_trace(configuration& c, sorted_spaces const& sosp, params::parameters const& p);
 
- ~atomic_correlators_worker() { unlink_trial_nodes(); }
+ ~impurity_trace() { unlink_trial_nodes(); }
  // in case of an exception, we need to remove the trial node before cleaning the tree !!
 
  trace_t estimate(double p_yee = -1, double u_yee = 0);
@@ -48,22 +48,22 @@ class atomic_correlators_worker {
  // Various possible algorithms
  bool use_trace_estimator;
  enum class method_t {
-  FullTrace,
-  Estimate
+  full_trace,
+  estimate
  };
  method_t method;
 
  //------- data ----------------
 
- const configuration* config;            // must exists longer than this object.
- const sorted_spaces* sosp;              // access to the diagonalization of Hloc
+ const configuration* config;            // config object does exist longer (temporally) than this object.
+ const sorted_spaces* sosp;              // access to the diagonalization of h_loc
  int n_orbitals = sosp->n_c_operators(); //
  int n_blocks = sosp->n_subspaces();     //
 
  // ------------------ Cache data ----------------
 
  struct cache_t {
-  double dtl = 0, dtr = 0;
+  double dtau_l = 0, dtau_r = 0;
   std::vector<int> block_table; // number of blocks limited to 2^15
   std::vector<double> matrix_lnorms; // - ln (norm(matrix))
   std::vector<arrays::matrix<double>> matrices;
@@ -85,11 +85,11 @@ class atomic_correlators_worker {
  public:
 #endif
  rb_tree_t tree; // the red black tree and its nodes
- int n_modif;    // Analysis : number of node modified at the last change
+ int n_modif;    // Analysis : number of nodes modified at the last change
  void update_cache();
 
  /*************************************************************************
-  *  Ordinary BST insertion of the trial nodes
+  *  Ordinary binary search tree (BST) insertion of the trial nodes
   *************************************************************************/
  // we have a set of trial nodes, which we can glue, un-glue in the tree at will
  // avoids allocations.
@@ -104,7 +104,8 @@ class atomic_correlators_worker {
  // a pool of trial nodes, ready to be glued in the tree. Max 4 (for possible double insertion)
  std::vector<std::shared_ptr<rb_tree_t::node_t>> trial_nodes = {make_new_node(), make_new_node(),
                                                                 make_new_node(), make_new_node()};
- // {parent_of_node,child_is_left}
+
+ // for each inserted node, need to know {parent_of_node,child_is_left}
  std::vector<std::pair<node, bool>> inserted_nodes = {{nullptr, false}, {nullptr, false}, {nullptr, false}, {nullptr, false}};
  int trial_node_index = -1; // the index of the next available node in trial_nodes
 
@@ -135,6 +136,7 @@ class atomic_correlators_worker {
 
  public:
  // Put a trial node at tau, op, using an ordinary BST insertion (no red black)
+//FIXME void trial_insert(time_pt const& tau, op_desc const& op) {
  void trial_node_insert(time_pt const& tau, op_desc const& op) {
   if (trial_node_index > 3) TRIQS_RUNTIME_ERROR << "Error : more than 4 insertions ";
   auto& root = tree.get_root();
@@ -146,6 +148,7 @@ class atomic_correlators_worker {
  }
 
  // Remove all trial nodes from the tree
+//FIXME void cancel_insert() {
  void trial_node_uninsert() {
   unlink_trial_nodes();
   trial_node_index = -1;
@@ -155,6 +158,7 @@ class atomic_correlators_worker {
  }
 
  // confirm the insertion of the nodes, with red black balance
+//FIXME void confirm_insert() {
  void confirm_trial_node_insertion() {
   unlink_trial_nodes();
   // then reinsert the nodes used for real in rb tree
@@ -177,8 +181,9 @@ class atomic_correlators_worker {
  std::vector<time_pt> removed_key;
 
  public:
- // Find and soft_delete the n-th operator with fixed dagger and block_index
+ // Find and mark as deleted the n-th operator with fixed dagger and block_index
  // n=0 : first operator, n=1, second, etc...
+//FIXME time_pt trial_delete(int n, int block_index, bool dagger) {
  time_pt soft_delete_n_th_operator(int n, int block_index, bool dagger) {
   // traverse the tree, looking for the nth operator of the correct dagger, block_index
   int i = 0;
@@ -195,6 +200,7 @@ class atomic_correlators_worker {
  }
 
  /// Clean all the soft deleted flags
+//FIXME void cancel_delete() {
  void clean_soft_delete() {
   for (auto& n : removed_ops) n->soft_deleted = false;
   removed_ops.clear();
@@ -205,6 +211,7 @@ class atomic_correlators_worker {
  }
 
  /// Confirm deletion : the soft deleted flagged node are truly deleted
+//FIXME void confirm_delete() {
  void confirm_soft_delete() {
   for (auto& k : removed_key) tree.delete_node(k); // can NOT use the node here..
   removed_ops.clear();

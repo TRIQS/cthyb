@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "atomic_correlators_worker.hpp"
+#include "impurity_trace.hpp"
 #include <triqs/gfs.hpp>
 #include <triqs/det_manip.hpp>
 #include <triqs/utility/serialization.hpp>
@@ -35,9 +35,9 @@ struct qmc_data {
  configuration config;                          // Configuration
  std::map<std::pair<int,int>,int> linindex;
  sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
- mutable atomic_correlators_worker atomic_corr; // Calculator of the trace
+ mutable impurity_trace imp_trace; // Calculator of the trace
 
- using trace_t = atomic_correlators_worker::trace_t;
+ using trace_t = impurity_trace::trace_t;
 
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {
@@ -67,10 +67,10 @@ struct qmc_data {
     : config(beta),
       sosp(sosp),
       linindex(linindex),
-      atomic_corr(config, sosp, p),
+      imp_trace(config, sosp, p),
       current_sign(1),
       old_sign(1) {
-  trace = atomic_corr.estimate();
+  trace = imp_trace.estimate();
   dets.clear();
   for (auto const &bl : delta.mesh()) dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
  }
@@ -114,7 +114,7 @@ struct qmc_data {
 
  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
   ar &boost::serialization::make_nvp("configuration", config) & boost::serialization::make_nvp("dets", dets) &
-      boost::serialization::make_nvp("atomic_corr", atomic_corr) & boost::serialization::make_nvp("old_sign", old_sign) &
+      boost::serialization::make_nvp("imp_trace", imp_trace) & boost::serialization::make_nvp("old_sign", old_sign) &
       boost::serialization::make_nvp("current_sign", current_sign);
  }
 };

@@ -49,7 +49,7 @@ class move_remove_c_cdag {
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
   std::cerr << "* Attempt for move_remove_c_cdag (block " << block_index << ")" << std::endl;
   std::cerr << "* Configuration before:" << std::endl << config;
-  data.atomic_corr.tree.graphviz(std::ofstream("tree_before"));
+  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   // the det has to be recomputed each time, since global moves will change it
@@ -67,8 +67,8 @@ class move_remove_c_cdag {
 #endif
 
   // now mark 2 nodes for deletion
-  tau1 = data.atomic_corr.soft_delete_n_th_operator(num_c, block_index, false);
-  tau2 = data.atomic_corr.soft_delete_n_th_operator(num_c_dag, block_index, true);
+  tau1 = data.imp_trace.soft_delete_n_th_operator(num_c, block_index, false);
+  tau2 = data.imp_trace.soft_delete_n_th_operator(num_c_dag, block_index, true);
 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
@@ -81,7 +81,7 @@ class move_remove_c_cdag {
   double p_yee = std::abs(det_ratio / t_ratio/ data.trace);
 
   // recompute the trace
-  new_trace = data.atomic_corr.estimate(p_yee, random_number);
+  new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) return 0;
   auto trace_ratio = new_trace / data.trace;
   if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
@@ -109,7 +109,7 @@ class move_remove_c_cdag {
   config.erase(tau2);
 
   // remove in the cache tree  
-  data.atomic_corr.confirm_soft_delete();
+  data.imp_trace.confirm_soft_delete();
   
   // remove in the config
   data.dets[block_index].complete_operation();
@@ -126,7 +126,7 @@ class move_remove_c_cdag {
  //----------------
 
  void reject() {
-  data.atomic_corr.clean_soft_delete();
+  data.imp_trace.clean_soft_delete();
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;

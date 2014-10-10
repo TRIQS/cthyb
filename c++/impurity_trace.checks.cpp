@@ -21,7 +21,7 @@
 
 //-------------------- Cache integrity check --------------------------------
 
-void atomic_correlators_worker::check_cache_integrity(bool print) {
+void impurity_trace::check_cache_integrity(bool print) {
 #ifdef CHECK_CACHE
  if (print) std::cout << " ---- Cache integrity check ---- " << std::endl;
  if (print) tree.graphviz(std::ofstream("tree_cache_check"));
@@ -32,7 +32,7 @@ void atomic_correlators_worker::check_cache_integrity(bool print) {
 
 //--------------------- Compute block table for one subtree, using an ordered traversal of the subtree -------------------
 
-int atomic_correlators_worker::check_one_block_table_linear(node n, int b, bool print) {
+int impurity_trace::check_one_block_table_linear(node n, int b, bool print) {
 
  int B = b;
  foreach_reverse(tree, n, [&](node y) {
@@ -48,7 +48,7 @@ int atomic_correlators_worker::check_one_block_table_linear(node n, int b, bool 
 
 //--------------------- Compute block table for one subtree, using an ordered traversal of the subtree -------------------
 
-matrix<double> atomic_correlators_worker::check_one_block_matrix_linear(node top, int b, bool print) {
+matrix<double> impurity_trace::check_one_block_matrix_linear(node top, int b, bool print) {
 
  node p = tree.max(top);
  matrix<double> M = make_unit_matrix<double>(get_block_dim(b));
@@ -77,7 +77,7 @@ matrix<double> atomic_correlators_worker::check_one_block_matrix_linear(node top
 }
 //-------------------- Cache integrity check for one node --------------------------------
 
-void atomic_correlators_worker::check_cache_integrity_one_node(node n, bool print) {
+void impurity_trace::check_cache_integrity_one_node(node n, bool print) {
  if (n == nullptr) return;
  if (print) std::cout << " ... checking cache integrity for node " << n->key << std::endl;
 

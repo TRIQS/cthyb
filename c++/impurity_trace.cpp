@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "atomic_correlators_worker.hpp"
+#include "impurity_trace.hpp"
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <algorithm>
@@ -34,7 +34,7 @@
 
 double double_max = std::numeric_limits<double>::max(); // easier to read
 
-// --------------- Computation of the matrix norm --> move into triqs::arrays ------------------------
+// --------------- FIXME Computation of the matrix norm --> move into triqs::arrays ------------------------
 
 namespace triqs {
 namespace arrays {
@@ -52,34 +52,35 @@ namespace arrays {
 
 namespace cthyb {
 
-atomic_correlators_worker::atomic_correlators_worker(configuration& c, sorted_spaces const& sosp_, params::parameters const& p)
+// -------- Constructor --------
+impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, params::parameters const& p)
    : config(&c), sosp(&sosp_), histo(p["make_histograms"] ? new histograms_t(sosp_.n_subspaces()) : nullptr) {
 
  // Taking parameters from the inputs
  use_trace_estimator = p["use_trace_estimator"];
  if (use_trace_estimator) 
-  method = method_t::Estimate;
+  method = method_t::estimate;
  else
-  method = method_t::FullTrace;
+  method = method_t::full_trace;
 
  if (histo) {
   for (int i = 0; i < n_orbitals; ++i) histo->opcount.emplace_back(100, "histo_opcount" + std::to_string(i) + ".dat");
  }
 }
 
-//------------------------------------------------------------------------------
+// -------- Calculate the estimate of the trace -------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::estimate(double p_yee, double u_yee) {
- if (method == method_t::FullTrace) return compute_trace(true, p_yee, u_yee);
- //if (method == method_t::Estimate)
+impurity_trace::trace_t impurity_trace::estimate(double p_yee, double u_yee) {
+ if (method == method_t::full_trace) return compute_trace(true, p_yee, u_yee);
+ //if (method == method_t::estimate)
  return compute_trace(false, p_yee, 0);
 }
 
-//------------------------------------------------------------------------------
+// -------- Calculate the ratio of the full trace to the estimator ----------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_estimator() {
+impurity_trace::trace_t impurity_trace::full_trace_over_estimator() {
  trace_t r = 1;
- if (method == method_t::Estimate) {
+ if (method == method_t::estimate) {
   trace_t ft = compute_trace(true, -1, 0);
   trace_t est = estimate(-1, 0);
   r = ft / est;
@@ -96,12 +97,12 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::full_trace_over_es
  return r;
 }
 
-// ------------------- computation block table (only) -------------
+// ------- Computation of the block table (only) -------------
 
 // for subtree at node n, returns B'
 // precondition: b !=-1, n != null
 // returns -1 if cancellation structural
-int atomic_correlators_worker::compute_block_table(node n, int b) {
+int impurity_trace::compute_block_table(node n, int b) {
 
  if (b < 0) TRIQS_RUNTIME_ERROR << " b <0";
  if (!n->modified) return n->cache.block_table[b];
@@ -114,12 +115,12 @@ int atomic_correlators_worker::compute_block_table(node n, int b) {
 
  return (n->left ? compute_block_table(n->left, b2) : b2);
 }
-// ------------------- computation block table and bounds -------------
+// -------- Computation of the block table and bounds -------------
 
 // for subtree at node n, return (B', bound)
 // precondition: b !=-1, n != null
 // returns -1 for structural and/or threshold cancellation
-std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(node n, int b, double lnorm_threshold, bool use_threshold) {
+std::pair<int, double> impurity_trace::compute_block_table_and_bound(node n, int b, double lnorm_threshold, bool use_threshold) {
 
  if (b < 0) TRIQS_RUNTIME_ERROR << " b <0";
  // if (n == nullptr) TRIQS_RUNTIME_ERROR << " null ptr";
@@ -131,7 +132,7 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
  if (n->right) {
   std::tie(b1, lnorm) = compute_block_table_and_bound(n->right, b, lnorm_threshold, use_threshold);
   if (b1 < 0) return {b1, 0};
-  lnorm += n->cache.dtr * get_block_emin(b1);
+  lnorm += n->cache.dtau_r * get_block_emin(b1);
  }
  if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
 
@@ -140,7 +141,7 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
 
  int b3 = b2;
  if (n->left) {
-  lnorm += n->cache.dtl * get_block_emin(b2);
+  lnorm += n->cache.dtau_l * get_block_emin(b2);
   if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
   double lnorm3;
   std::tie(b3, lnorm3) = compute_block_table_and_bound(n->left, b2, lnorm_threshold, use_threshold);
@@ -158,9 +159,9 @@ std::pair<int, double> atomic_correlators_worker::compute_block_table_and_bound(
  return {b3, lnorm};
 }
 
-// --------------- Computation of the matrix ------------------------------
+// -------- Computation of the matrix ------------------------------
 
-std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix(node n, int b) {
+std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, int b) {
 
  if (b == -1) return {-1, {}};
  if (n == nullptr) return {b, {}};
@@ -210,7 +211,7 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
   n->cache.matrix_norm_are_valid[b] = true;
 
   // improve the norm
-  if ((method == method_t::FullTrace) && use_norm_of_matrices_in_cache) { // seems slower
+  if ((method == method_t::full_trace) && use_norm_of_matrices_in_cache) { // seems slower
    auto norm = frobenius_norm(M);
    n->cache.matrix_lnorms[b] = -std::log(norm);
    if (!std::isfinite(-std::log(norm))) {
@@ -223,9 +224,9 @@ std::pair<int, arrays::matrix<double>> atomic_correlators_worker::compute_matrix
  return {b3, std::move(M)};
 }
 
-//---------------- cache update ------------------------------------
+// ------- Update the cache -----------------------
 
-void atomic_correlators_worker::update_cache() {
+void impurity_trace::update_cache() {
  update_cache_impl(tree.get_root());
  // analysis
  if (histo) {
@@ -238,35 +239,35 @@ void atomic_correlators_worker::update_cache() {
 
 // --------------------------------
 
-void atomic_correlators_worker::update_cache_impl(node n) {
+void impurity_trace::update_cache_impl(node n) {
 
  if ((n == nullptr) || (!n->modified)) return;
  if (n->soft_deleted) TRIQS_RUNTIME_ERROR << " Internal Error: soft deleted node in cache update ";
  update_cache_impl(n->left);
  update_cache_impl(n->right);
- n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
- n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
+ n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
+ n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
  for (int b = 0; b < n_blocks; ++b) {
   auto r = compute_block_table_and_bound(n, b, double_max, false);
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
   n->cache.matrix_norm_are_valid[b] = false;
  }
- // n->modified = false;
+ // n->modified = false; FIXME
 }
 
-// --------------------------------
-void atomic_correlators_worker::update_dt(node n) {
+// -------- Calculate the dtau for a given node to its left and right neighbours ----------------
+void impurity_trace::update_dt(node n) {
  if ((n == nullptr) || (!n->modified)) return;
  update_dt(n->left);
  update_dt(n->right);
- n->cache.dtr = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
- n->cache.dtl = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
+ n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
+ n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
 }
 
-//----------------------------------------------------
+//-------- Compute the full trace ------------------------------------------
 
-atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool to_machine_precision, double p_yee, double u_yee) {
+impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision, double p_yee, double u_yee) {
 
  double epsilon = (to_machine_precision ? 1.e-15 : 0.333);
 
@@ -392,6 +393,6 @@ atomic_correlators_worker::trace_t atomic_correlators_worker::compute_trace(bool
 }
 
 // code for check/debug
-#include "./atomic_correlators_worker.checks.cpp"
+#include "./impurity_trace.checks.cpp"
 
 } // namespace

@@ -62,7 +62,7 @@ class move_insert_c_cdag {
   std::cerr << "* Attempt for move_insert_c_cdag (block " << block_index << ")" << std::endl;
   std::cerr << "* Configuration before:" << std::endl;
   std::cerr << config;
-  data.atomic_corr.tree.graphviz(std::ofstream("tree_before"));
+  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   // Pick up the value of alpha and choose the operators
@@ -91,12 +91,12 @@ class move_insert_c_cdag {
   // (cf std::map doc for insert return), we reject the move.
   // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
   try {
-   data.atomic_corr.trial_node_insert(tau1, op1);
-   data.atomic_corr.trial_node_insert(tau2, op2);
+   data.imp_trace.trial_node_insert(tau1, op1);
+   data.imp_trace.trial_node_insert(tau2, op2);
   }
   catch (rbt_insert_error const&) {
    //std::cerr << "Insert error : recovering ... " << std::endl;
-   data.atomic_corr.trial_node_uninsert();
+   data.imp_trace.trial_node_uninsert();
    return 0;
   }
  
@@ -126,7 +126,7 @@ class move_insert_c_cdag {
   double p_yee = std::abs(t_ratio * det_ratio / data.trace);
 
   // computation of the new trace after insertion
-  new_trace = data.atomic_corr.estimate(p_yee, random_number);
+  new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
    std::cout << "trace == 0" << std::endl;
@@ -155,7 +155,7 @@ class move_insert_c_cdag {
  mc_weight_type accept() {
 
   //  remove the temporary ordinary bst insertion
-  data.atomic_corr.confirm_trial_node_insertion();
+  data.imp_trace.confirm_trial_node_insertion();
 
   // insert in the configuration 
   config.insert(tau1, op1);
@@ -178,7 +178,7 @@ class move_insert_c_cdag {
  //----------------
 
  void reject() {
-  data.atomic_corr.trial_node_uninsert();
+  data.imp_trace.trial_node_uninsert();
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;

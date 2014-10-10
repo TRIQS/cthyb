@@ -52,7 +52,7 @@ struct measure_g_legendre {
   num += 1;
   if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
-  auto corr = real(this->data.atomic_corr.full_trace_over_estimator());
+  auto corr = real(this->data.imp_trace.full_trace_over_estimator());
   if (!std::isfinite(corr)) TRIQS_RUNTIME_ERROR << " measure g :corr not finite" << corr;
 
   z += s * corr;

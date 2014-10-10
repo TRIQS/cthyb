@@ -5,13 +5,13 @@ module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc 
 module.use_module('gf')
 module.use_module('parameters')
 module.use_module('operators2')
-module.add_include("c++/ctqmc.hpp")
+module.add_include("c++/solver_core.hpp")
 module.add_using("namespace cthyb")
 
 # The Solver class
 cthyb = class_(
         py_type = "SolverCore",
-        c_type = "ctqmc"
+        c_type = "solver_core"
         )
 
 module.add_class(cthyb)

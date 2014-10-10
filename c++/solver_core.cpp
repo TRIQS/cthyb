@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include <fstream>
-#include "ctqmc.hpp"
+#include "solver_core.hpp"
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/gfs.hpp>
@@ -32,7 +32,7 @@
 
 namespace cthyb {
 
-ctqmc::ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_iw, int n_tau, int n_l):
+solver_core::solver_core(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_iw, int n_tau, int n_l):
   beta(beta_), gf_struct(gf_struct_) {
 
   if ( n_tau < 2*n_iw ) TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau << ".";
@@ -73,7 +73,7 @@ gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g
   return make_block_gf(map(f, g.data()));
 }
 
-void ctqmc::solve(real_operator_t h_loc, params::parameters params,
+void solver_core::solve(real_operator_t h_loc, params::parameters params,
                   std::vector<real_operator_t> const & quantum_numbers, bool use_quantum_numbers) {
 
   // determine basis of operators to use
@@ -169,7 +169,7 @@ void ctqmc::solve(real_operator_t h_loc, params::parameters params,
 
 //----------------------------------------------------------------------------------------------
 
-parameters_t ctqmc::solve_parameters() {
+parameters_t solver_core::solve_parameters() {
 
  auto pdef = parameters_t{};
  boost::mpi::communicator world;
@@ -192,7 +192,7 @@ parameters_t ctqmc::solve_parameters() {
 
 //----------------------------------------------------------------------------------------------
 
-void ctqmc::help() {
+void solver_core::help() {
  // TODO
 }
 

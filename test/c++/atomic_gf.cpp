@@ -1,4 +1,4 @@
-#include "ctqmc.hpp"
+#include "solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/parameters.hpp>
@@ -41,10 +41,10 @@ int main(int argc, char* argv[]) {
   std::map<std::string, std::vector<int>> gf_struct{{"up",{0,1}},{"dn",{0,1}}};
 
   // Construct CTQMC solver
-  ctqmc solver(beta, gf_struct, 1025, 2051);
+  solver_core solver(beta, gf_struct, 1025, 2051);
 
   // Solve parameters
-  auto p = ctqmc::solve_parameters();
+  auto p = solver_core::solve_parameters();
   p["length_cycle"] = 1;
   p["n_warmup_cycles"] = 1;
   p["n_cycles"] = 1;

@@ -32,7 +32,7 @@ using namespace triqs::utility;
 using mc_weight_type = double;
 using parameters_t = triqs::params::parameters;
 
-class ctqmc {
+class solver_core {
 
  using mc_sign_type = mc_weight_type;
 
@@ -47,7 +47,7 @@ class ctqmc {
  public:
  using real_operator_t = many_body_operator<double>;
 
- ctqmc(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
+ solver_core(double beta_, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
  void solve(real_operator_t h_loc, params::parameters params,

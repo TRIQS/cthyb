@@ -1,4 +1,4 @@
-#include "ctqmc.hpp"
+#include "solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
 #include <triqs/gfs/local/fourier_matsubara.hpp>
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   std::map<std::string, std::vector<int>> gf_struct{{"up",{0}},{"down",{0}}};
 
   // Construct CTQMC solver
-  ctqmc solver(beta, gf_struct, 1025, 2500);
+  solver_core solver(beta, gf_struct, 1025, 2500);
 
   // Set G0
   triqs::clef::placeholder<0> om_;
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   for (int bl=0; bl<2; ++bl) solver.G0_iw()[bl] = triqs::gfs::inverse( g0_iw );
 
   // Solve parameters
-  auto p = ctqmc::solve_parameters();
+  auto p = solver_core::solve_parameters();
   p["random_name"] = "";
   p["random_seed"] = 123 * rank + 567;
   p["max_time"] = -1;

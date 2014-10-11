@@ -86,7 +86,7 @@ impurity_trace::trace_t impurity_trace::full_trace_over_estimator() {
   r = ft / est;
   if (std::abs(r - 2.0 / 3.0) > 2.0 / 3.0 + 0.001) TRIQS_RUNTIME_ERROR << " estimator out of bounds !! " << r;
   if (!std::isfinite(r)) {
-    // it might be that both ft and est are zero. This is still OK and r should be 1
+    // It might be that both full trace and est are zero. This is still OK and r should be 1.
     if (std::abs(est) < std::numeric_limits<trace_t>::epsilon() && std::abs(ft) < std::numeric_limits<trace_t>::epsilon())
       r = 1;
     else
@@ -110,7 +110,7 @@ int impurity_trace::compute_block_table(node n, int b) {
  int b1 = (n->right ? compute_block_table(n->right, b) : b);
  if (b1 < 0) return b1;
 
- int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
+ int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1));
  if (b2 < 0) return b2;
 
  return (n->left ? compute_block_table(n->left, b2) : b2);
@@ -136,7 +136,7 @@ std::pair<int, double> impurity_trace::compute_block_table_and_bound(node n, int
  }
  if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
 
- int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
+ int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1));
  if (b2 < 0) return {b2, 0};
 
  int b3 = b2;
@@ -165,8 +165,8 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
 
  if (b == -1) return {-1, {}};
  if (n == nullptr) return {b, {}};
- if (!n->modified && n->cache.matrix_norm_are_valid[b]) return {n->cache.block_table[b], n->cache.matrices[b]};
- bool updating = (!n->modified && !n->cache.matrix_norm_are_valid[b]);
+ if (!n->modified && n->cache.matrix_norm_valid[b]) return {n->cache.block_table[b], n->cache.matrices[b]};
+ bool updating = (!n->modified && !n->cache.matrix_norm_valid[b]);
 
  double dtau_l = 0, dtau_r = 0;
  auto _ = arrays::range();
@@ -175,10 +175,10 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
  int b1 = r.first;
  if (b1 == -1) return {-1, {}};
 
- int b2 = (n->soft_deleted ? b1 : get_op_block_map(n, b1));
+ int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1));
  if (b2 == -1) return {-1, {}};
 
- matrix<double> M = (!n->soft_deleted ? get_op_block_matrix(n, b1) : make_unit_matrix<double>(get_block_dim(b1)));
+ matrix<double> M = (!n->delete_flag ? get_op_block_matrix(n, b1) : make_unit_matrix<double>(get_block_dim(b1)));
 
  if (n->right) { // M <- M * exp * r[b]
   dtau_r = double(n->key - tree.min_key(n->right));
@@ -199,7 +199,7 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   dtau_l = double(tree.max_key(n->left) - n->key);
   auto dim = first_dim(M); // same as get_block_dim(b1);
   for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b2, i));
-  //for (int i = 1; i < dim; ++i) M(i, _) *= std::exp(-dtau_l* ( get_block_eigenval(b2, i) - get_block_eigenval(b2, 0)));
+  //for (int i = 1; i < dim; ++i) M(i, _) *= std::exp(-dtau_l* ( get_block_eigenval(b2, i) - get_block_eigenval(b2, 0))); FIXME
   if ((first_dim(l.second) == 1) && (second_dim(l.second) == 1))
    M *= l.second(0, 0);
   else
@@ -208,14 +208,14 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
  
  if (updating) {
   n->cache.matrices[b] = M;
-  n->cache.matrix_norm_are_valid[b] = true;
+  n->cache.matrix_norm_valid[b] = true;
 
   // improve the norm
   if ((method == method_t::full_trace) && use_norm_of_matrices_in_cache) { // seems slower
    auto norm = frobenius_norm(M);
    n->cache.matrix_lnorms[b] = -std::log(norm);
    if (!std::isfinite(-std::log(norm))) {
-    //std::cerr << "norm is not finite "<< norm <std::endl;
+    //std::cerr << "norm is not finite "<< norm <std::endl; FIXME
     n->cache.matrix_lnorms[b] = double_max;
    }
   }
@@ -242,7 +242,7 @@ void impurity_trace::update_cache() {
 void impurity_trace::update_cache_impl(node n) {
 
  if ((n == nullptr) || (!n->modified)) return;
- if (n->soft_deleted) TRIQS_RUNTIME_ERROR << " Internal Error: soft deleted node in cache update ";
+ if (n->delete_flag) TRIQS_RUNTIME_ERROR << " Internal Error: node flagged for deletion in cache update ";
  update_cache_impl(n->left);
  update_cache_impl(n->right);
  n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
@@ -251,16 +251,16 @@ void impurity_trace::update_cache_impl(node n) {
   auto r = compute_block_table_and_bound(n, b, double_max, false);
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
-  n->cache.matrix_norm_are_valid[b] = false;
+  n->cache.matrix_norm_valid[b] = false;
  }
  // n->modified = false; FIXME
 }
 
 // -------- Calculate the dtau for a given node to its left and right neighbours ----------------
-void impurity_trace::update_dt(node n) {
+void impurity_trace::update_dtau(node n) {
  if ((n == nullptr) || (!n->modified)) return;
- update_dt(n->left);
- update_dt(n->right);
+ update_dtau(n->left);
+ update_dtau(n->right);
  n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
  n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
 }
@@ -274,12 +274,12 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
  if (tree_size == 0) return sosp->partition_function(config->beta()); // simplifies later code
 
  auto root = tree.get_root();
- double dt = config->beta() - tree.min_key() + tree.max_key(); // beta - tmax + tmin ! the tree is in REVERSE order
+ double dtau = config->beta() - tree.min_key() + tree.max_key(); // beta - tmax + tmin ! the tree is in REVERSE order
 
 #ifdef EXT_DEBUG
  std::cout << " Trace compu ---------------" << std::endl;
  tree.print(std::cout);
- std::cout << "dt = " << dt << std::endl;
+ std::cout << "dtau = " << dtau << std::endl;
  std::cout << *config << std::endl;
  tree.graphviz(std::ofstream("tree_start_compute_trace"));
 #endif
@@ -288,13 +288,13 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
  std::vector<std::pair<double, int>> to_sort1, to_sort;
  double lnorm_threshold = double_max - 100;
 
- update_dt(root); // recompute the dt for modified nodes
+ update_dtau(root); // recompute the dtau for modified nodes
 
  for (int b = 0; b < n_blocks; ++b) {
   auto block_lnorm_pair = compute_block_table_and_bound(root, b, lnorm_threshold);
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.
-   double lnorm = block_lnorm_pair.second + dt * get_block_emin(b);
+   double lnorm = block_lnorm_pair.second + dtau * get_block_emin(b);
    lnorm_threshold = std::min(lnorm_threshold, lnorm + log_epsilon0);
    to_sort1.emplace_back(lnorm, b);
   }
@@ -305,7 +305,7 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
   if (b_b.first <= lnorm_threshold) to_sort.push_back(b_b);
 
  if (histo) {
-  histo->nblock_at_root << to_sort.size();
+  histo->n_block_at_root << to_sort.size();
  }
 
  if (to_sort.size() == 0) return 0.0; // structural 0
@@ -355,8 +355,8 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
   // trace (mat * exp(- H * (beta - tmax)) * exp (- H * tmin)) to handle the piece outside of the first-last operators.
   trace_t trace_partial = 0;
   auto dim = get_block_dim(block_index);
-  for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dt * get_block_eigenval(block_index, u));
-  //trace_partial *= std::exp(dt * get_block_eigenval(block_index, 0) - to_sort[bl].first);
+  for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
+  //trace_partial *= std::exp(dtau * get_block_eigenval(block_index, 0) - to_sort[bl].first);
 
 #ifdef CHECK_MATRIX_BOUNDED_BY_BOUND
   if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort[bl].first))

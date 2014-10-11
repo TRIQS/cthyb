@@ -38,8 +38,7 @@ class impurity_trace {
  // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
  impurity_trace(configuration& c, sorted_spaces const& sosp, params::parameters const& p);
 
- ~impurity_trace() { unlink_trial_nodes(); }
- // in case of an exception, we need to remove the trial node before cleaning the tree !!
+ ~impurity_trace() { cancel_insert_impl(); } // in case of an exception, we need to remove any trial nodes before cleaning the tree!
 
  trace_t estimate(double p_yee = -1, double u_yee = 0);
  trace_t full_trace_over_estimator();
@@ -65,17 +64,17 @@ class impurity_trace {
  struct cache_t {
   double dtau_l = 0, dtau_r = 0;
   std::vector<int> block_table; // number of blocks limited to 2^15
-  std::vector<double> matrix_lnorms; // - ln (norm(matrix))
   std::vector<arrays::matrix<double>> matrices;
-  std::vector<bool> matrix_norm_are_valid;
-  cache_t(int n_blocks) : block_table(n_blocks), matrix_lnorms(n_blocks), matrices(n_blocks), matrix_norm_are_valid(n_blocks) {}
+  std::vector<double> matrix_lnorms; // -ln(norm(matrix))
+  std::vector<bool> matrix_norm_valid;
+  cache_t(int n_blocks) : block_table(n_blocks), matrix_lnorms(n_blocks), matrices(n_blocks), matrix_norm_valid(n_blocks) {}
  };
 
  struct node_data_t {
   op_desc op;
   cache_t cache;
   node_data_t(op_desc op, int n_blocks) : op(op), cache(n_blocks) {}
-  void reset(op_desc op1) { op = op1; }
+  void reset(op_desc op_new) { op = op_new; }
  };
 
  using rb_tree_t = rb_tree<time_pt, node_data_t, std::greater<time_pt>>;
@@ -84,15 +83,56 @@ class impurity_trace {
 #ifdef EXT_DEBUG
  public:
 #endif
- rb_tree_t tree; // the red black tree and its nodes
- int n_modif;    // Analysis : number of nodes modified at the last change
+ rb_tree_t tree;       // the red black tree and its nodes
+ int n_modif;          // Analysis : number of nodes modified at the last change
+
+ // ---------------- Cache machinery ----------------
  void update_cache();
 
+ private:
+
+ // The dimension of block b
+ int get_block_dim(int b) const { return sosp->get_eigensystems()[b].eigenvalues.size(); }
+
+ // the i-th eigenvalue of the block b
+ double get_block_eigenval(int b, int i) const { return sosp->get_eigensystems()[b].eigenvalues[i]; }
+
+ // the minimal eigenvalue of the block b
+ double get_block_emin(int b) const { return get_block_eigenval(b, 0); }
+
+ // node, block -> image of the block by n->op (the operator)
+ int get_op_block_map(node n, int b) const {
+  return sosp->fundamental_operator_connect(n->op.dagger, n->op.linear_index, b);
+ }
+
+ // the matrix of n->op, from block b to its image
+ matrix<double> const& get_op_block_matrix(node n, int b) const {
+  return sosp->fundamental_operator_matrix(n->op.dagger, n->op.linear_index, b);
+ }
+
+ // recursive function for tree traversal
+ int compute_block_table(node n, int b);
+ std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true); //,double lnorm);
+ std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
+ trace_t compute_trace(bool to_machine_precision, double p_yee, double u_yee);
+
+ void update_cache_impl(node n);
+ void update_dtau(node n);
+
+ bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
+
+ // integrity check
+ void check_cache_integrity(bool print = false);
+ void check_cache_integrity_one_node(node n, bool print);
+ int check_one_block_table_linear(node n, int b, bool print); // compare block table to that of a linear method (ie. no tree)
+ matrix<double> check_one_block_matrix_linear(node n, int b, bool print); // compare matrix to that of a linear method (ie. no tree)
+
+ public:
  /*************************************************************************
   *  Ordinary binary search tree (BST) insertion of the trial nodes
   *************************************************************************/
- // we have a set of trial nodes, which we can glue, un-glue in the tree at will
- // avoids allocations.
+ // We have a set of trial nodes, which we can glue, un-glue in the tree at will.
+ // This avoids allocations.
 
  int tree_size = 0; // size of the tree +/- the added/deleted node
 
@@ -109,7 +149,7 @@ class impurity_trace {
  std::vector<std::pair<node, bool>> inserted_nodes = {{nullptr, false}, {nullptr, false}, {nullptr, false}, {nullptr, false}};
  int trial_node_index = -1; // the index of the next available node in trial_nodes
 
- node bst_ordinary_insert(node h, node n) { // implementation
+ node try_insert_impl(node h, node n) { // implementation
   if (h == nullptr) return n;
   if (h->key == n->key) {
    // std::cerr << "insertion error "<< h->key <<  n->key;
@@ -117,16 +157,16 @@ class impurity_trace {
   }
   auto smaller = tree.comparator()(n->key, h->key);
   if (smaller)
-   h->left = bst_ordinary_insert(h->left, n);
+   h->left = try_insert_impl(h->left, n);
   else
-   h->right = bst_ordinary_insert(h->right, n);
+   h->right = try_insert_impl(h->right, n);
   if (inserted_nodes[trial_node_index].first == nullptr) inserted_nodes[trial_node_index] = {h, smaller};
   h->modified = true;
   return h;
  }
 
  // unlink all glued trial nodes
- void unlink_trial_nodes() {
+ void cancel_insert_impl() {
   for (int i = 0; i <= trial_node_index; ++i) {
    auto& r = inserted_nodes[i];
    if (r.first != nullptr) (r.second ? r.first->left : r.first->right) = nullptr;
@@ -134,23 +174,24 @@ class impurity_trace {
   if (tree_size == trial_node_index + 1) tree.get_root() = nullptr;
  }
 
+ /*************************************************************************
+  * Node Insertion
+  *************************************************************************/
  public:
- // Put a trial node at tau, op, using an ordinary BST insertion (no red black)
-//FIXME void trial_insert(time_pt const& tau, op_desc const& op) {
- void trial_node_insert(time_pt const& tau, op_desc const& op) {
+ // Put a trial node at tau for operator op using an ordinary BST insertion (ie. not red black)
+ void try_insert(time_pt const& tau, op_desc const& op) {
   if (trial_node_index > 3) TRIQS_RUNTIME_ERROR << "Error : more than 4 insertions ";
   auto& root = tree.get_root();
   inserted_nodes[++trial_node_index] = {nullptr, false};
   node n = trial_nodes[trial_node_index].get(); // get the next available node
   n->reset(tau, op);                            // change the time and op of the node
-  root = bst_ordinary_insert(root, n);          // insert it using a regular BST, no red black
+  root = try_insert_impl(root, n);              // insert it using a regular BST, no red black
   tree_size++;
  }
 
  // Remove all trial nodes from the tree
-//FIXME void cancel_insert() {
- void trial_node_uninsert() {
-  unlink_trial_nodes();
+ void cancel_insert() {
+  cancel_insert_impl();
   trial_node_index = -1;
   tree_size = tree.size();
   n_modif = tree.clear_modified();
@@ -158,9 +199,9 @@ class impurity_trace {
  }
 
  // confirm the insertion of the nodes, with red black balance
-//FIXME void confirm_insert() {
- void confirm_trial_node_insertion() {
-  unlink_trial_nodes();
+ void confirm_insert() {
+  // remove BST inserted nodes
+  cancel_insert_impl();
   // then reinsert the nodes used for real in rb tree
   for (int i = 0; i <= trial_node_index; ++i) {
    node n = trial_nodes[i].get();
@@ -174,7 +215,7 @@ class impurity_trace {
  }
 
  /*************************************************************************
-  *  soft delete
+  * Node Removal
   *************************************************************************/
  private:
  std::vector<node> removed_ops;
@@ -183,8 +224,7 @@ class impurity_trace {
  public:
  // Find and mark as deleted the n-th operator with fixed dagger and block_index
  // n=0 : first operator, n=1, second, etc...
-//FIXME time_pt trial_delete(int n, int block_index, bool dagger) {
- time_pt soft_delete_n_th_operator(int n, int block_index, bool dagger) {
+ time_pt try_delete(int n, int block_index, bool dagger) {
   // traverse the tree, looking for the nth operator of the correct dagger, block_index
   int i = 0;
   node x = find_if(tree, [&](node no) {
@@ -194,15 +234,14 @@ class impurity_trace {
   removed_ops.push_back(x);      // store the node
   removed_key.push_back(x->key); // store the key
   tree.set_modified_from_root_to(x->key);
-  x->soft_deleted = true; // mark the node for deletion
+  x->delete_flag = true; // mark the node for deletion
   tree_size--;
   return x->key;
  }
 
- /// Clean all the soft deleted flags
-//FIXME void cancel_delete() {
- void clean_soft_delete() {
-  for (auto& n : removed_ops) n->soft_deleted = false;
+ // Clean all the delete flags
+ void cancel_delete() {
+  for (auto& n : removed_ops) n->delete_flag = false;
   removed_ops.clear();
   removed_key.clear();
   tree_size = tree.size();
@@ -210,9 +249,8 @@ class impurity_trace {
   check_cache_integrity();
  }
 
- /// Confirm deletion : the soft deleted flagged node are truly deleted
-//FIXME void confirm_delete() {
- void confirm_soft_delete() {
+ // Confirm deletion : the nodes flagged for deletion are truly deleted
+ void confirm_delete() {
   for (auto& k : removed_key) tree.delete_node(k); // can NOT use the node here..
   removed_ops.clear();
   removed_key.clear();
@@ -223,45 +261,6 @@ class impurity_trace {
  }
 
  private:
- // ---------------- Cache machinery ----------------
-
- // node, block -> image of the block by n->op (the operator)
- int get_op_block_map(node n, int b) const {
-  return sosp->fundamental_operator_connect(n->op.dagger, n->op.linear_index, b);
- }
-
- // The dimension of block b
- int get_block_dim(int b) const { return sosp->get_eigensystems()[b].eigenvalues.size(); }
-
- // the i-th eigenvalue of the block b
- double get_block_eigenval(int b, int i) const { return sosp->get_eigensystems()[b].eigenvalues[i]; }
-
- // the minimal eigenvalue of the block i
- double get_block_emin(int b) const { return get_block_eigenval(b, 0); }
-
- // the matrix of n->op, from block b to its image
- matrix<double> const& get_op_block_matrix(node n, int b) const {
-  return sosp->fundamental_operator_matrix(n->op.dagger, n->op.linear_index, b);
- }
-
- // recursive function for tree traversal
- int compute_block_table(node n, int b);
- std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true); //,double lnorm);
- std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
-
- // integrity check
- void check_cache_integrity(bool print = false);
- void check_cache_integrity_one_node(node n, bool print);
- int check_one_block_table_linear(node n, int b, bool print);
- matrix<double> check_one_block_matrix_linear(node n, int b, bool print);
-
- trace_t compute_trace(bool to_machine_precision, double p_yee, double u_yee);
-
- void update_cache_impl(node n);
- void update_dt(node n);
-
- bool use_norm_of_matrices_in_cache = true; // When a matrix is computed in cache, its spectral radius replaces the norm estimate
-
  // ---------------- Histograms ----------------
  struct histograms_t {
 
@@ -269,7 +268,7 @@ class impurity_trace {
   int n_subspaces;
 
   // How many block non zero at root of the tree
-  statistics::histogram nblock_at_root = {n_subspaces, "histo_nblock_at_root.dat"};
+  statistics::histogram n_block_at_root = {n_subspaces, "histo_n_block_at_root.dat"};
 
   // how many block kept after the truncation with the bound
   statistics::histogram n_block_kept = {n_subspaces, "histo_n_block_kept.dat"};

@@ -91,12 +91,12 @@ class move_insert_c_cdag {
   // (cf std::map doc for insert return), we reject the move.
   // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
   try {
-   data.imp_trace.trial_node_insert(tau1, op1);
-   data.imp_trace.trial_node_insert(tau2, op2);
+   data.imp_trace.try_insert(tau1, op1);
+   data.imp_trace.try_insert(tau2, op2);
   }
   catch (rbt_insert_error const&) {
    //std::cerr << "Insert error : recovering ... " << std::endl;
-   data.imp_trace.trial_node_uninsert();
+   data.imp_trace.cancel_insert();
    return 0;
   }
  
@@ -155,7 +155,7 @@ class move_insert_c_cdag {
  mc_weight_type accept() {
 
   //  remove the temporary ordinary bst insertion
-  data.imp_trace.confirm_trial_node_insertion();
+  data.imp_trace.confirm_insert();
 
   // insert in the configuration 
   config.insert(tau1, op1);
@@ -178,7 +178,7 @@ class move_insert_c_cdag {
  //----------------
 
  void reject() {
-  data.imp_trace.trial_node_uninsert();
+  data.imp_trace.cancel_insert();
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;

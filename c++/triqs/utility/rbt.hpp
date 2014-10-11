@@ -41,10 +41,10 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   bool color;       // color of parent link
   int N;            // subtree count
   node left, right; // links to left and right subtrees
-  bool modified, soft_deleted;
+  bool modified, delete_flag;
 
   node_t(Key const& key, Value const& val, bool color, int N)
-      //     : key(key), val(val), color(color), N(N), left{nullptr}, right{nullptr}, modified(true), soft_deleted(false) {}
+      //     : key(key), val(val), color(color), N(N), left{nullptr}, right{nullptr}, modified(true), delete_flag(false) {}
       : Value(val),
         key(key),
         color(color),
@@ -52,7 +52,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
         left{nullptr},
         right{nullptr},
         modified(true),
-        soft_deleted(false) {}
+        delete_flag(false) {}
 
   node_t(node_t const&) = delete;
   node_t& operator=(node_t const&) = delete;
@@ -133,7 +133,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
  void graphviz(std::ostream&& out) const { graphviz(out); }
 
  static std::string color_node_to_string(node n) {
-  if (n->soft_deleted) return "green";
+  if (n->delete_flag) return "green";
   if (n->modified) return "red";
   return "black";
  }
@@ -159,9 +159,9 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    if (y && y->modified) std::cout << "node modified " << y->key << std::endl;
   });
  }
- void check_no_node_soft_deleted() const {
+ void check_no_node_flagged_for_delete() const {
   foreach_subtree_first(*this, [&](node y) {
-   if (y && y->modified) std::cout << "node soft deleted  " << y->key << std::endl;
+   if (y && y->modified) std::cout << "node flagged for deletion " << y->key << std::endl;
   });
  }
 
@@ -169,7 +169,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   int r = clear_modified_impl(root); 
 #ifdef TRIQS_RBT_CHECKS
   check_no_node_modified();
-  check_no_node_soft_deleted();
+  check_no_node_flagged_for_delete();
 #endif
   return r;
  }
@@ -180,8 +180,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   if (n && n->modified) {
    n->modified = false;
    r++;
-   if (n->soft_deleted) TRIQS_RUNTIME_ERROR << " node " << n->key << " is soft deleted";
-   n->soft_deleted = false;
+   if (n->delete_flag) TRIQS_RUNTIME_ERROR << " node " << n->key << " is flagged for delete";
+   n->delete_flag = false;
    r += clear_modified_impl(n->left);
    r += clear_modified_impl(n->right);
   }
@@ -377,7 +377,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
     h->key = x->key;
     h->Value::operator=(*x);
     h->modified=true; // not sure it is needed
-    h->soft_deleted = false; // CRUCIAL !
+    h->delete_flag = false; // CRUCIAL!
     // h->val = x->val;
     // h->val = get(h->right, min(h->right).key);
     // h->key = min(h->right).key;

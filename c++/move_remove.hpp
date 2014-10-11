@@ -67,8 +67,8 @@ class move_remove_c_cdag {
 #endif
 
   // now mark 2 nodes for deletion
-  tau1 = data.imp_trace.soft_delete_n_th_operator(num_c, block_index, false);
-  tau2 = data.imp_trace.soft_delete_n_th_operator(num_c_dag, block_index, true);
+  tau1 = data.imp_trace.try_delete(num_c, block_index, false);
+  tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
@@ -109,7 +109,7 @@ class move_remove_c_cdag {
   config.erase(tau2);
 
   // remove in the cache tree  
-  data.imp_trace.confirm_soft_delete();
+  data.imp_trace.confirm_delete();
   
   // remove in the config
   data.dets[block_index].complete_operation();
@@ -126,7 +126,7 @@ class move_remove_c_cdag {
  //----------------
 
  void reject() {
-  data.imp_trace.clean_soft_delete();
+  data.imp_trace.cancel_delete();
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;

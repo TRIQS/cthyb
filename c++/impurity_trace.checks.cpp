@@ -38,7 +38,7 @@ int impurity_trace::check_one_block_table_linear(node n, int b, bool print) {
  foreach_reverse(tree, n, [&](node y) {
   if (B == -1) return;
   auto BB = B;
-  B = (y->soft_deleted ? B : this->get_op_block_map(y, B));
+  B = (y->delete_flag ? B : this->get_op_block_map(y, B));
   if (print)
    std::cout << "linear computation : " << y->key << " " << y->op.dagger << " " << y->op.linear_index << " | " << BB << " -> "
              << B << std::endl;
@@ -63,8 +63,8 @@ matrix<double> impurity_trace::check_one_block_matrix_linear(node top, int b, bo
    for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau * get_block_eigenval(b, i));
    // M <- Op * M
   }
-  // multiply by operator matrix unless it is soft_deleted
-  if (!n->soft_deleted) {
+  // multiply by operator matrix unless it is delete_flag
+  if (!n->delete_flag) {
    int bp = this->get_op_block_map(n, b);
    if (bp == -1) TRIQS_RUNTIME_ERROR << " Nasty error ";
    M = get_op_block_matrix(n, b) * M;

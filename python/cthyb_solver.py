@@ -54,12 +54,12 @@ class Solver(SolverCore):
         # Call the core solver's core routine
         SolverCore.solve(self, h_loc, params)
 
-        # Post-processing:
-        if params['measure_g_tau'] or params['measure_g_l']:
-            # Transform G_tau (G_l) to obtain G_iw and fit the tail
-            for name, g in (self.G_tau if params['measure_g_tau'] else self.G_l):
-                self.G_iw[name] <<= Fourier(g) if params['measure_g_tau'] else LegendreToMatsubara(g)
-                self.G_iw[name].fit_tail(fit_known_moments[name], fit_n_moments, fit_min_n, fit_max_n)
+        # Post-processing: 
+        # (only supported for G_tau, to permit compatibility with dft_tools)
+        # Fourier transform G_tau to obtain G_iw and fit the tail
+        for name, g in self.G_tau:
+	    self.G_iw[name] <<= Fourier(g)
+            self.G_iw[name].fit_tail(fit_known_moments[name], fit_n_moments, fit_min_n, fit_max_n)
 
-            # Solve Dyson's eq to obtain Sigma_iw
-            self.Sigma_iw = inverse(self.G0_iw) - inverse(self.G_iw)
+        # Solve Dyson's eq to obtain Sigma_iw
+        self.Sigma_iw = inverse(self.G0_iw) - inverse(self.G_iw)

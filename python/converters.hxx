@@ -20,6 +20,7 @@ template <> struct py_converter<solve_parameters_t> {
   PyDict_SetItemString( d, "random_name"        , convert_to_python(x.random_name));
   PyDict_SetItemString( d, "max_time"           , convert_to_python(x.max_time));
   PyDict_SetItemString( d, "verbosity"          , convert_to_python(x.verbosity));
+  PyDict_SetItemString( d, "move_shift"         , convert_to_python(x.move_shift));
   PyDict_SetItemString( d, "use_trace_estimator", convert_to_python(x.use_trace_estimator));
   PyDict_SetItemString( d, "measure_g_tau"      , convert_to_python(x.measure_g_tau));
   PyDict_SetItemString( d, "measure_g_l"        , convert_to_python(x.measure_g_l));
@@ -47,6 +48,7 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "random_name"        , res.random_name          , "");
   _get_optional(dic, "max_time"           , res.max_time             , -1);
   _get_optional(dic, "verbosity"          , res.verbosity            , ((boost::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "move_shift"         , res.move_shift           , true);
   _get_optional(dic, "use_trace_estimator", res.use_trace_estimator  , false);
   _get_optional(dic, "measure_g_tau"      , res.measure_g_tau        , true);
   _get_optional(dic, "measure_g_l"        , res.measure_g_l          , false);
@@ -82,7 +84,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","make_histograms"};
+  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","make_histograms"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -104,6 +106,7 @@ template <> struct py_converter<solve_parameters_t> {
   _check_optional <std::string                 >(dic, fs, err, "random_name"        , "std::string");
   _check_optional <int                         >(dic, fs, err, "max_time"           , "int");
   _check_optional <int                         >(dic, fs, err, "verbosity"          , "int");
+  _check_optional <bool                        >(dic, fs, err, "move_shift"         , "bool");
   _check_optional <bool                        >(dic, fs, err, "use_trace_estimator", "bool");
   _check_optional <bool                        >(dic, fs, err, "measure_g_tau"      , "bool");
   _check_optional <bool                        >(dic, fs, err, "measure_g_l"        , "bool");

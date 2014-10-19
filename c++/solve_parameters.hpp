@@ -37,6 +37,9 @@ struct solve_parameters_t {
  /// Verbosity level
  int verbosity = ((boost::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
+ /// Add move_shift as a move?
+ bool move_shift = true;
+
  /// Calculate the full trace or use an estimate?
  bool use_trace_estimator = false;
 

@@ -157,8 +157,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + delta_names[block]);
    qmc.add_move(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block]);
   }
-  qmc.add_move(move_shift_operator(data, qmc.rng(), params.make_histograms), "Shift Operator");
-  std::cout << " finished adding moves " << std::endl; // FIXME DEBUG
+  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.make_histograms), "Shift Operator");
  
   // Measurements
   if (params.measure_g_tau) {

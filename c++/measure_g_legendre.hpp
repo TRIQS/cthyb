@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/gfs.hpp>
+#include <triqs/gfs/local/functions.hpp>
 #include <triqs/utility/legendre.hpp>
 #include "qmc_data.hpp"
 #include <boost/serialization/complex.hpp>
@@ -58,11 +59,11 @@ struct measure_g_legendre {
   z += s * corr;
 
   auto Tn = triqs::utility::legendre_generator();
-  
+
   foreach(data.dets[a_level], [this, corr, s, &Tn](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
-   double poly_arg = 2*double(y.first - x.first)/beta - 1.0;   
+   double poly_arg = 2*double(y.first - x.first)/beta - 1.0;
    Tn.reset(poly_arg);
-   
+
    double val = (y.first >= x.first ? real(s) : -real(s)) * M * corr;
    for (auto l : g_l.mesh()) this->g_l[l](y.second, x.second) += val*Tn.next();
   });
@@ -81,6 +82,10 @@ struct measure_g_legendre {
   auto g_l_out = make_clone(g_l);
   boost::mpi::all_reduce(c, g_l_in, g_l_out, std::c14::plus<>());
   for (auto l : g_l_out.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(total_z)*beta)) * g_l_out[l];
+
+  arrays::matrix<double> id(get_target_shape(g_l));
+  id() = 1.0;
+  enforce_discontinuity(g_l,id);
  }
 };
 }

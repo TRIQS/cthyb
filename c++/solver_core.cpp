@@ -144,7 +144,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   } else
    TRIQS_RUNTIME_ERROR << "Partition method " << params.partition_method << " not recognised.";
 
-  if (params.make_histograms) std::ofstream("Diagonalization_atomic_pb") << sosp;
+  if (params.make_histograms) std::ofstream("impurity_blocks.dat") << sosp;
 
   qmc_data data(beta, params, sosp, linindex, _Delta_tau, n_inner);
   auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,

@@ -50,12 +50,6 @@ class solver_core {
 
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
- //void solve(real_operator_t h_loc, params::parameters params,
- //           std::vector<real_operator_t> const & quantum_numbers = std::vector<real_operator_t> {},
- //           bool use_quantum_numbers = false);
-
-
- /// Solve from param
  __attribute__((annotate("use_parameter_class")))
  void solve(solve_parameters_t const & p);
 

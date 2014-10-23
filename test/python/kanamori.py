@@ -71,6 +71,6 @@ p["measure_g_l"] = True
 S.solve(h_loc=H, **p)
   
 if mpi.rank==0:
-    Results = HDFArchive("kanamori_core.output.h5",'w')
+    Results = HDFArchive("kanamori.output.h5",'w')
     Results["G_tau"] = S.G_tau
     Results["G_leg"] = S.G_l

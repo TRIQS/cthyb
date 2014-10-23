@@ -12,7 +12,7 @@ num_orbitals = 2
 mu = 1.0
 U = 2.0
 J = 0.2
-n_n_only = False
+den_den_only = False
 
 # Poles of delta
 epsilon = 2.3
@@ -26,7 +26,7 @@ gf_struct['up'] = range(0,num_orbitals)
 gf_struct['down'] = range(0,num_orbitals)
 
 # Construct solver    
-S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
+S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
 
 # Hamiltonian
 H = Operator() 
@@ -43,7 +43,7 @@ for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
     H += (U-3*J)*n("up",o1)*n("up",o2)
     H += (U-3*J)*n("down",o1)*n("down",o2)
       
-if not n_n_only: # spin flips and pair hopping
+if not den_den_only: # spin flips and pair hopping
     for o1,o2 in itertools.product(range(0,num_orbitals),range(0,num_orbitals)):
         if o1==o2: continue
         H += -J*c_dag("up",o1)*c_dag("down",o1)*c("up",o2)*c("down",o2)
@@ -66,9 +66,11 @@ p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50
 p["n_cycles"] = 5000
+p["measure_g_l"] = True
 
 S.solve(h_loc=H, **p)
   
 if mpi.rank==0:
-    Results = HDFArchive("kanamori_params.output.h5",'w')
+    Results = HDFArchive("kanamori_core.output.h5",'w')
     Results["G_tau"] = S.G_tau
+    Results["G_leg"] = S.G_l

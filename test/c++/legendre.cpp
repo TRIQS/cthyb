@@ -61,7 +61,6 @@ int main(int argc, char* argv[]) {
   p.n_warmup_cycles = 50;
   p.measure_g_tau = false;
   p.measure_g_l = true;
-  p.use_quantum_numbers = true;
   p.quantum_numbers = qn;
  
   // Solve!

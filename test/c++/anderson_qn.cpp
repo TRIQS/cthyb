@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
   p.n_cycles = 5000;
-  p.use_quantum_numbers = true;
   p.quantum_numbers = qn;
  
   // Solve!

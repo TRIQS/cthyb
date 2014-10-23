@@ -31,23 +31,22 @@ c.add_constructor("""(double beta, std::map<std::string,std::vector<int>> gf_str
                   doc = """ """)
 
 c.add_method("""void solve (**cthyb::solve_parameters_t)""", 
-             doc = """  Parameter Name      Type                         Default                                        Documentation                                                  
+             doc = """  Parameter Name      Type                         Default                                        Documentation                                        
 
-  h_loc               real_operator_t              --                                             Atomic Hamiltonian                                             
-  n_cycles            int                          --                                             Number of QMC cycles                                           
-  quantum_numbers     std::vector<real_operator_t> std::vector<real_operator_t>{}                 Quantum numbers (STILL NECESSARY ?).                           
-  use_quantum_numbers bool                         false                                          Use quantun numbers (REDONDANT : if quantum_numbers is empty ?)
-  length_cycle        int                          50                                             Length of a single QMC cycle                                   
-  n_warmup_cycles     int                          5000                                           Number of cycles for thermalization                            
-  random_seed         int                          34788+928374*boost::mpi::communicator().rank() Seed for random number generator                               
-  random_name         std::string                  ""                                             Name of random number generator                                
-  max_time            int                          -1                                             Maximum runtime in seconds, use -1 to set infinite             
-  verbosity           int                          ((boost::mpi::communicator().rank()==0)?3:0)   Verbosity level                                                
-  use_trace_estimator bool                         false                                          Calculate the full trace or use an estimate?                   
-  measure_g_tau       bool                         true                                           Whether to measure G(tau)                                      
-  measure_g_l         bool                         false                                          Whether to measure G_l (Legendre)                              
-  measure_pert_order  bool                         false                                          Whether to measure perturbation order                          
-  make_histograms     bool                         false                                          Make the analysis histograms of the trace computation           """)
+  h_loc               real_operator_t              --                                             Atomic Hamiltonian                                   
+  n_cycles            int                          --                                             Number of QMC cycles                                 
+  quantum_numbers     std::vector<real_operator_t> std::vector<real_operator_t>{}                 Quantum numbers                                      
+  length_cycle        int                          50                                             Length of a single QMC cycle                         
+  n_warmup_cycles     int                          5000                                           Number of cycles for thermalization                  
+  random_seed         int                          34788+928374*boost::mpi::communicator().rank() Seed for random number generator                     
+  random_name         std::string                  ""                                             Name of random number generator                      
+  max_time            int                          -1                                             Maximum runtime in seconds, use -1 to set infinite   
+  verbosity           int                          ((boost::mpi::communicator().rank()==0)?3:0)   Verbosity level                                      
+  use_trace_estimator bool                         false                                          Calculate the full trace or use an estimate?         
+  measure_g_tau       bool                         true                                           Whether to measure G(tau)                            
+  measure_g_l         bool                         false                                          Whether to measure G_l (Legendre)                    
+  measure_pert_order  bool                         false                                          Whether to measure perturbation order                
+  make_histograms     bool                         false                                          Make the analysis histograms of the trace computation """)
 
 c.add_property(name = "G0_iw", 
                getter = cfunction("block_gf_view<imfreq> G0_iw ()"),

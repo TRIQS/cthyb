@@ -13,11 +13,8 @@ struct solve_parameters_t {
  /// Number of QMC cycles
  int n_cycles;
 
- /// Quantum numbers (STILL NECESSARY ?).
+ /// Quantum numbers
  std::vector<real_operator_t> quantum_numbers = std::vector<real_operator_t>{};
-
- /// Use quantun numbers (REDONDANT : if quantum_numbers is empty ?)
- bool use_quantum_numbers = false;
 
  /// Length of a single QMC cycle
  int length_cycle = 50;

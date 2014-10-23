@@ -13,7 +13,6 @@ template <> struct py_converter<solve_parameters_t> {
   PyDict_SetItemString( d, "h_loc"              , convert_to_python(x.h_loc));
   PyDict_SetItemString( d, "n_cycles"           , convert_to_python(x.n_cycles));
   PyDict_SetItemString( d, "quantum_numbers"    , convert_to_python(x.quantum_numbers));
-  PyDict_SetItemString( d, "use_quantum_numbers", convert_to_python(x.use_quantum_numbers));
   PyDict_SetItemString( d, "length_cycle"       , convert_to_python(x.length_cycle));
   PyDict_SetItemString( d, "n_warmup_cycles"    , convert_to_python(x.n_warmup_cycles));
   PyDict_SetItemString( d, "random_seed"        , convert_to_python(x.random_seed));
@@ -40,7 +39,6 @@ template <> struct py_converter<solve_parameters_t> {
   res.h_loc = convert_from_python<real_operator_t>(PyDict_GetItemString(dic, "h_loc"));
   res.n_cycles = convert_from_python<int>(PyDict_GetItemString(dic, "n_cycles"));
   _get_optional(dic, "quantum_numbers"    , res.quantum_numbers      , std::vector<real_operator_t>{});
-  _get_optional(dic, "use_quantum_numbers", res.use_quantum_numbers  , false);
   _get_optional(dic, "length_cycle"       , res.length_cycle         , 50);
   _get_optional(dic, "n_warmup_cycles"    , res.n_warmup_cycles      , 5000);
   _get_optional(dic, "random_seed"        , res.random_seed          , 34788+928374*boost::mpi::communicator().rank());
@@ -82,7 +80,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","quantum_numbers","use_quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","make_histograms"};
+  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","make_histograms"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -97,7 +95,6 @@ template <> struct py_converter<solve_parameters_t> {
   _check_mandatory<real_operator_t             >(dic, fs, err, "h_loc"              , "real_operator_t"); 
   _check_mandatory<int                         >(dic, fs, err, "n_cycles"           , "int"); 
   _check_optional <std::vector<real_operator_t>>(dic, fs, err, "quantum_numbers"    , "std::vector<real_operator_t>");
-  _check_optional <bool                        >(dic, fs, err, "use_quantum_numbers", "bool");
   _check_optional <int                         >(dic, fs, err, "length_cycle"       , "int");
   _check_optional <int                         >(dic, fs, err, "n_warmup_cycles"    , "int");
   _check_optional <int                         >(dic, fs, err, "random_seed"        , "int");

@@ -75,8 +75,6 @@ gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g
 
 /// -------------------------------------------------------------------------------------------
 
-//void solver_core::solve(real_operator_t h_loc, params::parameters params,
-//                  std::vector<real_operator_t> const & quantum_numbers, bool use_quantum_numbers) {
 void solver_core::solve(solve_parameters_t const & params) { 
 
   // determine basis of operators to use
@@ -126,10 +124,10 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.verbosity >= 2) std::cout << "The local Hamiltonian of the problem:" << std::endl << h_loc << std::endl;
 
   // Determine block structure
-  if (params.use_quantum_numbers)
-   sosp = {h_loc, params.quantum_numbers, fops};
-  else
+  if (params.quantum_numbers.empty())
    sosp = {h_loc, fops};
+  else
+   sosp = {h_loc, params.quantum_numbers, fops};
 
   if (params.make_histograms) std::ofstream("Diagonalization_atomic_pb") << sosp;
 

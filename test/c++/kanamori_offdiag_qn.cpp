@@ -129,7 +129,6 @@ int main(int argc, char* argv[]) {
   p.verbosity = 3;
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
-  p.use_quantum_numbers = true;
   p.quantum_numbers = qn;
   // Solve!
   solver.solve(p);

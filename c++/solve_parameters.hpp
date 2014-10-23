@@ -35,7 +35,7 @@ struct solve_parameters_t {
  int max_time = -1;
 
  /// Verbosity level
- int verbosity = 3;
+ int verbosity = ((boost::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
  /// Calculate the full trace or use an estimate?
  bool use_trace_estimator = false;
@@ -52,12 +52,9 @@ struct solve_parameters_t {
  /// Make the analysis histograms of the trace computation
  bool make_histograms = false;
 
- solve_parameters_t() {
-  if (boost::mpi::communicator().rank() != 0) verbosity = 0; // silence the nodes
- }
+ solve_parameters_t() {}
  
- solve_parameters_t(real_operator_t h_loc, int n_cycles) : h_loc(h_loc), n_cycles(n_cycles) {
-  if (boost::mpi::communicator().rank() != 0) verbosity = 0; // silence the nodes
- }
+ solve_parameters_t(real_operator_t h_loc, int n_cycles) : h_loc(h_loc), n_cycles(n_cycles) {}
+
 };
 }

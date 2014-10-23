@@ -46,7 +46,7 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "random_seed"        , res.random_seed          , 34788+928374*boost::mpi::communicator().rank());
   _get_optional(dic, "random_name"        , res.random_name          , "");
   _get_optional(dic, "max_time"           , res.max_time             , -1);
-  _get_optional(dic, "verbosity"          , res.verbosity            , 3);
+  _get_optional(dic, "verbosity"          , res.verbosity            , ((boost::mpi::communicator().rank()==0)?3:0));
   _get_optional(dic, "use_trace_estimator", res.use_trace_estimator  , false);
   _get_optional(dic, "measure_g_tau"      , res.measure_g_tau        , true);
   _get_optional(dic, "measure_g_l"        , res.measure_g_l          , false);

@@ -23,10 +23,14 @@
 
 void impurity_trace::check_cache_integrity(bool print) {
 #ifdef CHECK_CACHE
- if (print) std::cout << " ---- Cache integrity check ---- " << std::endl;
- if (print) tree.graphviz(std::ofstream("tree_cache_check"));
- foreach_subtree_first(tree, [&](node y) { this->check_cache_integrity_one_node(y, print); });
- if (print) std::cout << " ---- Cache integrity completed ---- " << std::endl;
+ ++check_counter;
+ if (check_counter % 10 == 0) {
+  if (print) std::cout << " ---- Cache integrity check ---- " << std::endl;
+  if (print) std::cout << " check_counter = config number = " << check_counter << std::endl;
+  if (print) tree.graphviz(std::ofstream("tree_cache_check"));
+  foreach_subtree_first(tree, [&](node y) { this->check_cache_integrity_one_node(y, print); });
+  if (print) std::cout << " ---- Cache integrity completed ---- " << std::endl;
+ }
 #endif
 }
 

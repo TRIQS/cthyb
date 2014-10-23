@@ -32,6 +32,9 @@ namespace cthyb {
  */
 class impurity_trace {
  public:
+
+ int check_counter = 0; //DEBUG
+
  using trace_t = double;
  // using trace_t = std::complex<double>; TODO
 

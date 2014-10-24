@@ -92,6 +92,11 @@ class move_shift_operator {
   data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
+  // Construct new operator
+  // Choose a new inner index (this is done here for compatibility) -- FIXME alpha needs to change?
+  auto inner_new = rng(data.n_inner[block_index]);
+  op_new = op_desc{block_index, inner_new, is_dagger, data.linindex[std::make_pair(block_index, inner_new)]};
+
   // --- Determine new time to shift the operator to.
   // The time must fall in the range between the closest operators on the left and 
   // right belonging to the same block. First determine these.
@@ -149,11 +154,6 @@ class move_shift_operator {
   // Mark the operator at original time for deletion in the tree
   auto tau_old_tree = data.imp_trace.try_delete(op_pos_in_det, block_index, is_dagger);
   // FIXME could check if tau_old_tree == tau_old
-
-  // Construct new operator
-  // Choose a new inner index (this is done here for compatibility) -- FIXME alpha needs to change?
-  auto inner_new = rng(data.n_inner[block_index]);
-  op_new = op_desc{block_index, inner_new, is_dagger, data.linindex[std::make_pair(block_index, inner_new)]};
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;

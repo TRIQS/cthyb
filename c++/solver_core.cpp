@@ -151,13 +151,20 @@ void solver_core::solve(solve_parameters_t const & params) {
                                                 params.random_seed, params.verbosity);
 
   // Moves
+  typedef mc_tools::move_set<mc_sign_type> move_set_type;
+  move_set_type inserts(qmc.rng());
+  move_set_type removes(qmc.rng());
+
   auto& delta_names = _Delta_tau.domain().names();
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
    int block_size = _Delta_tau[block].data().shape()[1];
-   qmc.add_move(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + delta_names[block]);
-   qmc.add_move(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block]);
+   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + delta_names[block], 1.0);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block], 1.0);
   }
-  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.make_histograms), "Shift Operator");
+
+  qmc.add_move(inserts, "Insert two operators", 1.0);
+  qmc.add_move(removes, "Remove two operators", 1.0);
+  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.make_histograms), "Shift one operator", 1.0);
  
   // Measurements
   if (params.measure_g_tau) {

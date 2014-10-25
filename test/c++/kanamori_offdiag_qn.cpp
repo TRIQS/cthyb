@@ -130,6 +130,8 @@ int main(int argc, char* argv[]) {
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
   p.quantum_numbers = qn;
+  p.partition_method = "quantum_numbers";
+
   // Solve!
   solver.solve(p);
   

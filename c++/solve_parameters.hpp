@@ -13,6 +13,9 @@ struct solve_parameters_t {
  /// Number of QMC cycles
  int n_cycles;
 
+ /// Partition method
+ std::string partition_method = "autopartition";
+
  /// Quantum numbers
  std::vector<real_operator_t> quantum_numbers = std::vector<real_operator_t>{};
 

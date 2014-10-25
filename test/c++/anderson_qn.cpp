@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
   p.n_warmup_cycles = 50;
   p.n_cycles = 5000;
   p.quantum_numbers = qn;
+  p.partition_method = "quantum_numbers";
  
   // Solve!
   solver.solve(p);

@@ -84,8 +84,6 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_t> const& qn_vector,
                              fundamental_operator_set const& fops)
    : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
-// FIXME ONLY FOR MASTER NODE!
- std::cout << "Using Quantum Numbers to partition the local Hilbert space" << std::endl;
  slice_hilbert_space_with_qn(h_, qn_vector, fops);
  complete_init(h_);
 }
@@ -93,8 +91,6 @@ sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_
 //-----------------------------
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, fundamental_operator_set const& fops)
    : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
-// FIXME ONLY FOR MASTER NODE!
- std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
  autopartition(fops, h_);
  complete_init(h_);
 }

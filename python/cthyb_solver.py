@@ -17,6 +17,8 @@ class Solver(SolverCore):
                      used for the Green's functions.
         :param n_tau: (optional, default = 10001) Number of imaginary time points
                      used for the Green's functions.
+        :param n_l: (optional, default = 30) Number of legendre polynomials to use
+                     in accumulations of the Green's functions.
         """
 
         # Initialise the core solver

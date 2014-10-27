@@ -70,7 +70,7 @@ class solver_core {
 
  /// G(tau) in imaginary time
  block_gf_view<imtime> G_tau() { return _G_tau; }
- 
+
  /// G_l in Legendre polynomials representation
  block_gf_view<legendre> G_l() { return _G_l; }
 

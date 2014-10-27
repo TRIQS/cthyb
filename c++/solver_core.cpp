@@ -30,6 +30,7 @@
 #include "move_double_insert.hpp"
 #include "move_double_remove.hpp"
 #include "move_shift.hpp"
+#include "move_global.hpp"
 #include "measure_g.hpp"
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
@@ -81,7 +82,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
 
 /// -------------------------------------------------------------------------------------------
 
-void solver_core::solve(solve_parameters_t const & params) { 
+void solver_core::solve(solve_parameters_t const & params) {
 
   _last_solve_parameters = params;
 
@@ -114,9 +115,9 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
-  
+
   _h_loc = params.h_int;
-  
+
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
@@ -138,7 +139,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   for (auto const & bl: gf_struct) {
     Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
     Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
-    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]); 
+    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
     b++;
   }
 
@@ -207,7 +208,17 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
   if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.performance_analysis), "Shift one operator", 1.0);
- 
+
+  if (params.move_global.size()) {
+   move_set_type global(qmc.rng());
+   for(auto const& mv : params.move_global) {
+    auto const& name = mv.first;
+    auto const& substitutions = mv.second;
+    global.add(move_global(name,substitutions,data,qmc.rng()),name,1.0);
+   }
+   qmc.add_move(global,"Global moves",params.move_global_prob);
+  }
+
   // Measurements
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();
@@ -228,7 +239,6 @@ void solver_core::solve(solve_parameters_t const & params) {
    }
    qmc.add_measure(measure_perturbation_hist_total(data, "histo_pert_order.dat"), "Perturbation order");
   }
-
   if (params.measure_density_matrix) {
    if (!params.use_norm_as_weight)
     TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "

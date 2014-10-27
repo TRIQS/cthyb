@@ -1,6 +1,6 @@
 // DO NOT EDIT
 // Generated automatically using libclang using the command :
-// c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
+// c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver" --only_converters
 
 
 // --- C++ Python converter for solve_parameters_t
@@ -30,6 +30,8 @@ template <> struct py_converter<solve_parameters_t> {
   PyDict_SetItemString( d, "use_norm_as_weight"    , convert_to_python(x.use_norm_as_weight));
   PyDict_SetItemString( d, "performance_analysis"  , convert_to_python(x.performance_analysis));
   PyDict_SetItemString( d, "proposal_prob"         , convert_to_python(x.proposal_prob));
+  PyDict_SetItemString( d, "move_global"           , convert_to_python(x.move_global));
+  PyDict_SetItemString( d, "move_global_prob"      , convert_to_python(x.move_global_prob));
   return d;
  }
 
@@ -62,6 +64,8 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "use_norm_as_weight"    , res.use_norm_as_weight      , false);
   _get_optional(dic, "performance_analysis"  , res.performance_analysis    , false);
   _get_optional(dic, "proposal_prob"         , res.proposal_prob           , (std::map<std::string,double>{}));
+  _get_optional(dic, "move_global"           , res.move_global             , (std::map<std::string,indices_map_t>{}));
+  _get_optional(dic, "move_global_prob"      , res.move_global_prob        , 0.05);
   return res;
  }
 
@@ -92,7 +96,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","measure_density_matrix","use_norm_as_weight","performance_analysis","proposal_prob"};
+  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","measure_density_matrix","use_norm_as_weight","performance_analysis","proposal_prob","move_global","move_global_prob"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -104,27 +108,28 @@ template <> struct py_converter<solve_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  using conv_t = py_converter<many_body_op_t>;
-  _check_mandatory<many_body_op_t               >(dic, fs, err, "h_int"                 , "many_body_op_t");
-  _check_mandatory<int                          >(dic, fs, err, "n_cycles"              , "int");
-  _check_optional <std::string                  >(dic, fs, err, "partition_method"      , "std::string");
-  _check_optional <std::vector<many_body_op_t> >(dic, fs, err, "quantum_numbers"       , "std::vector<many_body_op_t>");
-  _check_optional <int                          >(dic, fs, err, "length_cycle"          , "int");
-  _check_optional <int                          >(dic, fs, err, "n_warmup_cycles"       , "int");
-  _check_optional <int                          >(dic, fs, err, "random_seed"           , "int");
-  _check_optional <std::string                  >(dic, fs, err, "random_name"           , "std::string");
-  _check_optional <int                          >(dic, fs, err, "max_time"              , "int");
-  _check_optional <int                          >(dic, fs, err, "verbosity"             , "int");
-  _check_optional <bool                         >(dic, fs, err, "move_shift"            , "bool");
-  _check_optional <bool                         >(dic, fs, err, "move_double"           , "bool");
-  _check_optional <bool                         >(dic, fs, err, "use_trace_estimator"   , "bool");
-  _check_optional <bool                         >(dic, fs, err, "measure_g_tau"         , "bool");
-  _check_optional <bool                         >(dic, fs, err, "measure_g_l"           , "bool");
-  _check_optional <bool                         >(dic, fs, err, "measure_pert_order"    , "bool");
-  _check_optional <bool                         >(dic, fs, err, "measure_density_matrix", "bool");
-  _check_optional <bool                         >(dic, fs, err, "use_norm_as_weight"    , "bool");
-  _check_optional <bool                         >(dic, fs, err, "performance_analysis"  , "bool");
-  _check_optional <std::map<std::string, double>>(dic, fs, err, "proposal_prob"         , "std::map<std::string, double>");
+  _check_mandatory<many_body_op_t                      >(dic, fs, err, "h_int"                 , "many_body_op_t");
+  _check_mandatory<int                                 >(dic, fs, err, "n_cycles"              , "int");
+  _check_optional <std::string                         >(dic, fs, err, "partition_method"      , "std::string");
+  _check_optional <std::vector<many_body_op_t>         >(dic, fs, err, "quantum_numbers"       , "std::vector<many_body_op_t>");
+  _check_optional <int                                 >(dic, fs, err, "length_cycle"          , "int");
+  _check_optional <int                                 >(dic, fs, err, "n_warmup_cycles"       , "int");
+  _check_optional <int                                 >(dic, fs, err, "random_seed"           , "int");
+  _check_optional <std::string                         >(dic, fs, err, "random_name"           , "std::string");
+  _check_optional <int                                 >(dic, fs, err, "max_time"              , "int");
+  _check_optional <int                                 >(dic, fs, err, "verbosity"             , "int");
+  _check_optional <bool                                >(dic, fs, err, "move_shift"            , "bool");
+  _check_optional <bool                                >(dic, fs, err, "move_double"           , "bool");
+  _check_optional <bool                                >(dic, fs, err, "use_trace_estimator"   , "bool");
+  _check_optional <bool                                >(dic, fs, err, "measure_g_tau"         , "bool");
+  _check_optional <bool                                >(dic, fs, err, "measure_g_l"           , "bool");
+  _check_optional <bool                                >(dic, fs, err, "measure_pert_order"    , "bool");
+  _check_optional <bool                                >(dic, fs, err, "measure_density_matrix", "bool");
+  _check_optional <bool                                >(dic, fs, err, "use_norm_as_weight"    , "bool");
+  _check_optional <bool                                >(dic, fs, err, "performance_analysis"  , "bool");
+  _check_optional <std::map<std::string, double>       >(dic, fs, err, "proposal_prob"         , "std::map<std::string, double>");
+  _check_optional <std::map<std::string, indices_map_t>>(dic, fs, err, "move_global"           , "std::map<std::string, indices_map_t>");
+  _check_optional <double                              >(dic, fs, err, "move_global_prob"      , "double");
   if (err) goto _error;
   return true;
 

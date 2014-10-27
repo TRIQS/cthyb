@@ -71,6 +71,7 @@ struct configuration {
 
  void insert(time_pt tau, op_desc op) {oplist.insert({tau,op});}
  void erase(time_pt const & t) { oplist.erase(t); }
+ void clear() { oplist.clear(); }
 
  oplist_t::iterator begin() { return oplist.begin(); }
  oplist_t::iterator end() { return oplist.end();}

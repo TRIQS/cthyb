@@ -171,7 +171,7 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   else
    M = l.second * M;
  }
- 
+
  if (updating) {
   n->cache.matrices[b] = M;
   n->cache.matrix_norm_valid[b] = true;
@@ -210,9 +210,9 @@ void impurity_trace::update_cache_impl(node n) {
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
   n->cache.matrix_norm_valid[b] = false;
- } 
- // This is not necessary here as all modified nodes are "cleared" 
- //  by tree::clear_modified in the try/cancel/confirm set 
+ }
+ // This is not necessary here as all modified nodes are "cleared"
+ //  by tree::clear_modified in the try/cancel/confirm set
  // n->modified = false;
 }
 
@@ -294,7 +294,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  int n_bl = to_sort_lnorm_b.size();                // number of blocks
  auto bound_cumul = std::vector<double>(n_bl + 1); // cumulative sum of the bounds
  // The contribution to the trace from block B is bounded: |Tr_B| <= dim(B) * sum_{B} e^{Emin(B)*dtau}
- // Here we calculate the cumulative bound from each contributing (structurally non-zero) block to 
+ // Here we calculate the cumulative bound from each contributing (structurally non-zero) block to
  // determine at which block we have exceeded the bound and hence can stop.
  // Can tighten bound on trace by using sqrt(dim(B)) in the case of Frobenius norm only.
  bound_cumul[n_bl] = 0;
@@ -305,7 +305,6 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
   for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
  }
 
- // Loop over blocks
  int bl;
  for (bl = 0; bl < n_bl; ++bl) { // sum over all blocks
 
@@ -338,7 +337,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
    trace_partial += x;
    trace_abs += std::abs(x);
   }
- 
+
   if (use_norm_as_weight) { // else we are not allowed to compute this matrix, may make no sense
    // recompute the density matrix
    density_matrix[block_index].is_valid = true;

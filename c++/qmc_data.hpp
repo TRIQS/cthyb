@@ -38,6 +38,7 @@ struct qmc_data {
  atom_diag const &h_diag;                     // Diagonalization of the atomic problem
  mutable impurity_trace imp_trace;            // Calculator of the trace
  std::vector<int> n_inner;
+ block_gf<imtime, matrix_real_valued> delta;  // Hybridization function
 
  using trace_t = impurity_trace::trace_t;
 
@@ -49,13 +50,17 @@ struct qmc_data {
   delta_block_adaptor(gf<imtime, matrix_real_valued> delta_block) : delta_block(std::move(delta_block)) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
-  delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
-  delta_block_adaptor &operator=(delta_block_adaptor &&a) = default;
+  delta_block_adaptor &operator=(delta_block_adaptor const&) = delete;
+  delta_block_adaptor &operator=(delta_block_adaptor &&) = default;
 
   double operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
    double res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
    return (x.first >= y.first ? res : -res); // x,y first are time_pt, wrapping is automatic in the - operation, but need to
                                              // compute the sign
+  }
+
+  friend void swap(delta_block_adaptor & dba1, delta_block_adaptor & dba2) noexcept {
+   swap(dba1.delta_block,dba2.delta_block);
   }
  };
 
@@ -70,6 +75,7 @@ struct qmc_data {
     : config(beta),
       tau_seg(beta),
       h_diag(h_diag),
+      delta(map([](gf_const_view<imtime> d){ return real(d);},delta)),
       linindex(linindex),
       imp_trace(config, h_diag, p),
       current_sign(1),

@@ -63,19 +63,15 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
         modified(true),
         delete_flag(false) {}
 
-  node_t(node_t const& n) {
-   key = n.key;
-   color = n.color;
-   N = n.N;
-   if(n.left) left = new node_t(*n.left);
-   if(n.right) right = new node_t(*n.right);
-   modified = n.modified;
-   delete_flag = n.delete_flag;
-  }
+  node_t(node_t const& n) : Value(n),
+   key(n.key), color(n.color), N(n.N), modified(n.modified), delete_flag(n.delete_flag),
+   left(n.left ? new node_t(*n.left) : nullptr),
+   right(n.right ? new node_t(*n.right) : nullptr)
+  {}
   node_t& operator=(node_t const&) = delete;
   template <typename... T> void reset(Key const& k, T&&... x) {
    key = k;
-   left = nullptr; 
+   left = nullptr;
    right = nullptr;
    Value::reset(std::forward<T>(x)...);
   }
@@ -177,25 +173,41 @@ private : node root; // root of the BST
   apply_recursive([&out](node n) {out << n->key << std::endl; }, root);
  }
 
- /// Generate a graphviz file
- void graphviz(std::ostream && out) const { graphviz(out); }
+ // Simple helper to print a node as double(n->key)
+ struct print_key_as_double {
+  void operator()(std::ostream& os, node n) { os << double(n->key); }
+ };
 
- void graphviz(std::ostream & out) const {
+ /// Generate a graphviz file
+ template<typename NodePrinter = print_key_as_double>
+ void graphviz(std::ostream && out, NodePrinter np = {}) const { graphviz(out,np); }
+
+ template<typename NodePrinter = print_key_as_double>
+ void graphviz(std::ostream & out, NodePrinter np = {}) const {
   auto color_node_to_string = [](node n) -> std::string {
    if (n->delete_flag) return "green";
    if (n->modified) return "red";
    return "black";
   };
   out << "digraph G{ graph [ordering=\"out\"];" << std::endl;
-  if (root) out << double(root->key) << "[color = " << color_node_to_string(root) << "];" << std::endl;
-  auto f = [&out,&color_node_to_string](node n) {
+  if (root) {
+   np(out,root);
+   out << "[color = " << color_node_to_string(root) << "];" << std::endl;
+  }
+  auto f = [&out,&color_node_to_string,&np](node n) {
    if (!n) return;
-   if (n->left)
-    out << double(n->left->key) << "[color = " << color_node_to_string(n->left) << "];\n" <<  double(n->key) << " -> " << double(n->left->key)
-        << (n->left->color == RED ? "[color = red];" : ";") << std::endl;
-   if (n->right)
-    out <<  double(n->right->key) << "[color = " << color_node_to_string(n->right) << "];\n" << double(n->key) << " -> " << double(n->right->key)
-        << (n->right->color == RED ? "[color = red];" : ";") << std::endl;
+   if (n->left) {
+    np(out,n->left);
+    out << "[color = " << color_node_to_string(n->left) << "];\n";
+    np(out,n); out << " -> "; np(out,n->left);
+    out << (n->left->color == RED ? "[color = red];" : ";") << std::endl;
+   }
+   if (n->right) {
+    np(out,n->right);
+    out << "[color = " << color_node_to_string(n->right) << "];\n";
+    np(out,n); out << " -> "; np(out,n->right);
+    out << (n->right->color == RED ? "[color = red];" : ";") << std::endl;
+   }
   };
   foreach(*this,f);
   out << "}" << std::endl;
@@ -212,8 +224,8 @@ private : node root; // root of the BST
   });
  }
 
- int clear_modified() { 
-  int r = clear_modified_impl(root); 
+ int clear_modified() {
+  int r = clear_modified_impl(root);
 #ifdef TRIQS_RBT_CHECKS
   check_no_node_modified();
   check_no_node_flagged_for_delete();
@@ -255,10 +267,10 @@ private : node root; // root of the BST
  }
 
  public:
- void set_modified_from_root_to(Key const & key) { 
+ void set_modified_from_root_to(Key const & key) {
   apply_until_key_impl(root,key,[](node y){ y->modified=true;});
  }
- 
+
  /*************************************************************************
   *  Standard BST search
   *************************************************************************/
@@ -336,7 +348,7 @@ private : node root; // root of the BST
   h->modified = true;
   return h;
  }
- 
+
  /*************************************************************************
   *  Red-black deletion
   *************************************************************************/

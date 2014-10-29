@@ -35,17 +35,20 @@ class Solver(SolverCore):
     def solve(self, h_loc, **params_kw):
         """ Solve the impurity problem """
 
-        # Default tail fitting parameters
-        fit_known_moments = {}
-        for name, indices in self.gf_struct.items():
-            dim = len(indices)
-            fit_known_moments[name] = TailGf(dim,dim,1,1) # TailGf(dim1, dim2, n_moments, order_min)
-            fit_known_moments[name][1] = identity(dim) # 1/w behaviour
-        fit_n_moments = 3
-        fit_min_n = int(0.8 * self.n_iw) # Fit last 80% of frequencies
-        fit_max_n = self.n_iw
+        # If tail parameters provided for G_iw fitting, use them, otherwise use defaults
+        fit_n_moments = params_kw.pop("fit_n_moments", 3)
+        if "fit_known_moments" in params_kw:
+            fit_known_moments = params_kw.pop("fit_known_moments")
+        else:
+            fit_known_moments = {}
+            for name, indices in self.gf_struct.items():
+                dim = len(indices)
+                fit_known_moments[name] = TailGf(dim,dim,1,1) # TailGf(dim1, dim2, n_moments, order_min)
+                fit_known_moments[name][1] = identity(dim) # 1/w behaviour
+        fit_min_n = params_kw.pop("fit_min_n", int(0.8 * self.n_iw)) # Fit last 80% of frequencies
+        fit_max_n = params_kw.pop("fit_max_n", self.n_iw)
 
-        # Call the core solver's core routine
+        # Call the core solver's solve routine
         SolverCore.solve(self, h_loc = h_loc, **params_kw)
 
         # Post-processing: 

@@ -45,7 +45,7 @@ class Solver(SolverCore):
                 dim = len(indices)
                 fit_known_moments[name] = TailGf(dim,dim,1,1) # TailGf(dim1, dim2, n_moments, order_min)
                 fit_known_moments[name][1] = identity(dim) # 1/w behaviour
-        fit_min_n = params_kw.pop("fit_min_n", int(0.8 * self.n_iw)) # Fit last 80% of frequencies
+        fit_min_n = params_kw.pop("fit_min_n", int(0.8 * self.n_iw)) # Fit last 20% of frequencies
         fit_max_n = params_kw.pop("fit_max_n", self.n_iw)
 
         # Call the core solver's solve routine

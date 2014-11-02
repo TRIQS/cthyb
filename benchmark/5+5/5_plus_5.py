@@ -5,7 +5,6 @@ from multiorbital import *
 from itertools import product
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators.operators2 import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
@@ -20,9 +19,6 @@ del path[0]
 
 def print_master(msg):
 	if mpi.rank==0: print msg
-
-pp = SolverCore.solve_parameters()
-for k in p: pp[k] = p[k]
 
 print_master("Welcome to 5+5 (5 orbitals + 5 bath sites) test.")
 
@@ -64,12 +60,15 @@ if use_interaction:
                 H_dump_file.write(mkind(s1,cubic_names[a2])[0] + '\t')
                 H_dump_file.write(str(U_val.real) + '\n')
 
+p["h_loc"] = H
+
 # Quantum numbers (N_up and N_down)
 QN=[Operator(),Operator()]
 for cn in cubic_names:
     for i, sn in enumerate(spin_names):
         QN[i] += n(*mkind(sn,cn))
-        
+if p["partition_method"] == "quantum_numbers": p["quantum_numbers"] = QN
+
 print_master("Constructing the solver...")
 
 # Construct the solver
@@ -83,7 +82,7 @@ for sn, cn in product(spin_names,cubic_names):
     bn, i = mkind(sn,cn)
     V = delta_params[cn]['V']
     e = delta_params[cn]['e']
-    
+
     delta_w = GfImFreq(indices = [i], beta=beta)
     delta_w <<= (V**2) * inverse(iOmega_n - e)
 
@@ -98,7 +97,7 @@ for sn, cn in product(spin_names,cubic_names):
 print_master("Running the simulation...")
 
 # Solve the problem
-S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=use_quantum_numbers)
+S.solve(**p)
 
 # Save the results  
 if mpi.rank==0:

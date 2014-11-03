@@ -78,6 +78,8 @@ gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g
 
 void solver_core::solve(solve_parameters_t const & params) { 
 
+  last_solve_parameters = params;
+
   // determine basis of operators to use
   fundamental_operator_set fops;
   std::map<std::pair<int,int>,int> linindex;

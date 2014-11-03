@@ -43,15 +43,18 @@ class solver_core {
  block_gf<imtime> _Delta_tau, _G_tau;      // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                  // Green's function containers: Legendre coefficients
  boost::mpi::communicator _comm;           // define the communicator, here MPI_COMM_WORLD
+ solve_parameters_t last_solve_parameters; // parameters of the last call to solve
 
  public:
 
  solver_core(double beta, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
-
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
  TRIQS_WRAP_ARG_AS_DICT
  void solve(solve_parameters_t const & p);
+
+ ///
+ solve_parameters_t get_last_solve_parameters() const {return last_solve_parameters;}
 
  // input containers
  /// G0(iw) in imaginary frequencies

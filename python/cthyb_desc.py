@@ -43,12 +43,16 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
   random_name         std::string                  ""                                             Name of random number generator                      
   max_time            int                          -1                                             Maximum runtime in seconds, use -1 to set infinite   
   verbosity           int                          ((boost::mpi::communicator().rank()==0)?3:0)   Verbosity level                                      
-  move_shift          bool                         true                                           Add move_shift as a move?                                      
+  move_shift          bool                         true                                           Add move_shift as a move?                            
   use_trace_estimator bool                         false                                          Calculate the full trace or use an estimate?         
   measure_g_tau       bool                         true                                           Whether to measure G(tau)                            
   measure_g_l         bool                         false                                          Whether to measure G_l (Legendre)                    
   measure_pert_order  bool                         false                                          Whether to measure perturbation order                
   make_histograms     bool                         false                                          Make the analysis histograms of the trace computation """)
+
+c.add_property(name = "last_solve_parameters", 
+               getter = cfunction("cthyb::solve_parameters_t get_last_solve_parameters ()"),
+               doc = """ """)
 
 c.add_property(name = "G0_iw", 
                getter = cfunction("block_gf_view<imfreq> G0_iw ()"),

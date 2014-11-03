@@ -53,7 +53,7 @@ class Solver(SolverCore):
 
         # Post-processing: 
         # (only supported for G_tau, to permit compatibility with dft_tools)
-        if SolverCore.last_solve_parameters["measure_g_tau"] == True:
+        if self.last_solve_parameters["measure_g_tau"] == True:
             # Fourier transform G_tau to obtain G_iw and fit the tail
             for name, g in self.G_tau:
                 self.G_iw[name] <<= Fourier(g)

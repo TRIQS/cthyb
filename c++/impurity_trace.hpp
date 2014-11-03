@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include <memory>
 #include "./configuration.hpp"
 #include "./sorted_spaces.hpp"
 #include "./solve_parameters.hpp"

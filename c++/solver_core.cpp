@@ -18,11 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <fstream>
-#include "solver_core.hpp"
+#include "./solver_core.hpp"
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/gfs.hpp>
+#include <fstream>
 
 #include "move_insert.hpp"
 #include "move_remove.hpp"

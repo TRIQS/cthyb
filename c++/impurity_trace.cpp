@@ -34,20 +34,6 @@
 
 double double_max = std::numeric_limits<double>::max(); // easier to read
 
-// --------------- FIXME Computation of the matrix norm --> move into triqs::arrays ------------------------
-
-namespace triqs {
-namespace arrays {
-
- double frobenius_norm(matrix<double> const& a) {
-  return std::sqrt(fold([](double r, double x)->double {
-   auto ab = std::abs(x);
-   return r + ab * ab;
-  })(a));
- }
-}
-}
-
 // -----------------------------------------------
 
 namespace cthyb {

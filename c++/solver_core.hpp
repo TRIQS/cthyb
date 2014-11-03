@@ -50,7 +50,7 @@ class solver_core {
 
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
- __attribute__((annotate("use_parameter_class")))
+ TRIQS_WRAP_ARG_AS_DICT
  void solve(solve_parameters_t const & p);
 
  // input containers

@@ -53,11 +53,11 @@ class Solver(SolverCore):
 
         # Post-processing: 
         # (only supported for G_tau, to permit compatibility with dft_tools)
-        if params_kw.get("measure_g_tau",True):
-         # Fourier transform G_tau to obtain G_iw and fit the tail
-         for name, g in self.G_tau:
-             self.G_iw[name] <<= Fourier(g)
-             self.G_iw[name].fit_tail(fit_known_moments[name], fit_n_moments, fit_min_n, fit_max_n)
- 
-         # Solve Dyson's eq to obtain Sigma_iw
-         self.Sigma_iw = inverse(self.G0_iw) - inverse(self.G_iw)
+        if SolverCore.last_solve_parameters["measure_g_tau"] == True:
+            # Fourier transform G_tau to obtain G_iw and fit the tail
+            for name, g in self.G_tau:
+                self.G_iw[name] <<= Fourier(g)
+                self.G_iw[name].fit_tail(fit_known_moments[name], fit_n_moments, fit_min_n, fit_max_n)
+
+            # Solve Dyson's eq to obtain Sigma_iw
+            self.Sigma_iw = inverse(self.G0_iw) - inverse(self.G_iw)

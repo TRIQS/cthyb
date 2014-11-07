@@ -24,7 +24,9 @@ endif()
 
 # Get hash
 triqs_get_git_hash(${CMAKE_SOURCE_DIR} "CTHYB")
-message(STATUS "Hash: ${CTHYB_GIT_HASH}")
+if(${GIT_RESULT} EQUAL 0)
+  message(STATUS "Hash: ${CTHYB_GIT_HASH}")
+endif(${GIT_RESULT} EQUAL 0)
 
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})

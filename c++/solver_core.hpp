@@ -43,7 +43,8 @@ class solver_core {
  block_gf<imtime> _Delta_tau, _G_tau;      // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                  // Green's function containers: Legendre coefficients
  boost::mpi::communicator _comm;           // define the communicator, here MPI_COMM_WORLD
- solve_parameters_t last_solve_parameters; // parameters of the last call to solve
+ solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
+ mc_sign_type _average_sign;
 
  public:
 
@@ -53,8 +54,8 @@ class solver_core {
  TRIQS_WRAP_ARG_AS_DICT
  void solve(solve_parameters_t const & p);
 
- ///
- solve_parameters_t get_last_solve_parameters() const {return last_solve_parameters;}
+ /// Set of parameters used in the last call to solve
+ solve_parameters_t get_last_solve_parameters() const {return _last_solve_parameters;}
 
  // input containers
  /// G0(iw) in imaginary frequencies
@@ -75,6 +76,9 @@ class solver_core {
  // Atomic GF (without hybridization)
  /// Atomic G(tau) in imaginary time
  block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
+
+ /// Monte Carlo average sign
+ mc_sign_type average_sign() const { return _average_sign; }
 
 };
 

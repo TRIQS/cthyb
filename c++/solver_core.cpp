@@ -78,7 +78,7 @@ gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g
 
 void solver_core::solve(solve_parameters_t const & params) { 
 
-  last_solve_parameters = params;
+  _last_solve_parameters = params;
 
   // determine basis of operators to use
   fundamental_operator_set fops;
@@ -191,6 +191,9 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Run! The empty configuration has sign = 1
   qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
+
+  // Get the average sign
+  _average_sign = qmc.average_sign();
 
 }
 

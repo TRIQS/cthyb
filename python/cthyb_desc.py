@@ -18,6 +18,8 @@ module.add_preamble("""
 using namespace triqs::gfs;
 using triqs::utility::many_body_operator;
 using namespace cthyb;
+using mc_weight_type = double;
+using mc_sign_type = mc_weight_type;
 #include "./converters.hxx"
 """)
 
@@ -52,7 +54,7 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 
 c.add_property(name = "last_solve_parameters", 
                getter = cfunction("cthyb::solve_parameters_t get_last_solve_parameters ()"),
-               doc = """ """)
+               doc = """Set of parameters used in the last call to solve """)
 
 c.add_property(name = "G0_iw", 
                getter = cfunction("block_gf_view<imfreq> G0_iw ()"),
@@ -73,6 +75,10 @@ c.add_property(name = "G_l",
 c.add_property(name = "atomic_gf", 
                getter = cfunction("block_gf_view<imtime> atomic_gf ()"),
                doc = """Atomic G(tau) in imaginary time """)
+
+c.add_property(name = "average_sign", 
+               getter = cfunction("mc_sign_type average_sign ()"),
+               doc = """Monte Carlo average sign """)
 
 module.add_class(c)
 

@@ -171,8 +171,10 @@ class move_shift_operator {
    data.imp_trace.try_insert(tau_new, op_new);
   }
   catch (rbt_insert_error const&) {
-   //std::cerr << "Insert error : recovering ... " << std::endl;
+   std::cerr << "Insert error : recovering ... " << std::endl;
+   data.imp_trace.cancel_delete();
    data.imp_trace.cancel_insert();
+   std::cerr << "Insert error : recovered ... " << std::endl;
    return 0;
   }
 

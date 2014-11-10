@@ -28,13 +28,11 @@
 
 namespace cthyb {
 
-using namespace triqs::params;
 using namespace triqs::utility;
 using mc_weight_type = double;
+using mc_sign_type = mc_weight_type;
 
 class solver_core {
-
- using mc_sign_type = mc_weight_type;
 
  double beta;
  sorted_spaces sosp;

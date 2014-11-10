@@ -8,7 +8,6 @@ using triqs::utility::many_body_operator;
 using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
-using triqs::params::parameters;
 using namespace triqs::gfs;
 
 int main(int argc, char* argv[]) {

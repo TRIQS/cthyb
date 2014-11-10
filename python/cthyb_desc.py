@@ -15,6 +15,7 @@ module.add_include("../c++/solver_core.hpp")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
+#include <triqs/python_tools/converters/map.hpp>
 using namespace triqs::gfs;
 using triqs::utility::many_body_operator;
 using namespace cthyb;

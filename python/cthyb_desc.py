@@ -8,7 +8,7 @@ module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc 
 
 # All the triqs C++/Python modules
 module.use_module('gf')
-module.use_module('operators2')
+module.use_module('operators')
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("../c++/solver_core.hpp")

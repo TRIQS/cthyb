@@ -4,7 +4,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.parameters.parameters import Parameters
 from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.operators.operators2 import *
+from pytriqs.operators import *
 from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import *
 from matplotlib.backends.backend_pdf import PdfPages

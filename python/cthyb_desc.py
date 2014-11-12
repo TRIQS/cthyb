@@ -17,9 +17,11 @@ module.add_include("../c++/solver_core.hpp")
 module.add_preamble("""
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/vector.hpp>
+#include <triqs/python_tools/converters/variant.hpp>
 using namespace triqs::gfs;
 using triqs::utility::many_body_operator;
 using namespace cthyb;
+using indices_type = many_body_operator<double>::indices_t;
 #include "./converters.hxx"
 """)
 
@@ -29,7 +31,7 @@ c = class_(
         c_type = "solver_core",   # name of the C++ class
 )
 
-c.add_constructor("""(double beta, std::map<std::string,std::vector<int>> gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50)""", 
+c.add_constructor("""(double beta, std::map<std::string,indices_type> gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50)""",
                   doc = """ """)
 
 c.add_method("""void solve (**cthyb::solve_parameters_t)""", 

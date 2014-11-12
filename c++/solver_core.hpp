@@ -31,12 +31,13 @@ namespace cthyb {
 using namespace triqs::utility;
 using mc_weight_type = double;
 using mc_sign_type = mc_weight_type;
+using indices_type = many_body_operator<double>::indices_t;
 
 class solver_core {
 
  double beta;
  sorted_spaces sosp;
- std::map<std::string,std::vector<int>> gf_struct;
+ std::map<std::string, indices_type> gf_struct;
  block_gf<imfreq> _G0_iw;                  // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;      // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                  // Green's function containers: Legendre coefficients
@@ -46,7 +47,7 @@ class solver_core {
 
  public:
 
- solver_core(double beta, std::map<std::string,std::vector<int>> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
+ solver_core(double beta, std::map<std::string, indices_type> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
  TRIQS_WRAP_ARG_AS_DICT

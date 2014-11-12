@@ -9,6 +9,7 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using namespace triqs::gfs;
+using indices_type = triqs::utility::many_body_operator<double>::indices_t;
 
 int main(int argc, char* argv[]) {
 
@@ -37,7 +38,7 @@ int main(int argc, char* argv[]) {
   qn.push_back(n("tot",0));
   qn.push_back(n("tot",1));
   // gf structure
-  std::map<std::string, std::vector<int>> gf_struct{{"tot",{0,1}}};
+  std::map<std::string, indices_type> gf_struct{{"tot",{0,1}}};
 
   // Construct CTQMC solver
   solver_core solver(beta, gf_struct, 1025, 2500);

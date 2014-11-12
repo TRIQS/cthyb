@@ -23,6 +23,7 @@
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/gfs.hpp>
 #include <fstream>
+#include <boost/variant.hpp>
 
 #include "move_insert.hpp"
 #include "move_remove.hpp"
@@ -33,7 +34,13 @@
 
 namespace cthyb {
 
-solver_core::solver_core(double beta_, std::map<std::string,std::vector<int>> const & gf_struct_, int n_iw, int n_tau, int n_l):
+struct index_visitor : public boost::static_visitor<> {
+  std::vector<std::string> indices;
+  void operator()(int i) { indices.push_back(std::to_string(i)); }
+  void operator()(std::string s) { indices.push_back(s); }
+};
+
+solver_core::solver_core(double beta_, std::map<std::string, indices_type> const & gf_struct_, int n_iw, int n_tau, int n_l):
   beta(beta_), gf_struct(gf_struct_) {
 
   if ( n_tau < 2*n_iw ) TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau << ".";
@@ -47,10 +54,15 @@ solver_core::solver_core(double beta_, std::map<std::string,std::vector<int>> co
   for (auto const& block : gf_struct) {
     block_names.push_back(block.first);
     int n = block.second.size();
-    g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}});
-    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
-    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}});
-    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}});
+
+    index_visitor iv;
+    for (auto & ind: block.second) { boost::apply_visitor(iv, ind); }
+    std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
+
+    g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});
+    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}, indices});
+    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices});
+    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}, indices});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
@@ -108,10 +120,14 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
+    int n1 = 0;
     for (auto const & a1: bl.second) {
+      int n2 = 0;
       for (auto const & a2: bl.second) {
-        h_loc = h_loc + _G0_iw[b].singularity()(2)(a1,a2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
+        h_loc = h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
+        n2++;
       }
+      n1++;
     }
     b++;
   }

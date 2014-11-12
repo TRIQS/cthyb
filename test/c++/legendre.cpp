@@ -9,6 +9,7 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using namespace triqs::gfs;
+using indices_type = triqs::utility::many_body_operator<double>::indices_t;
 
 int main(int argc, char* argv[]) {
 
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]) {
   qn.push_back(n("up",0));
   qn.push_back(n("down",0));
   // gf structure
-  std::map<std::string, std::vector<int>> gf_struct{{"up",{0}},{"down",{0}}};
+  std::map<std::string, indices_type> gf_struct{{"up",{0}},{"down",{0}}};
 
   // Construct CTQMC solver
   solver_core solver(beta, gf_struct, 1025, 2500, 50);

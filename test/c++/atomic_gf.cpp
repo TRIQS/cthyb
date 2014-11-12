@@ -9,6 +9,7 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using namespace triqs::gfs;
+using indices_type = triqs::utility::many_body_operator<double>::indices_t;
 
 int main(int argc, char* argv[]) {
 
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
   H += ed0*(n("up",0) + n("dn",0)) + ed1*(n("up",1) + n("dn",1));
   H += V*(c_dag("up",0)*c("up",1) + c_dag("up",1)*c("up",0) + c_dag("dn",0)*c("dn",1) + c_dag("dn",1)*c("dn",0));
 
-  std::map<std::string, std::vector<int>> gf_struct{{"up",{0,1}},{"dn",{0,1}}};
+  std::map<std::string, indices_type> gf_struct{{"up",{0,1}},{"dn",{0,1}}};
 
   // Construct CTQMC solver
   solver_core solver(beta, gf_struct, 1025, 2051);

@@ -9,6 +9,7 @@ using triqs::utility::c;
 using triqs::utility::c_dag;
 using triqs::utility::n;
 using namespace triqs::gfs;
+using indices_type = triqs::utility::many_body_operator<double>::indices_t;
 
 int main(int argc, char* argv[]) {
 
@@ -60,7 +61,7 @@ int main(int argc, char* argv[]) {
   }
 
   // gf structure
-  std::map<std::string, std::vector<int>> gf_struct; 
+  std::map<std::string, indices_type> gf_struct; 
   for(int o = 0; o < num_orbitals; ++o){
     gf_struct["up-"+std::to_string(o)] = {0};
     gf_struct["down-"+std::to_string(o)] = {0};

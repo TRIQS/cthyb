@@ -51,12 +51,12 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
   std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
 
-  for (auto const& block : gf_struct) {
-    block_names.push_back(block.first);
-    int n = block.second.size();
+  for (auto const& bl : gf_struct) {
+    block_names.push_back(bl.first);
+    int n = bl.second.size();
 
     index_visitor iv;
-    for (auto & ind: block.second) { boost::apply_visitor(iv, ind); }
+    for (auto & ind: bl.second) { boost::apply_visitor(iv, ind); }
     std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
 
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});
@@ -96,11 +96,11 @@ void solver_core::solve(solve_parameters_t const & params) {
   fundamental_operator_set fops;
   std::map<std::pair<int,int>,int> linindex;
   int block_index = 0;
-  for (auto const & b: gf_struct) {
+  for (auto const & bl: gf_struct) {
     int inner_index = 0;
-    for (auto const & a: b.second) {
-      fops.insert(b.first, a);
-      linindex[std::make_pair(block_index, inner_index)] = fops[{b.first,a}];
+    for (auto const & a: bl.second) {
+      fops.insert(bl.first, a);
+      linindex[std::make_pair(block_index, inner_index)] = fops[{bl.first,a}];
       inner_index++;
     }
     block_index++;
@@ -108,8 +108,8 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Make list of block sizes
   std::vector<int> n_inner;
-  for (auto const& block : gf_struct) {
-    n_inner.push_back(block.second.size());
+  for (auto const& bl : gf_struct) {
+    n_inner.push_back(bl.second.size());
   }
 
   // Calculate imfreq quantities

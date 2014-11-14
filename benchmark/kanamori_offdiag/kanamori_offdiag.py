@@ -2,7 +2,6 @@
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
@@ -17,9 +16,6 @@ del path[0]
 
 def print_master(msg):
     if mpi.rank==0: print msg
-
-pp = SolverCore.solve_parameters()
-for k in p: pp[k] = p[k]
 
 print_master("Welcome to Kanamori benchmark.")
 
@@ -49,14 +45,16 @@ for o1, o2 in product(range(num_orbitals),range(num_orbitals)):
     H += -J*c_dag(*mkind("up",o1))*c_dag(*mkind("dn",o1))*c(*mkind("up",o2))*c(*mkind("dn",o2))
     H += -J*c_dag(*mkind("up",o1))*c_dag(*mkind("dn",o2))*c(*mkind("up",o2))*c(*mkind("dn",o1))
 
-QN=[]
 if use_qn:
+    QN=[]
     QN.append(sum([n(*mkind("up",o)) for o in range(num_orbitals)],Operator()))
     QN.append(sum([n(*mkind("dn",o)) for o in range(num_orbitals)],Operator()))
     for o in range(num_orbitals):
         dn = n(*mkind("up",o)) - n(*mkind("dn",o))
         QN.append(dn*dn)
- 
+    p["partition_method"] = "quantum_numbers"
+    p["quantum_numbers"] = QN
+
 print_master("Constructing the solver...")
 
 # Construct the solver
@@ -78,9 +76,9 @@ for spin in spin_names:
 print_master("Running the simulation...")
 
 # Solve the problem
-S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=True)
+S.solve(h_loc=H, **p)
 
-# Save the results  
+# Save the results
 if mpi.rank==0:
     Results = HDFArchive(results_file_name,'w')
     for b in gf_struct: Results[b] = S.G_tau[b]

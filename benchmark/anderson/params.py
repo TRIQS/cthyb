@@ -4,7 +4,7 @@ import pytriqs.utility.mpi as mpi
 
 spin_names = ("up","dn")
 def mkind(spin):
-    return (spin,0) if use_blocks else ("tot",{"up":0,"dn":1}[spin])
+    return (spin,0) if use_blocks else ("tot",spin)
 
 # Input parameters
 beta = 10.0

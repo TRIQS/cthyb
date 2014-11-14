@@ -68,18 +68,18 @@ for e in epsilon:
     S.G0["dn"] <<= inverse(iOmega_n - ed - delta_w)
 
     S.solve(**p)
-  
+
     if mpi.rank==0:
         arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "dn":S.G_tau["dn"]}
 
         plt.clf()
         oplot(S.G_tau["up"], name="$\uparrow\uparrow$")
         oplot(S.G_tau["dn"],name="$\downarrow\downarrow$")
-        
+
         axes = plt.gca()
         axes.set_ylabel('$G(\\tau)$')
         axes.legend(loc='lower center',prop={'size':10})
-        
+
         axes.set_title("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
 
         pp.savefig(plt.gcf())

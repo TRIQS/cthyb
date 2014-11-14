@@ -2,7 +2,6 @@
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
@@ -17,16 +16,15 @@ del path[0]
 def print_master(msg):
     if mpi.rank==0: print msg
 
-pp = SolverCore.solve_parameters()
-for k in p: pp[k] = p[k]
-
 print_master("Welcome to Anderson (1 correlated site + symmetric bath) test.")
 
 H = U*n(*mkind("up"))*n(*mkind("dn"))
-  
+
 QN = []
 if use_qn:
     for spin in spin_names: QN.append(n(*mkind(spin)))
+    p["quantum_numbers"] = QN
+    p["partition_method"] = "quantum_numbers"
 
 gf_struct = {}
 for spin in spin_names:
@@ -50,7 +48,7 @@ for spin in spin_names:
 print_master("Running the simulation...")
 
 # Solve the problem
-S.solve(h_loc=H, params=pp, quantum_numbers=QN, use_quantum_numbers=True)
+S.solve(h_loc=H, **p)
 
 # Save the results  
 if mpi.rank==0:

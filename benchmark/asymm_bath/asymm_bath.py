@@ -3,7 +3,6 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
-from pytriqs.parameters.parameters import Parameters
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
@@ -30,7 +29,7 @@ V = 0.2
 n_iw = 1025
 n_tau = 10001
 
-p = SolverCore.solve_parameters()
+p = {}
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
@@ -40,9 +39,7 @@ p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
 
 # Block structure of GF
-gf_struct = {} 
-gf_struct['up'] = [0]
-gf_struct['dn'] = [0]
+gf_struct = {'up':[0], 'dn' : [0]}
 
 # Hamiltonian
 H = U*n("up",0)*n("dn",0)
@@ -51,8 +48,10 @@ H = U*n("up",0)*n("dn",0)
 qn = []
 qn.append(n("up",0))
 qn.append(n("dn",0))
-    
-# Construct solver    
+p["partition_method"] = "quantum_numbers"
+p["quantum_numbers"] = qn
+
+# Construct solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 if mpi.rank==0:
@@ -67,19 +66,19 @@ for e in epsilon:
     S.G0_iw["up"] <<= inverse(iOmega_n - ed - delta_w)
     S.G0_iw["dn"] <<= inverse(iOmega_n - ed - delta_w)
 
-    S.solve(h_loc=H, params=p)
-  
+    S.solve(h_loc=H, **p)
+
     if mpi.rank==0:
         arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "dn":S.G_tau["dn"]}
 
         plt.clf()
         oplot(S.G_tau["up"], name="$\uparrow\uparrow$")
         oplot(S.G_tau["dn"],name="$\downarrow\downarrow$")
-        
+
         axes = plt.gca()
         axes.set_ylabel('$G(\\tau)$')
         axes.legend(loc='lower center',prop={'size':10})
-        
+
         axes.set_title("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
 
         pp.savefig(plt.gcf())

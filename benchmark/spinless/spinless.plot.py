@@ -35,12 +35,11 @@ for plot_objs in objects_to_plot:
             else:
                 filename = 'spinless.' + obj + '.h5'
                 name = {'ed':'ED', 'matrix':'Matrix'}[obj]
-            
             arch = HDFArchive(filename,'r')
-            
-            for i1,i2 in product((0,1),(0,1)):
-                oplot(arch["tot"][i1,i2], name=name + ",%i%i" % (i1,i2))
-                            
+
+            for i1,i2 in product(("A","B"),("A","B")):
+                oplot(arch["tot"][i1,i2], name=name + ",%s%s" % (i1,i2))
+
         setup_fig()
         pp.savefig(plt.gcf())
 

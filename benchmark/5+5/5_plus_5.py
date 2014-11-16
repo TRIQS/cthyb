@@ -102,7 +102,7 @@ S.solve(**p)
 # Save the results  
 if mpi.rank==0:
     Results = HDFArchive(results_file_name,'w')
-    for b in gf_struct: Results[b] = S.G_tau[b]
+    Results['G_tau'] = S.G_tau
 
     import pytriqs.applications.impurity_solvers.cthyb.version as version
     import inspect

@@ -29,7 +29,6 @@ for modes in range(1,10+1):
     p["max_time"] = -1
     p["random_name"] = ""
     p["random_seed"] = 123 * mpi.rank + 567
-    p["verbosity"] = 2
     p["length_cycle"] = 50
     p["n_warmup_cycles"] = 50000
     p["n_cycles"] = 1200000

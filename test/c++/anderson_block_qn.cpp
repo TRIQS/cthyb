@@ -55,7 +55,6 @@ int main(int argc, char* argv[]) {
   p.random_name = "";
   p.random_seed = 123 * rank + 567;
   p.max_time = -1;
-  p.verbosity = 3;
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
   p.quantum_numbers = qn;

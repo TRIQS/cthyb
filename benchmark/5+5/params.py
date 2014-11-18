@@ -56,7 +56,6 @@ p = {}
 p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
-p["verbosity"] = 3
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 30000

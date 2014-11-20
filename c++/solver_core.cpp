@@ -164,6 +164,9 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   if (params.make_histograms) std::ofstream("impurity_blocks.dat") << sosp;
 
+  // If one is interested only in the atomic problem
+  if(params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
+
   qmc_data data(beta, params, sosp, linindex, _Delta_tau, n_inner);
   auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
                                                 params.random_seed, params.verbosity);

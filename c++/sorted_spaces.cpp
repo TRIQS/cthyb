@@ -377,6 +377,7 @@ block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,many
     for (int A = 0; A < sub_hilbert_spaces.size(); ++A) { // index of the A block. sum over all
      int B = creation_connection[n2][A];                  // index of the block connected to A by operator c_n
      if (B == -1) continue;                               // no matrix element
+     if (annihilation_connection[n1][B] != A) continue;   //
      for (int ia = 0; ia < sub_hilbert_spaces[A].size(); ++ia)
       for (int ib = 0; ib < sub_hilbert_spaces[B].size(); ++ib){
        auto Ea = eigensystems[A].eigenvalues[ia];

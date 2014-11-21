@@ -39,8 +39,8 @@ print_master("Preparing the hybridization function...")
 
 ## Set hybridization function
 delta_w = GfImFreq(indices = ["A","B"], beta=beta)
-delta_w <<= inverse(iOmega_n - np.array([[epsilon,-t],[-t,epsilon]])) + inverse(iOmega_n - np.array([[-epsilon,-t],[-t,-epsilon]]))
-S.G0_iw["tot"] <<= inverse(iOmega_n - np.array([[-mu,-t],[-t,-mu]]) - delta_w)
+delta_w << inverse(iOmega_n - np.array([[epsilon,-t],[-t,epsilon]])) + inverse(iOmega_n - np.array([[-epsilon,-t],[-t,-epsilon]]))
+S.G0_iw["tot"] << inverse(iOmega_n - np.array([[-mu,-t],[-t,-mu]]) - delta_w)
 
 print_master("Running the simulation...")
 

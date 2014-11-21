@@ -33,8 +33,8 @@ if not use_interaction:
         e2 = e + V
 
         g_theor_w = GfImFreq(indices = [0], beta=beta)
-        g_theor_w <<= 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
-        g_theor[nc,nc] <<= InverseFourier(g_theor_w)
+        g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
+        g_theor[nc,nc] << InverseFourier(g_theor_w)
 
 # Read the results
 arch = HDFArchive(results_file_name,'r')

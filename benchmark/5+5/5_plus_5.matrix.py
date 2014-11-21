@@ -79,8 +79,8 @@ for sn, cn in product(spin_names,cubic_names):
     e = delta_params[cn]['e']
     
     delta_w = GfImFreq(indices = [i], beta=beta)
-    delta_w <<= (V**2) * inverse(iOmega_n - e)
-    S.G0[bn][i,i] <<= inverse(iOmega_n - delta_w)
+    delta_w << (V**2) * inverse(iOmega_n - e)
+    S.G0[bn][i,i] << inverse(iOmega_n - delta_w)
 
 print_master("Running the simulation...")
 

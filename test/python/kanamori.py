@@ -51,11 +51,11 @@ if not den_den_only: # spin flips and pair hopping
 
 # Set hybridization function
 delta_w = GfImFreq(indices = range(0,num_orbitals), beta=beta)
-delta_w <<= inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon)
+delta_w << inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon)
 delta_w.from_L_G_R(V, delta_w, V)
 
-S.G0_iw["up"] <<= inverse(iOmega_n + mu - delta_w)
-S.G0_iw["down"] <<= inverse(iOmega_n + mu - delta_w)
+S.G0_iw["up"] << inverse(iOmega_n + mu - delta_w)
+S.G0_iw["down"] << inverse(iOmega_n + mu - delta_w)
 
 # Parameters
 p = {}

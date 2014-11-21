@@ -72,12 +72,12 @@ print_master("Preparing the hybridization function...")
 delta_w = GfImFreq(indices = range(num_orbitals), beta=beta, n_points=n_iw)
 delta_w_part = delta_w.copy()
 for e, v in zip(epsilon,V):
-    delta_w_part <<= inverse(iOmega_n - e)
+    delta_w_part << inverse(iOmega_n - e)
     delta_w_part.from_L_G_R(np.transpose(v),delta_w_part,v)
     delta_w += delta_w_part
 
 for spin in spin_names:
-    S.G0[spin] <<= inverse(iOmega_n + mu - delta_w)
+    S.G0[spin] << inverse(iOmega_n + mu - delta_w)
 
 print_master("Running the simulation...")
 

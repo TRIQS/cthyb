@@ -57,9 +57,9 @@ S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)
-delta_w <<= (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
+delta_w << (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
 for name, g0 in S.G0_iw:
-    g0 <<= inverse(iOmega_n + mu - delta_w)
+    g0 << inverse(iOmega_n + mu - delta_w)
 
 S.solve(h_loc=H, **p)
 

@@ -62,10 +62,10 @@ if mpi.rank==0:
 # Set hybridization function
 for e in epsilon:
     delta_w = GfImFreq(indices = [0], beta=beta)
-    delta_w <<= (V**2) * inverse(iOmega_n - e)
+    delta_w << (V**2) * inverse(iOmega_n - e)
 
-    S.G0["up"] <<= inverse(iOmega_n - ed - delta_w)
-    S.G0["dn"] <<= inverse(iOmega_n - ed - delta_w)
+    S.G0["up"] << inverse(iOmega_n - ed - delta_w)
+    S.G0["dn"] << inverse(iOmega_n - ed - delta_w)
 
     S.solve(**p)
 

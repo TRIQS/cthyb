@@ -37,10 +37,10 @@ print_master("Preparing the hybridization function...")
 
 # Set hybridization function    
 delta_w = GfImFreq(indices = [0], beta=beta)
-delta_w <<= (V**2) * inverse(iOmega_n - epsilon1) + (V**2) * inverse(iOmega_n - epsilon2)
+delta_w << (V**2) * inverse(iOmega_n - epsilon1) + (V**2) * inverse(iOmega_n - epsilon2)
 for spin in spin_names:
     bn, i = mkind(spin)
-    S.G0_iw[bn][i,i] <<= inverse(iOmega_n + mu - {'up':h,'dn':-h}[spin] - delta_w)
+    S.G0_iw[bn][i,i] << inverse(iOmega_n + mu - {'up':h,'dn':-h}[spin] - delta_w)
 
 print_master("Running the simulation...")
 

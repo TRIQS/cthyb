@@ -21,15 +21,15 @@ S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=3000, n_l=30)
 H = U*n("up",0)*n("down",0)
 
 # init the Green function
-S.G_iw <<= SemiCircular(half_bandwidth)
+S.G_iw << SemiCircular(half_bandwidth)
 
 # Impose Paramagnetism
 gpara = 0.5*(S.G_iw['up']+S.G_iw['down'])
-for name, g in S.G_iw: g <<= gpara
+for name, g in S.G_iw: g << gpara
 
 # Compute G0
 for name, g0 in S.G0_iw:
-  g0 <<= inverse( iOmega_n + mu - (half_bandwidth/2.0)**2  * S.G_iw[name] )
+  g0 << inverse( iOmega_n + mu - (half_bandwidth/2.0)**2  * S.G_iw[name] )
 
 # Parameters
 p = {}

@@ -52,8 +52,8 @@ for modes in range(1,10+1):
     # Set hybridization function
     for m, b in enumerate(sorted(gf_struct.keys())):
         delta_w = GfImFreq(indices = [0], beta=beta)
-        delta_w <<= (V[m]**2) * inverse(iOmega_n - e[m])
-        S.G0_iw[b][0,0] <<= inverse(iOmega_n - e[m] - delta_w)
+        delta_w << (V[m]**2) * inverse(iOmega_n - e[m])
+        S.G0_iw[b][0,0] << inverse(iOmega_n - e[m] - delta_w)
 
     print_master("Running the simulation...")
 
@@ -72,8 +72,8 @@ for modes in range(1,10+1):
             e1 = e[m] - V[m]
             e2 = e[m] + V[m]
             g_theor_w = GfImFreq(indices = [0], beta=beta)
-            g_theor_w <<= 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
-            g_theor[0,0] <<= InverseFourier(g_theor_w)
+            g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
+            g_theor[0,0] << InverseFourier(g_theor_w)
 
             plt.clf()
             oplot(S.G_tau[b][0,0], name="cthyb")

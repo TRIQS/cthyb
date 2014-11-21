@@ -64,11 +64,11 @@ print_master("Preparing the hybridization function...")
 
 # Set hybridization function    
 delta_w = GfImFreq(indices = [0], beta=beta, n_points=n_iw)
-delta_w <<= (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
+delta_w << (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
 for spin in spin_names:
     for o in range(num_orbitals):
         bn,i = mkind(spin,o)
-        S.G0_iw[bn][i,i] <<= inverse(iOmega_n + mu - delta_w)
+        S.G0_iw[bn][i,i] << inverse(iOmega_n + mu - delta_w)
 
 print_master("Running the simulation...")
 

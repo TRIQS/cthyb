@@ -56,7 +56,7 @@ class Solver(SolverCore):
         if self.last_solve_parameters["measure_g_tau"] == True:
             # Fourier transform G_tau to obtain G_iw
             for name, g in self.G_tau:
-                self.G_iw[name] <<= Fourier(g)
+                self.G_iw[name] << Fourier(g)
 
             # Solve Dyson's eq to obtain Sigma_iw and fit the tail
             self.Sigma_iw = inverse(self.G0_iw) - inverse(self.G_iw)

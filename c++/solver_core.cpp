@@ -60,9 +60,9 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
     std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
 
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});
-    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}, indices});
+    g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
     g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices});
-    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau, full_bins}, {n, n}, indices});
+    delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
@@ -222,7 +222,7 @@ using namespace triqs::gfs;
 
 gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau) {
     auto const& old_m = old_gf.mesh();
-    gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau, old_m.kind()}, get_target_shape(old_gf)};
+    gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau}, get_target_shape(old_gf)};
     auto const& new_m = new_gf.mesh();
 
     new_gf.data()() = 0;

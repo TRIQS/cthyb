@@ -367,7 +367,7 @@ block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,many
  for (auto const& block : gf_struct) {
   block_names.push_back(block.first);
   int bl_size = block.second.size();
-  auto g = gf<imtime>{{beta, Fermion, n_tau, full_bins}, {bl_size,bl_size}};
+  auto g = gf<imtime>{{beta, Fermion, n_tau}, {bl_size,bl_size}};
 
   for(int inner_index1 = 0; inner_index1 < bl_size; ++inner_index1)
    for(int inner_index2 = 0; inner_index2 < bl_size; ++inner_index2){

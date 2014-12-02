@@ -27,6 +27,7 @@
 namespace cthyb {
 
 using triqs::utility::time_pt;
+using triqs::utility::time_segment;
 
 struct op_desc {  // The description of the C operator
  int block_index; // the block index of the operator

@@ -71,8 +71,8 @@ class move_insert_c_cdag {
   op2 = op_desc{block_index, rs2, false, data.linindex[std::make_pair(block_index, rs2)]};
 
   // Choice of times for insertion. Find the time as double and them put them on the grid.
-  tau1 = time_pt::random(rng, config.beta(), config.beta());
-  tau2 = time_pt::random(rng, config.beta(), config.beta());
+  tau1 = data.tau_seg.get_random_pt(rng);
+  tau2 = data.tau_seg.get_random_pt(rng);
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to insert:" << std::endl;

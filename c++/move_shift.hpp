@@ -136,13 +136,13 @@ class move_shift_operator {
     // Then deduce the closest one and put its distance to op_old in tL
     tL = ((tLdag - tau_old) > (tLnodag - tau_old) ? tLnodag : tLdag);
     // Choose new random time
-    tau_new = tR + time_pt::random(rng, tL - tR, config.beta());
+    tau_new = tR + data.tau_seg.get_random_pt(rng, tL-tR);
 
   } else { // det_size = 1
 
     op_pos_in_det = 0;
     // Choose new random time, can be anywhere between beta and 0
-    tau_new = time_pt::random(rng, config.beta(), config.beta());
+    tau_new = data.tau_seg.get_random_pt(rng);
 
   }
 

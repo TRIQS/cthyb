@@ -33,6 +33,7 @@ using namespace triqs::gfs;
 struct qmc_data {
 
  configuration config;                          // Configuration
+ time_segment tau_seg;
  std::map<std::pair<int,int>,int> linindex;
  sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
  mutable impurity_trace imp_trace; // Calculator of the trace
@@ -67,6 +68,7 @@ struct qmc_data {
  qmc_data(double beta, solve_parameters_t const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
           block_gf_const_view<imtime> delta, std::vector<int> n_inner)
     : config(beta),
+      tau_seg(beta),
       sosp(sosp),
       linindex(linindex),
       imp_trace(config, sosp, p),

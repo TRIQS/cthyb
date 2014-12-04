@@ -52,7 +52,6 @@ class move_remove_c_cdag {
   data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
-  // the det has to be recomputed each time, since global moves will change it //FIXME ??
   auto& det = data.dets[block_index];
 
   // Pick up a couple of C, Cdagger to remove at random
@@ -72,8 +71,8 @@ class move_remove_c_cdag {
 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
-  // acceptance probability
-  double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // FIXME det_size or det.size()
+  // proposition probability
+  double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // Size of the det before the try_delete!
   
   // For quick abandon 
   double random_number = rng.preview();

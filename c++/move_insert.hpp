@@ -117,7 +117,7 @@ class move_insert_c_cdag {
   // Insert in the det. Returns the ratio of dets (Cf det_manip doc).
   auto det_ratio = det.try_insert(num_c_dag, num_c, {tau1, op1.inner_index}, {tau2, op2.inner_index});
 
-  // acceptance probability
+  // proposition probability
   double t_ratio = std::pow(block_size * config.beta() / double(det.size() + 1), 2);
 
   // For quick abandon

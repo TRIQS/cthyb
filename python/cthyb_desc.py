@@ -84,9 +84,5 @@ c.add_property(name = "average_sign",
 
 module.add_class(c)
 
-module.add_function ("gf<imtime> change_mesh (gf_view<imtime> old_gf, int new_n_tau)", doc = "")
-
-module.add_function ("block_gf<imtime> change_mesh (block_gf_view<imtime> old_gf, int new_n_tau)", doc = "")
-
 module.generate_code()
 

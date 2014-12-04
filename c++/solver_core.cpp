@@ -72,20 +72,6 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
 
 }
 
-// TODO Move functions below to triqs library
-template<typename F, typename T>
-std::vector<std14::result_of_t<F(T)>> map(F && f, std::vector<T> const & V) {
-  std::vector<std14::result_of_t<F(T)>> res;
-  res.reserve(V.size());
-  for(auto & x : V) res.emplace_back(f(x));
-  return res;
-}
-
-template<typename F, typename G>
-gf<block_index,std14::result_of_t<F(G)>> map(F && f, gf<block_index,G> const & g) {
-  return make_block_gf(map(f, g.data()));
-}
-
 /// -------------------------------------------------------------------------------------------
 
 void solver_core::solve(solve_parameters_t const & params) { 
@@ -165,14 +151,14 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.make_histograms) std::ofstream("impurity_blocks.dat") << sosp;
 
   // If one is interested only in the atomic problem
-  if(params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
+  if (params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
 
   qmc_data data(beta, params, sosp, linindex, _Delta_tau, n_inner);
   auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
                                                 params.random_seed, params.verbosity);
 
   // Moves
-  typedef mc_tools::move_set<mc_sign_type> move_set_type;
+  using move_set_type = mc_tools::move_set<mc_sign_type>;
   move_set_type inserts(qmc.rng());
   move_set_type removes(qmc.rng());
 
@@ -214,31 +200,6 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Get the average sign
   _average_sign = qmc.average_sign();
 
-}
-
-//----------------------------------------------------------------------------------------------
-
-using namespace triqs::gfs;
-
-gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau) {
-    auto const& old_m = old_gf.mesh();
-    gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau}, get_target_shape(old_gf)};
-    auto const& new_m = new_gf.mesh();
-
-    new_gf.data()() = 0;
-    double f = old_m.delta()/new_m.delta();
-    for(auto tau : old_m) new_gf[closest_mesh_pt(double(tau))] += f*old_gf[tau];
-    new_gf[0] *= 2.0; new_gf[new_n_tau-1] *= 2.0;
-
-    new_gf.singularity() = old_gf.singularity();
-
-    return new_gf;
-}
-
-block_gf<imtime> change_mesh(block_gf_const_view<imtime> old_gf, int new_n_tau) {
-    std::vector<gf<imtime>> blocks;
-    for(auto const& bl : old_gf) blocks.push_back(change_mesh(bl,new_n_tau));
-    return make_block_gf(old_gf.domain().names(), blocks);
 }
 
 }

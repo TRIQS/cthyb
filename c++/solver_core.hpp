@@ -38,10 +38,10 @@ class solver_core {
  double beta;
  sorted_spaces sosp;
  std::map<std::string, indices_type> gf_struct;
- block_gf<imfreq> _G0_iw;                  // Green's function containers: imaginary-freq Green's functions
- block_gf<imtime> _Delta_tau, _G_tau;      // Green's function containers: imaginary-time Green's functions
- block_gf<legendre> _G_l;                  // Green's function containers: Legendre coefficients
- boost::mpi::communicator _comm;           // define the communicator, here MPI_COMM_WORLD
+ block_gf<imfreq> _G0_iw;                   // Green's function containers: imaginary-freq Green's functions
+ block_gf<imtime> _Delta_tau, _G_tau;       // Green's function containers: imaginary-time Green's functions
+ block_gf<legendre> _G_l;                   // Green's function containers: Legendre coefficients
+ boost::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
  solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
  mc_sign_type _average_sign;
 
@@ -50,29 +50,24 @@ class solver_core {
  solver_core(double beta, std::map<std::string, indices_type> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
- TRIQS_WRAP_ARG_AS_DICT
+ TRIQS_WRAP_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
  void solve(solve_parameters_t const & p);
 
  /// Set of parameters used in the last call to solve
  solve_parameters_t get_last_solve_parameters() const {return _last_solve_parameters;}
 
- // input containers
  /// G0(iw) in imaginary frequencies
  block_gf_view<imfreq> G0_iw() { return _G0_iw; }
- //void set_G0_iw(block_gf_view<imfreq> G0) { _G0_iw = G0; }
 
  /// Delta(tau) in imaginary time
  block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
- // imaginary-time measurements
  /// G(tau) in imaginary time
  block_gf_view<imtime> G_tau() { return _G_tau; }
  
- // Legendre measurements
  /// G_l in Legendre polynomials representation
  block_gf_view<legendre> G_l() { return _G_l; }
 
- // Atomic GF (without hybridization)
  /// Atomic G(tau) in imaginary time
  block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
 
@@ -80,9 +75,5 @@ class solver_core {
  mc_sign_type average_sign() const { return _average_sign; }
 
 };
-
-// Change imaginary-time mesh of a GF
-gf<imtime> change_mesh(gf_const_view<imtime> old_gf, int new_n_tau);
-block_gf<imtime> change_mesh(block_gf_const_view<imtime> old_gf, int new_n_tau);
 
 }

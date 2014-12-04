@@ -3,6 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2014 by O. Parcollet, M. Ferrero, P. Seth
+ * Adapted from Algorithms (fourth edition) by R. Sedgewick
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,8 +24,13 @@
 #include <triqs/utility/exceptions.hpp>
 #include <limits>
 
+namespace triqs{ namespace utility {
+
 struct rbt_insert_error {};
 
+// Key: must be a regular type, ie. with comparison operators
+// Value: semi-regular type, wth a reset method void reset (T&&...)
+// Compare: compare operator for the Keys
 template <typename Key, typename Value, typename Compare = std::less<Key>> class rb_tree {
 
  static const bool RED = true;
@@ -35,16 +41,15 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
  struct node_t;
  using node = node_t*;
 
+ // node type node_t is inherited from Value, and is the type of the data stored on the node
  struct node_t : public Value {
   Key key;          // key
-                    //  Value val;        // associated data
   bool color;       // color of parent link
   int N;            // subtree count
   node left, right; // links to left and right subtrees
   bool modified, delete_flag;
 
   node_t(Key const& key, Value const& val, bool color, int N)
-      //     : key(key), val(val), color(color), N(N), left{nullptr}, right{nullptr}, modified(true), delete_flag(false) {}
       : Value(val),
         key(key),
         color(color),
@@ -64,6 +69,9 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   }
  }; 
 
+ /*************************************************************************
+  *  Private functions
+  *************************************************************************/
  private:
  node root; // root of the BST
 
@@ -73,26 +81,17 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   if (n->right) apply_recursive(f, n->right);
  }
 
- template <typename Fnt> friend void foreach(rb_tree const & tr, Fnt const& f) { if (tr.root) tr.apply_recursive(f, tr.root); }
- template <typename Fnt> friend void foreach(rb_tree const & tr, node n, Fnt const& f) { if (n) tr.apply_recursive(f, n); }
-
  template <typename Fnt> void apply_recursive_reverse(Fnt const& f, node n) const {
   if (n->right) apply_recursive_reverse(f, n->right);
   f(n);
   if (n->left) apply_recursive_reverse(f, n->left);
  }
 
- template <typename Fnt> friend void foreach_reverse(rb_tree const & tr, Fnt const& f) { if (tr.root) tr.apply_recursive_reverse(f, tr.root); }
- template <typename Fnt> friend void foreach_reverse(rb_tree const & tr, node n, Fnt const& f) { if (n) tr.apply_recursive_reverse(f, n); }
-
  template <typename Fnt> void apply_recursive_subtree_first(Fnt const& f, node n) const {
   if (n->left) apply_recursive_subtree_first(f, n->left);
   if (n->right) apply_recursive_subtree_first(f, n->right);
   f(n);
  }
-
- template <typename Fnt> friend void foreach_subtree_first(rb_tree const & tr, node n, Fnt const& f) { if (n) tr.apply_recursive_subtree_first(f, n); }
- template <typename Fnt> friend void foreach_subtree_first(rb_tree const & tr,  Fnt const& f) { foreach_subtree_first(tr,tr.root,f);}
 
  // is node x red; false if x is nullptr ?
  bool is_red(node x) {
@@ -113,35 +112,59 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   delete n;
  }
 
+ /*************************************************************************
+  *  Public functions
+  *************************************************************************/
  public:
+ /*************************************************************************
+  *  Foreach functions
+     -- each function starts either at the root or at a given node
+     -- traversal order is different for each function
+ *************************************************************************/
+ // in the order of increasing keys
+ template <typename Fnt> friend void foreach(rb_tree const & tr, Fnt const& f) { if (tr.root) tr.apply_recursive(f, tr.root); }
+ template <typename Fnt> friend void foreach(rb_tree const & tr, node n, Fnt const& f) { if (n) tr.apply_recursive(f, n); }
+
+ // in the order of decreasing keys
+ template <typename Fnt> friend void foreach_reverse(rb_tree const & tr, Fnt const& f) { if (tr.root) tr.apply_recursive_reverse(f, tr.root); }
+ template <typename Fnt> friend void foreach_reverse(rb_tree const & tr, node n, Fnt const& f) { if (n) tr.apply_recursive_reverse(f, n); }
+
+ // in the order left subtree, right subtree, node
+ template <typename Fnt> friend void foreach_subtree_first(rb_tree const & tr, node n, Fnt const& f) { if (n) tr.apply_recursive_subtree_first(f, n); }
+ template <typename Fnt> friend void foreach_subtree_first(rb_tree const & tr,  Fnt const& f) { foreach_subtree_first(tr,tr.root,f);}
+
  rb_tree() : root(nullptr) {}
  ~rb_tree() { rec_free(root); }
+ rb_tree(rb_tree const &) = delete; // not implemented 
 
- rb_tree(rb_tree const &) = delete; // to do 
-
+ /// Number of nodes in the tree
  int size() const { return size(root); }
+ /// Is the tree empty?
  bool empty() const { return root == nullptr; }
+ /// Get the root node
  node const &get_root() const { return root; }
  node & get_root() { return root; }
 
- Compare const & comparator() const { return compare;}
+ /// What is the comparator?
+ Compare const & get_comparator() const { return compare;}
 
+ /// Print in text the whole tree
  void print(std::ostream & out) const {
- apply_recursive([&out](node n) {out << n->key << std::endl; }, root);
+  apply_recursive([&out](node n) {out << n->key << std::endl; }, root);
  }
 
- void graphviz(std::ostream&& out) const { graphviz(out); }
+ /// Generate a graphviz file
+ void graphviz(std::ostream && out) const { graphviz(out); }
 
- static std::string color_node_to_string(node n) {
-  if (n->delete_flag) return "green";
-  if (n->modified) return "red";
-  return "black";
- }
-
- void graphviz(std::ostream& out) const {
+ void graphviz(std::ostream & out) const {
+  auto color_node_to_string = [](node n) -> std::string {
+   if (n->delete_flag) return "green";
+   if (n->modified) return "red";
+   return "black";
+  };
   out << "digraph G{ graph [ordering=\"out\"];" << std::endl;
   if (root) out << double(root->key) << "[color = " << color_node_to_string(root) << "];" << std::endl;
-  auto f = [&out](node n) {
+  auto f = [&out,&color_node_to_string](node n) {
    if (!n) return;
    if (n->left)
     out << double(n->left->key) << "[color = " << color_node_to_string(n->left) << "];\n" <<  double(n->key) << " -> " << double(n->left->key)
@@ -194,11 +217,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   *  Apply a function from root to key (or null)
   *************************************************************************/
 
- template <typename Fnt> void get_and_apply(Key const& key, Fnt f) const {
-  get_and_apply (root,key,f);
- }
  private:
- template <typename Fnt> node get_and_apply(node x, Key const& key, Fnt const& f) const {
+ template <typename Fnt> void apply_until_key_impl(node x, Key const& key, Fnt const& f) const {
   while (x != nullptr) {
    f(x);
    if (compare(key, x->key))
@@ -206,15 +226,13 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    else if (compare(x->key, key))
     x = x->right;
    else
-    return x;
+    return;
   }
-  return nullptr;
  }
 
  public:
-
  void set_modified_from_root_to(Key const & key) { 
-  get_and_apply(key,[](node y){ y->modified=true;});
+  apply_until_key_impl(root,key,[](node y){ y->modified=true;});
  }
  
  /*************************************************************************
@@ -244,7 +262,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   return nullptr;
  }
  /*************************************************************************
-   * find_if, traversing in an order way (traversal order is fixed).
+   * find_if, traversing in an ordered way (traversal order is fixed).
    *************************************************************************/
 
  // value associated with the given key; nullptr if no such key
@@ -270,7 +288,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
  void insert(Key const& key, Value const& val) {
   root = insert(root, key, val);
   root->color = BLACK;
-  // check();
+  check();
  }
 
  private:
@@ -302,7 +320,6 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
  // delete the key-value pair with the minimum key rooted at h
  node deleteMin(node h) {
   if (h->left == nullptr) {
-   // std::cout << " dealloc " << h.p << std::endl;
    delete h;
    return nullptr;
   }
@@ -345,7 +362,6 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   check();
  }
 
- public:
  // delete the key-value pair with the given key
  void delete_node(Key const& key) {
   if (!contains(key)) TRIQS_RUNTIME_ERROR << "symbol table does not contain " << key;
@@ -378,9 +394,6 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
     h->Value::operator=(*x);
     h->modified=true; // not sure it is needed
     h->delete_flag = false; // CRUCIAL!
-    // h->val = x->val;
-    // h->val = get(h->right, min(h->right).key);
-    // h->key = min(h->right).key;
     h->right = deleteMin(h->right);
    } else
     h->right = delete_node(h->right, key);
@@ -392,6 +405,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   *  red-black tree helper functions
   *************************************************************************/
 
+ private:
  // make a left-leaning link lean to the right
  node rotateRight(node h) {
   _assert((h != nullptr) && is_red(h->left));
@@ -476,7 +490,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   *************************************************************************/
 
  public:
- // height of tree (1-node tree has height 0)
+ /// Height of tree (1-node tree has height 0)
  int height() const { return height(root); }
 
  private:
@@ -486,18 +500,18 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
  }
 
  /*************************************************************************
-  *  Ordered symbol table methods.
+  *  Ordered symbol table methods
   *************************************************************************/
  public:
- // the smallest key; nullptr if no such key
+ /// Get the smallest key, throws if tree is empty
  Key min_key() const {
-  //if (empty()) return nullptr;
+  if (empty()) TRIQS_RUNTIME_ERROR << "rbt: taking max_key of an empty tree.";
   return min(root)->key;
  }
 
  Key min_key(node x) const { return min(x)->key; }
 
- // the smallest key in subtree rooted at x; nullptr if no such key
+ /// Get smallest key in subtree rooted at x, throws if tree is empty
  node min(node x) const {
   _assert(x != nullptr);
   if (x->left == nullptr)
@@ -506,16 +520,15 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return min(x->left);
  }
 
- // the largest key; nullptr if no such key
- public:
+ /// Get the largest key, throws if tree is empty
  Key max_key() const {
-  //if (empty()) return nullptr;
+  if (empty()) TRIQS_RUNTIME_ERROR << "rbt: taking max_key of an empty tree.";
   return max(root)->key;
  }
 
  Key max_key(node x) const { return max(x)->key; }
 
- // the largest key in the subtree rooted at x; nullptr if no such key
+ /// Get the largest key in the subtree rooted at x, throws if tree is empty
  node max(node x) const {
   _assert(x != nullptr);
   if (x->right == nullptr)
@@ -524,8 +537,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return max(x->right);
  }
 
- // the largest key less than or equal to the given key
- public:
+ /// The largest key less than or equal to the given key
  Key floor(Key const& key) const {
   node x = floor(root, key);
   if (x == nullptr)
@@ -534,8 +546,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return x->key;
  }
 
- // the largest key in the subtree rooted at x less than or equal to the given key
  private:
+ // the largest key in the subtree rooted at x less than or equal to the given key
  node floor(node x, Key const& key) const {
   if (x == nullptr) return nullptr;
   if (key == x->key) return x;
@@ -547,8 +559,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return x;
  }
 
- // the smallest key greater than or equal to the given key
  public:
+ /// The smallest key greater than or equal to the given key
  Key ceiling(Key const& key) const {
   node x = ceiling(root, key);
   if (x == nullptr)
@@ -557,8 +569,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return x->key;
  }
 
- // the smallest key in the subtree rooted at x greater than or equal to the given key
  private:
+ // the smallest key in the subtree rooted at x greater than or equal to the given key
  node ceiling(node x, Key const& key) const {
   if (x == nullptr) return nullptr;
   if (key == x->key) return x;
@@ -570,16 +582,16 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return x;
  }
 
- // the key of rank k
  public:
+ /// The key of rank k
  Key select(int k) const {
   if (k < 0 || k >= size()) TRIQS_RUNTIME_ERROR << " unknow key"; // return nullptr;
   node x = select(root, k);
   return x->key;
  }
 
- // the key of rank k in the subtree rooted at x
  private:
+ // the key of rank k in the subtree rooted at x
  node select(node x, int k) const {
   _assert(x != nullptr);
   _assert(k >= 0 && k < size(x));
@@ -592,12 +604,12 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return x;
  }
 
- // number of keys less than key
  public:
+ /// Number of keys less than key
  int rank(Key const& key) const { return rank(key, root); }
 
- // number of keys less than key in the subtree rooted at x
  private:
+ // number of keys less than key in the subtree rooted at x
  int rank(Key const& key, node x) const {
   if (x == nullptr) return 0;
   if (compare(key,x->key))
@@ -608,6 +620,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return size(x->left);
  }
 
+ // FIXME this section needs to be reread/redone
  /*************************************************************************
    *  DEBUG CODE : Check integrity of red-black BST data structure
    *************************************************************************/
@@ -690,4 +703,4 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   return isBalanced(x->left, black) && isBalanced(x->right, black);
  }
 };
-
+}}

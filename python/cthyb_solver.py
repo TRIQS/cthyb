@@ -1,6 +1,5 @@
 from cthyb import SolverCore
 from pytriqs.gf.local import *
-from numpy import identity
 import pytriqs.utility.mpi as mpi
 
 class Solver(SolverCore):

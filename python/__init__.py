@@ -24,6 +24,6 @@ DOC
 
 """
 from cthyb_solver import Solver
-from cthyb import SolverCore, change_mesh
+from cthyb import SolverCore
 
-__all__ = ['Solver', 'SolverCore', 'change_mesh']
+__all__ = ['Solver', 'SolverCore']

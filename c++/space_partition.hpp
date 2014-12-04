@@ -49,8 +49,8 @@ template <typename StateType, typename OperatorType> class space_partition {
 
  space_partition(space_partition const&) = default;
 
- // Algorithm by Michel Fererro
- // WARNING: Redundant implementation, must be revisited later
+ // Algorithm by Michel Ferrero
+ // FIXME WARNING: Redundant implementation, must be revisited later
  std::pair<matrix_element_map_t, matrix_element_map_t> merge_subspaces(operator_t const& Cd, operator_t const& C,
                                                                        bool store_matrix_elements = true) {
 

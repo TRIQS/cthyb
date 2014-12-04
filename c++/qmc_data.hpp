@@ -27,14 +27,14 @@
 namespace cthyb {
 using namespace triqs::gfs;
 
-/**
- * The data of the Monte carlo
- */
+/************************
+ * The Monte Carlo data
+ ***********************/
 struct qmc_data {
 
  configuration config;                          // Configuration
  time_segment tau_seg;
- std::map<std::pair<int,int>,int> linindex;
+ std::map<std::pair<int,int>,int> linindex;     // Linear index constructed from block and inner indices 
  sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
  mutable impurity_trace imp_trace; // Calculator of the trace
  std::vector<int> n_inner; 
@@ -45,7 +45,7 @@ struct qmc_data {
  struct delta_block_adaptor {
   gf_const_view<imtime> delta_block;
 
-  // COMMENT : can remove all of this, the const prevent = anyway ...
+  // FIXME COMMENT : can remove all of this, the const prevent = anyway ...
   delta_block_adaptor(gf_const_view<imtime> const &delta_block) : delta_block(delta_block) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
@@ -64,7 +64,7 @@ struct qmc_data {
  int current_sign, old_sign;                                  // Permutation prefactor
  trace_t trace;                                               // The current value of the trace
 
- // construction and the basics stuff. value semantics, except = ?
+ // Construction
  qmc_data(double beta, solve_parameters_t const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
           block_gf_const_view<imtime> delta, std::vector<int> n_inner)
     : config(beta),
@@ -77,7 +77,7 @@ struct qmc_data {
       n_inner(n_inner) {
   trace = imp_trace.estimate();
   dets.clear();
-  for (auto const &bl : delta.mesh()) dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
+  for (auto const & bl : delta.mesh()) dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
  }
 
  qmc_data(qmc_data const &) = default;
@@ -87,7 +87,7 @@ struct qmc_data {
 
   int s = 0;
   size_t num_blocks = dets.size();
-  vector<int> n_op_with_a_equal_to(num_blocks, 0), n_ndag_op_with_a_equal_to(num_blocks, 0);
+  std::vector<int> n_op_with_a_equal_to(num_blocks, 0), n_ndag_op_with_a_equal_to(num_blocks, 0);
 
   // In this first part we compute the sign to bring the configuration to
   // d^_1 d^_1 d^_1 ... d_1 d_1 d_1   d^_2 d^_2 ... d_2 d_2   ...   d^_n .. d_n

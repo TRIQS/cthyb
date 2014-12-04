@@ -27,15 +27,14 @@
 
 namespace cthyb {
 
-/**
- */
+/********************************************
+ Calculate the trace of the impurity problem.
+ ********************************************/
 class impurity_trace {
  public:
 
- int check_counter = 0; //DEBUG
-
  using trace_t = double;
- // using trace_t = std::complex<double>; TODO
+ // using trace_t = std::complex<double>; TODO FIXME
 
  // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
  impurity_trace(configuration& c, sorted_spaces const& sosp, solve_parameters_t const& p);
@@ -86,7 +85,6 @@ class impurity_trace {
  public:
 #endif
  rb_tree_t tree;       // the red black tree and its nodes
- int n_modif;          // Analysis : number of nodes modified at the last change
 
  // ---------------- Cache machinery ----------------
  void update_cache();
@@ -114,7 +112,7 @@ class impurity_trace {
 
  // recursive function for tree traversal
  int compute_block_table(node n, int b);
- std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true); //,double lnorm);
+ std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true);
  std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
  trace_t compute_trace(bool to_machine_precision, double p_yee, double u_yee);
 
@@ -153,11 +151,8 @@ class impurity_trace {
 
  node try_insert_impl(node h, node n) { // implementation
   if (h == nullptr) return n;
-  if (h->key == n->key) {
-   // std::cerr << "insertion error "<< h->key <<  n->key;
-   throw rbt_insert_error{};
-  }
-  auto smaller = tree.comparator()(n->key, h->key);
+  if (h->key == n->key) throw rbt_insert_error{};
+  auto smaller = tree.get_comparator()(n->key, h->key);
   if (smaller)
    h->left = try_insert_impl(h->left, n);
   else
@@ -179,6 +174,7 @@ class impurity_trace {
  /*************************************************************************
   * Node Insertion
   *************************************************************************/
+
  public:
  // Put a trial node at tau for operator op using an ordinary BST insertion (ie. not red black)
  void try_insert(time_pt const& tau, op_desc const& op) {
@@ -196,7 +192,7 @@ class impurity_trace {
   cancel_insert_impl();
   trial_node_index = -1;
   tree_size = tree.size();
-  n_modif = tree.clear_modified();
+  tree.clear_modified();
   check_cache_integrity();
  }
 
@@ -212,7 +208,7 @@ class impurity_trace {
   trial_node_index = -1;
   update_cache();
   tree_size = tree.size();
-  n_modif = tree.clear_modified();
+  tree.clear_modified();
   check_cache_integrity();
  }
 
@@ -220,8 +216,8 @@ class impurity_trace {
   * Node Removal
   *************************************************************************/
  private:
- std::vector<node> removed_ops;
- std::vector<time_pt> removed_key;
+ std::vector<node> removed_nodes;
+ std::vector<time_pt> removed_keys;
 
  public:
  // Find and mark as deleted the nth operator with fixed dagger and block_index
@@ -233,8 +229,8 @@ class impurity_trace {
    if (no->op.dagger == dagger && no->op.block_index == block_index) ++i;
    return i == n + 1;
   });
-  removed_ops.push_back(x);      // store the node
-  removed_key.push_back(x->key); // store the key
+  removed_nodes.push_back(x);      // store the node
+  removed_keys.push_back(x->key); // store the key
   tree.set_modified_from_root_to(x->key);
   x->delete_flag = true; // mark the node for deletion
   tree_size--;
@@ -243,22 +239,22 @@ class impurity_trace {
 
  // Clean all the delete flags
  void cancel_delete() {
-  for (auto& n : removed_ops) n->delete_flag = false;
-  removed_ops.clear();
-  removed_key.clear();
+  for (auto& n : removed_nodes) n->delete_flag = false;
+  removed_nodes.clear();
+  removed_keys.clear();
   tree_size = tree.size();
-  n_modif = tree.clear_modified();
+  tree.clear_modified();
   check_cache_integrity();
  }
 
  // Confirm deletion: the nodes flagged for deletion are truly deleted
  void confirm_delete() {
-  for (auto& k : removed_key) tree.delete_node(k); // CANNOT use the node here
-  removed_ops.clear();
-  removed_key.clear();
+  for (auto& k : removed_keys) tree.delete_node(k); // CANNOT use the node here
+  removed_nodes.clear();
+  removed_keys.clear();
   update_cache();
   tree_size = tree.size();
-  n_modif = tree.clear_modified();
+  tree.clear_modified();
   check_cache_integrity();
  }
 
@@ -276,12 +272,12 @@ class impurity_trace {
   trial_node_index = -1;
 
   // Deleted nodes
-  for (auto& n : removed_ops) n->delete_flag = false;
-  removed_ops.clear();
-  removed_key.clear();
+  for (auto& n : removed_nodes) n->delete_flag = false;
+  removed_nodes.clear();
+  removed_keys.clear();
 
   tree_size = tree.size();
-  n_modif = tree.clear_modified();
+  tree.clear_modified();
   check_cache_integrity();
  }
 
@@ -299,14 +295,14 @@ class impurity_trace {
   trial_node_index = -1;
 
   // Deleted nodes
-  for (auto& k : removed_key) tree.delete_node(k); // CANNOT use the node here
-  removed_ops.clear();
-  removed_key.clear();
+  for (auto& k : removed_keys) tree.delete_node(k); // CANNOT use the node here
+  removed_nodes.clear();
+  removed_keys.clear();
 
   // update cache only at the end
   update_cache();
   tree_size = tree.size();
-  n_modif = tree.clear_modified();
+  tree.clear_modified();
   check_cache_integrity();
  }
 

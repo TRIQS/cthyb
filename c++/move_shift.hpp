@@ -35,7 +35,7 @@ class move_shift_operator {
  qmc_data::trace_t new_trace;
  time_pt tau_old, tau_new;
  op_desc op_old, op_new;
- typedef det_manip::det_manip<qmc_data::delta_block_adaptor> det_type;
+ using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
  det_type::RollDirection roll_direction;
  int block_index;
 
@@ -46,31 +46,17 @@ class move_shift_operator {
     : data(data),
       config(data.config),
       rng(rng),
-      record_histograms(record_histograms) {
-  if (record_histograms) { 
-   //FIXME grid too coarse, need to update
-   histos.insert({"length_proposed", {0, config.beta(), 100, "hist_length_proposed.dat"}});
-   histos.insert({"length_accepted", {0, config.beta(), 100, "hist_length_accepted.dat"}});
-  }
- }
+      record_histograms(record_histograms) {}
 
  //---------------------
 
  mc_weight_type attempt() {
 
-// FIXME to be studied: effect of creating move_shift per block vs "global" move_shift
-//  // --- Choose an operator in block to move at random and whether dagger or not
-//  auto& det = data.dets[block_index];
-//  int det_size = det.size();
-//  if (det_size == 0) return 0; // nothing to remove
-//  int num_op_old = rng(det_size);
-//  bool is_dagger = rng(0,1);
-
   // --- Choose an operator in configuration to shift at random
   // By choosing an *operator* in config directly, not bias based on det size introduced
-  const int config_size(config.size());
+  auto config_size = config.size();
   if (config_size==0) return 0;
-  const int op_pos_in_config((rng(config_size)));
+  const int op_pos_in_config = rng(config_size);
 
   // --- Find operator (and its characteristics) from the configuration
   auto itconfig = config.begin();
@@ -79,9 +65,9 @@ class move_shift_operator {
   op_old = (*itconfig).second;
   block_index = op_old.block_index;
   auto is_dagger = op_old.dagger;
-  // Properties corresposing to det
+  // Properties corresponding to det
   auto& det = data.dets[block_index];
-  int det_size = det.size();
+  auto det_size = det.size();
   if (det_size == 0) return 0; // nothing to remove
 
 #ifdef EXT_DEBUG
@@ -93,7 +79,7 @@ class move_shift_operator {
 #endif
 
   // Construct new operator
-  // Choose a new inner index (this is done here for compatibility) -- FIXME alpha needs to change?
+  // Choose a new inner index (this is done here for compatibility)
   auto inner_new = rng(data.n_inner[block_index]);
   op_new = op_desc{block_index, inner_new, is_dagger, data.linindex[std::make_pair(block_index, inner_new)]};
 
@@ -150,11 +136,6 @@ class move_shift_operator {
   delta_tau = double(tau_new - tau_old);
   if (record_histograms) histos["length_proposed"] << delta_tau;
 
-  // --- Modify the tree
-  // Mark the operator at original time for deletion in the tree
-  auto tau_old_tree = data.imp_trace.try_delete(op_pos_in_det, block_index, is_dagger);
-  // FIXME could check if tau_old_tree == tau_old
-
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;
   std::cerr << (is_dagger ? "Cdag" : "C");
@@ -165,6 +146,11 @@ class move_shift_operator {
   std::cerr << "(" << op_new.block_index << "," << op_new.inner_index << ")";
   std::cerr << " tau = " << tau_new << std::endl;
 #endif
+
+  // --- Modify the tree
+
+  // Mark the operator at original time for deletion in the tree
+  data.imp_trace.try_delete(op_pos_in_det, block_index, is_dagger);
 
   // Try to insert the new operator at shifted time in the tree
   try {
@@ -181,7 +167,7 @@ class move_shift_operator {
   // --- Compute the det ratio
 
   // Do we need to roll the determinant?
-  typedef det_manip::det_manip<qmc_data::delta_block_adaptor> det_type;
+  using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
   roll_direction = det_type::None;
 
   // Check if we went through \tau = 0 or \tau = \beta

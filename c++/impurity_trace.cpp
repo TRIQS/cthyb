@@ -170,7 +170,7 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   dtau_r = double(n->key - tree.min_key(n->right));
   auto dim = second_dim(M); // same as get_block_dim(b2);
   for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i));
-  //for (int i = 1; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * (get_block_eigenval(b1, i) - get_block_eigenval(b1, 0)));
+  //for (int i = 1; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * (get_block_eigenval(b1, i) - get_block_eigenval(b1, 0))); FIXME
   if ((first_dim(r.second) == 1) && (second_dim(r.second) == 1))
    M *= r.second(0, 0);
   else
@@ -238,8 +238,10 @@ void impurity_trace::update_cache_impl(node n) {
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
   n->cache.matrix_norm_valid[b] = false;
- }
- // n->modified = false; FIXME
+ } 
+ // This is not necessary here as all modified nodes are "cleared" 
+ //  by tree::clear_modified in the try/cancel/confirm set 
+ // n->modified = false;
 }
 
 // -------- Calculate the dtau for a given node to its left and right neighbours ----------------
@@ -342,7 +344,7 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
   trace_t trace_partial = 0;
   auto dim = get_block_dim(block_index);
   for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
-  //trace_partial *= std::exp(dtau * get_block_eigenval(block_index, 0) - to_sort[bl].first);
+  //trace_partial *= std::exp(dtau * get_block_eigenval(block_index, 0) - to_sort[bl].first); FIXME
 
 #ifdef CHECK_MATRIX_BOUNDED_BY_BOUND
   if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort[bl].first))

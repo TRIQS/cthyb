@@ -89,12 +89,12 @@ sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_
 }
 
 //-----------------------------
+
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, fundamental_operator_set const& fops)
    : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
  autopartition(fops, h_);
  complete_init(h_);
 }
-
 
 //-----------------------------
 
@@ -279,7 +279,6 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
    ++i;
   }
   std::swap(tmp, sub_hilbert_spaces);
-  // for (auto& x : map_qn_n) x.second = remap[x.second];
   auto remap_connection = [&](std::vector<std::vector<long>>& connection) {
    for (auto& cc : connection) {
     auto cc2 = cc;

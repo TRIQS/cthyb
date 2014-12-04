@@ -30,7 +30,6 @@ namespace cthyb {
 
 using namespace triqs::arrays;
 using namespace triqs::gfs;
-using triqs::arrays::matrix;
 
 // Division of Hilbert Space into sub hilbert spaces, using the quantum numbers.
 class sorted_spaces {
@@ -87,7 +86,7 @@ class sorted_spaces {
  block_gf<imtime> atomic_gf(double beta, std::map<std::string,many_body_op_t::indices_t> const& gf_struct, int n_tau) const;
 
  private:
- /// ------------------  DATAS  -----------------
+ /// ------------------  DATA  -----------------
 
  std::vector<sub_hilbert_space> sub_hilbert_spaces; // all blocks
 

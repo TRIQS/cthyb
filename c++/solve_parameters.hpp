@@ -43,16 +43,16 @@ struct solve_parameters_t {
  /// Calculate the full trace or use an estimate?
  bool use_trace_estimator = false;
 
- /// Whether to measure G(tau)
+ /// Measure G(tau)?
  bool measure_g_tau = true;
 
- /// Whether to measure G_l (Legendre)
+ /// Measure G_l (Legendre)?
  bool measure_g_l = false;
 
- /// Whether to measure perturbation order
+ /// Measure perturbation order?
  bool measure_pert_order = false;
 
- /// Make the analysis histograms of the trace computation
+ /// Make histograms of the trace computation?
  bool make_histograms = false;
 
  solve_parameters_t() {}

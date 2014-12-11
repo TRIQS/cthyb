@@ -74,6 +74,14 @@ class solver_core {
  /// Monte Carlo average sign
  mc_sign_type average_sign() const { return _average_sign; }
 
+ /// Eigensystems of the atomic problem
+ /// Returns a list of pairs (E,U), where H = U * diag(E) * U^+ (for each subspace)
+ std::vector<std::pair<vector<double>,matrix<double>>> get_eigensystems() const {
+  decltype(get_eigensystems()) res;
+  for(auto const& es : sosp.get_eigensystems()) res.emplace_back(es.eigenvalues,es.unitary_matrix);
+  return res;
+ }
+
 };
 
 }

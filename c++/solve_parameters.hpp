@@ -55,6 +55,9 @@ struct solve_parameters_t {
  /// Make histograms of the trace computation?
  bool make_histograms = false;
 
+ /// Operator insertion/removal probabilities for different blocks
+ std::map<std::string,double> proposal_prob = (std::map<std::string,double>{});
+
  solve_parameters_t() {}
  
  solve_parameters_t(real_operator_t h_loc, int n_cycles) : h_loc(h_loc), n_cycles(n_cycles) {}

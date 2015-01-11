@@ -165,8 +165,11 @@ void solver_core::solve(solve_parameters_t const & params) {
   auto& delta_names = _Delta_tau.domain().names();
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
    int block_size = _Delta_tau[block].data().shape()[1];
-   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + delta_names[block], 1.0);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + delta_names[block], 1.0);
+   auto const& block_name = delta_names[block];
+   auto f = params.proposal_prob.find(block_name);
+   double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
+   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + block_name, prop_prob);
   }
 
   qmc.add_move(inserts, "Insert two operators", 1.0);

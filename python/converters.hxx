@@ -26,6 +26,7 @@ template <> struct py_converter<solve_parameters_t> {
   PyDict_SetItemString( d, "measure_g_l"        , convert_to_python(x.measure_g_l));
   PyDict_SetItemString( d, "measure_pert_order" , convert_to_python(x.measure_pert_order));
   PyDict_SetItemString( d, "make_histograms"    , convert_to_python(x.make_histograms));
+  PyDict_SetItemString( d, "proposal_prob"      , convert_to_python(x.proposal_prob));
   return d;
  }
 
@@ -54,6 +55,7 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "measure_g_l"        , res.measure_g_l          , false);
   _get_optional(dic, "measure_pert_order" , res.measure_pert_order   , false);
   _get_optional(dic, "make_histograms"    , res.make_histograms      , false);
+  _get_optional(dic, "proposal_prob"      , res.proposal_prob        , (std::map<std::string,double>{}));
   return res;
  }
 
@@ -84,7 +86,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","make_histograms"};
+  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","make_histograms","proposal_prob"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -96,22 +98,23 @@ template <> struct py_converter<solve_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  _check_mandatory<real_operator_t             >(dic, fs, err, "h_loc"              , "real_operator_t"); 
-  _check_mandatory<int                         >(dic, fs, err, "n_cycles"           , "int"); 
-  _check_optional <std::string                 >(dic, fs, err, "partition_method"   , "std::string");
-  _check_optional <std::vector<real_operator_t>>(dic, fs, err, "quantum_numbers"    , "std::vector<real_operator_t>");
-  _check_optional <int                         >(dic, fs, err, "length_cycle"       , "int");
-  _check_optional <int                         >(dic, fs, err, "n_warmup_cycles"    , "int");
-  _check_optional <int                         >(dic, fs, err, "random_seed"        , "int");
-  _check_optional <std::string                 >(dic, fs, err, "random_name"        , "std::string");
-  _check_optional <int                         >(dic, fs, err, "max_time"           , "int");
-  _check_optional <int                         >(dic, fs, err, "verbosity"          , "int");
-  _check_optional <bool                        >(dic, fs, err, "move_shift"         , "bool");
-  _check_optional <bool                        >(dic, fs, err, "use_trace_estimator", "bool");
-  _check_optional <bool                        >(dic, fs, err, "measure_g_tau"      , "bool");
-  _check_optional <bool                        >(dic, fs, err, "measure_g_l"        , "bool");
-  _check_optional <bool                        >(dic, fs, err, "measure_pert_order" , "bool");
-  _check_optional <bool                        >(dic, fs, err, "make_histograms"    , "bool");
+  _check_mandatory<real_operator_t              >(dic, fs, err, "h_loc"              , "real_operator_t");
+  _check_mandatory<int                          >(dic, fs, err, "n_cycles"           , "int");
+  _check_optional <std::string                  >(dic, fs, err, "partition_method"   , "std::string");
+  _check_optional <std::vector<real_operator_t> >(dic, fs, err, "quantum_numbers"    , "std::vector<real_operator_t>");
+  _check_optional <int                          >(dic, fs, err, "length_cycle"       , "int");
+  _check_optional <int                          >(dic, fs, err, "n_warmup_cycles"    , "int");
+  _check_optional <int                          >(dic, fs, err, "random_seed"        , "int");
+  _check_optional <std::string                  >(dic, fs, err, "random_name"        , "std::string");
+  _check_optional <int                          >(dic, fs, err, "max_time"           , "int");
+  _check_optional <int                          >(dic, fs, err, "verbosity"          , "int");
+  _check_optional <bool                         >(dic, fs, err, "move_shift"         , "bool");
+  _check_optional <bool                         >(dic, fs, err, "use_trace_estimator", "bool");
+  _check_optional <bool                         >(dic, fs, err, "measure_g_tau"      , "bool");
+  _check_optional <bool                         >(dic, fs, err, "measure_g_l"        , "bool");
+  _check_optional <bool                         >(dic, fs, err, "measure_pert_order" , "bool");
+  _check_optional <bool                         >(dic, fs, err, "make_histograms"    , "bool");
+  _check_optional <std::map<std::string, double>>(dic, fs, err, "proposal_prob"      , "std::map<std::string, double>");
   if (err) goto _error;
   return true;
   

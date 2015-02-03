@@ -44,6 +44,14 @@ class Solver(SolverCore):
         """
 
         # If tail parameters provided for Sigma_iw fitting, use them, otherwise use defaults
+        if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw)):
+	    if mpi.is_master_node(): 
+                warning = ("!------------------------------------------------------------------------------------!\n"
+                           "! WARNING: Using default high-frequency tail fitting parameters in the CTHYB solver. !\n"
+                           "! You should check that the fitting range is suitable for your calculation!          !\n"
+                           "!------------------------------------------------------------------------------------!")
+                print warning
+
         fit_n_moments = params_kw.pop("fit_n_moments", 3)
         if "fit_known_moments" in params_kw:
             fit_known_moments = params_kw.pop("fit_known_moments")

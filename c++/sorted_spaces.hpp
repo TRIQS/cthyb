@@ -24,12 +24,13 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "triqs/draft/hilbert_space_tools/state.hpp"
+#include <triqs/hilbert_space/state.hpp>
 
 namespace cthyb {
 
 using namespace triqs::arrays;
 using namespace triqs::gfs;
+using namespace triqs::hilbert_space;
 
 // Division of Hilbert Space into sub hilbert spaces, using the quantum numbers.
 class sorted_spaces {

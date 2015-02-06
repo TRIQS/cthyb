@@ -19,11 +19,12 @@
  *
  ******************************************************************************/
 #include "sorted_spaces.hpp"
-#include "./space_partition.hpp"
 #include <triqs/arrays/linalg/eigenelements.hpp>
-#include "triqs/draft/hilbert_space_tools/imperative_operator.hpp"
+#include <triqs/hilbert_space/space_partition.hpp>
+#include <triqs/hilbert_space/imperative_operator.hpp>
 
 using namespace triqs::arrays;
+using namespace triqs::hilbert_space;
 using std::string;
 
 namespace cthyb {
@@ -33,11 +34,11 @@ namespace cthyb {
 
 void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_body_op_t const& h) {
 
- imperative_operator<hilbert_space, false> hamiltonian(h, fops);
+ imperative_operator<hilbert_space, double, false> hamiltonian(h, fops);
  hilbert_space full_hs(fops);
  state<hilbert_space, double, true> st(full_hs);
 
- using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<hilbert_space, false>>;
+ using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<hilbert_space, double, false>>;
  // Split the Hilbert space
  space_partition_t SP(st, hamiltonian, false);
 
@@ -48,7 +49,7 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
   auto create = many_body_op_t::make_canonical(true, o.index);
   auto destroy = many_body_op_t::make_canonical(false, o.index);
 
-  imperative_operator<hilbert_space> op_c_dag(create, fops), op_c(destroy, fops);
+  imperative_operator<hilbert_space, double> op_c_dag(create, fops), op_c(destroy, fops);
 
   int n = o.linear_index;
   std::tie(creation_melem[n], annihilation_melem[n]) = SP.merge_subspaces(op_c_dag, op_c, true);
@@ -123,7 +124,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
  hilbert_space full_hs(fops);
 
  // The QN as operators : a vector of imperative operators for the quantum numbers
- std::vector<imperative_operator<hilbert_space>> qsize;
+ std::vector<imperative_operator<hilbert_space, double>> qsize;
  for (auto& qn : qn_vector) qsize.emplace_back(qn, fops);
 
  // Helper function to get quantum numbers
@@ -174,7 +175,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
   auto destroy = many_body_op_t::make_canonical(false, x.index);
 
   // construct their imperative counterpart
-  imperative_operator<hilbert_space> op_c_dag(create, fops), op_c(destroy, fops);
+  imperative_operator<hilbert_space, double> op_c_dag(create, fops), op_c(destroy, fops);
 
   // to avoid declaring every time in the loop below
   std::vector<quantum_number_t> qn_before, qn_after;
@@ -226,7 +227,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
 
 void sorted_spaces::complete_init(many_body_op_t const& h_) {
 
- imperative_operator<hilbert_space, false> hamiltonian(h_, fops);
+ imperative_operator<hilbert_space, double, false> hamiltonian(h_, fops);
 
  /*
    Compute energy levels and eigenvectors of the local Hamiltonian
@@ -307,11 +308,11 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
   auto create = many_body_op_t::make_canonical(true, x.index);
   auto destroy = many_body_op_t::make_canonical(false, x.index);
   // construct their imperative counterpart
-  imperative_operator<hilbert_space> op_c_dag(create, fops), op_c(destroy, fops);
+  imperative_operator<hilbert_space, double> op_c_dag(create, fops), op_c(destroy, fops);
 
   // Compute the matrices of c, c dagger in the diagonalization base of H_loc
   // first a lambda, since it is almost the same code for c and cdag
-  auto make_c_mat = [&](std::vector<long> const& connection, imperative_operator<hilbert_space> c_op) {
+  auto make_c_mat = [&](std::vector<long> const& connection, imperative_operator<hilbert_space, double> c_op) {
    std::vector<matrix<double>> cmat(connection.size());
    for (int B = 0; B < connection.size(); ++B) {
     auto Bp = connection[B];

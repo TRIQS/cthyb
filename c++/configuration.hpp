@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "sorted_spaces.hpp"
-#include "triqs/draft/hilbert_space_tools/hilbert_space.hpp"
+#include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <map>
 

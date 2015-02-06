@@ -25,6 +25,8 @@
 #include "triqs/utility/rbt.hpp"
 #include "triqs/statistics/histograms.hpp"
 
+using namespace triqs;
+
 namespace cthyb {
 
 /********************************************

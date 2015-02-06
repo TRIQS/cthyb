@@ -1,7 +1,7 @@
 #include <triqs/utility/first_include.hpp>
 #include "./sorted_spaces.hpp"
 #include <triqs/operators/many_body_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
+#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 using namespace cthyb;
 using triqs::utility::many_body_operator;

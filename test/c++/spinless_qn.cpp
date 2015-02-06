@@ -1,6 +1,6 @@
 #include "solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
-#include <triqs/draft/hilbert_space_tools/fundamental_operator_set.hpp>
+#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
 
 using namespace cthyb;

@@ -36,6 +36,7 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
+p["make_histograms"] = True
 
 # Block structure of GF
 gf_struct = {'up':[0], 'dn' : [0]}
@@ -52,6 +53,16 @@ p["quantum_numbers"] = qn
 
 # Construct solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
+
+def read_histo(f):
+    histo = []
+    for line in f:
+        cols = filter(lambda s: s, line.split(' '))
+        histo.append(float(cols[1]))
+    for x in reversed(histo):
+        if x != 0: break
+        histo.remove(x)
+    return histo
 
 if mpi.rank==0:
     arch = HDFArchive('asymm_bath.h5','w')
@@ -71,14 +82,22 @@ for e in epsilon:
         arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "dn":S.G_tau["dn"]}
 
         plt.clf()
-        oplot(S.G_tau["up"], name="$\uparrow\uparrow$")
-        oplot(S.G_tau["dn"],name="$\downarrow\downarrow$")
+        oplot(rebinning_tau(S.G_tau['up'],300), name="$\uparrow\uparrow$")
+        oplot(rebinning_tau(S.G_tau['dn'],300),name="$\downarrow\downarrow$")
 
-        axes = plt.gca()
-        axes.set_ylabel('$G(\\tau)$')
-        axes.legend(loc='lower center',prop={'size':10})
+        a = plt.gca()
+        a.set_ylabel('$G(\\tau)$')
+        a.set_xlim((0,beta))
+        a.set_ylim((-1,0))
+        a.legend(loc='lower right',prop={'size':10})
 
-        axes.set_title("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
+        a.set_title("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
+
+        histo = read_histo(open("histo_opcount_total.dat",'r'))
+
+        histo_a = plt.axes([.35, .15, .3, .4], axisbg='y')
+        histo_a.bar(range(len(histo)), histo)
+        histo_a.set_title('histo_opcount_total')
 
         pp.savefig(plt.gcf())
 

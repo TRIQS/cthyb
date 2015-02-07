@@ -48,8 +48,8 @@ class move_insert_c_cdag {
       block_size(block_size),
       record_histograms(record_histograms) {
   if (record_histograms) {
-   histos.insert({"shift_length_proposed", {0, config.beta(), 100, "hist_shift_length_proposed.dat"}});
-   histos.insert({"shift_length_accepted", {0, config.beta(), 100, "hist_shift_length_accepted.dat"}});
+   histos.insert({"shift_length_proposed", {0, config.beta(), 100, "histo_shift_length_proposed.dat"}});
+   histos.insert({"shift_length_accepted", {0, config.beta(), 100, "histo_shift_length_accepted.dat"}});
   }
  }
 

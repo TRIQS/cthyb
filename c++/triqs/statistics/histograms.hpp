@@ -120,7 +120,7 @@ namespace statistics {
   histogram_segment_bin() : histogram_segment_bin(0, 1) {}
 
   histogram_segment_bin(double a, double b, int n_bins = 1000, std::string dump_file_name = "")
-     : histo(n_bins+1), _a(a), _b(b), n_bin_over_len(n_bins / (b - a)) {
+     : histo(n_bins), _a(a), _b(b), n_bin_over_len(n_bins / (b - a)) {
    activate_dumpfile(dump_file_name);
    if (_a >= _b) TRIQS_RUNTIME_ERROR << "histogram_segment_bin construction : one must have a<b";
   }

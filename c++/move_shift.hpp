@@ -46,7 +46,12 @@ class move_shift_operator {
     : data(data),
       config(data.config),
       rng(rng),
-      record_histograms(record_histograms) {}
+      record_histograms(record_histograms) {
+  if (record_histograms) {
+   histos.insert({"shift_length_proposed", {0, config.beta(), 100, "histo_shift_length_proposed.dat"}});
+   histos.insert({"shift_length_accepted", {0, config.beta(), 100, "histo_shift_length_accepted.dat"}});
+  }
+ }
 
  //---------------------
 
@@ -134,7 +139,7 @@ class move_shift_operator {
 
   // Record the length of the proposed shift
   delta_tau = double(tau_new - tau_old);
-  if (record_histograms) histos["length_proposed"] << delta_tau;
+  if (record_histograms) histos["shift_length_proposed"] << delta_tau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;
@@ -223,7 +228,7 @@ class move_shift_operator {
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
-  if (record_histograms) histos["length_accepted"] << delta_tau;
+  if (record_histograms) histos["shift_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;

@@ -31,6 +31,9 @@ class move_remove_c_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index, block_size;
+ bool record_histograms;
+ std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ double delta_tau;
  qmc_data::trace_t new_trace;
  time_pt tau1, tau2;
 
@@ -38,8 +41,18 @@ class move_remove_c_cdag {
  
  //----------------------------------
 
- move_remove_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng)
-    : data(data), config(data.config), rng(rng), block_index(block_index), block_size(block_size) {}
+ move_remove_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, bool record_histograms)
+    : data(data),
+      config(data.config),
+      rng(rng),
+      block_index(block_index),
+      block_size(block_size),
+      record_histograms(record_histograms) {
+  if (record_histograms) {
+   histos.insert({"remove_length_proposed", {0, config.beta(), 100, "histo_remove_length_proposed.dat"}});
+   histos.insert({"remove_length_accepted", {0, config.beta(), 100, "histo_remove_length_accepted.dat"}});
+  }
+ }
 
  //----------------
  
@@ -69,11 +82,15 @@ class move_remove_c_cdag {
   tau1 = data.imp_trace.try_delete(num_c, block_index, false);
   tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
 
+  // record the length of the proposed removal
+  delta_tau = double(tau2 - tau1);
+  if (record_histograms) histos["remove_length_proposed"] << delta_tau;
+
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
   // proposition probability
   double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // Size of the det before the try_delete!
-  
+
   // For quick abandon 
   double random_number = rng.preview();
   if (random_number == 0.0) return 0;
@@ -119,6 +136,7 @@ class move_remove_c_cdag {
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
+  if (record_histograms) histos["remove_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;

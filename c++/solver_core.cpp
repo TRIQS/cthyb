@@ -169,7 +169,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    auto f = params.proposal_prob.find(block_name);
    double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
    inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + block_name, prop_prob);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng()), "Remove Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Remove Delta_" + block_name, prop_prob);
   }
 
   qmc.add_move(inserts, "Insert two operators", 1.0);

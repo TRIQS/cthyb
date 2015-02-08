@@ -1,15 +1,10 @@
 #!/bin/env pytriqs
 
-import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
-import itertools
-
-from pytriqs.plot.mpl_interface import plt, oplot
-from matplotlib.backends.backend_pdf import PdfPages
 
 def print_master(msg):
     if mpi.rank==0: print msg
@@ -44,6 +39,17 @@ gf_struct = {'up':[0], 'dn' : [0]}
 # Hamiltonian
 H = U*n("up",0)*n("dn",0)
 
+# Histograms to be saved
+histos_to_save = [('histo_opcount0',int),
+                  ('histo_opcount1',int),
+                  ('histo_opcount_total',int),
+                  ('histo_insert_length_proposed',float),
+                  ('histo_insert_length_accepted',float),
+                  ('histo_remove_length_proposed',float),
+                  ('histo_remove_length_accepted',float),
+                  ('histo_shift_length_proposed',float),
+                  ('histo_shift_length_accepted',float)]
+
 # Quantum numbers
 qn = []
 qn.append(n("up",0))
@@ -54,19 +60,15 @@ p["quantum_numbers"] = qn
 # Construct solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
-def read_histo(f):
+def read_histo(f,type_of_col_1):
     histo = []
     for line in f:
         cols = filter(lambda s: s, line.split(' '))
-        histo.append(float(cols[1]))
-    for x in reversed(histo):
-        if x != 0: break
-        histo.remove(x)
+        histo.append((type_of_col_1(cols[0]),float(cols[1]),float(cols[2])))
     return histo
 
 if mpi.rank==0:
     arch = HDFArchive('asymm_bath.h5','w')
-    pp = PdfPages('G_asymm_bath.pdf')
 
 # Set hybridization function
 for e in epsilon:
@@ -79,26 +81,9 @@ for e in epsilon:
     S.solve(h_loc=H, **p)
 
     if mpi.rank==0:
-        arch['epsilon_' + str(e)] = {"up":S.G_tau["up"], "dn":S.G_tau["dn"]}
+        d = {'G_tau':S.G_tau, 'beta':beta, 'U':U, 'ed':ed, 'V':V, 'e':e}
 
-        plt.clf()
-        oplot(rebinning_tau(S.G_tau['up'],300), name="$\uparrow\uparrow$")
-        oplot(rebinning_tau(S.G_tau['dn'],300),name="$\downarrow\downarrow$")
+        for histo_name, type_of_col_1 in histos_to_save:
+            d[histo_name] = read_histo(open(histo_name+'.dat','r'),type_of_col_1)
 
-        a = plt.gca()
-        a.set_ylabel('$G(\\tau)$')
-        a.set_xlim((0,beta))
-        a.set_ylim((-1,0))
-        a.legend(loc='lower right',prop={'size':10})
-
-        a.set_title("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
-
-        histo = read_histo(open("histo_opcount_total.dat",'r'))
-
-        histo_a = plt.axes([.35, .15, .3, .4], axisbg='y')
-        histo_a.bar(range(len(histo)), histo)
-        histo_a.set_title('histo_opcount_total')
-
-        pp.savefig(plt.gcf())
-
-if mpi.rank==0: pp.close()
+        arch['epsilon_' + str(e)] = d

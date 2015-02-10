@@ -122,6 +122,62 @@ struct qmc_data {
       boost::serialization::make_nvp("imp_trace", imp_trace) & boost::serialization::make_nvp("old_sign", old_sign) &
       boost::serialization::make_nvp("current_sign", current_sign);
  }
+
 };
+
+ //--------- DEBUG ---------
+
+ using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
+
+ // Print taus of operator sequence in dets
+ void print_det_sequence(qmc_data const & data) {
+  int i;
+  int block_index;
+  for (block_index = 0; block_index < data.dets.size() ; ++block_index) {
+   auto det = data.dets[block_index];
+   if (det.size() == 0) return;
+   std::cout << "BLOCK = " << block_index << std::endl;
+   for (i = 0; i < det.size(); ++i) { // c_dag
+    std::cout << " ic_dag = " << i << ": tau = " << det.get_x(i).first << std::endl;
+   }
+   for (i = 0; i < det.size(); ++i) { // c
+    std::cout << " ic     = " << i << ": tau = " << det.get_y(i).first << std::endl;
+   }
+  }
+ }
+
+ void print_det_sequence(det_type const & det) {
+  int i;
+  for (i = 0; i < det.size(); ++i) { // c_dag
+   std::cout << " ic_dag = " << i << ": tau = " << det.get_x(i).first << std::endl;
+  }
+  for (i = 0; i < det.size(); ++i) { // c
+   std::cout << " ic     = " << i << ": tau = " << det.get_y(i).first << std::endl;
+  }
+ }
+
+ // Check if dets are correctly ordered, otherwise complain
+ void check_det_sequence(det_type const & det, int config_id) {
+  if (det.size() == 0) return;
+  auto tau = det.get_x(0).first;
+  for (auto ic_dag = 0; ic_dag < det.size(); ++ic_dag) { // c_dag
+   if (tau < det.get_x(ic_dag).first) {
+    std::cout << "ERROR in det order in config " << config_id << std::endl;
+    print_det_sequence(det);
+    TRIQS_RUNTIME_ERROR << "Det ordering wrong: tau(ic_dag = " << ic_dag << ") = " << double(det.get_x(ic_dag).first);
+   }
+   tau = det.get_x(ic_dag).first;
+  }
+  tau = det.get_y(0).first;
+  for (auto ic = 0; ic < det.size(); ++ic) { // c
+   if (tau < det.get_y(ic).first) {
+    std::cout << "ERROR in det order in config " << config_id << std::endl;
+    print_det_sequence(det);
+    TRIQS_RUNTIME_ERROR << "Det ordering wrong: tau(ic     = " << ic << ") = " << double(det.get_y(ic).first);
+   }
+   tau = det.get_y(ic).first;
+  }
+ }
+
 }
 

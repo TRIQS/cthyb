@@ -77,10 +77,11 @@ class move_shift_operator {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+  std::cerr << "In config " << config.id << std::endl;
   std::cerr << "* Attempt for move_shift_operator (block " << block_index << ")" << std::endl;
-  std::cerr << "* Configuration before:" << std::endl;
-  std::cerr << config;
-  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
+//  std::cerr << "* Configuration before:" << std::endl;
+//  std::cerr << config;
+//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   // Construct new operator
@@ -198,7 +199,7 @@ class move_shift_operator {
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.id;
 
   // --- Compute the weight
   mc_weight_type p = trace_ratio * det_ratio;
@@ -232,15 +233,18 @@ class move_shift_operator {
   data.trace = new_trace;
   if (record_histograms) histos["shift_length_accepted"] << delta_tau;
 
+  auto result = data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
+
 #ifdef EXT_DEBUG
-  std::cerr << "* Configuration after: " << std::endl;
-  std::cerr << config;
+//  std::cerr << "* Configuration after: " << config.id << std::endl;
+//  std::cerr << config;
+  check_det_sequence(data.dets[block_index],config.id);
 #endif
 #ifdef PRINT_CONF_DEBUG
   config.print_to_h5();
 #endif
 
-  return data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
+  return result;
  }
 
  //----------------
@@ -252,13 +256,15 @@ class move_shift_operator {
   data.imp_trace.cancel_shift();
 
 #ifdef EXT_DEBUG
-  std::cerr << "* Configuration after: " << std::endl;
-  std::cerr << config;
+//  std::cerr << "* Configuration after: " << config.id << std::endl;
+//  std::cerr << config;
+  check_det_sequence(data.dets[block_index],config.id);
 #endif
 #ifdef PRINT_CONF_DEBUG
   config.print_to_h5();
 #endif
 
  }
+
 };
 }

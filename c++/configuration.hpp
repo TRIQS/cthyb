@@ -77,6 +77,7 @@ struct configuration {
  }
 
  void print_to_h5(){
+  if (this->id > 50000) return;
   std::string filename = "configs.h5";
   triqs::h5::file hfile(filename.c_str(), exists(filename) ? H5F_ACC_RDWR : H5F_ACC_TRUNC);
   h5_write(hfile, "c_"+std::to_string(this->id), *this);

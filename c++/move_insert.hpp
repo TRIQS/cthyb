@@ -59,10 +59,11 @@ class move_insert_c_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+  std::cerr << "In config " << config.id << std::endl;
   std::cerr << "* Attempt for move_insert_c_cdag (block " << block_index << ")" << std::endl;
-  std::cerr << "* Configuration before:" << std::endl;
-  std::cerr << config;
-  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
+//  std::cerr << "* Configuration before:" << std::endl;
+//  std::cerr << config;
+//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   // Pick up the value of alpha and choose the operators
@@ -95,7 +96,7 @@ class move_insert_c_cdag {
    data.imp_trace.try_insert(tau2, op2);
   }
   catch (rbt_insert_error const&) {
-   //std::cerr << "Insert error : recovering ... " << std::endl;
+   std::cerr << "Insert error : recovering ... " << std::endl;
    data.imp_trace.cancel_insert();
    return 0;
   }
@@ -134,7 +135,7 @@ class move_insert_c_cdag {
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite" << new_trace << "  "<< data.trace<<"  "<< new_trace /data.trace ;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace /data.trace << " in config " << config.id;
 
   mc_weight_type p = trace_ratio * det_ratio;
 
@@ -146,7 +147,7 @@ class move_insert_c_cdag {
   std::cerr << "p_yee* newtrace: " << p_yee * new_trace<< std::endl;
 #endif
 
-  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio;
+  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio : "<< t_ratio << " in config " << config.id;
   return p * t_ratio;
  }
 
@@ -170,8 +171,9 @@ class move_insert_c_cdag {
   if (record_histograms) histos["insert_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
-  std::cerr << "* Configuration after: " << std::endl;
-  std::cerr << config;
+//  std::cerr << "* Configuration after: " << config.id << std::endl;
+//  std::cerr << config;
+  check_det_sequence(data.dets[block_index],config.id);
 #endif
 #ifdef PRINT_CONF_DEBUG
   config.print_to_h5();
@@ -188,8 +190,9 @@ class move_insert_c_cdag {
   data.imp_trace.cancel_insert();
 
 #ifdef EXT_DEBUG
-  std::cerr << "* Configuration after: " << std::endl;
-  std::cerr << config;
+//  std::cerr << "* Configuration after: " << config.id << std::endl;
+//  std::cerr << config;
+  check_det_sequence(data.dets[block_index],config.id);
 #endif
 #ifdef PRINT_CONF_DEBUG
   config.print_to_h5();

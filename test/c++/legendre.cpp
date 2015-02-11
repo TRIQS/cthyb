@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
   p.measure_g_l = true;
   p.quantum_numbers = qn;
   p.partition_method = "quantum_numbers";
+  p.move_double = false;
  
   // Solve!
   solver.solve(p);

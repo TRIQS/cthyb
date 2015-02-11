@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
   p.max_time = -1;
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
+  p.move_double = false;
 
   // Solve!
   solver.solve(p);

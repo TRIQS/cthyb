@@ -40,6 +40,7 @@ p["length_cycle"] = 500
 p["n_warmup_cycles"] = 5000
 p["n_cycles"] = 5000
 p["measure_g_l"] = True
+p["move_double"] = False
 
 S.solve(h_loc=H, **p)
 

@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
   p.random_seed = 123 * rank + 567;
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
+  p.move_double = false;
 
   // Solve!
   solver.solve(p);

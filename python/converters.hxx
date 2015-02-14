@@ -1,5 +1,5 @@
 // DO NOT EDIT
-// Generated automatically using libclang using the command : 
+// Generated automatically using libclang using the command :
 // wrapper_desc_generator.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 
 
@@ -9,7 +9,7 @@ namespace triqs { namespace py_tools {
 
 template <> struct py_converter<solve_parameters_t> {
  static PyObject *c2py(solve_parameters_t const & x) {
-  PyObject * d = PyDict_New(); 
+  PyObject * d = PyDict_New();
   PyDict_SetItemString( d, "h_loc"              , convert_to_python(x.h_loc));
   PyDict_SetItemString( d, "n_cycles"           , convert_to_python(x.n_cycles));
   PyDict_SetItemString( d, "partition_method"   , convert_to_python(x.partition_method));
@@ -79,10 +79,10 @@ template <> struct py_converter<solve_parameters_t> {
  }
 
  static bool is_convertible(PyObject *dic, bool raise_exception) {
-  if (!PyDict_Check(dic)) { 
+  if (!PyDict_Check(dic)) {
    if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Not a python dict");}
    return false;
-  }  
+  }
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
@@ -117,8 +117,8 @@ template <> struct py_converter<solve_parameters_t> {
   _check_optional <std::map<std::string, double>>(dic, fs, err, "proposal_prob"      , "std::map<std::string, double>");
   if (err) goto _error;
   return true;
-  
- _error: 
+
+ _error:
    fs2 << "\n---- There " << (err > 1 ? "are " : "is ") << err<< " error"<<(err >1 ?"s" : "")<< " in Python -> C++ transcription for the class solve_parameters_t\n" <<fs.str();
    if (raise_exception) PyErr_SetString(PyExc_TypeError, fs2.str().c_str());
   return false;

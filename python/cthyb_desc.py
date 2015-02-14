@@ -1,5 +1,4 @@
-
-# Generated automatically using the command : 
+# Generated automatically using the command :
 # wrapper_desc_generator.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 from wrap_generator import *
 
@@ -18,7 +17,6 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/pair.hpp>
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/vector.hpp>
-#include <triqs/python_tools/converters/variant.hpp>
 using namespace triqs::gfs;
 using triqs::utility::many_body_operator;
 using namespace cthyb;
@@ -71,7 +69,7 @@ c.add_property(name = "G_tau",
                getter = cfunction("block_gf_view<imtime> G_tau ()"),
                doc = """G(tau) in imaginary time """)
 
-c.add_property(name = "G_l", 
+c.add_property(name = "G_l",
                getter = cfunction("block_gf_view<legendre> G_l ()"),
                doc = """G_l in Legendre polynomials representation """)
 
@@ -91,4 +89,3 @@ c.add_property(name = "eigensystems",
 module.add_class(c)
 
 module.generate_code()
-

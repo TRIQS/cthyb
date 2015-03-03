@@ -327,10 +327,6 @@ class impurity_trace {
   statistics::histogram_segment_bin dominant_block_energy_bound = {0, 100, 100, "histo_dominant_block_energy_bound.dat"};
   statistics::histogram_segment_bin dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
 
-  // Perturbation order, total and by color
-  statistics::histogram opcount_total = {1000, "histo_opcount_total.dat"};
-  std::vector<statistics::histogram> opcount;
-
   // Various ratios : trace/bound, trace/first term of the trace, etc..
   statistics::histogram_segment_bin trace_over_estimator = {0, 2, 100, "histo_trace_over_estimator.dat"};
   statistics::histogram_segment_bin trace_over_bound = {0, 1.5, 100, "histo_trace_over_bound.dat"};

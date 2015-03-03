@@ -49,9 +49,6 @@ impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, sol
  else
   method = method_t::full_trace;
 
- if (histo) {
-  for (int i = 0; i < n_orbitals; ++i) histo->opcount.emplace_back(100, "histo_opcount" + std::to_string(i) + ".dat");
- }
 }
 
 // -------- Calculate the estimate of the trace -------------------------------------------
@@ -214,13 +211,6 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
 
 void impurity_trace::update_cache() {
  update_cache_impl(tree.get_root());
- // analysis
- if (histo) {
-  histo->opcount_total << config->size() / 2;
-  std::vector<int> opcount(n_orbitals, 0); // maximum number of orbitals is n_orbitals
-  for (auto const& p : *config) opcount[p.second.linear_index]++;
-  for (int i = 0; i < n_orbitals; ++i) histo->opcount[i] << opcount[i] / 2;
- }
 }
 
 // --------------------------------

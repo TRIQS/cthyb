@@ -1,4 +1,3 @@
-
 .. module:: pytriqs.applications.impurity_solvers.cthyb
 
 .. _documentation:
@@ -6,12 +5,30 @@
 Documentation
 =============
 
-.. toctree::
-   :maxdepth: 2
+Basic notions
+-------------
 
-   introduction
-   algorithm
-   user_manual
-   implementation_details
-   benchmarks
-   future_work
+.. toctree::
+   :maxdepth: 1
+
+   basicnotions/cthyb
+   basicnotions/concept
+
+
+User guide
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   guide/aim
+   guide/settingparameters
+   guide/random
+
+Reference manual
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   reference/solver

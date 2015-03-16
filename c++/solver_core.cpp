@@ -148,6 +148,8 @@ void solver_core::solve(solve_parameters_t const & params) {
   } else
    TRIQS_RUNTIME_ERROR << "Partition method " << params.partition_method << " not recognised.";
 
+  if (params.verbosity >= 2) std::cout << "Found " << sosp.n_subspaces() << " subspaces." << std::endl;
+
   if (params.make_histograms) std::ofstream("impurity_blocks.dat") << sosp;
 
   // If one is interested only in the atomic problem

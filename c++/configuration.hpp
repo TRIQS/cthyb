@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "sorted_spaces.hpp"
+#include "./util.hpp"
 #include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <map>
@@ -42,7 +43,7 @@ struct configuration {
  // a map associating an operator to an imaginary time
  using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
 
- configuration(double beta) : beta_(beta) {}
+ configuration(double beta) : beta_(beta), id(0) {}
 
  double beta() const { return beta_; }
  int size() const { return oplist.size(); }
@@ -62,10 +63,31 @@ struct configuration {
   return out;
  }
 
+ friend void h5_write(triqs::h5::group conf, std::string conf_group_name, configuration const& c) {
+  triqs::h5::group conf_group = conf.create_group(conf_group_name);
+  for (auto const& op : c) {
+   // create group for given tau
+   auto tau_group_name = std::to_string(double(op.first));
+   triqs::h5::group tau_group = conf_group.create_group(tau_group_name);
+   // in tau subgroup, write operator info
+   h5_write(tau_group, "block", op.second.block_index);
+   h5_write(tau_group, "inner", op.second.inner_index);
+   h5_write(tau_group, "dagger", op.second.dagger);
+  }
+ }
+
+ void print_to_h5(){
+  std::string filename = "configs.h5";
+  triqs::h5::file hfile(filename.c_str(), exists(filename) ? H5F_ACC_RDWR : H5F_ACC_TRUNC);
+  h5_write(hfile, "c_"+std::to_string(this->id), *this);
+  hfile.close();
+ }
+
  template <class Archive> void serialize(Archive& ar, const unsigned int version) {
   ar& boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta", beta_);
  }
 
+ int id; // configuration id, for debug purposes
  private:
  double beta_;
  oplist_t oplist;

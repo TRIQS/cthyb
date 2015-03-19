@@ -217,6 +217,8 @@ class move_shift_operator {
 
  mc_weight_type accept() {
 
+  config.id++; // increment the config id
+
   // Update the tree
   data.imp_trace.confirm_shift();
 
@@ -234,6 +236,9 @@ class move_shift_operator {
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;
 #endif
+#ifdef PRINT_CONF_DEBUG
+  config.print_to_h5();
+#endif
 
   return data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
  }
@@ -241,11 +246,19 @@ class move_shift_operator {
  //----------------
 
  void reject() {
+
+  config.id++; // increment the config id
+
   data.imp_trace.cancel_shift();
+
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;
 #endif
+#ifdef PRINT_CONF_DEBUG
+  config.print_to_h5();
+#endif
+
  }
 };
 }

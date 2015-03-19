@@ -24,6 +24,7 @@
 #include "./solve_parameters.hpp"
 #include "triqs/utility/rbt.hpp"
 #include "triqs/statistics/histograms.hpp"
+#define PRINT_CONF_DEBUG
 
 using namespace triqs;
 

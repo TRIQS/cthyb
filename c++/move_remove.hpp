@@ -125,6 +125,8 @@ class move_remove_c_cdag {
 
  mc_weight_type accept() {
 
+  config.id++; // increment the config id
+
   // remove from the tree
   data.imp_trace.confirm_delete();
 
@@ -142,6 +144,9 @@ class move_remove_c_cdag {
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;
 #endif
+#ifdef PRINT_CONF_DEBUG
+  config.print_to_h5();
+#endif
 
   return data.current_sign / data.old_sign;
  }
@@ -149,10 +154,17 @@ class move_remove_c_cdag {
  //----------------
 
  void reject() {
+
+  config.id++; // increment the config id
+
   data.imp_trace.cancel_delete();
+
 #ifdef EXT_DEBUG
   std::cerr << "* Configuration after: " << std::endl;
   std::cerr << config;
+#endif
+#ifdef PRINT_CONF_DEBUG
+  config.print_to_h5();
 #endif
 
  }

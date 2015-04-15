@@ -127,9 +127,6 @@ void solver_core::solve(solve_parameters_t const & params) {
     Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
     Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
     _Delta_tau[b]() = inverse_fourier(Delta_iw[b]); 
-    _G0_iw[b](iw_) << iw_ + G0_iw_inv[b].singularity()(0) ;
-    _G0_iw[b] = _G0_iw[b] - Delta_iw[b];
-    _G0_iw[b]() = triqs::gfs::inverse(_G0_iw[b]);
     b++;
   }
 

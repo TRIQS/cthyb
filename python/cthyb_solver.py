@@ -1,6 +1,7 @@
 from cthyb import SolverCore
 from pytriqs.gf.local import *
 import pytriqs.utility.mpi as mpi
+import numpy as np
 
 class Solver(SolverCore):
 
@@ -62,6 +63,16 @@ class Solver(SolverCore):
                 fit_known_moments[name] = TailGf(dim,dim,0,0) # TailGf(dim1, dim2, n_moments, order_min)
         fit_min_n = params_kw.pop("fit_min_n", int(0.8 * self.n_iw)) # Fit last 20% of frequencies
         fit_max_n = params_kw.pop("fit_max_n", self.n_iw)
+
+        print_warning = False
+        for name, indices in self.gf_struct.items():
+            dim = len(indices)
+            if self.G0_iw[name].tail[1] != np.eye(dim): print_warning = True
+	if print_warning and mpi.is_master_node():
+            warning = ("!--------------------------------------------------------------------------------------!\n"
+                       "! WARNING: Some components of your G0_iw do not decay as 1/iw. Continuing nonetheless. !\n"
+                       "!--------------------------------------------------------------------------------------!")
+            print warning
 
         # Call the core solver's solve routine
         SolverCore.solve(self, h_loc = h_loc, **params_kw)

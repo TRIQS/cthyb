@@ -44,6 +44,7 @@ struct measure_g_legendre {
 
  measure_g_legendre(int a_level, gf_view<legendre> g_l, qmc_data const& data)
     : data(data), g_l(g_l), a_level(a_level), beta(data.config.beta()) {
+  g_l() = 0.0;
   z = 0;
   num = 0;
  }

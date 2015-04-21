@@ -42,6 +42,7 @@ struct measure_g {
 
  measure_g(int a_level, gf_view<imtime> g_tau, qmc_data const& data)
     : data(data), g_tau(g_tau), a_level(a_level), beta(data.config.beta()) {
+  g_tau() = 0.0;
   z = 0;
   num = 0;
  }

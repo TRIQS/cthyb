@@ -41,6 +41,7 @@ p["n_warmup_cycles"] = 5000
 p["n_cycles"] = 5000
 p["measure_g_l"] = True
 p["move_double"] = False
+p["perform_tail_fit"] = True
 
 S.solve(h_loc=H, **p)
 

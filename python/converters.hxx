@@ -1,6 +1,6 @@
 // DO NOT EDIT
 // Generated automatically using libclang using the command :
-// wrapper_desc_generator.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
+// c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 
 
 // --- C++ Python converter for solve_parameters_t
@@ -100,8 +100,8 @@ template <> struct py_converter<solve_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  _check_mandatory<real_operator_t              >(dic, fs, err, "h_loc"              , "real_operator_t"); 
-  _check_mandatory<int                          >(dic, fs, err, "n_cycles"           , "int"); 
+  _check_mandatory<real_operator_t              >(dic, fs, err, "h_loc"              , "real_operator_t");
+  _check_mandatory<int                          >(dic, fs, err, "n_cycles"           , "int");
   _check_optional <std::string                  >(dic, fs, err, "partition_method"   , "std::string");
   _check_optional <std::vector<real_operator_t> >(dic, fs, err, "quantum_numbers"    , "std::vector<real_operator_t>");
   _check_optional <int                          >(dic, fs, err, "length_cycle"       , "int");

@@ -178,7 +178,7 @@ void solver_core::solve(solve_parameters_t const & params) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
      double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.make_histograms),
                  "Insert Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
-     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng()),
+     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.make_histograms),
                  "Remove Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
     }
    }

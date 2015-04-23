@@ -31,20 +31,29 @@ class move_remove_c_c_cdag_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index1, block_index2, block_size1, block_size2;
+ bool record_histograms;
+ std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ double delta_tau1, delta_tau2;
  qmc_data::trace_t new_trace;
  time_pt tau1, tau2, tau3, tau4;
 
  public:
  //----------------------------------
 
- move_remove_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, qmc_data& data, mc_tools::random_generator& rng)
+ move_remove_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, qmc_data& data, mc_tools::random_generator& rng, bool record_histograms)
     : data(data),
       config(data.config),
       rng(rng),
       block_index1(block_index1),
       block_size1(block_size1),
       block_index2(block_index2),
-      block_size2(block_size2) {}
+      block_size2(block_size2),
+      record_histograms(record_histograms) {
+  if (record_histograms) {
+   histos.insert({"double_remove_length_proposed", {0, config.beta(), 100, "histo_double_remove_length_proposed.dat"}});
+   histos.insert({"double_remove_length_accepted", {0, config.beta(), 100, "histo_double_remove_length_accepted.dat"}});
+  }
+ }
 
  //----------------
  
@@ -52,15 +61,13 @@ class move_remove_c_c_cdag_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-  std::cerr << "In config " << config.id << std::endl;
-  std::cerr << "* Attempt for move_remove_c_c_cdag_cdag (block " << block_index1 << ", " << block_index2 << ")" << std::endl;
-//  std::cerr << "* Configuration before:" << std::endl << config;
-//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
+  std::cerr << "In config " << config.get_id() << std::endl;
+  std::cerr << "* Attempt for move_remove_c_c_cdag_cdag (blocks " << block_index1 << ", " << block_index2 << ")" << std::endl;
 #endif
 
   auto& det1 = data.dets[block_index1];
   auto& det2 = data.dets[block_index2];
-  double det_ratio; //FIXME
+  double det_ratio; // FIXME
 
   // Pick two pairs of C, Cdagger to remove at random
   // Remove the operators from the traces
@@ -74,6 +81,7 @@ class move_remove_c_c_cdag_cdag {
   int num_c_dag1 = rng(det1_size), num_c1 = rng(det1_size);
   int num_c_dag2 = rng(det2_size), num_c2 = rng(det2_size);
   if ((block_index1 == block_index2) && ((num_c_dag1 == num_c_dag2) || (num_c1 == num_c2))) return 0; // picked the same operator twice
+
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to remove: ";
   std::cerr << num_c_dag1 << "-th Cdag(" << block_index1 << ",...), ";
@@ -88,6 +96,13 @@ class move_remove_c_c_cdag_cdag {
   tau2 = data.imp_trace.try_delete(num_c_dag1, block_index1, true);
   tau3 = data.imp_trace.try_delete(num_c2, block_index2, false);
   tau4 = data.imp_trace.try_delete(num_c_dag2, block_index2, true);
+
+  delta_tau1 = double(tau2 - tau1);
+  delta_tau2 = double(tau4 - tau3);
+  if (record_histograms) {
+   histos["double_remove_length_proposed"] << delta_tau1;
+   histos["double_remove_length_proposed"] << delta_tau2; // FIXME is this really what we want?
+  }
 
   if (block_index1 == block_index2) {
    det_ratio = det1.try_remove2(num_c_dag1, num_c_dag2, num_c1, num_c2);
@@ -117,12 +132,12 @@ class move_remove_c_c_cdag_cdag {
   new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
-   std::cout << "trace == 0" << std::endl;
+   std::cerr << "trace == 0" << std::endl;
 #endif
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.id;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.get_id();
 
   mc_weight_type p = trace_ratio * det_ratio;
 
@@ -133,16 +148,14 @@ class move_remove_c_c_cdag_cdag {
   std::cerr << "Weight: " << p/ t_ratio << std::endl;
 #endif
 
-  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.id;
-  if (!std::isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.id;
+  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
+  if (!std::isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
   return p / t_ratio;
  }
 
  //----------------
 
  mc_weight_type accept() {
-
-  config.id++; // increment the config id
 
   // remove from the tree
   data.imp_trace.confirm_delete();
@@ -152,7 +165,8 @@ class move_remove_c_c_cdag_cdag {
   config.erase(tau2);
   config.erase(tau3);
   config.erase(tau4);
-  
+  config.finalize();
+
   // remove from the determinants
   if (block_index1 == block_index2) {
    data.dets[block_index1].complete_operation();
@@ -162,15 +176,16 @@ class move_remove_c_c_cdag_cdag {
   }
   data.update_sign();
   data.trace = new_trace;
+  if (record_histograms) {
+   histos["double_remove_length_accepted"] << delta_tau1;
+   histos["double_remove_length_accepted"] << delta_tau2; // FIXME is this what we want?
+  }
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index1],config.id);
-  check_det_sequence(data.dets[block_index2],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_remove_c_c_cdag_cdag accepted" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index1],config.get_id());
+  check_det_sequence(data.dets[block_index2],config.get_id());
 #endif
 
   return data.current_sign / data.old_sign;
@@ -180,18 +195,14 @@ class move_remove_c_c_cdag_cdag {
 
  void reject() {
 
-  config.id++; // increment the config id
-
+  config.finalize();
   data.imp_trace.cancel_delete();
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index1],config.id);
-  check_det_sequence(data.dets[block_index2],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_remove_c_c_cdag_cdag rejected" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index1],config.get_id());
+  check_det_sequence(data.dets[block_index2],config.get_id());
 #endif
 
  }

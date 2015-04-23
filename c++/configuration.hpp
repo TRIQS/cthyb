@@ -35,6 +35,17 @@ struct op_desc {  // The description of the C operator
  int inner_index; // the inner index inside the block
  bool dagger;     // is the operator a dagger
  long linear_index;
+
+ friend std::ostream& operator<<(std::ostream& out, op_desc const& op) {
+  out << (op.dagger ? "Cdag(" : "C(") << op.block_index << "," << op.inner_index << ")";
+  return out;
+ }
+
+ friend void h5_write(triqs::h5::group g, op_desc const& op) {
+  h5_write(g, "block", op.block_index);
+  h5_write(g, "inner", op.inner_index);
+  h5_write(g, "dagger", op.dagger);
+ }
 };
 
 // The configuration of the Monte Carlo
@@ -43,7 +54,15 @@ struct configuration {
  // a map associating an operator to an imaginary time
  using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
 
+#ifdef SAVE_CONFIGS
+ configuration(double beta) : beta_(beta), id(0),
+  configs_hfile("configs.h5", exists("configs.h5") ? H5F_ACC_RDWR : H5F_ACC_TRUNC) {
+  if(NUM_CONFIGS_TO_SAVE>0) h5_write(configs_hfile, "c_0", *this);
+ }
+ ~configuration() { configs_hfile.close(); }
+#else
  configuration(double beta) : beta_(beta), id(0) {}
+#endif
 
  double beta() const { return beta_; }
  int size() const { return oplist.size(); }
@@ -57,9 +76,7 @@ struct configuration {
  oplist_t::const_iterator end() const { return oplist.end(); }
  
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
-  for (auto const& op : c)
-   out << "tau = " << op.first << " : " << (op.second.dagger ? "Cdag(" : "C(") << op.second.block_index << ","
-       << op.second.inner_index << ")\n";
+  for (auto const& op : c) out << "tau = " << op.first << " : " << op.second << std::endl;
   return out;
  }
 
@@ -70,28 +87,33 @@ struct configuration {
    auto tau_group_name = std::to_string(double(op.first));
    triqs::h5::group tau_group = conf_group.create_group(tau_group_name);
    // in tau subgroup, write operator info
-   h5_write(tau_group, "block", op.second.block_index);
-   h5_write(tau_group, "inner", op.second.inner_index);
-   h5_write(tau_group, "dagger", op.second.dagger);
+   h5_write(tau_group,op.second);
   }
  }
 
- void print_to_h5(){
-  if (this->id > 50000) return;
-  std::string filename = "configs.h5";
-  triqs::h5::file hfile(filename.c_str(), exists(filename) ? H5F_ACC_RDWR : H5F_ACC_TRUNC);
-  h5_write(hfile, "c_"+std::to_string(this->id), *this);
-  hfile.close();
- }
-
  template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-  ar& boost::serialization::make_nvp("oplist", oplist) & boost::serialization::make_nvp("beta", beta_);
+  using boost::serialization::make_nvp;
+  ar & make_nvp("id",id) & make_nvp("oplist", oplist) & make_nvp("beta", beta_);
  }
 
- int id; // configuration id, for debug purposes
+ long get_id() const { return id; }
+ void finalize() {
+  id++;
+#ifdef SAVE_CONFIGS
+  if(id<NUM_CONFIGS_TO_SAVE) h5_write(configs_hfile, "c_" + std::to_string(id), *this);
+#endif
+ }
+
  private:
+ long id; // configuration id, for debug purposes
  double beta_;
  oplist_t oplist;
+
+#ifdef SAVE_CONFIGS
+ // HDF5 file to save configurations
+ triqs::h5::file configs_hfile;
+#endif
+
 };
 }
 

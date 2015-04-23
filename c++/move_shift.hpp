@@ -57,32 +57,40 @@ class move_shift_operator {
 
  mc_weight_type attempt() {
 
+#ifdef EXT_DEBUG
+  std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+  std::cerr << "In config " << config.get_id() << std::endl;
+  std::cerr << "* Attempt for move_shift_operator ";
+#endif
+
   // --- Choose an operator in configuration to shift at random
   // By choosing an *operator* in config directly, not bias based on det size introduced
   auto config_size = config.size();
-  if (config_size==0) return 0;
+  if (config_size==0) {
+#ifdef EXT_DEBUG
+  std::cerr << "(empty configuration)" << std::endl;
+  block_index = -1;
+#endif
+   return 0;
+  }
   const int op_pos_in_config = rng(config_size);
 
   // --- Find operator (and its characteristics) from the configuration
   auto itconfig = config.begin();
-  for (int i=0; i<op_pos_in_config; ++i, ++itconfig) {} // Get to right position in config
+  for (int i=0; i<op_pos_in_config; ++i, ++itconfig); // Get to right position in config
   tau_old = (*itconfig).first;
   op_old = (*itconfig).second;
   block_index = op_old.block_index;
   auto is_dagger = op_old.dagger;
+
+#ifdef EXT_DEBUG
+  std::cerr << "(block " << block_index << ")" << std::endl;
+#endif
+
   // Properties corresponding to det
   auto& det = data.dets[block_index];
   auto det_size = det.size();
-  if (det_size == 0) return 0; // nothing to remove
-
-#ifdef EXT_DEBUG
-  std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-  std::cerr << "In config " << config.id << std::endl;
-  std::cerr << "* Attempt for move_shift_operator (block " << block_index << ")" << std::endl;
-//  std::cerr << "* Configuration before:" << std::endl;
-//  std::cerr << config;
-//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
-#endif
+  if (det_size == 0) return 0; // nothing to shift
 
   // Construct new operator
   // Choose a new inner index (this is done here for compatibility)
@@ -144,13 +152,9 @@ class move_shift_operator {
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;
-  std::cerr << (is_dagger ? "Cdag" : "C");
-  std::cerr << "(" << op_old.block_index << "," << op_old.inner_index << ")";
-  std::cerr << " tau = " << tau_old << std::endl;
+  std::cerr << op_old << " tau = " << tau_old << std::endl;
   std::cerr << " to " << std::endl;
-  std::cerr << (is_dagger ? "Cdag" : "C");
-  std::cerr << "(" << op_new.block_index << "," << op_new.inner_index << ")";
-  std::cerr << " tau = " << tau_new << std::endl;
+  std::cerr << op_new << " tau = " << tau_new << std::endl;
 #endif
 
   // --- Modify the tree
@@ -194,12 +198,12 @@ class move_shift_operator {
   new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
-   std::cout << "trace == 0" << std::endl;
+   std::cerr << "trace == 0" << std::endl;
 #endif
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.id;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.get_id();
 
   // --- Compute the weight
   mc_weight_type p = trace_ratio * det_ratio;
@@ -208,7 +212,7 @@ class move_shift_operator {
   std::cerr << "Trace ratio: " << trace_ratio << '\t';
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Weight: " << p << std::endl;
-  std::cerr << "p_yee* newtrace: " << p_yee * new_trace<< std::endl;
+  std::cerr << "p_yee * newtrace: " << p_yee * new_trace<< std::endl;
 #endif
 
   return p;
@@ -218,15 +222,14 @@ class move_shift_operator {
 
  mc_weight_type accept() {
 
-  config.id++; // increment the config id
-
   // Update the tree
   data.imp_trace.confirm_shift();
 
   // Update the configuration 
   config.erase(tau_old);
   config.insert(tau_new, op_new);
- 
+  config.finalize();
+
   // Update the determinant
   data.dets[block_index].complete_operation();
   data.update_sign();
@@ -236,12 +239,9 @@ class move_shift_operator {
   auto result = data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_shift_operator accepted" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index],config.get_id());
 #endif
 
   return result;
@@ -251,17 +251,13 @@ class move_shift_operator {
 
  void reject() {
 
-  config.id++; // increment the config id
-
+  config.finalize();
   data.imp_trace.cancel_shift();
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_shift_operator rejected" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  if(block_index != -1) check_det_sequence(data.dets[block_index],config.get_id());
 #endif
 
  }

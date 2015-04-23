@@ -50,8 +50,8 @@ class move_insert_c_c_cdag_cdag {
       block_size2(block_size2),
       record_histograms(record_histograms) {
   if (record_histograms) {
-   histos.insert({"shift_length_proposed", {0, config.beta(), 100, "hist_shift_length_proposed.dat"}});
-   histos.insert({"shift_length_accepted", {0, config.beta(), 100, "hist_shift_length_accepted.dat"}});
+   histos.insert({"double_insert_length_proposed", {0, config.beta(), 100, "histo_double_insert_length_proposed.dat"}});
+   histos.insert({"double_insert_length_accepted", {0, config.beta(), 100, "histo_double_insert_length_accepted.dat"}});
   }
  }
 
@@ -61,11 +61,8 @@ class move_insert_c_c_cdag_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-  std::cerr << "In config " << config.id << std::endl;
-  std::cerr << "* Attempt for move_insert_c_c_cdag_cdag (block " << block_index1 << ", " << block_index2 << ")" << std::endl;
-//  std::cerr << "* Configuration before:" << std::endl;
-//  std::cerr << config;
-//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
+  std::cerr << "In config " << config.get_id() << std::endl;
+  std::cerr << "* Attempt for move_insert_c_c_cdag_cdag (blocks " << block_index1 << ", " << block_index2 << ")" << std::endl;
 #endif
 
   // Pick up the value of alpha and choose the operators
@@ -84,22 +81,18 @@ class move_insert_c_c_cdag_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to insert:" << std::endl;
-  std::cerr << "Cdag(" << op1.block_index << "," << op1.inner_index << ")";
-  std::cerr << " at " << tau1 << std::endl;
-  std::cerr << "C(" << op2.block_index << "," << op2.inner_index << ")";
-  std::cerr << " at " << tau2 << std::endl;
-  std::cerr << "Cdag(" << op3.block_index << "," << op3.inner_index << ")";
-  std::cerr << " at " << tau3 << std::endl;
-  std::cerr << "C(" << op4.block_index << "," << op4.inner_index << ")";
-  std::cerr << " at " << tau4 << std::endl;
+  std::cerr << op1 << " at " << tau1 << std::endl;
+  std::cerr << op2 << " at " << tau2 << std::endl;
+  std::cerr << op3 << " at " << tau3 << std::endl;
+  std::cerr << op4 << " at " << tau4 << std::endl;
 #endif
 
   // record the length of the proposed insertion
-  delta_tau1 = double(tau2 - tau1); //FIXME
+  delta_tau1 = double(tau2 - tau1); // FIXME
   delta_tau2 = double(tau4 - tau3);
   if (record_histograms) {
-   histos["shfit_length_proposed"] << delta_tau1;
-   histos["shfit_length_proposed"] << delta_tau2; // FIXME is this really what we want?
+   histos["double_insert_length_proposed"] << delta_tau1;
+   histos["double_insert_length_proposed"] << delta_tau2; // FIXME is this really what we want?
   }
 
   // Insert the operators op1, op2, op3, op4 at time tau1, tau2, tau3, tau4
@@ -177,12 +170,12 @@ class move_insert_c_c_cdag_cdag {
   new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
-   std::cout << "trace == 0" << std::endl;
+   std::cerr << "trace == 0" << std::endl;
 #endif
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace /data.trace << " in config " << config.id;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace /data.trace << " in config " << config.get_id();
 
   mc_weight_type p = trace_ratio * det_ratio;
 
@@ -191,18 +184,16 @@ class move_insert_c_c_cdag_cdag {
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Prefactor: " << t_ratio << '\t';
   std::cerr << "Weight: " << p* t_ratio << std::endl;
-  std::cerr << "p_yee* newtrace: " << p_yee * new_trace<< std::endl;
+  std::cerr << "p_yee * newtrace: " << p_yee * new_trace<< std::endl;
 #endif
 
-  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio << " in config " << config.id;
+  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio << " in config " << config.get_id();
   return p * t_ratio;
  }
 
  //----------------
 
  mc_weight_type accept() {
-
-  config.id++; // increment the config id
 
   // insert in the tree
   data.imp_trace.confirm_insert();
@@ -212,7 +203,8 @@ class move_insert_c_c_cdag_cdag {
   config.insert(tau2, op2);
   config.insert(tau3, op3);
   config.insert(tau4, op4);
-  
+  config.finalize();
+
   // insert in the determinant
   if (block_index1 == block_index2) {
    data.dets[block_index1].complete_operation();
@@ -223,18 +215,15 @@ class move_insert_c_c_cdag_cdag {
   data.update_sign();
   data.trace = new_trace;
   if (record_histograms) {
-   histos["shift_length_accepted"] << delta_tau1;
-   histos["shift_length_accepted"] << delta_tau2; //FIXME is this what we want?
+   histos["double_insert_length_accepted"] << delta_tau1;
+   histos["double_insert_length_accepted"] << delta_tau2; // FIXME is this what we want?
   }
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index1],config.id);
-  check_det_sequence(data.dets[block_index2],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_insert_c_c_cdag_cdag accepted" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index1],config.get_id());
+  check_det_sequence(data.dets[block_index2],config.get_id());
 #endif
 
   return data.current_sign / data.old_sign;
@@ -244,18 +233,16 @@ class move_insert_c_c_cdag_cdag {
 
  void reject() {
 
-  config.id++; // increment the config id
-
+  config.finalize();
   data.imp_trace.cancel_insert();
+
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index1],config.id);
-  check_det_sequence(data.dets[block_index2],config.id);
+  std::cerr << "* Move move_insert_c_c_cdag_cdag rejected" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index1],config.get_id());
+  check_det_sequence(data.dets[block_index2],config.get_id());
 #endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
-#endif
+
  }
 };
 }

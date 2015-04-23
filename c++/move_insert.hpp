@@ -59,11 +59,8 @@ class move_insert_c_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-  std::cerr << "In config " << config.id << std::endl;
+  std::cerr << "In config " << config.get_id() << std::endl;
   std::cerr << "* Attempt for move_insert_c_cdag (block " << block_index << ")" << std::endl;
-//  std::cerr << "* Configuration before:" << std::endl;
-//  std::cerr << config;
-//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   // Pick up the value of alpha and choose the operators
@@ -77,10 +74,8 @@ class move_insert_c_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to insert:" << std::endl;
-  std::cerr << "Cdag(" << op1.block_index << "," << op1.inner_index << ")";
-  std::cerr << " at " << tau1 << std::endl;
-  std::cerr << "C(" << op2.block_index << "," << op2.inner_index << ")";
-  std::cerr << " at " << tau2 << std::endl;
+  std::cerr << op1 << " at " << tau1 << std::endl;
+  std::cerr << op2 << " at " << tau2 << std::endl;
 #endif
 
   // record the length of the proposed insertion
@@ -130,12 +125,12 @@ class move_insert_c_cdag {
   new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
-   std::cout << "trace == 0" << std::endl;
+   std::cerr << "trace == 0" << std::endl;
 #endif
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace /data.trace << " in config " << config.id;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace /data.trace << " in config " << config.get_id();
 
   mc_weight_type p = trace_ratio * det_ratio;
 
@@ -144,10 +139,10 @@ class move_insert_c_cdag {
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Prefactor: " << t_ratio << '\t';
   std::cerr << "Weight: " << p* t_ratio << std::endl;
-  std::cerr << "p_yee* newtrace: " << p_yee * new_trace<< std::endl;
+  std::cerr << "p_yee * newtrace: " << p_yee * new_trace<< std::endl;
 #endif
 
-  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio : "<< t_ratio << " in config " << config.id;
+  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio : "<< t_ratio << " in config " << config.get_id();
   return p * t_ratio;
  }
 
@@ -155,15 +150,14 @@ class move_insert_c_cdag {
 
  mc_weight_type accept() {
 
-  config.id++; // increment the config id
-
   // insert in the tree
   data.imp_trace.confirm_insert();
 
   // insert in the configuration
   config.insert(tau1, op1);
   config.insert(tau2, op2);
-  
+  config.finalize();
+
   // insert in the determinant
   data.dets[block_index].complete_operation();
   data.update_sign();
@@ -171,12 +165,9 @@ class move_insert_c_cdag {
   if (record_histograms) histos["insert_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_insert_c_cdag accepted" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index],config.get_id());
 #endif
 
   return data.current_sign / data.old_sign;
@@ -186,18 +177,14 @@ class move_insert_c_cdag {
 
  void reject() {
 
-  config.id++; // increment the config id
+  config.finalize();
   data.imp_trace.cancel_insert();
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index],config.id);
+  std::cerr << "* Move move_insert_c_cdag rejected" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index],config.get_id());
 #endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
-#endif
-
  }
 };
 }

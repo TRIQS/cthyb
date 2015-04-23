@@ -38,7 +38,7 @@ class move_remove_c_cdag {
  time_pt tau1, tau2;
 
  public:
- 
+
  //----------------------------------
 
  move_remove_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, bool record_histograms)
@@ -60,10 +60,8 @@ class move_remove_c_cdag {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-  std::cerr << "In config " << config.id << std::endl;
+  std::cerr << "In config " << config.get_id() << std::endl;
   std::cerr << "* Attempt for move_remove_c_cdag (block " << block_index << ")" << std::endl;
-//  std::cerr << "* Configuration before:" << std::endl << config;
-//  data.imp_trace.tree.graphviz(std::ofstream("tree_before"));
 #endif
 
   auto& det = data.dets[block_index];
@@ -73,6 +71,7 @@ class move_remove_c_cdag {
   int det_size = det.size();
   if (det_size == 0) return 0; // nothing to remove
   int num_c_dag = rng(det_size), num_c = rng(det_size);
+
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to remove: ";
   std::cerr << num_c_dag << "-th Cdag(" << block_index << ",...), ";
@@ -101,12 +100,12 @@ class move_remove_c_cdag {
   new_trace = data.imp_trace.estimate(p_yee, random_number);
   if (new_trace == 0.0) {
 #ifdef EXT_DEBUG
-   std::cout << "trace == 0" << std::endl;
+   std::cerr << "trace == 0" << std::endl;
 #endif
    return 0;
   }
   auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.id;
+  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.get_id();
  
   mc_weight_type p = trace_ratio * det_ratio;
 
@@ -117,8 +116,8 @@ class move_remove_c_cdag {
   std::cerr << "Weight: " << p / t_ratio << std::endl;
 #endif
 
-  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.id;
-  if (!std::isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.id;
+  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
+  if (!std::isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
   return p / t_ratio;
  }
 
@@ -126,15 +125,14 @@ class move_remove_c_cdag {
 
  mc_weight_type accept() {
 
-  config.id++; // increment the config id
-
   // remove from the tree
   data.imp_trace.confirm_delete();
 
   // remove from the configuration
   config.erase(tau1);
   config.erase(tau2);
-  
+  config.finalize();
+
   // remove from the determinants
   data.dets[block_index].complete_operation();
   data.update_sign();
@@ -142,12 +140,9 @@ class move_remove_c_cdag {
   if (record_histograms) histos["remove_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_remove_c_cdag accepted" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index],config.get_id());
 #endif
 
   return data.current_sign / data.old_sign;
@@ -157,17 +152,13 @@ class move_remove_c_cdag {
 
  void reject() {
 
-  config.id++; // increment the config id
-
+  config.finalize();
   data.imp_trace.cancel_delete();
 
 #ifdef EXT_DEBUG
-//  std::cerr << "* Configuration after: " << config.id << std::endl;
-//  std::cerr << config;
-  check_det_sequence(data.dets[block_index],config.id);
-#endif
-#ifdef PRINT_CONF_DEBUG
-  config.print_to_h5();
+  std::cerr << "* Move move_remove_c_cdag rejected" << std::endl;
+  std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  check_det_sequence(data.dets[block_index],config.get_id());
 #endif
 
  }

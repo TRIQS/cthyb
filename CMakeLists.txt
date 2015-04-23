@@ -32,12 +32,17 @@ endif(${GIT_RESULT} EQUAL 0)
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
 # Details of the code
-option(Extended_Debug "Enable extended debugging output" OFF)
+option(EXT_DEBUG "Enable extended debugging output" OFF)
+option(SAVE_CONFIGS "Save visited configurations to configs.h5" OFF)
 option(Tests "Enable Tests" ON)
 
-if(Extended_Debug)
+if(EXT_DEBUG)
  add_definitions(-DEXT_DEBUG)
-endif(Extended_Debug)
+endif(EXT_DEBUG)
+if(SAVE_CONFIGS)
+ set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save")
+ add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})
+endif(SAVE_CONFIGS)
 
 # Compile C++ code
 add_subdirectory(c++)

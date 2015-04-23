@@ -32,3 +32,4 @@ Reference manual
    :maxdepth: 1
 
    reference/solver
+   reference/solve_parameters

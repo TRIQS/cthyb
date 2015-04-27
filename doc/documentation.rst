@@ -33,3 +33,11 @@ Reference manual
 
    reference/solver
    reference/solve_parameters
+
+FAQs
+----
+
+.. toctree::
+   :maxdepth: 2
+
+   faqs

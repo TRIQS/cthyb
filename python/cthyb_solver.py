@@ -79,7 +79,7 @@ class Solver(SolverCore):
         print_warning = False
         for name, indices in self.gf_struct.items():
             dim = len(indices)
-            if (self.G0_iw[name].tail[1] != np.eye(dim)).any(): print_warning = True
+            if ( (self.G0_iw[name].tail[1]-np.eye(dim)) > 10**(-6) ).any(): print_warning = True
 	if print_warning and mpi.is_master_node():
             warning = ("!--------------------------------------------------------------------------------------!\n"
                        "! WARNING: Some components of your G0_iw do not decay as 1/iw. Continuing nonetheless. !\n"

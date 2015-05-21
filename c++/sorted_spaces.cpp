@@ -21,7 +21,6 @@
 #include "sorted_spaces.hpp"
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include <triqs/hilbert_space/space_partition.hpp>
-#include <triqs/hilbert_space/imperative_operator.hpp>
 
 using namespace triqs::arrays;
 using namespace triqs::hilbert_space;
@@ -35,7 +34,6 @@ namespace cthyb {
 void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_body_op_t const& h) {
 
  imperative_operator<hilbert_space, double, false> hamiltonian(h, fops);
- hilbert_space full_hs(fops);
  state<hilbert_space, double, true> st(full_hs);
 
  using space_partition_t = space_partition<state<hilbert_space, double, true>, imperative_operator<hilbert_space, double, false>>;
@@ -84,7 +82,7 @@ void sorted_spaces::autopartition(fundamental_operator_set const& fops, many_bod
 
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_t> const& qn_vector,
                              fundamental_operator_set const& fops)
-   : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
+   : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops), full_hs(fops) {
  slice_hilbert_space_with_qn(h_, qn_vector, fops);
  complete_init(h_);
 }
@@ -92,7 +90,7 @@ sorted_spaces::sorted_spaces(many_body_op_t const& h_, std::vector<many_body_op_
 //-----------------------------
 
 sorted_spaces::sorted_spaces(many_body_op_t const& h_, fundamental_operator_set const& fops)
-   : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops) {
+   : creation_connection(fops.size()), annihilation_connection(fops.size()), fops(fops), full_hs(fops) {
  autopartition(fops, h_);
  complete_init(h_);
 }
@@ -119,9 +117,6 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
  std::map<std::vector<double>, int, lt_dbl> map_qn_n;
  using quantum_number_t = double;
  std::vector<std::vector<quantum_number_t>> quantum_numbers;
-
- // the full Hilbert space
- hilbert_space full_hs(fops);
 
  // The QN as operators : a vector of imperative operators for the quantum numbers
  std::vector<imperative_operator<hilbert_space, double>> qsize;
@@ -196,7 +191,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
    qn_after = get_quantum_numbers(op_c_dag(s));
 
    // insert in creation map checking whether it was already there
-   if (dot_product(op_c_dag(s), op_c_dag(s)) > 1.e-10) {
+   if (!triqs::utility::is_zero(dot_product(op_c_dag(s), op_c_dag(s)))) {
     auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
     auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
     if (creation_map[n][origin] == -1)
@@ -210,7 +205,7 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
    qn_after = get_quantum_numbers(op_c(s));
 
    // insert in annihilation map checking whether it was already there
-   if (dot_product(op_c(s), op_c(s)) > 1.e-10) {
+   if (!triqs::utility::is_zero(dot_product(op_c(s), op_c(s)))) {
     auto origin = sub_hilbert_spaces[map_qn_n[qn_before]].get_index();
     auto target = sub_hilbert_spaces[map_qn_n[qn_after]].get_index();
     if (annihilation_map[n][origin] == -1)
@@ -221,6 +216,29 @@ void sorted_spaces::slice_hilbert_space_with_qn(many_body_op_t const& h_, std::v
    }
   }
  }
+}
+
+// -------------------------------------------------------------------------------------------------
+std::pair<matrix<double>,int> sorted_spaces::make_op_matrix(imperative_operator<hilbert_space> const& op, int from_spn, int to_spn) const {
+
+ int nonzeros = 0;
+ auto const& from_sp = sub_hilbert_spaces[from_spn];
+ auto const& to_sp = sub_hilbert_spaces[to_spn];
+
+ auto M = matrix<double>(to_sp.size(), from_sp.size());
+ M() = 0;
+
+ for (int i = 0; i<from_sp.size(); ++i) { // loop on all fock states of the blocks
+  state<hilbert_space, double, true> from_s(full_hs);
+  from_s(from_sp.get_fock_state(i)) = 1.0;
+
+  auto to_s = op(from_s);
+  auto proj_s = project<state<sub_hilbert_space, double, true>>(to_s,to_sp);
+
+  // Count non-zero elements in this column
+  foreach(proj_s, [&](int j, double ampl) { M(j,i) = ampl; nonzeros++; });
+ }
+ return {M,nonzeros};
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -299,9 +317,6 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
  for (auto& eigensystem : eigensystems) eigensystem.eigenvalues() -= get_gs_energy();
  // hamiltonian = imperative_operator<sub_hilbert_space, false>(h_ - get_gs_energy(), fops);
 
- // the full Hilbert space
- hilbert_space full_hs(fops);
-
  for (auto const& x : fops) {
   // get the operators and their index
   int n = x.linear_index;
@@ -317,23 +332,8 @@ void sorted_spaces::complete_init(many_body_op_t const& h_) {
    for (int B = 0; B < connection.size(); ++B) {
     auto Bp = connection[B];
     if (Bp == -1) continue;
-    auto M = matrix<double>(sub_hilbert_spaces[Bp].size(), sub_hilbert_spaces[B].size());
-    M() = 0;
-    // put the permutation matrix
-    for (auto fs : sub_hilbert_spaces[B].get_all_fock_states()) { // loop on all fock states of the blocks
-     state<hilbert_space, double, false> s(full_hs);
-     s(fs) = 1.0;
-     auto s2 = c_op(s);
-     int nonzeros_in_s2 = 0;
-     foreach(s2, [&](int i, double ampl) {
-      if (nonzeros_in_s2 > 1) TRIQS_RUNTIME_ERROR << "Internal consistency error ";
-      if(std::abs(ampl) > std::numeric_limits<double>::epsilon()) {
-        M(sub_hilbert_spaces[Bp].get_state_index(i /*full_hs.get_fock_state(i)==i*/), sub_hilbert_spaces[B].get_state_index(fs)) = ampl;
-        nonzeros_in_s2++;
-      }
-     });
-    }
-    cmat[B] = eigensystems[Bp].unitary_matrix.transpose() * M * eigensystems[B].unitary_matrix;
+    auto M = make_op_matrix(c_op,B,Bp);
+    cmat[B] = eigensystems[Bp].unitary_matrix.transpose() * M.first * eigensystems[B].unitary_matrix;
    }
    return cmat;
   };

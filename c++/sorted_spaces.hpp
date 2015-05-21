@@ -25,6 +25,7 @@
 #include <vector>
 #include <map>
 #include <triqs/hilbert_space/state.hpp>
+#include <triqs/hilbert_space/imperative_operator.hpp>
 
 namespace cthyb {
 
@@ -61,6 +62,9 @@ class sorted_spaces {
  // Number of c operators
  int n_c_operators() const { return fops.size(); }
 
+ // Full Hilbert space
+ hilbert_space const& space() const { return full_hs; }
+
  // n-th subspace
  sub_hilbert_space const& subspace(int n) const { return sub_hilbert_spaces[n]; }
 
@@ -77,6 +81,9 @@ class sorted_spaces {
  // eigensystems for all blocks
  std::vector<eigensystem_t> const& get_eigensystems() const { return eigensystems; }
 
+ // Create matrix of an operator acting from one subspace to another (returns matrix + number of its nonzero elements)
+ std::pair<matrix<double>,int> make_op_matrix(imperative_operator<hilbert_space> const& op, int from_sp, int to_sp) const;
+
  // (global) gs energy (i.e. min of all subspaces).
  double get_gs_energy() const { return gs_energy; }
 
@@ -88,6 +95,9 @@ class sorted_spaces {
 
  private:
  /// ------------------  DATA  -----------------
+
+ // Full Hilbert space
+ hilbert_space full_hs;
 
  std::vector<sub_hilbert_space> sub_hilbert_spaces; // all blocks
 

@@ -49,4 +49,26 @@ struct measure_perturbation_hist {
  void collect_results(boost::mpi::communicator const& c) {
  }
 };
+
+struct measure_perturbation_hist_total {
+ using mc_sign_type = std::complex<double>;
+
+ qmc_data const& data;
+ statistics::histogram histo_perturbation_order;
+
+ measure_perturbation_hist_total(qmc_data const& data, std::string hist_file_name)
+    : data(data), histo_perturbation_order{100, hist_file_name} {
+ }
+ // --------------------
+
+ void accumulate(mc_sign_type s) {
+  histo_perturbation_order << data.config.size() / 2;
+ }
+ // ---------------------------------------------
+
+ void collect_results(boost::mpi::communicator const& c) {
+ }
+};
+
+
 }

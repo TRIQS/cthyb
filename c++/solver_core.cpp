@@ -210,6 +210,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
     qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + g_names[block] + ".dat"), "Perturbation order (" + g_names[block] + ")");
    }
+   qmc.add_measure(measure_perturbation_hist_total(data, "histo_pert_order.dat"), "Perturbation order");
   }
 
   // Run! The empty configuration has sign = 1

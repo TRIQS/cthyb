@@ -59,7 +59,15 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
         modified(true),
         delete_flag(false) {}
 
-  node_t(node_t const&) = delete;
+  node_t(node_t const& n) {
+   key = n.key;
+   color = n.color;
+   N = n.N;
+   if(n.left) left = new node_t(*n.left);
+   if(n.right) right = new node_t(*n.right);
+   modified = n.modified;
+   delete_flag = n.delete_flag;
+  }
   node_t& operator=(node_t const&) = delete;
   template <typename... T> void reset(Key const& k, T&&... x) {
    key = k;
@@ -135,7 +143,9 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
 
  rb_tree() : root(nullptr) {}
  ~rb_tree() { rec_free(root); }
- rb_tree(rb_tree const &) = delete; // not implemented 
+ rb_tree(rb_tree const& n) {
+  if(n.root) root = new node_t(*n.root);
+ }
 
  /// Number of nodes in the tree
  int size() const { return size(root); }

@@ -14,7 +14,7 @@ struct int_ {
 int main() {
  triqs::utility::rb_tree<int,int_> tree;
 
- auto plot = [](auto & tree) {
+ auto plot = [](triqs::utility::rb_tree<int,int_> & tree) {
  tree.graphviz(std::cout);
  tree.clear_modified();
  };

@@ -1,0 +1,116 @@
+digraph G{ graph [ordering="out"]
+7[color = red]
+1[color = red]
+7 -> 1[color = red]
+}
+digraph G{ graph [ordering="out"]
+3[color = red]
+0[color = black]
+1 -> 0
+2[color = black]
+1 -> 2
+1[color = black]
+3 -> 1
+7[color = red]
+3 -> 7
+5[color = black]
+7 -> 5
+12[color = red]
+7 -> 12
+10[color = red]
+12 -> 10[color = red]
+}
+digraph G{ graph [ordering="out"]
+3[color = red]
+0[color = black]
+1 -> 0
+2[color = black]
+1 -> 2
+1[color = black]
+3 -> 1
+10[color = red]
+3 -> 10
+5[color = black]
+10 -> 5
+12[color = red]
+10 -> 12
+}
+digraph G{ graph [ordering="out"]
+3[color = red]
+0[color = black]
+1 -> 0
+2[color = black]
+1 -> 2
+1[color = black]
+3 -> 1
+10[color = red]
+3 -> 10
+5[color = red]
+7 -> 5[color = red]
+7[color = red]
+10 -> 7
+12[color = black]
+10 -> 12
+}
+digraph G{ graph [ordering="out"]
+3[color = red]
+0[color = black]
+1 -> 0
+2[color = black]
+1 -> 2
+1[color = black]
+3 -> 1
+10[color = red]
+3 -> 10
+5[color = red]
+6 -> 5
+7[color = red]
+6 -> 7
+6[color = red]
+10 -> 6[color = red]
+12[color = black]
+10 -> 12
+}
+digraph G{ graph [ordering="out"]
+3[color = red]
+0[color = black]
+1 -> 0
+2[color = black]
+1 -> 2
+1[color = black]
+3 -> 1
+6[color = red]
+3 -> 6
+5[color = black]
+6 -> 5
+12[color = red]
+6 -> 12
+7[color = black]
+12 -> 7[color = red]
+}
+digraph G{ graph [ordering="out"]
+6[color = red]
+0[color = red]
+6 -> 0
+7[color = red]
+6 -> 7
+}
+digraph G{ graph [ordering="out"]
+3[color = black]
+0[color = black]
+1 -> 0
+2[color = black]
+1 -> 2
+1[color = black]
+3 -> 1
+10[color = black]
+3 -> 10
+5[color = black]
+6 -> 5
+7[color = black]
+6 -> 7
+6[color = black]
+10 -> 6[color = red]
+12[color = black]
+10 -> 12
+}

@@ -143,7 +143,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
 
  rb_tree() : root(nullptr) {}
  ~rb_tree() { rec_free(root); }
- rb_tree(rb_tree const& n) {
+ rb_tree(rb_tree const& n) : compare(n.compare) {
   if(n.root) root = new node_t(*n.root);
  }
 

@@ -30,11 +30,12 @@ namespace cthyb {
 using triqs::utility::time_pt;
 using triqs::utility::time_segment;
 
-struct op_desc {  // The description of the C operator
- int block_index; // the block index of the operator
- int inner_index; // the inner index inside the block
- bool dagger;     // is the operator a dagger
- long linear_index;
+// The description of the C operator
+struct op_desc {
+ int block_index;   // the block index of the operator
+ int inner_index;   // the inner index inside the block
+ bool dagger;       // is the operator a dagger
+ long linear_index; // the cumulative index 
 
  friend std::ostream& operator<<(std::ostream& out, op_desc const& op) {
   out << (op.dagger ? "Cdag(" : "C(") << op.block_index << "," << op.inner_index << ")";
@@ -80,6 +81,7 @@ struct configuration {
   return out;
  }
 
+ // Writing of configuration out to a h5 for e.g. plotting
  friend void h5_write(triqs::h5::group conf, std::string conf_group_name, configuration const& c) {
   triqs::h5::group conf_group = conf.create_group(conf_group_name);
   for (auto const& op : c) {
@@ -96,7 +98,7 @@ struct configuration {
   ar & make_nvp("id",id) & make_nvp("oplist", oplist) & make_nvp("beta", beta_);
  }
 
- long get_id() const { return id; }
+ long get_id() const { return id; } // Get the id of the current configuration
  void finalize() {
   id++;
 #ifdef SAVE_CONFIGS

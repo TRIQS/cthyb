@@ -65,12 +65,13 @@ class impurity_trace {
 
  // ------------------ Cache data ----------------
 
+ // The data stored for each node in tree
  struct cache_t {
-  double dtau_l = 0, dtau_r = 0;
+  double dtau_l = 0, dtau_r = 0; // difference in tau of this node and left and right sub-trees
   std::vector<int> block_table; // number of blocks limited to 2^15
-  std::vector<arrays::matrix<double>> matrices;
+  std::vector<arrays::matrix<double>> matrices; // partial product of operator/time evolution matrices
   std::vector<double> matrix_lnorms; // -ln(norm(matrix))
-  std::vector<bool> matrix_norm_valid;
+  std::vector<bool> matrix_norm_valid; // is the norm of the matrix still valid?
   cache_t(int n_blocks) : block_table(n_blocks), matrix_lnorms(n_blocks), matrices(n_blocks), matrix_norm_valid(n_blocks) {}
  };
 
@@ -144,7 +145,7 @@ class impurity_trace {
   return std::make_shared<rb_tree_t::node_t>(time_pt{}, node_data_t{{}, n_blocks}, false, 1);
  }
 
- // a pool of trial nodes, ready to be glued in the tree. Max 4 (for possible double insertion)
+ // a pool of trial nodes, ready to be glued in the tree. Max 4 to allow for double insertions
  std::vector<std::shared_ptr<rb_tree_t::node_t>> trial_nodes = {make_new_node(), make_new_node(),
                                                                 make_new_node(), make_new_node()};
 
@@ -201,10 +202,8 @@ class impurity_trace {
 
  // confirm the insertion of the nodes, with red black balance
  void confirm_insert() {
-  // remove BST inserted nodes
-  cancel_insert_impl();
-  // then reinsert the nodes used for real in rb tree
-  for (int i = 0; i <= trial_node_index; ++i) {
+  cancel_insert_impl();                         // remove BST inserted nodes
+  for (int i = 0; i <= trial_node_index; ++i) { // then reinsert the nodes in in balanced RBT
    node n = trial_nodes[i].get();
    tree.insert(n->key, {n->op, n_blocks});
   }
@@ -232,10 +231,10 @@ class impurity_trace {
    if (no->op.dagger == dagger && no->op.block_index == block_index) ++i;
    return i == n + 1;
   });
-  removed_nodes.push_back(x);      // store the node
-  removed_keys.push_back(x->key); // store the key
-  tree.set_modified_from_root_to(x->key);
-  x->delete_flag = true; // mark the node for deletion
+  removed_nodes.push_back(x);             // store the node
+  removed_keys.push_back(x->key);         // store the key
+  tree.set_modified_from_root_to(x->key); // mark all nodes on path from node to root as modified
+  x->delete_flag = true;                  // mark the node for deletion
   tree_size--;
   return x->key;
  }
@@ -288,10 +287,8 @@ class impurity_trace {
  void confirm_shift() {
 
   // Inserted nodes
-  //  first remove BST inserted nodes
-  cancel_insert_impl();
-  //  then reinsert the nodes used for real in rb tree
-  for (int i = 0; i <= trial_node_index; ++i) {
+  cancel_insert_impl();                         //  first remove BST inserted nodes
+  for (int i = 0; i <= trial_node_index; ++i) { //  then reinsert the nodes used for real in rb tree
    node n = trial_nodes[i].get();
    tree.insert(n->key, {n->op, n_blocks});
   }

@@ -52,7 +52,7 @@ struct qmc_data {
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
   delta_block_adaptor &operator=(delta_block_adaptor &&a) = default;
 
-  // no need of argument_type, return_type : det_manip now synthetize everything (need to UPDATE doc).
+  // FIXME no need of argument_type, return_type : det_manip now synthetize everything (need to UPDATE doc).
   double operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
    double res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
    return (x.first >= y.first ? res : -res); // x,y first are time_pt, wrapping is automatic in the - operation, but need to

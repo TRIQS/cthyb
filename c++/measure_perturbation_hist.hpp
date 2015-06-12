@@ -36,7 +36,7 @@ struct measure_perturbation_hist {
  statistics::histogram histo_perturbation_order;
 
  measure_perturbation_hist(int block_index, qmc_data const& data, std::string hist_file_name)
-    : data(data), block_index(block_index), histo_perturbation_order{100, hist_file_name} {
+    : data(data), block_index(block_index), histo_perturbation_order{1000, hist_file_name} {
  }
  // --------------------
 
@@ -57,7 +57,7 @@ struct measure_perturbation_hist_total {
  statistics::histogram histo_perturbation_order;
 
  measure_perturbation_hist_total(qmc_data const& data, std::string hist_file_name)
-    : data(data), histo_perturbation_order{100, hist_file_name} {
+    : data(data), histo_perturbation_order{1000, hist_file_name} {
  }
  // --------------------
 

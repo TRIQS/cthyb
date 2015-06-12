@@ -77,6 +77,16 @@ namespace statistics {
    for (auto& x : data) x = 0;
   }
 
+  /// Reduce the histogram from all nodes
+  void all_reduce(boost::mpi::communicator & world) {
+   std::vector<uint64_t> tot_data(data.size(),0);
+   // FIXME what is the correct Op to add two vectors together?!
+   for (int i=0; i<data.size(); i++) {
+    boost::mpi::all_reduce(world, data[i], tot_data[i], std::c14::plus<uint64_t>());
+   }
+   std::copy(tot_data.begin(),tot_data.end(),data.begin());
+  }
+
   /// Return the normalized histogram (sum = 1)
   std::vector<double> normalize() const {
    std::vector<double> r(data.size());
@@ -90,6 +100,7 @@ namespace statistics {
   /** */
   void dump(std::string s) {
    boost::mpi::communicator world;
+   all_reduce(world);
    if (world.rank() == 0) {
     std::ofstream f(s);
     size_t i = 0;
@@ -145,9 +156,11 @@ namespace statistics {
   /// Activate a dump file if string is not "" : the histogram will be saved automatically there at destruction
   void activate_dumpfile(std::string dump_file_name) { _dump_file_name = dump_file_name; }
 
+  // FIXME What happens when this class object is destroyed? Do we call dump of the histo after this dump?!
   /// Dump into text file
   void dump(std::string s) {
    boost::mpi::communicator world;
+   histo.all_reduce(world);
    if (world.rank() == 0) {
     std::ofstream f(s);
     size_t i = 0;

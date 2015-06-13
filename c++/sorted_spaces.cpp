@@ -396,6 +396,29 @@ block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,many
 
 // -----------------------------------------------------------------
 
+std::map<std::string,std::vector<double>> sorted_spaces::atomic_observables(std::map<std::string,many_body_op_t> obs_map) const {
+
+ std::map<std::string,std::vector<double>> results;
+ std::map<std::string,imperative_operator<hilbert_space, double>> imp_ops;
+ for(auto const& op : obs_map) {
+  imp_ops.insert({op.first,{op.second,fops}});
+  auto & res = results[op.first];
+  res.reserve(full_hs.size());
+ }
+
+ for(auto const& eigs: eigensystems) {
+  for(auto const& estate : eigs.eigenstates) {
+   // eigenstate projected to the full Hilbert space
+   auto proj_estate = project<state<hilbert_space, double, true>>(estate,full_hs);
+   for(auto const& op : obs_map) results[op.first].push_back(dot_product(proj_estate,imp_ops[op.first](proj_estate)));
+  }
+ }
+
+ return results;
+}
+
+// -----------------------------------------------------------------
+
 std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
 
  os << "Number of blocks: " << ss.n_subspaces() << std::endl;

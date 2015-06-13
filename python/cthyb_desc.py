@@ -54,6 +54,9 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
   make_histograms     bool                          false                                          Make histograms of the trace computation?
   proposal_prob       std::map<std::string, double> (std::map<std::string,double>{})               Operator insertion/removal probabilities for different blocks """)
 
+c.add_method("""std::map<std::string,std::vector<double>> atomic_observables (std::map<std::string,real_operator_t> obs_map)""",
+             doc = """Static observables of the atomic problem """)
+
 c.add_property(name = "last_solve_parameters",
                getter = cfunction("cthyb::solve_parameters_t get_last_solve_parameters ()"),
                doc = """Set of parameters used in the last call to solve """)

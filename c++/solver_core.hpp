@@ -72,7 +72,7 @@ class solver_core {
  block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
 
  /// Static observables of the atomic problem
- std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,real_operator_t> obs_map) const {
+ std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,real_operator_t> const& obs_map) const {
   return sosp.atomic_observables(obs_map);
  }
 

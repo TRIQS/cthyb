@@ -94,7 +94,7 @@ class sorted_spaces {
  block_gf<imtime> atomic_gf(double beta, std::map<std::string,many_body_op_t::indices_t> const& gf_struct, int n_tau) const;
 
  /// The atomic observables
- std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,many_body_op_t> obs_map) const;
+ std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,many_body_op_t> const& obs_map) const;
 
  private:
  /// ------------------  DATA  -----------------

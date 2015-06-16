@@ -55,6 +55,9 @@ struct solve_parameters_t {
  /// Measure perturbation order?
  bool measure_pert_order = false;
 
+ /// Measure the contribution of each atomic state to the trace?
+ bool measure_state_trace_contrib = false;
+
  /// Make histograms of the trace computation?
  bool make_histograms = false;
 

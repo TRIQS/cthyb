@@ -421,6 +421,7 @@ std::map<std::string,std::vector<double>> sorted_spaces::atomic_observables(std:
 
 std::ostream& operator<<(std::ostream& os, sorted_spaces const& ss) {
 
+ os << "Dimension of full Hilbert space: " << ss.space().size() << std::endl;
  os << "Number of blocks: " << ss.n_subspaces() << std::endl;
  for (int n = 0; n < ss.sub_hilbert_spaces.size(); ++n) {
   os << "Block " << n << ", ";

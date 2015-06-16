@@ -22,6 +22,7 @@
 #include <map>
 #include <fstream>
 #include <boost/mpi.hpp>
+#include <triqs/arrays.hpp>
 
 namespace triqs {
 namespace statistics {
@@ -170,6 +171,72 @@ namespace statistics {
      f << _a + (i++) / n_bin_over_len << "  " << x << "  " << cum << std::endl;
     }
     if (histo.n_lost_pts() != 0) std::cerr << "Histogram "<<s<<" : " << histo.n_lost_pts() << " points have been lost !" << std::endl;
+   } else {
+    //std::cout << "not dumping histo "<< s << " on node " << world.rank() << std::endl;
+   }
+  }
+ };
+
+ //-------------------------------------------------------------------------------
+ /**
+   Histogram as a simple accumulation of an array
+   */
+ class histogram_array {
+  double _len_array;
+  arrays::vector<double> data;
+  std::string _dump_file_name;
+
+  public:
+  /** */
+
+  histogram_array(int len_array, std::string dump_file_name = "")
+     : _len_array(len_array) {
+   if (_len_array == 0) TRIQS_RUNTIME_ERROR << "histogram_array construction : one must have array of size >= 1";
+   arrays::vector<double> data(_len_array,0.0);
+   activate_dumpfile(dump_file_name);
+  }
+
+  // TO FIX DUMPING EMPTY.... DOS NOT WORK !
+  //histogram_array(histogram_array const&) = default;
+  //histogram_array(histogram_array&&) = default;
+  //histogram_array& operator=(histogram_array const&) = default;
+  //histogram_array& operator=(histogram_array&&) = default;
+
+  ///
+  ~histogram_array() {
+   if (!_dump_file_name.empty()) dump(_dump_file_name);
+  }
+
+  /// Bins a double into the histogram
+  histogram_array& operator<<(arrays::vector<double> x) {
+   data += x;
+   return *this;
+  }
+
+  /// Activate a dump file if string is not "" : the histogram will be saved automatically there at destruction
+  void activate_dumpfile(std::string dump_file_name) { _dump_file_name = dump_file_name; }
+
+  /// Reduce the histogram from all nodes
+  void all_reduce(boost::mpi::communicator & world) {
+   arrays::vector<double> tot_data(_len_array,0.0);
+   // FIXME what is the correct Op to add two vectors together?!
+   for (int i=0; i<_len_array; i++) {
+    boost::mpi::all_reduce(world, data[i], tot_data[i], std::c14::plus<double>());
+   }
+   std::copy(tot_data.begin(),tot_data.end(),data.begin());
+  }
+
+  // FIXME What happens when this class object is destroyed? Do we call dump of the histo after this dump?!
+  /// Dump into text file
+  void dump(std::string s) {
+   boost::mpi::communicator world;
+   all_reduce(world);
+   if (world.rank() == 0) {
+    std::ofstream f(s);
+    size_t i = 0;
+    for (auto const& x : data) {
+     f << (i++) << "  " << x << "  " << std::endl;
+    }
    } else {
     //std::cout << "not dumping histo "<< s << " on node " << world.rank() << std::endl;
    }

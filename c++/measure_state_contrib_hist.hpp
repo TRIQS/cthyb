@@ -19,54 +19,51 @@
  *
  ******************************************************************************/
 #pragma once
-#include "qmc_data.hpp"
-#include <boost/mpi/collectives.hpp>
-#include "triqs/statistics/histograms.hpp"
+#include "impurity_trace.hpp"
 
 namespace cthyb {
 
-struct measure_perturbation_hist {
+struct measure_state_contrib_hist {
  using mc_sign_type = std::complex<double>;
 
- qmc_data const& data;
- int block_index;
- statistics::histogram histo_perturbation_order;
+ impurity_trace & imp_tr;
+ arrays::vector<double> &contrib;
+ double z = 0;
 
- measure_perturbation_hist(int block_index, qmc_data const& data, std::string hist_file_name)
-    : data(data), block_index(block_index), histo_perturbation_order{1000, hist_file_name} {
+ measure_state_contrib_hist(impurity_trace & imp_tr, arrays::vector<double>& contrib)
+    : imp_tr(imp_tr), contrib(contrib) {
+  int n_eigstates = imp_tr.n_eigstates;
+  contrib.resize(n_eigstates);
+  contrib() = 0.0;
  }
  // --------------------
 
  void accumulate(mc_sign_type s) {
-
-  histo_perturbation_order << data.dets[block_index].size();
+  z += 1;
+  imp_tr.estimate(-1,0);
+  auto tot = sum(imp_tr.state_contrib);
+  if (tot != 0.0)
+   this->contrib += imp_tr.state_contrib / tot;
  }
+  
  // ---------------------------------------------
 
  void collect_results(boost::mpi::communicator const& c) {
+  arrays::vector<double> contrib_total(imp_tr.n_eigstates);
+  std::string s="histo_state_contrib_to_trace.dat";
+  for (int i=0; i<contrib.size(); i++) {
+   boost::mpi::all_reduce(c, this->contrib[i], contrib_total[i], std::c14::plus<>());
+  }
+  contrib_total /= z;
+  if (c.rank() == 0) {
+   std::ofstream f(s);
+   size_t i = 0;
+   for (auto const& x : contrib_total) {
+    f << (i++) << "  " << x << "  " << std::endl;
+   }
+  }
  }
+
 };
-
-// ----------------------------------------------------------------
-
-struct measure_perturbation_hist_total {
- using mc_sign_type = std::complex<double>;
-
- qmc_data const& data;
- statistics::histogram histo_perturbation_order;
-
- measure_perturbation_hist_total(qmc_data const& data, std::string hist_file_name)
-    : data(data), histo_perturbation_order{1000, hist_file_name} {
- }
- // --------------------
-
- void accumulate(mc_sign_type s) {
-  histo_perturbation_order << data.config.size() / 2;
- }
- // ---------------------------------------------
-
- void collect_results(boost::mpi::communicator const& c) {
- }
-};
-
+ 
 }

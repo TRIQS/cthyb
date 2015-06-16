@@ -56,15 +56,23 @@ class impurity_trace {
  };
  method_t method;
 
+ public:
  // ------- Configuration and h_loc data ----------------
 
- const configuration* config;            // config object does exist longer (temporally) than this object.
- const sorted_spaces* sosp;              // access to the diagonalization of h_loc
- int n_orbitals = sosp->n_c_operators(); //
- int n_blocks = sosp->n_subspaces();     //
+ const configuration* config;              // config object does exist longer (temporally) than this object.
+ const sorted_spaces* sosp;                // access to the diagonalization of h_loc
+ int n_orbitals = sosp->n_c_operators();   //
+ int n_blocks = sosp->n_subspaces();       //
+ int n_eigstates = sosp->space().size();   //
+
+ // ------- Trace data ----------------
+
+ std::vector<int> first_eigstate_of_block; // Index of the first eigenstate of each block
+ arrays::vector<double> state_contrib;     // partial trace contribution of each eigenstate
 
  // ------------------ Cache data ----------------
 
+ private:
  // The data stored for each node in tree
  struct cache_t {
   double dtau_l = 0, dtau_r = 0; // difference in tau of this node and left and right sub-trees

@@ -40,7 +40,8 @@ namespace cthyb {
 
 // -------- Constructor --------
 impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, solve_parameters_t const& p)
-   : config(&c), sosp(&sosp_), histo(p.make_histograms ? new histograms_t(sosp_.n_subspaces()) : nullptr) {
+   : config(&c), sosp(&sosp_), histo(p.make_histograms ? new histograms_t(sosp_.n_subspaces()) : nullptr),
+     first_eigstate_of_block(sosp_.space().size(),0), state_contrib(sosp->space().size(),0.0) {
 
  // Taking parameters from the inputs
  use_trace_estimator = p.use_trace_estimator;
@@ -48,6 +49,9 @@ impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, sol
   method = method_t::estimate;
  else
   method = method_t::full_trace;
+
+ // Calculate the index of the first eigenstate of each block
+ for (int bl = 1; bl < n_blocks; ++bl) first_eigstate_of_block[bl] = first_eigstate_of_block[bl-1] + get_block_dim(bl-1);
 
 }
 
@@ -352,9 +356,15 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
 
   // trace(mat * exp(- H * (beta - tmax)) * exp (- H * tmin)) to handle the piece outside of the first-last operators.
   trace_t trace_partial = 0;
+  state_contrib() = 0.0;
   auto dim = get_block_dim(block_index);
-  for (int u = 0; u < dim; ++u) trace_partial += b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
+  for (int u = 0; u < dim; ++u) {
+   auto x = b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
+   auto eigstate_index = first_eigstate_of_block[block_index] + u; // index of this eigenstate in original (unsorted) order
+   state_contrib[eigstate_index] = std::abs(x);
+   trace_partial += x;
   //trace_partial *= std::exp(dtau * get_block_eigenval(block_index, 0) - to_sort_lnorm_b[bl].first); FIXME
+  }
 
 #ifdef CHECK_MATRIX_BOUNDED_BY_BOUND
   if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort_lnorm_b[bl].first))

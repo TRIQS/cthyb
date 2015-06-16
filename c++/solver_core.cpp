@@ -33,6 +33,7 @@
 #include "measure_g.hpp"
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
+#include "measure_state_contrib_hist.hpp"
 
 namespace cthyb {
 
@@ -213,6 +214,10 @@ void solver_core::solve(solve_parameters_t const & params) {
    }
    qmc.add_measure(measure_perturbation_hist_total(data, "histo_pert_order.dat"), "Perturbation order");
   }
+
+  if (params.measure_state_trace_contrib)
+   qmc.add_measure(measure_state_contrib_hist{data.imp_trace, state_trace_contribs},
+                   "Contribution of atomic states to the trace");
 
   // Run! The empty (starting) configuration has sign = 1
   qmc.start(1.0, triqs::utility::clock_callback(params.max_time));

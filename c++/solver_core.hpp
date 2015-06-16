@@ -44,6 +44,7 @@ class solver_core {
  boost::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
  solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
  mc_sign_type _average_sign;
+ arrays::vector<double> state_trace_contribs;
 
  public:
 
@@ -70,6 +71,9 @@ class solver_core {
 
  /// Atomic G(tau) in imaginary time
  block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
+
+ /// Average contribution of each atomic state to the trace
+ arrays::vector<double> const& get_state_trace_contribs() const { return state_trace_contribs; }
 
  /// Static observables of the atomic problem
  std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,real_operator_t> const& obs_map) const {

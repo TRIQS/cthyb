@@ -1,10 +1,10 @@
 from itertools import product
 import pytriqs.utility.mpi as mpi
 from pytriqs.operators import *
+from pytriqs.operators.util import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
-from U_matrix import U_matrix
 
 beta = 100.0
 # H_loc parameters

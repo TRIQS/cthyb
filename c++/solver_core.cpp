@@ -150,7 +150,7 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   if (params.verbosity >= 2) std::cout << "Found " << sosp.n_subspaces() << " subspaces." << std::endl;
 
-  if (params.make_histograms) std::ofstream("impurity_blocks.dat") << sosp;
+  if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << sosp;
 
   // If one is interested only in the atomic problem
   if (params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
@@ -173,14 +173,14 @@ void solver_core::solve(solve_parameters_t const & params) {
    auto const& block_name = delta_names[block];
    auto f = params.proposal_prob.find(block_name);
    double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
-   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Insert Delta_" + block_name, prop_prob);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng(), params.make_histograms), "Remove Delta_" + block_name, prop_prob);
+   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
-     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.make_histograms),
+     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.performance_analysis),
                  "Insert Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
-     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.make_histograms),
+     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.performance_analysis),
                  "Remove Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
     }
    }
@@ -192,7 +192,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_inserts, "Insert four operators", 1.0);
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
-  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.make_histograms), "Shift one operator", 1.0);
+  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.performance_analysis), "Shift one operator", 1.0);
  
   // Measurements
   if (params.measure_g_tau) {

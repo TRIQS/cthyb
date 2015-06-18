@@ -63,5 +63,5 @@ p["partition_method"] = "autopartition"
 p["measure_g_tau"] = True
 p["move_shift"] = True
 p["measure_pert_order"] = False
-p["make_histograms"] = False
+p["performance_analysis"] = False
 p["use_trace_estimator"] = False

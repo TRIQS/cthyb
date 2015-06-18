@@ -30,7 +30,7 @@ class move_insert_c_c_cdag_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index1, block_index2, block_size1, block_size2;
- bool record_histograms;
+ bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  double delta_tau1, delta_tau2;
  qmc_data::trace_t new_trace;
@@ -40,7 +40,7 @@ class move_insert_c_c_cdag_cdag {
  public:
  //-----------------------------------------------
 
- move_insert_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, qmc_data& data, mc_tools::random_generator& rng, bool record_histograms)
+ move_insert_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, qmc_data& data, mc_tools::random_generator& rng, bool performance_analysis)
     : data(data),
       config(data.config),
       rng(rng),
@@ -48,8 +48,8 @@ class move_insert_c_c_cdag_cdag {
       block_size1(block_size1),
       block_index2(block_index2),
       block_size2(block_size2),
-      record_histograms(record_histograms) {
-  if (record_histograms) {
+      performance_analysis(performance_analysis) {
+  if (performance_analysis) {
    histos.insert({"double_insert_length_proposed", {0, config.beta(), 100, "histo_double_insert_length_proposed.dat"}});
    histos.insert({"double_insert_length_accepted", {0, config.beta(), 100, "histo_double_insert_length_accepted.dat"}});
   }
@@ -90,7 +90,7 @@ class move_insert_c_c_cdag_cdag {
   // record the length of the proposed insertion
   delta_tau1 = double(tau2 - tau1);
   delta_tau2 = double(tau4 - tau3);
-  if (record_histograms) {
+  if (performance_analysis) {
    histos["double_insert_length_proposed"] << delta_tau1;
    histos["double_insert_length_proposed"] << delta_tau2;
   }
@@ -214,7 +214,7 @@ class move_insert_c_c_cdag_cdag {
   }
   data.update_sign();
   data.trace = new_trace;
-  if (record_histograms) {
+  if (performance_analysis) {
    histos["double_insert_length_accepted"] << delta_tau1;
    histos["double_insert_length_accepted"] << delta_tau2;
   }

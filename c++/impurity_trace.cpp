@@ -40,7 +40,7 @@ namespace cthyb {
 
 // -------- Constructor --------
 impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, solve_parameters_t const& p)
-   : config(&c), sosp(&sosp_), histo(p.make_histograms ? new histograms_t(sosp_.n_subspaces()) : nullptr),
+   : config(&c), sosp(&sosp_), histo(p.performance_analysis ? new histograms_t(sosp_.n_subspaces()) : nullptr),
      first_eigstate_of_block(sosp_.space().size(),0), state_contrib(sosp->space().size(),0.0) {
 
  // Taking parameters from the inputs

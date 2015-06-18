@@ -30,7 +30,7 @@ class move_insert_c_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index, block_size;
- bool record_histograms;
+ bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  double delta_tau;
  qmc_data::trace_t new_trace;
@@ -40,14 +40,14 @@ class move_insert_c_cdag {
  public:
  //-----------------------------------------------
 
- move_insert_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, bool record_histograms)
+ move_insert_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, bool performance_analysis)
     : data(data),
       config(data.config),
       rng(rng),
       block_index(block_index),
       block_size(block_size),
-      record_histograms(record_histograms) {
-  if (record_histograms) {
+      performance_analysis(performance_analysis) {
+  if (performance_analysis) {
    histos.insert({"insert_length_proposed", {0, config.beta(), 100, "histo_insert_length_proposed.dat"}});
    histos.insert({"insert_length_accepted", {0, config.beta(), 100, "histo_insert_length_accepted.dat"}});
   }
@@ -80,7 +80,7 @@ class move_insert_c_cdag {
 
   // record the length of the proposed insertion
   delta_tau = double(tau2 - tau1);
-  if (record_histograms) histos["insert_length_proposed"] << delta_tau;
+  if (performance_analysis) histos["insert_length_proposed"] << delta_tau;
 
   // Insert the operators op1 and op2 at time tau1, tau2
   // 1- In the very exceptional case where the insert has failed because an operator is already sitting here
@@ -162,7 +162,7 @@ class move_insert_c_cdag {
   data.dets[block_index].complete_operation();
   data.update_sign();
   data.trace = new_trace;
-  if (record_histograms) histos["insert_length_accepted"] << delta_tau;
+  if (performance_analysis) histos["insert_length_accepted"] << delta_tau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Move move_insert_c_cdag accepted" << std::endl;

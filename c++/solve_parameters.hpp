@@ -58,8 +58,8 @@ struct solve_parameters_t {
  /// Measure the contribution of each atomic state to the trace?
  bool measure_state_trace_contrib = false;
 
- /// Make histograms of the trace computation?
- bool make_histograms = false;
+ /// Analyse performance of trace computation with histograms (developers only)?
+ bool performance_analysis = false;
 
  /// Operator insertion/removal probabilities for different blocks
  std::map<std::string,double> proposal_prob = (std::map<std::string,double>{});

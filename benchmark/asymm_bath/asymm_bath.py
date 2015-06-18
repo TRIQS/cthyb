@@ -31,7 +31,7 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
-p["make_histograms"] = True
+p["performance_analysis"] = True
 
 # Block structure of GF
 gf_struct = {'up':[0], 'dn' : [0]}

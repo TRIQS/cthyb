@@ -1,27 +1,26 @@
-from itertools import product
 import pytriqs.utility.mpi as mpi
 from pytriqs.operators import *
-from pytriqs.operators.util import *
+from pytriqs.operators.util.op_struct import set_operator_structure
+from pytriqs.operators.util.U_matrix import U_matrix
+from pytriqs.operators.util.hamiltonians import h_loc_slater
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 
 beta = 100.0
 # H_loc parameters
-num_orbitals = 5
+L = 2 # angular momentum
 U = 5.0
 J = 0.1
 F0 = U
-F2 = J*(14.0/(1.0 + 0.63)) # Sasha uses coefficient 0.63 instead of 0.625
+F2 = J*(14.0/(1.0 + 0.63))
 F4 = F2*0.63
-L = 2 # angular momentum
 half_bandwidth = 1.0
 mu = 32.5  # 3 electrons in 5 bands
 
-mkind = lambda sn, cn: (sn+'-'+cn, 0)
 spin_names = ("up","down")
-cubic_names=['%s'%i for i in range(num_orbitals)]
-U_matrix = U_matrix(L, radial_integrals=[F0,F2,F4], basis="cubic")
+cubic_names = map(str,range(2*L+1))
+U_mat = U_matrix(L, radial_integrals=[F0,F2,F4], basis="cubic")
 
 # Parameters
 p = {}
@@ -35,23 +34,10 @@ p["measure_g_l"] = True
 p["move_double"] = False
 
 # Block structure of GF
-gf_struct = {}
-for sn, cn in product(spin_names,cubic_names):
-    bn, i = mkind(sn,cn)
-    gf_struct[bn] = [i]
+gf_struct = set_operator_structure(spin_names,cubic_names,False)
 
 # Local Hamiltonian
-H = Operator()
-
-a_range=range(num_orbitals)
-for s1, s2 in product(spin_names,spin_names):
-    for ap1, ap2, a1, a2 in product(a_range,a_range,a_range,a_range):
-        U_val = U_matrix[ap1,ap2,a1,a2]
-        if abs(U_val.imag) > 1e-10:
-            raise RuntimeError("Cubic harmonics are real, so should be the matrix elements of U.")
-
-        H_term = 0.5*U_val.real*c_dag(*mkind(s1,cubic_names[ap1]))*c_dag(*mkind(s2,cubic_names[ap2]))*c(*mkind(s2,cubic_names[a1]))*c(*mkind(s1,cubic_names[a2]))
-        H += H_term
+H = h_loc_slater(spin_names,cubic_names,U_mat,False)
 
 # Construct the solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000)
@@ -62,9 +48,10 @@ delta_w << (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
 for name, g0 in S.G0_iw:
     g0 << inverse(iOmega_n + mu - delta_w)
 
+
 S.solve(h_loc=H, **p)
 
-if mpi.rank==0:
-    Results = HDFArchive("slater.output.h5",'w')
-    Results["G_tau"] = S.G_tau
-    Results["G_leg"] = S.G_l
+if mpi.is_master_node():
+    with HDFArchive("slater.output.h5",'w') as Results:
+        Results["G_tau"] = S.G_tau
+        Results["G_leg"] = S.G_l

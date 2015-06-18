@@ -1,7 +1,7 @@
-from pytriqs.archive import HDFArchive
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
 from pytriqs.operators import *
+from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 
 #  Example of DMFT single site solution with CTQMC
@@ -14,7 +14,7 @@ beta = 100.0
 
 gf_struct = {'up':[0],'down':[0]}
 
-# Construct solver    
+# Construct solver
 S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=3000, n_l=30)
 
 # Local Hamiltonian
@@ -23,13 +23,9 @@ H = U*n("up",0)*n("down",0)
 # init the Green function
 S.G_iw << SemiCircular(half_bandwidth)
 
-# Impose Paramagnetism
-gpara = 0.5*(S.G_iw['up']+S.G_iw['down'])
-for name, g in S.G_iw: g << gpara
-
 # Compute G0
 for name, g0 in S.G0_iw:
-  g0 << inverse( iOmega_n + mu - (half_bandwidth/2.0)**2  * S.G_iw[name] )
+  g0 << inverse(iOmega_n + mu - (half_bandwidth/2.0)**2  * S.G_iw[name])
 
 # Parameters
 p = {}
@@ -46,8 +42,9 @@ p["perform_tail_fit"] = True
 S.solve(h_loc=H, **p)
 
 # Calculation is done. Now save a few things
-Results = HDFArchive("single_site_bethe.output.h5",'w')
-Results["Sigma_iw"] = S.Sigma_iw
-Results["G_tau"] = S.G_tau
-Results["G_iw"] = S.G_iw
-Results["G_l"] = S.G_l
+if mpi.is_master_node():
+    with HDFArchive("single_site_bethe.output.h5",'w') as Results:
+        Results["Sigma_iw"] = S.Sigma_iw
+        Results["G_tau"] = S.G_tau
+        Results["G_iw"] = S.G_iw
+        Results["G_l"] = S.G_l

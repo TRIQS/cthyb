@@ -88,11 +88,11 @@ class move_insert_c_c_cdag_cdag {
 #endif
 
   // record the length of the proposed insertion
-  delta_tau1 = double(tau2 - tau1); // FIXME
+  delta_tau1 = double(tau2 - tau1);
   delta_tau2 = double(tau4 - tau3);
   if (record_histograms) {
    histos["double_insert_length_proposed"] << delta_tau1;
-   histos["double_insert_length_proposed"] << delta_tau2; // FIXME is this really what we want?
+   histos["double_insert_length_proposed"] << delta_tau2;
   }
 
   // Insert the operators op1, op2, op3, op4 at time tau1, tau2, tau3, tau4
@@ -216,7 +216,7 @@ class move_insert_c_c_cdag_cdag {
   data.trace = new_trace;
   if (record_histograms) {
    histos["double_insert_length_accepted"] << delta_tau1;
-   histos["double_insert_length_accepted"] << delta_tau2; // FIXME is this what we want?
+   histos["double_insert_length_accepted"] << delta_tau2;
   }
 
 #ifdef EXT_DEBUG

@@ -127,7 +127,6 @@ int impurity_trace::compute_block_table(node n, int b) {
 std::pair<int, double> impurity_trace::compute_block_table_and_bound(node n, int b, double lnorm_threshold, bool use_threshold) {
 
  if (b < 0) TRIQS_RUNTIME_ERROR << " b < 0";
- // if (n == nullptr) TRIQS_RUNTIME_ERROR << " null ptr"; // FIXME
  if (!n->modified) return {n->cache.block_table[b], n->cache.matrix_lnorms[b]};
 
  double lnorm = 0;
@@ -189,11 +188,10 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   dtau_r = double(n->key - tree.min_key(n->right));
   auto dim = second_dim(M); // same as get_block_dim(b2);
   for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i)); // Create time-evolution matrix e^-H(t'-t)
-  //for (int i = 1; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * (get_block_eigenval(b1, i) - get_block_eigenval(b1, 0))); FIXME
   if ((first_dim(r.second) == 1) && (second_dim(r.second) == 1))
    M *= r.second(0, 0);
   else
-   M = M * r.second; // FIXME optimise lapack call?
+   M = M * r.second; // TODO could try to optimise lapack call?
  }
 
  int b3 = b2;
@@ -204,7 +202,6 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   dtau_l = double(tree.max_key(n->left) - n->key);
   auto dim = first_dim(M); // same as get_block_dim(b1);
   for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b2, i));
-  //for (int i = 1; i < dim; ++i) M(i, _) *= std::exp(-dtau_l* ( get_block_eigenval(b2, i) - get_block_eigenval(b2, 0))); FIXME
   if ((first_dim(l.second) == 1) && (second_dim(l.second) == 1))
    M *= l.second(0, 0);
   else
@@ -220,7 +217,6 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
    auto norm = frobenius_norm(M);
    n->cache.matrix_lnorms[b] = -std::log(norm);
    if (!std::isfinite(-std::log(norm))) {
-    //std::cerr << "norm is not finite "<< norm <std::endl; FIXME
     n->cache.matrix_lnorms[b] = double_max;
    }
   }
@@ -363,7 +359,6 @@ impurity_trace::trace_t impurity_trace::compute_trace(bool to_machine_precision,
    auto eigstate_index = first_eigstate_of_block[block_index] + u; // index of this eigenstate in original (unsorted) order
    state_contrib[eigstate_index] = std::abs(x);
    trace_partial += x;
-  //trace_partial *= std::exp(dtau * get_block_eigenval(block_index, 0) - to_sort_lnorm_b[bl].first); FIXME
   }
 
 #ifdef CHECK_MATRIX_BOUNDED_BY_BOUND

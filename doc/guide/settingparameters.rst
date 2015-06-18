@@ -159,15 +159,15 @@ Final Step - analyze the output
 One of the most important checks that needs to be done is to ensure that the
 high-frequency behaviour of your imaginary frequency Green's function and
 self-energy are correct and lead to physically sensible values. You should use
-the fitting function provided FIXME to determine the optimal fitting parameters
-`fit_min_n` and `fit_max_n`.  See the tail fitting section FIXME LINK and
-reference manual FIXME LINK for more details.
+the fitting function provided tail_fit(in pytriqs.gf.local) to determine the
+optimal fitting parameters `fit_min_n` and `fit_max_n`.  See :ref:`here
+<triqslib:green>` for more details on the tail fitting tool.
 
 If you use the Legendre expansion, you should also decide on the ideal number
 of Legendre coefficients to keep for the following runs. If you have saved the
 Legendre Green's function in an archive, you can then plot it:
 
-.. FIXME
+.. FIXME plot
 .. .. plot:: legendre_plot.py
 ..   :include-source:
 ..   :scale: 70

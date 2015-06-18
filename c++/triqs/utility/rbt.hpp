@@ -631,7 +631,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    return size(x->left);
  }
 
- // FIXME this section needs to be reread/redone
+ // TODO this section needs to be reread/redone
  /*************************************************************************
    *  DEBUG CODE : Check integrity of red-black BST data structure
    *************************************************************************/

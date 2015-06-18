@@ -67,7 +67,7 @@ class move_remove_c_c_cdag_cdag {
 
   auto& det1 = data.dets[block_index1];
   auto& det2 = data.dets[block_index2];
-  double det_ratio; // FIXME
+  double det_ratio;
 
   // Pick two pairs of C, Cdagger to remove at random
   // Remove the operators from the traces
@@ -101,7 +101,7 @@ class move_remove_c_c_cdag_cdag {
   delta_tau2 = double(tau4 - tau3);
   if (record_histograms) {
    histos["double_remove_length_proposed"] << delta_tau1;
-   histos["double_remove_length_proposed"] << delta_tau2; // FIXME is this really what we want?
+   histos["double_remove_length_proposed"] << delta_tau2;
   }
 
   if (block_index1 == block_index2) {
@@ -178,7 +178,7 @@ class move_remove_c_c_cdag_cdag {
   data.trace = new_trace;
   if (record_histograms) {
    histos["double_remove_length_accepted"] << delta_tau1;
-   histos["double_remove_length_accepted"] << delta_tau2; // FIXME is this what we want?
+   histos["double_remove_length_accepted"] << delta_tau2;
   }
 
 #ifdef EXT_DEBUG

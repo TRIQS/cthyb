@@ -37,7 +37,7 @@ class impurity_trace {
  public:
 
  using trace_t = double;
- // using trace_t = std::complex<double>; TODO FIXME
+ // using trace_t = std::complex<double>; TODO
 
  // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
  impurity_trace(configuration& c, sorted_spaces const& sosp, solve_parameters_t const& p);

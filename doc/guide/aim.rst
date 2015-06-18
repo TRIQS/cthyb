@@ -31,9 +31,7 @@ an HDF5 archive file called :file:`solution.h5`. This file contains the Green's
 function in imaginary time and in imaginary frequencies found by the solver.
 Let us plot the Green's function:
 
-.. warning::
-   FIXME
-   
+..  FIXME plot
 .. .. plot:: aim_plot.py
 ..    :include-source:
 ..    :scale: 70

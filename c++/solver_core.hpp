@@ -89,10 +89,15 @@ class solver_core {
  mc_sign_type average_sign() const { return _average_sign; }
 
  /// Eigensystems of the atomic problem
- /// Returns a list of pairs (E,U), where H = U * diag(E) * U^+ (for each subspace)
- std::vector<std::pair<vector<double>,matrix<double>>> get_eigensystems() const {
+ /// Returns a list of tuples (E,U,S), where H = U * diag(E) * U^+ (for each subspace),
+ /// and S is a list of all Fock states belonging to the subspace
+ std::vector<std::tuple<vector<double>,matrix<double>,std::vector<fock_state_t>>> get_eigensystems() const {
   decltype(get_eigensystems()) res;
-  for(auto const& es : sosp.get_eigensystems()) res.emplace_back(es.eigenvalues,es.unitary_matrix);
+  for(auto const& es : sosp.get_eigensystems()) res.emplace_back(
+   es.eigenvalues,
+   es.unitary_matrix,
+   es.eigenstates[0].get_hilbert().get_all_fock_states()
+  );
   return res;
  }
 

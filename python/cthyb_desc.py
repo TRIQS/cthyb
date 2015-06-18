@@ -18,6 +18,7 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/variant.hpp>
+#include <triqs/python_tools/converters/tuple.hpp>
 using namespace triqs::gfs;
 using triqs::utility::many_body_operator;
 using namespace cthyb;
@@ -96,9 +97,10 @@ c.add_property(name = "average_sign",
                doc = """Monte Carlo average sign """)
 
 c.add_property(name = "eigensystems",
-               getter = cfunction("std::vector<std::pair<vector<double>,matrix<double>>> get_eigensystems ()"),
+               getter = cfunction("std::vector<std::tuple<vector<double>,matrix<double>,std::vector<fock_state_t>>> get_eigensystems ()"),
                doc = """Eigensystems of the atomic problem
-  Returns a list of pairs (E,U), where H = U * diag(E) * U^+ (for each subspace) """)
+  Returns a list of tuples (E,U,S), where H = U * diag(E) * U^+ (for each subspace),
+  and S is a list of all Fock states belonging to the subspace """)
 
 module.add_class(c)
 

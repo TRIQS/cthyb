@@ -23,6 +23,7 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <limits>
+#include <iostream>
 
 namespace triqs{ namespace utility {
 

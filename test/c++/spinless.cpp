@@ -17,11 +17,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize mpi
   boost::mpi::environment env(argc, argv);
-  int rank;
-  {
-    boost::mpi::communicator c;
-    rank = c.rank();
-  }
+  int rank = boost::mpi::communicator().rank();
 
   // Parameters
   double beta = 10.0;
@@ -34,20 +30,27 @@ int main(int argc, char* argv[]) {
   auto H = U*n("tot",0)*n("tot",1) - t*c_dag("tot",0)*c("tot",1) - t*c_dag("tot",1)*c("tot",0);
   std::map<std::string, indices_type> gf_struct{{"tot",{0,1}}};
 
+#ifdef QN
+  // quantum numbers
+  std::vector<many_body_operator<double>> qn{n("tot",0)+n("tot",1)};
+#endif
+
   // Construct CTQMC solver
   solver_core solver(beta, gf_struct, 1025, 2500);
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
   auto delta_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
-  auto d00 = slice_target(delta_iw, triqs::arrays::range(0,1), triqs::arrays::range(0,1));
-  auto d11 = slice_target(delta_iw, triqs::arrays::range(1,2), triqs::arrays::range(1,2));
-  auto d01 = slice_target(delta_iw, triqs::arrays::range(0,1), triqs::arrays::range(1,2));
-  auto d10 = slice_target(delta_iw, triqs::arrays::range(1,2), triqs::arrays::range(0,1));
+
+  using triqs::arrays::range;
+  auto d00 = slice_target(delta_iw, range(0,1), range(0,1));
+  auto d11 = slice_target(delta_iw, range(1,2), range(1,2));
+  auto d01 = slice_target(delta_iw, range(0,1), range(1,2));
+  auto d10 = slice_target(delta_iw, range(1,2), range(0,1));
   d00(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
-  d11(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
+  d11(om_) << d00(om_);
   d01(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
-  d10(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
+  d10(om_) << d01(om_);
 
   // Set G0
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
@@ -63,13 +66,22 @@ int main(int argc, char* argv[]) {
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
   p.move_double = false;
+#ifdef QN
+  p.quantum_numbers = qn;
+  p.partition_method = "quantum_numbers";
+#endif
 
   // Solve!
   solver.solve(p);
-  
+
   // Save the results
+  std::string filename = "spinless";
+#ifdef QN
+  filename += "_qn";
+#endif
+
   if(rank==0){
-    triqs::h5::file G_file("spinless.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file(filename + ".output.h5",H5F_ACC_TRUNC);
     h5_write(G_file,"G_tau",solver.G_tau()[0]);
   }
 

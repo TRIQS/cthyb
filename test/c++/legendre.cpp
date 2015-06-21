@@ -17,11 +17,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize mpi
   boost::mpi::environment env(argc, argv);
-  int rank;
-  {
-    boost::mpi::communicator c;
-    rank = c.rank();
-  }
+  int rank = boost::mpi::communicator().rank();
 
   // Parameters
   double beta = 10.0;
@@ -35,9 +31,7 @@ int main(int argc, char* argv[]) {
   // define operators and QN
   auto H = U*n("up",0)*n("down",0) + h*n("up",0) - h*n("down",0);
   // quantum numbers
-  std::vector<many_body_operator<double>> qn;
-  qn.push_back(n("up",0));
-  qn.push_back(n("down",0));
+  std::vector<many_body_operator<double>> qn {n("up",0), n("down",0)};
   // gf structure
   std::map<std::string, indices_type> gf_struct{{"up",{0}},{"down",{0}}};
 

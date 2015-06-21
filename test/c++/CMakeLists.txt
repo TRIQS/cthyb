@@ -13,17 +13,34 @@ foreach(t ${SIMPLE_TESTS})
 endforeach(t)
 
 # HDF5 tests
-set(HDF5_TESTS
-    anderson anderson_block anderson_qn anderson_block_qn
-    spinless spinless_qn
-    kanamori kanamori_qn
-    kanamori_offdiag kanamori_offdiag_qn
-    legendre atomic_gf)
+macro(add_hdf5_test_defs name)
+    set(full_name "${name}")
+    if(${ARGC} GREATER 1)
+        set(full_name "${name}_${ARGV1}")
+    endif()
+    add_executable(${full_name} "${name}.cpp")
+    triqs_set_rpath_for_target(${full_name})
+    if(${ARGC} GREATER 2)
+        set(defs ${ARGV2})
+        separate_arguments(defs)
+        set_target_properties(${full_name} PROPERTIES COMPILE_DEFINITIONS "${defs}")
+    endif()
+    triqs_add_test_C_hdf(${full_name} " -d 1.e-5")
+endmacro()
 
-foreach(t ${HDF5_TESTS})
-    add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
-    triqs_set_rpath_for_target(${t})
-    triqs_add_test_C_hdf(${t} " -d 1.e-5")
-endforeach(t)
+add_hdf5_test_defs(anderson)
+add_hdf5_test_defs(anderson block "BLOCK")
+add_hdf5_test_defs(anderson qn "QN")
+add_hdf5_test_defs(anderson block_qn "BLOCK;QN")
 
-#add_subdirectory(long_tests)
+add_hdf5_test_defs(spinless)
+add_hdf5_test_defs(spinless "qn" "QN")
+
+add_hdf5_test_defs(kanamori)
+add_hdf5_test_defs(kanamori "qn" "QN")
+
+add_hdf5_test_defs(kanamori_offdiag)
+add_hdf5_test_defs(kanamori_offdiag "qn" "QN")
+
+add_hdf5_test_defs(legendre)
+add_hdf5_test_defs(atomic_gf)

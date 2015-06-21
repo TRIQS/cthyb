@@ -17,11 +17,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize mpi
   boost::mpi::environment env(argc, argv);
-  int rank;
-  {
-    boost::mpi::communicator c;
-    rank = c.rank();
-  }
+  int rank = boost::mpi::communicator().rank();
 
   // Parameters
   double beta = 10.0;
@@ -60,6 +56,16 @@ int main(int argc, char* argv[]) {
       H += -J*C_dag("up",o1)*C_dag("down",o2)*C("up",o2)*C("down",o1);
   }
 
+#ifdef QN
+  // quantum numbers
+  std::vector<many_body_operator<double>> qn;
+  qn.resize(2);
+  for(int o = 0; o < num_orbitals; ++o){
+      qn[0] += N("up",o);
+      qn[1] += N("down",o);
+  }
+#endif
+
   // gf structure
   std::map<std::string, indices_type> gf_struct; 
   for(int o = 0; o < num_orbitals; ++o){
@@ -87,13 +93,22 @@ int main(int argc, char* argv[]) {
   p.length_cycle = 50;
   p.n_warmup_cycles = 50;
   p.move_double = false;
+#ifdef QN
+  p.quantum_numbers = qn;
+  p.partition_method = "quantum_numbers";
+#endif
 
   // Solve!
   solver.solve(p);
-  
+
   // Save the results
+  std::string filename = "kanamori";
+#ifdef QN
+  filename += "_qn";
+#endif
+
   if(rank==0){
-    triqs::h5::file G_file("kanamori.output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file(filename + ".output.h5",H5F_ACC_TRUNC);
     for(int o = 0; o < num_orbitals; ++o) {
       std::stringstream bup; bup << "G_up-" << o;
       h5_write(G_file, bup.str(), solver.G_tau()[o]);

@@ -12,12 +12,13 @@ int main() {
 
   // define operators
   double U = 2.0;
+  double h = 0.5;
   auto n_up = c_dag("up") * c("up");
   auto n_down = c_dag("down") * c("down");
-  auto H = U * n_up * n_down;
+  auto H = U * n_up * n_down + h*(n_up - n_down);
 
   // put quantum numbers in a vector
-  auto qn_list = std::vector<many_body_operator<double>>{n_up, n_down};
+  std::vector<many_body_operator<double>> qn_list{n_up, n_down};
 
   // chose the fundamental operator set
   fundamental_operator_set fops;

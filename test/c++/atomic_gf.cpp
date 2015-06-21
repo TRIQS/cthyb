@@ -17,11 +17,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize mpi
   boost::mpi::environment env(argc, argv);
-  int rank;
-  {
-    boost::mpi::communicator c;
-    rank = c.rank();
-  }
+  int rank = boost::mpi::communicator().rank();
 
   // Parameters
   double beta = 10.0;
@@ -42,13 +38,13 @@ int main(int argc, char* argv[]) {
   solver_core solver(beta, gf_struct, 1025, 2051);
 
   // Solve parameters
-  auto p = solve_parameters_t(H, 1);
+  auto p = solve_parameters_t(H, 0);
   p.length_cycle = 1;
-  p.n_warmup_cycles = 1;
+  p.n_warmup_cycles = 0;
 
   triqs::clef::placeholder<0> om_;
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
-  g0_iw(om_) << om_ + 0.0;
+  g0_iw(om_) << om_;
   solver.G0_iw()[0] = triqs::gfs::inverse(g0_iw);
   solver.G0_iw()[1] = triqs::gfs::inverse(g0_iw);
 

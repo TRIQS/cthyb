@@ -58,21 +58,4 @@ int main() {
  plot(tree);
 
  plot(tree_copy);
-
-//  std::map<int,int> t2;
-//
-//  int N =1000;
-//  if (1) {
-//   std::cout << " mon arbre"<< std::endl;
-//   for(int j=0; j<N; ++j)
-//   for(int i=0; i<N; ++i)
-//   tree.insert(i*N+j,j);
-//  }
-//  else {
-//   std::cout << "std map "<< std::endl;
-//   for(int j=0; j<N; ++j)
-//   for(int i=0; i<N; ++i)
-//   t2.insert({i*N+j,j});
-//  }
-
 }

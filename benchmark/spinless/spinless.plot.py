@@ -6,16 +6,7 @@ from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
-# import parameters from cwd
-from os import getcwd
-from sys import path
-path.insert(0,getcwd())
-import params
-del path[0]
-
-objects_to_plot=[['matrix',(False,)],['matrix',(True,)],
-                 ['ed',(False,)],['ed',(True,)],
-                 ['ed','matrix']]
+spin_names = ("up","dn")
 
 def setup_fig():
     axes = plt.gca()
@@ -23,22 +14,22 @@ def setup_fig():
     axes.legend(loc='lower center',prop={'size':10})
 
 pp = PdfPages('G.pdf')
-for plot_objs in objects_to_plot:
+ed_arch = HDFArchive('spinless.ed.h5','r')
+
+for use_qn in (False,True):
+    file_name = "spinless"
+    if use_qn: file_name += ".qn"
+    file_name += ".h5"
+
     try:
+        arch = HDFArchive(file_name,'r')
         plt.clf()
-        for obj in plot_objs:
 
-            if type(obj) is tuple:
-                filename = params.results_file_name(*obj)
-                name = 'cthyb'
-                if obj[0]: name += '(QN)'
-            else:
-                filename = 'spinless.' + obj + '.h5'
-                name = {'ed':'ED', 'matrix':'Matrix'}[obj]
-            arch = HDFArchive(filename,'r')
-
-            for i1,i2 in product(("A","B"),("A","B")):
-                oplot(arch["tot"][i1,i2], name=name + ",%s%s" % (i1,i2))
+        name = 'cthyb' + (' (QN)' if use_qn else '')
+        for i1,i2 in product(("A","B"),("A","B")):
+            GF = rebinning_tau(arch['tot'][i1,i2],500)
+            oplot(arch["tot"][i1,i2], name=name + ",%s%s" % (i1,i2))
+            oplot(ed_arch["tot"][i1,i2], name="ED, %s%s" % (i1,i2))
 
         setup_fig()
         pp.savefig(plt.gcf())

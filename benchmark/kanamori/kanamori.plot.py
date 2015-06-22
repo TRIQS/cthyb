@@ -11,46 +11,28 @@ def setup_fig():
     axes.set_ylim(-1.0,.0)
     axes.legend(loc='lower center',prop={'size':10})
 
-matrix={   
-    'file':"kanamori.matrix.h5",
-        'name':"matrix",
-        'path':["%(spin)s-%(orbital)i"],
-}
-ed={    
-    'file':"kanamori.ed.h5",
-    'name':"ED",
-    'path':["%(spin)s-%(orbital)i"],
-}
-cthyb_qn={
-    'file':"kanamori.qn.h5",
-    'name':"cthyb (QN)",
-    'path':["%(spin)s-%(orbital)i"]
-}
-cthyb={
-    'file':"kanamori.h5",
-    'name':"cthyb",
-    'path':["%(spin)s-%(orbital)i"]
-}
-
-objects_to_plot = [[matrix,cthyb],[matrix,cthyb_qn],[ed,cthyb],[ed,cthyb_qn],[matrix,ed]]
-
-num_o = 2
+spin_names = ("up","dn")
+num_orbitals = 2
 
 pp = PdfPages('G.pdf')
-for plot_objs in objects_to_plot:
+ed_arch = HDFArchive('kanamori.ed.h5','r')
+
+for use_qn in (True,False):
+    file_name = "kanamori"
+    if use_qn: file_name += ".qn"
+    file_name += ".h5"
+
     try:
+        arch = HDFArchive(file_name,'r')
         plt.clf()
-        for obj in plot_objs:
-            arch = HDFArchive(obj['file'],'r')
-            
-            for o in range(0,num_o):
-                target_up = arch
-                for p in obj['path']: target_up = target_up[p % {'spin':'up','orbital':o}]    
-                oplot(target_up, name=obj['name'] + (",$\uparrow%i$"%o))
-                target_down = arch
-                for p in obj['path']: target_down = target_down[p % {'spin':'dn','orbital':o}]    
-                oplot(target_down, name=obj['name'] + (",$\downarrow%i$"%o))
-                        
+
+        name = "cthyb (QN)" if use_qn else "cthyb"
+        for o in range(num_orbitals):
+            oplot(rebinning_tau(arch['G_tau']['up_%i'%o],200), name=name+",$\uparrow%i$"%o)
+            oplot(rebinning_tau(arch['G_tau']['dn_%i'%o],200), name=name+",$\downarrow%i$"%o)
+            oplot(ed_arch['up-%i'%o], name="ED,$\uparrow%i$"%o)
+            oplot(ed_arch['dn-%i'%o], name="ED,$\downarrow%i$"%o)
+
         setup_fig()
         pp.savefig(plt.gcf())
 

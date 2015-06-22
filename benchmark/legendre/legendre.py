@@ -6,17 +6,35 @@ from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 
-# import parameters from cwd
-from os import getcwd
-from sys import path
-path.insert(0,getcwd())
-from params import *
-del path[0]
+spin_names = ("up","dn")
+def mkind(spin): return (spin,0)
 
-def print_master(msg):
-    if mpi.rank==0: print msg
+# Input parameters
+beta = 10.0
+U = 2.0
+mu = 1.0
+h = 0.0
+V = 1.0
+epsilon1 = 2.1
+epsilon2 = -2.4
 
-print_master("Welcome to Legendre (1 correlated site + symmetric bath) test.")
+n_iw = 1025
+n_tau = 10001
+n_l = 50
+
+p = {}
+p["max_time"] = -1
+p["random_name"] = ""
+p["random_seed"] = 123 * mpi.rank + 567
+p["length_cycle"] = 50
+p["n_warmup_cycles"] = 50000
+p["n_cycles"] = 5000000
+p["measure_g_tau"] = False
+p["measure_g_l"] = True
+
+results_file_name = "legendre.h5"
+
+mpi.report("Welcome to Legendre (1 correlated site + symmetric bath) test.")
 
 H = U*n(*mkind("up"))*n(*mkind("dn"))
 
@@ -28,12 +46,12 @@ for spin in spin_names:
     bn, i = mkind(spin)
     gf_struct.setdefault(bn,[]).append(i)
 
-print_master("Constructing the solver...")
+mpi.report("Constructing the solver...")
 
 # Construct the solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw, n_l=n_l)
 
-print_master("Preparing the hybridization function...")
+mpi.report("Preparing the hybridization function...")
 
 # Set hybridization function    
 delta_w = GfImFreq(indices = [0], beta=beta)
@@ -42,12 +60,12 @@ for spin in spin_names:
     bn, i = mkind(spin)
     S.G0_iw[bn][i,i] << inverse(iOmega_n + mu - {'up':h,'dn':-h}[spin] - delta_w)
 
-print_master("Running the simulation...")
+mpi.report("Running the simulation...")
 
 # Solve the problem
 S.solve(h_int=H, **p)
 
-# Save the results  
-if mpi.rank==0:
-    Results = HDFArchive(results_file_name,'w')
-    for b in gf_struct: Results[b] = S.G_l[b]
+# Save the results
+if mpi.is_master_node():
+    with HDFArchive(results_file_name,'w') as Results:
+        Results['G_l'] = S.G_l

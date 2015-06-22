@@ -4,51 +4,43 @@ from pytriqs.archive import *
 from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
-from pytriqs.applications.impurity_solvers.cthyb import change_mesh
-
-# import parameters from cwd
-from os import getcwd
-from sys import path
-path.insert(0,getcwd())
-import params
-del path[0]
-
-objects_to_plot=[['matrix',(False,False)],['matrix',(False,True)],['matrix',(True,False)],['matrix',(True,True)],
-                 ['ed',(False,False)],['ed',(False,True)],['ed',(True,False)],['ed',(True,True)],
-                 ['ed','matrix']]
 
 def setup_fig():
     axes = plt.gca()
     axes.set_ylabel('$G(\\tau)$')
     axes.legend(loc='lower center',prop={'size':10})
 
+spin_names = ("up","dn")
+
 pp = PdfPages('G.pdf')
-for plot_objs in objects_to_plot:
+ed_arch = HDFArchive('anderson.ed.h5','r')
+
+for use_blocks, use_qn in ((False,False),(True,False),(False,True),(True,True)):
+    file_name = "anderson"
+    if use_blocks: file_name += ".block"
+    if use_qn: file_name += ".qn"
+    file_name += ".h5"
+
+    mkind = lambda spin: (spin,0) if use_blocks else ("tot",spin)
+
     try:
+        arch = HDFArchive(file_name,'r')
         plt.clf()
-        for obj in plot_objs:
 
-            if type(obj) is tuple:
-                filename = params.results_file_name(*obj)
-                params.use_blocks = obj[0]
+        name_parts = []
+        if use_blocks: name_parts.append('Block')
+        if use_qn: name_parts.append('QN')
+        name = 'cthyb' + (' (' + ', '.join(name_parts) + ')' if len(name_parts) else '')
 
-                name_parts = []
-                if obj[0]: name_parts.append('Block')
-                if obj[1]: name_parts.append('QN')
-                name = 'cthyb' + (' (' + ', '.join(name_parts) + ')' if len(name_parts) else '')
-
+        for spin in spin_names:
+            bn, i = mkind(spin)
+            GF = rebinning_tau(arch['G_tau'][bn],500)
+            if use_blocks:
+                oplot(GF, name=name + "," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
             else:
-                filename = 'anderson.' + obj + '.h5'
-                name = {'ed':'ED', 'matrix':'Matrix'}[obj]
-                params.use_blocks = True
-
-            arch = HDFArchive(filename,'r')
-
-            for spin in params.spin_names:
-                bn, i = params.mkind(spin)
-
-                GF = arch[bn] if name=="ED" else change_mesh(arch[bn],500)
+                i = spin_names.index(i)
                 oplot(GF[i,i], name=name + "," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
+            oplot(ed_arch[spin], name="ED," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
 
         setup_fig()
         pp.savefig(plt.gcf())

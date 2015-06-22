@@ -6,11 +6,8 @@ from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 
-def print_master(msg):
-    if mpi.rank==0: print msg
-
-print_master("Welcome to asymm_bath test (1 band with a small asymmetric hybridization function).")
-print_master("This test helps to detect sampling problems.")
+mpi.report("Welcome to asymm_bath test (1 band with a small asymmetric hybridization function).")
+mpi.report("This test helps to detect sampling problems.")
 
 # H_loc parameters
 beta = 40.0
@@ -32,17 +29,18 @@ p["length_cycle"] = 50
 p["n_warmup_cycles"] = 20000
 p["n_cycles"] = 1000000
 p["performance_analysis"] = True
+p["measure_pert_order"] = True
 
 # Block structure of GF
-gf_struct = {'up':[0], 'dn' : [0]}
+gf_struct = {'up':[0], 'dn':[0]}
 
 # Hamiltonian
 H = U*n("up",0)*n("dn",0)
 
 # Histograms to be saved
-histos_to_save = [('histo_opcount0',int),
-                  ('histo_opcount1',int),
-                  ('histo_opcount_total',int),
+histos_to_save = [('histo_pert_order_up',int),
+                  ('histo_pert_order_dn',int),
+                  ('histo_pert_order',int),
                   ('histo_insert_length_proposed',float),
                   ('histo_insert_length_accepted',float),
                   ('histo_remove_length_proposed',float),
@@ -51,9 +49,7 @@ histos_to_save = [('histo_opcount0',int),
                   ('histo_shift_length_accepted',float)]
 
 # Quantum numbers
-qn = []
-qn.append(n("up",0))
-qn.append(n("dn",0))
+qn = [n("up",0),n("dn",0)]
 p["partition_method"] = "quantum_numbers"
 p["quantum_numbers"] = qn
 
@@ -67,7 +63,7 @@ def read_histo(f,type_of_col_1):
         histo.append((type_of_col_1(cols[0]),float(cols[1]),float(cols[2])))
     return histo
 
-if mpi.rank==0:
+if mpi.is_master_node():
     arch = HDFArchive('asymm_bath.h5','w')
 
 # Set hybridization function
@@ -80,7 +76,7 @@ for e in epsilon:
 
     S.solve(h_int=H, **p)
 
-    if mpi.rank==0:
+    if mpi.is_master_node():
         d = {'G_tau':S.G_tau, 'beta':beta, 'U':U, 'ed':ed, 'V':V, 'e':e}
 
         for histo_name, type_of_col_1 in histos_to_save:

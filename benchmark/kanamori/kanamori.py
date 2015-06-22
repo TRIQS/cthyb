@@ -3,79 +3,78 @@
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
+from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
+from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
-from itertools import product
+import numpy as np
 
-# import parameters from cwd
-from os import getcwd
-from sys import path
-path.insert(0,getcwd())
-from params import *
-del path[0]
+# Input parameters
+beta = 10.0
+num_orbitals = 2
+mu = 1.0
+U = 2.0
+J = 0.2
+V = 1.0
+epsilon = 2.3
 
-def print_master(msg):
-    if mpi.rank==0: print msg
+spin_names = ("up","dn")
+orb_names = range(num_orbitals)
 
-print_master("Welcome to Kanamori benchmark.")
+# Use quantum numbers
+use_qn = True
 
-gf_struct = {}
-for spin in spin_names:
-    for o in range(num_orbitals):
-        bn, i = mkind(spin,o)
-        gf_struct.setdefault(bn,[]).append(i)
+n_iw = 1025
+n_tau = 10001
 
-# Hamiltonian
-H = Operator()
+p = {}
+p["max_time"] = -1
+p["random_name"] = ""
+p["random_seed"] = 123 * mpi.rank + 567
+p["length_cycle"] = 50
+p["n_warmup_cycles"] = 50000
+p["n_cycles"] = 3000000
 
-for o in range(num_orbitals):
-    H += U *n(*mkind("up",o))*n(*mkind("dn",o))
+results_file_name = "kanamori" + (".qn" if use_qn else "") + ".h5"
 
-for o1, o2 in product(range(num_orbitals),range(num_orbitals)):
-    if o1==o2: continue
-    H += (U-2*J)*n(*mkind("up",o1))*n(*mkind("dn",o2))
+mpi.report("Welcome to Kanamori benchmark.")
 
-for o1, o2 in product(range(num_orbitals),range(num_orbitals)):
-    if o2>=o1: continue
-    H += (U-3*J)*n(*mkind("up",o1))*n(*mkind("up",o2))
-    H += (U-3*J)*n(*mkind("dn",o1))*n(*mkind("dn",o2))
+gf_struct = set_operator_structure(spin_names,orb_names,False)
+mkind = get_mkind(False,None)
 
-for o1, o2 in product(range(num_orbitals),range(num_orbitals)):
-    if(o1==o2): continue
-    H += -J*c_dag(*mkind("up",o1))*c_dag(*mkind("dn",o1))*c(*mkind("up",o2))*c(*mkind("dn",o2))
-    H += -J*c_dag(*mkind("up",o1))*c_dag(*mkind("dn",o2))*c(*mkind("up",o2))*c(*mkind("dn",o1))
+## Hamiltonian
+H = h_int_kanamori(spin_names,orb_names,
+                   np.array([[0,U-3*J],[U-3*J,0]]),
+                   np.array([[U,U-2*J],[U-2*J,U]]),
+                   J,False)
 
 if use_qn:
-    QN=[]
-    QN.append(sum([n(*mkind("up",o)) for o in range(num_orbitals)],Operator()))
-    QN.append(sum([n(*mkind("dn",o)) for o in range(num_orbitals)],Operator()))
-    for o in range(num_orbitals):
+    QN = [sum([n(*mkind("up",o)) for o in orb_names],Operator()),
+          sum([n(*mkind("dn",o)) for o in orb_names],Operator())]
+    for o in orb_names:
         dn = n(*mkind("up",o)) - n(*mkind("dn",o))
         QN.append(dn*dn)
     p["partition_method"] = "quantum_numbers"
     p["quantum_numbers"] = QN
 
-print_master("Constructing the solver...")
+mpi.report("Constructing the solver...")
 
 # Construct the solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
-print_master("Preparing the hybridization function...")
+mpi.report("Preparing the hybridization function...")
 
-# Set hybridization function    
+# Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta, n_points=n_iw)
 delta_w << (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
-for spin in spin_names:
-    for o in range(num_orbitals):
-        bn,i = mkind(spin,o)
-        S.G0_iw[bn][i,i] << inverse(iOmega_n + mu - delta_w)
+S.G0_iw << inverse(iOmega_n + mu - delta_w)
 
-print_master("Running the simulation...")
+mpi.report("Running the simulation...")
 
 # Solve the problem
 S.solve(h_int=H, **p)
 
 # Save the results  
-if mpi.rank==0:
-    Results = HDFArchive(results_file_name,'w')
-    for b in gf_struct: Results[b] = S.G_tau[b]
+if mpi.is_master_node():
+    with HDFArchive(results_file_name,'w') as Results:
+        Results['G_tau'] = S.G_tau

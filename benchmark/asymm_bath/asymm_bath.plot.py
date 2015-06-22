@@ -2,8 +2,6 @@
 
 from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
-import itertools
-
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -40,11 +38,11 @@ for e_group_name in arch:
 
     histo_a = plt.axes([.35, .15, .3, .4], axisbg='y')
     opcount_data = []
-    for opcount, w, int_w in reversed(e_group['histo_opcount_total']):
+    for opcount, w, int_w in reversed(e_group['histo_pert_order']):
         if w==0: continue
         opcount_data.insert(0,w)
     histo_a.bar(range(len(opcount_data)), opcount_data)
-    histo_a.set_title('histo_opcount_total')
+    histo_a.set_title('histo_pert_order')
 
     pp.savefig(plt.gcf())
 

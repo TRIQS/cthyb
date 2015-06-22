@@ -3,29 +3,35 @@
 from pytriqs.archive import *
 from pytriqs.gf.local import *
 from pytriqs.plot.mpl_interface import *
+from pytriqs.operators.util.op_struct import get_mkind
 from matplotlib.backends.backend_pdf import PdfPages
-from pytriqs.applications.impurity_solvers.cthyb import change_mesh
-
-from multiorbital import *
-from params import *
 
 # Read the reference table file
 tau = []
 data = []
-for line in open(ref_file_name,'r'):
+for line in open("5_plus_5.ref.dat",'r'):
     cols = line.split()
     tau.append(float(cols[0]))
     data.append([-float(c) for c in cols[1:]])
 
-g_ref = GfImTime(indices = range(len(data[0])), beta=tau[-1], n_points=len(tau), kind='full_bins')
+g_ref = GfImTime(indices = range(len(data[0])), beta=tau[-1], n_points=len(tau))
 for nt, d in enumerate(data):
     for nc, val in enumerate(d):
         g_ref.data[nt,nc,nc] = val
 
+# Read the results
+arch = HDFArchive("5_plus_5.h5",'r')
+use_interaction = arch['use_interaction']
+spin_names = arch['spin_names']
+orb_names = arch['orb_names']
+delta_params = arch['delta_params']
+
+mkind = get_mkind(False,None)
+
 # Calculate theoretical curves
 if not use_interaction:
-    g_theor = GfImTime(indices = range(len(cubic_names)), beta=beta, n_points=n_tau)
-    for nc, cn in enumerate(cubic_names):
+    g_theor = GfImTime(indices = range(len(orb_names)), beta=beta, n_points=n_tau)
+    for nc, cn in enumerate(orb_names):
         V = delta_params[cn]['V']
         e = delta_params[cn]['e']
 
@@ -36,16 +42,13 @@ if not use_interaction:
         g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
         g_theor[nc,nc] << InverseFourier(g_theor_w)
 
-# Read the results
-arch = HDFArchive(results_file_name,'r')
-
 pp = PdfPages('G.pdf')
 
 for sn in spin_names:
-    for nc, cn in enumerate(cubic_names):
+    for nc, cn in enumerate(orb_names):
         plt.clf()
 
-        gf = change_mesh(arch[mkind(sn,cn)[0]],200)
+        gf = rebinning_tau(arch['G_tau'][mkind(sn,cn)[0]],200)
 
         # Plot the results
         oplot(gf, name="cthyb")

@@ -6,8 +6,8 @@
 
 if [ -n "${SGE_TASK_ID}" ]
 then
-	echo "Running the MPI version ..."
-	mpirun -machinefile $TMPDIR/machines -np ${NSLOTS} pytriqs anderson.py
+    echo "Running the MPI version ..."
+    mpirun -machinefile $TMPDIR/machines -np ${NSLOTS} pytriqs anderson.py
 else
-	pytriqs anderson.py
+    pytriqs anderson.py
 fi

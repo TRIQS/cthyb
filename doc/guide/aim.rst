@@ -78,7 +78,7 @@ function ``solve``:
 
 The run is controlled by the parameters of ``solve``:
 
-- ``h_loc``: The local Hamiltonian written with operators. See the section: :ref:`operators`.
+- ``h_int``: The interacting part of the local Hamiltonian written with operators. See the section: :ref:`operators`.
 - ``n_cycles``: The number of Monte Carlo cycles.
 - ``length_cycle``: The number Monte Carlo moves in a cycle.
 - ``random_name``: The name of the random number generator.

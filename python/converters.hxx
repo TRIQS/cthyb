@@ -10,7 +10,7 @@ namespace triqs { namespace py_tools {
 template <> struct py_converter<solve_parameters_t> {
  static PyObject *c2py(solve_parameters_t const & x) {
   PyObject * d = PyDict_New();
-  PyDict_SetItemString( d, "h_loc"                      , convert_to_python(x.h_loc));
+  PyDict_SetItemString( d, "h_int"                      , convert_to_python(x.h_int));
   PyDict_SetItemString( d, "n_cycles"                   , convert_to_python(x.n_cycles));
   PyDict_SetItemString( d, "partition_method"           , convert_to_python(x.partition_method));
   PyDict_SetItemString( d, "quantum_numbers"            , convert_to_python(x.quantum_numbers));
@@ -41,7 +41,7 @@ template <> struct py_converter<solve_parameters_t> {
 
  static solve_parameters_t py2c(PyObject *dic) {
   solve_parameters_t res;
-  res.h_loc = convert_from_python<real_operator_t>(PyDict_GetItemString(dic, "h_loc"));
+  res.h_int = convert_from_python<real_operator_t>(PyDict_GetItemString(dic, "h_int"));
   res.n_cycles = convert_from_python<int>(PyDict_GetItemString(dic, "n_cycles"));
   _get_optional(dic, "partition_method"           , res.partition_method             , "autopartition");
   _get_optional(dic, "quantum_numbers"            , res.quantum_numbers              , std::vector<real_operator_t>{});
@@ -90,7 +90,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_loc","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","measure_state_trace_contrib","performance_analysis","proposal_prob"};
+  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","measure_state_trace_contrib","performance_analysis","proposal_prob"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -102,7 +102,7 @@ template <> struct py_converter<solve_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  _check_mandatory<real_operator_t              >(dic, fs, err, "h_loc"                      , "real_operator_t");
+  _check_mandatory<real_operator_t              >(dic, fs, err, "h_int"                      , "real_operator_t");
   _check_mandatory<int                          >(dic, fs, err, "n_cycles"                   , "int");
   _check_optional <std::string                  >(dic, fs, err, "partition_method"           , "std::string");
   _check_optional <std::vector<real_operator_t> >(dic, fs, err, "quantum_numbers"            , "std::vector<real_operator_t>");

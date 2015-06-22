@@ -2,7 +2,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.U_matrix import U_matrix
-from pytriqs.operators.util.hamiltonians import h_loc_slater
+from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
@@ -37,7 +37,7 @@ p["move_double"] = False
 gf_struct = set_operator_structure(spin_names,cubic_names,False)
 
 # Local Hamiltonian
-H = h_loc_slater(spin_names,cubic_names,U_mat,False)
+H = h_int_slater(spin_names,cubic_names,U_mat,False)
 
 # Construct the solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000)
@@ -49,7 +49,7 @@ for name, g0 in S.G0_iw:
     g0 << inverse(iOmega_n + mu - delta_w)
 
 
-S.solve(h_loc=H, **p)
+S.solve(h_int=H, **p)
 
 if mpi.is_master_node():
     with HDFArchive("slater.output.h5",'w') as Results:

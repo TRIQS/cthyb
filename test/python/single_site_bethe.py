@@ -39,7 +39,7 @@ p["measure_g_l"] = True
 p["move_double"] = False
 p["perform_tail_fit"] = True
 
-S.solve(h_loc=H, **p)
+S.solve(h_int=H, **p)
 
 # Calculation is done. Now save a few things
 if mpi.is_master_node():

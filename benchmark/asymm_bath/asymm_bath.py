@@ -78,7 +78,7 @@ for e in epsilon:
     S.G0_iw["up"] << inverse(iOmega_n - ed - delta_w)
     S.G0_iw["dn"] << inverse(iOmega_n - ed - delta_w)
 
-    S.solve(h_loc=H, **p)
+    S.solve(h_int=H, **p)
 
     if mpi.rank==0:
         d = {'G_tau':S.G_tau, 'beta':beta, 'U':U, 'ed':ed, 'V':V, 'e':e}

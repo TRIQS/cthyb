@@ -58,7 +58,7 @@ for modes in range(1,10+1):
     print_master("Running the simulation...")
 
     # Solve the problem
-    S.solve(h_loc=H, **p)
+    S.solve(h_int=H, **p)
 
     # Save and plot the results
     if mpi.rank==0:

@@ -7,8 +7,8 @@ namespace cthyb {
 // All the arguments of the solve function
 struct solve_parameters_t {
 
- /// Atomic Hamiltonian
- real_operator_t h_loc;
+ /// Interacting part of the atomic Hamiltonian
+ real_operator_t h_int;
 
  /// Number of QMC cycles
  int n_cycles;
@@ -66,7 +66,7 @@ struct solve_parameters_t {
 
  solve_parameters_t() {}
  
- solve_parameters_t(real_operator_t h_loc, int n_cycles) : h_loc(h_loc), n_cycles(n_cycles) {}
+ solve_parameters_t(real_operator_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
 
 };
 }

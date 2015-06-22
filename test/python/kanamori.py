@@ -1,7 +1,7 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf.local import *
-from pytriqs.operators.util.hamiltonians import h_loc_kanamori
+from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
@@ -28,7 +28,7 @@ gf_struct = set_operator_structure(spin_names,orb_names,True)
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
 
 # Hamiltonian
-H = h_loc_kanamori(spin_names,orb_names,
+H = h_int_kanamori(spin_names,orb_names,
                    np.array([[0,U-3*J],[U-3*J,0]]),
                    np.array([[U,U-2*J],[U-2*J,U]]),
                    J,True)
@@ -50,7 +50,7 @@ p["n_cycles"] = 5000
 p["measure_g_l"] = True
 p["move_double"] = False
 
-S.solve(h_loc=H, **p)
+S.solve(h_int=H, **p)
 
 if mpi.is_master_node():
     with HDFArchive("kanamori.output.h5",'w') as Results:

@@ -35,7 +35,7 @@ c.add_constructor("""(double beta, std::map<std::string,indices_type> gf_struct,
 c.add_method("""void solve (**cthyb::solve_parameters_t)""",
              doc = """  Parameter Name              Type                          Default                                        Documentation
 
-  h_loc                       real_operator_t               --                                             Atomic Hamiltonian
+  h_int                       real_operator_t               --                                             Interacting part of the atomic Hamiltonian
   n_cycles                    int                           --                                             Number of QMC cycles
   partition_method            std::string                   "autopartition"                                Partition method
   quantum_numbers             std::vector<real_operator_t>  std::vector<real_operator_t>{}                 Quantum numbers

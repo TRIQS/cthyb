@@ -45,7 +45,7 @@ S.G0_iw["tot"] << inverse(iOmega_n - np.array([[-mu,-t],[-t,-mu]]) - delta_w)
 print_master("Running the simulation...")
 
 ## Solve the problem
-S.solve(h_loc=H, **p)
+S.solve(h_int=H, **p)
 
 ## Save the results  
 if mpi.rank==0:

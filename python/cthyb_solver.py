@@ -37,7 +37,7 @@ class Solver(SolverCore):
         self.n_iw = n_iw
         self.n_tau = n_tau
 
-    def solve(self, h_loc, **params_kw):
+    def solve(self, **params_kw):
         """
         Solve the impurity problem.
         If measure_g_tau (default = True), G_iw and Sigma_iw will be calculated and their tails fitted.
@@ -45,8 +45,10 @@ class Solver(SolverCore):
 
         Parameters
         ----------
-        h_loc : Operator object
-                The local Hamiltonian of the impurity problem to be solved.
+        **params_kw: dict {'param':value} that is passed to the core solver.
+                     Two required parameters are
+                     * h_int (Operator object): the local Hamiltonian of the impurity problem to be solved,
+                     * n_cycles (int): number of measurements to be made.
         perform_tail_fit : boolean, optional, default = False
                            Should the tails of Sigma_iw and G_iw be fitted?
         fit_n_moments : integer, optional, default = 3
@@ -58,6 +60,18 @@ class Solver(SolverCore):
         fit_max_n : integer, optional, default = n_iw
                     Index of iw to fit until.
         """
+
+        if 'h_loc' in params_kw:
+            if 'h_int' in params_kw:
+                raise ValueError, "You have provided both h_loc and h_int."
+            else:
+                params_kw['h_int'] = params_kw.pop("h_loc")
+	        if mpi.is_master_node():
+                    warning = ("!----------------------------------------------------!\n"
+                               "! WARNING: You should replace h_loc with h_int.      !\n"
+                               "! The deprecated keyword h_loc will soon be removed! !\n"
+                               "!----------------------------------------------------!")
+                    print warning
 
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
         if perform_tail_fit:
@@ -87,7 +101,7 @@ class Solver(SolverCore):
             print warning
 
         # Call the core solver's solve routine
-        SolverCore.solve(self, h_loc = h_loc, **params_kw)
+        SolverCore.solve(self, **params_kw)
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)

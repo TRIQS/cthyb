@@ -104,7 +104,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
-  auto h_loc = params.h_loc;
+  auto h_loc = params.h_int;
 
   // Add quadratic terms to h_loc
   int b = 0;

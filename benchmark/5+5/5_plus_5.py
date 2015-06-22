@@ -60,7 +60,7 @@ if use_interaction:
                 H_dump_file.write(mkind(s1,cubic_names[a2])[0] + '\t')
                 H_dump_file.write(str(U_val.real) + '\n')
 
-p["h_loc"] = H
+p["h_int"] = H
 
 # Quantum numbers (N_up and N_down)
 QN=[Operator(),Operator()]

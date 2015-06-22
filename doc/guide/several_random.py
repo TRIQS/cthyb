@@ -17,7 +17,7 @@ for random_name in ['mt11213b','lagged_fibonacci607']:
         g0 << inverse( iOmega_n - e_f - V**2 * Wilson(D) )
   
     # Solve using random_name as a generator
-    S.solve(h_loc = U * n('up',0) * n('down',0),   # Local Hamiltonian
+    S.solve(h_int = U * n('up',0) * n('down',0),   # Local Hamiltonian
             n_cycles = 100000,                     # Number of QMC cycles
             length_cycle = 200,                    # Length of one cycle
             n_warmup_cycles = 10000,               # Warmup cycles

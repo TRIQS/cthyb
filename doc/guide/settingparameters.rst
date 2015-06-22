@@ -52,7 +52,7 @@ acting on the effective impurity sites/orbitals. It is very important to
 **include only the quartic terms and not the quadratic terms** in this
 Hamiltonian. The latter terms will be computed from the kownledge of the
 non-interacting Green's function ``S.G0_iw`` as explained below (see Step 7). The
-Hamiltonian is given in the parameter ``h_loc`` with the use of
+interacting Hamiltonian is given in the parameter ``h_int`` with the use of
 :ref:`operators`. The arguments in the parenthesis of the ``c()``, ``c_dag()``
 and ``n()`` operators must be compatible with the structure of the Green's
 function ``gf_struct``.
@@ -62,12 +62,12 @@ Examples
 
 * For a single-band Hubbard model with a local Coulom interaction::
 
-    h_loc = U * n('up',0) * n('down',0)
+    h_int = U * n('up',0) * n('down',0)
 
 * Two-orbital Hubbard model, no inter-orbital interaction, but a hybridization
   between the bands (this term will not appear in the local Hamiltonian!)::
 
-    h_loc = U * (n('up',0) * n('down',0) + n('up',1) * n('down',1))
+    h_int = U * (n('up',0) * n('down',0) + n('up',1) * n('down',1))
 
 
 Step 3 - the Monte Carlo parameters
@@ -122,7 +122,7 @@ Step 8 - we're ready to go!
 Everything is ready at this stage and you just need to call the ``solve()``
 member of the solver with all the information you prepared, e.g.::
 
-  S.solve(h_loc = U * n('up',0) * n('down',0),
+  S.solve(h_int = U * n('up',0) * n('down',0),
           n_cycles  = 500000,
           length_cycle = 200,
           n_warmup_cycles = 10000)
@@ -133,7 +133,7 @@ or alternatively by predefining a dict of params::
   p['n_warmup_cycles'] = 10000
   p['n_cycles'] = 500000
   p['length_cycle'] = 200
-  S.solve(h_loc = U * n('up',0) * n('down',0), **p)
+  S.solve(h_int = U * n('up',0) * n('down',0), **p)
 
 When you call the solver, the local Hamiltonian (with the quadratic terms) is
 shown. Be careful to check that this is indeed the Hamiltonian that you expect!

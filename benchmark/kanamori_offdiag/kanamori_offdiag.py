@@ -76,7 +76,7 @@ for spin in spin_names:
 print_master("Running the simulation...")
 
 # Solve the problem
-S.solve(h_loc=H, **p)
+S.solve(h_int=H, **p)
 
 # Save the results
 if mpi.rank==0:

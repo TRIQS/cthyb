@@ -25,7 +25,7 @@ for i_loop in range(n_loops):
     for name, g0 in S.G0_iw: g0 << inverse( iOmega_n + chemical_potential - (half_bandwidth/2.0)**2  * g )
 
     # Run the solver
-    S.solve(h_loc = U * n('up',0) * n('down',0),                            # Local Hamiltonian
+    S.solve(h_int = U * n('up',0) * n('down',0),                            # Local Hamiltonian
             n_cycles = 5000,                                                # Number of QMC cycles
             length_cycle = 200,                                             # Length of a cycle
             n_warmup_cycles = 1000)                                         # How many warmup cycles

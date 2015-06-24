@@ -81,9 +81,9 @@ def run_slater(L,is_cubic):
         gf_struct = set_operator_structure(spin_names,orb_names,True)
         mkind = get_mkind(True,None)
 
-        F0, F2, F4 = 3.0, 0.6, 0.1
+        F = [3.0*(0.3**k) for k in range(l+1)]
 
-        U_mat = U_matrix(l,[F0,F2,F4],basis='cubic' if is_cubic else 'spherical')
+        U_mat = U_matrix(l,F,basis='cubic' if is_cubic else 'spherical')
         h_int = h_int_slater(spin_names,orb_names,U_mat,True)
 
         h_k = np.zeros((num_orbitals,num_orbitals))

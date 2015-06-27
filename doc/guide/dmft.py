@@ -32,11 +32,10 @@ for i_loop in range(n_loops):
 
     # Some intermediate saves
     if mpi.is_master_node():
-        R = HDFArchive("dmft_solution.h5")
-        R["G_tau-%s"%i_loop] = S.G_tau
-        R["G_iw-%s"%i_loop] = S.G_iw
-        R["Sigma_iw-%s"%i_loop] = S.Sigma_iw
-        del R
+        with HDFArchive("dmft_solution.h5") as R:
+            R["G_tau-%s"%i_loop] = S.G_tau
+            R["G_iw-%s"%i_loop] = S.G_iw
+            R["Sigma_iw-%s"%i_loop] = S.Sigma_iw
 
     # Here we could write some convergence test
     # if converged : break

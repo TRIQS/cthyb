@@ -25,6 +25,5 @@ for random_name in ['mt11213b','lagged_fibonacci607']:
   
     # Save the results in an hdf5 file (only on the master node)
     if mpi.is_master_node():
-        Results = HDFArchive("random.h5")
-        Results["G_iw%s"%(random_name)] = S.G_iw
-        del Results
+        with HDFArchive("random.h5") as Results:
+            Results["G_iw%s"%(random_name)] = S.G_iw

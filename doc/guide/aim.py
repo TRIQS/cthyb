@@ -24,8 +24,7 @@ S.solve(h_int = U * n('up',0) * n('down',0),     # Local Hamiltonian
 
 # Save the results in an hdf5 file (only on the master node)
 if mpi.is_master_node():
-  Results = HDFArchive("aim_solution.h5",'w')
-  Results["G_tau"] = S.G_tau
-  Results["G_iw"] = S.G_iw
-  Results["G_iw"] = S.G_iw
-  del Results
+    with HDFArchive("aim_solution.h5",'w') as Results:
+        Results["G_tau"] = S.G_tau
+        Results["G_iw"] = S.G_iw
+        Results["G_l"] = S.G_l

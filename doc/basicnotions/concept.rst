@@ -3,6 +3,9 @@
 The solver concept
 ===================
 
+.. warning::
+    This document is outdated and should be either removed or rewritten.
+
 A solver class must obey a specific concept so that inputs don't depend on
 which specific solver you are using. The solver class must contain the members
 `G_tau` and `G0_iw` corresponding to the interacting and non-interacting Green's

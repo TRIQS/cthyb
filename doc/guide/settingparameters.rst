@@ -22,9 +22,9 @@ The first parameter of the solver is the inverse temperature. In order to
 complete the construction of the instance, you need to figure out what is the
 correct structure of the Green's function for the problem you are considering.
 As emphasized earlier, you should always try to take advantage of a possible
-block structure of the Green's function. In a spin system, the Green's function
+block structure of the Green's function. In a spin-conserving system, the Green's function
 can often be (at least) cut into *up* and *down* spin sectors.  When the
-structure is clear you can set the parameter ``gf_struct`` which is a dict
+structure is clear you can set the parameter ``gf_struct``, which is a ``dict()``
 mapping a string that gives the name of the block to a list of the indices of
 the block.
 
@@ -46,7 +46,7 @@ Step 2 - the Hamiltonian
 ------------------------
 
 The solver instance is ready. Now you need to prepare all the parameters
-that will enter the ``solve`` method and start the calculation. So
+that will enter the ``solve()`` method and start the calculation. So
 the next step is to describe the local Hamiltonian. This is the Hamiltonian
 acting on the effective impurity sites/orbitals. It is very important to
 **include only the quartic terms and not the quadratic terms** in this
@@ -78,7 +78,7 @@ during the Monte Carlo sampling. ``n_cycles`` is the total number of measurement
 cycles done. A cycle has ``length_cycle`` Monte Carlo moves in it.  The
 measurements start after ``n_warmup_cycles`` cycles have been made and there is
 a measurement at the end of every cycle. At the end of the run, there will be
-``n_cycles`` measurements and a total of ``n_warmup_cycles`` + (``n_cycles`` x
+``n_cycles`` measurements and a total of (``n_warmup_cycles`` + ``n_cycles``) x
 ``length_cycle``) moves.
 
 When the solver is spread on a parallel machine, each core will do ``n_cycles``
@@ -149,32 +149,27 @@ At the end of the run, the solver has computed the following objects:
     This is put in the member ``G_l``. This output is useful to decide how many
     Legendre coefficients should be used. 
 
-  * The self-energy of the problem on the Matsubara frequency
-    axis. This is in the class member ``Sigma_iw``.
-
-
 Final Step - analyze the output
 -------------------------------
 
 One of the most important checks that needs to be done is to ensure that the
 high-frequency behaviour of your imaginary frequency Green's function and
 self-energy are correct and lead to physically sensible values. You should use
-the fitting function provided tail_fit(in pytriqs.gf.local) to determine the
-optimal fitting parameters `fit_min_n` and `fit_max_n`.  See :ref:`here
-<triqslib:green>` for more details on the tail fitting tool.
+the fitting function ``tail_fit`` (provided in ``pytriqs.gf.local``) to determine the
+optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.  See :ref:`here <triqslibs:gf_tail>`
+for more details on the tail fitting tool.
 
 If you use the Legendre expansion, you should also decide on the ideal number
 of Legendre coefficients to keep for the following runs. If you have saved the
 Legendre Green's function in an archive, you can then plot it:
 
-.. FIXME plot
-.. .. plot:: legendre_plot.py
-..   :include-source:
-..   :scale: 70
+.. plot:: guide/legendre_plot.py
+  :include-source:
+  :scale: 70
 
 From this plot you see that for :math:`l > 30`, the value of the
 coefficient is of the order of the statistical noise. There is therefore no
 information in the coefficients with :math:`l > 30` and one can set
-``n_legendre = 30`` for the following runs. Of course, if you will use
+``n_l = 30`` for the following runs. Of course, if you will use
 more statistics or a larger number of cores, you may have to reajust this
 value.

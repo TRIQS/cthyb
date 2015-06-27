@@ -17,7 +17,7 @@ and the non-interacting Green's function is:
 
   G^{-1}_{0,\sigma} (i \omega_n) = i \omega_n - \epsilon_f - V^2 \Gamma_\sigma(i \omega_n).
 
-In this example, there is a Coulomb interaction :math:`U` on the impurity level
+In this example, there is a Coulomb interaction :math:`U` on the impurity level,
 which is at an energy :math:`\epsilon_f`. The bath Green's function is :math:`\Gamma(i
 \omega_n)` and it has a flat density of states over the interval
 :math:`[-1,1]`.  Finally, :math:`V` is the hybridization amplitude between the
@@ -27,14 +27,13 @@ the python :download:`script <aim.py>`:
 .. literalinclude:: aim.py
 
 Running this script on a single processor takes about 5 minutes and generates
-an HDF5 archive file called :file:`solution.h5`. This file contains the Green's
+an HDF5 archive file called :file:`aim_solution.h5`. This file contains the Green's
 function in imaginary time and in imaginary frequencies found by the solver.
 Let us plot the Green's function:
 
-..  FIXME plot
-.. .. plot:: aim_plot.py
-..    :include-source:
-..    :scale: 70
+.. plot:: guide/aim_plot.py
+   :include-source:
+   :scale: 70
 
 As expected the result shows a particle-hole symmetric impurity Green's
 function (the real part vanishes up to the statistical noise).
@@ -74,14 +73,15 @@ At this stage, everything is ready for the solver and we just run it calling its
 function ``solve``:
 
 .. literalinclude:: aim.py
-  :lines: 18-22
+  :lines: 18-23
 
 The run is controlled by the parameters of ``solve``:
 
-- ``h_int``: The interacting part of the local Hamiltonian written with operators. See the section: :ref:`operators`.
+- ``h_int``: The interacting part of the local Hamiltonian written with operators. See the section: :ref:`triqslibs:operators`.
 - ``n_cycles``: The number of Monte Carlo cycles.
 - ``length_cycle``: The number Monte Carlo moves in a cycle.
 - ``random_name``: The name of the random number generator.
+- ``measure_g_l``: We want to accumulate the Green's function in a basis of Legendre polynomials.
 
 When the solver has finished, it puts the result for the interacting Green's
 function in imaginary time in its member ``S.G_tau`` and the Green's function

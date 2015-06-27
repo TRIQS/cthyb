@@ -1,3 +1,5 @@
+.. _ctqmc_ref:
+
 Solver
 ======
 

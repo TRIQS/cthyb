@@ -27,8 +27,9 @@ hybridization functions :math:`\Delta_{\alpha_i \alpha_j'} (\tau_i - \tau_j')`.
 The main inputs of the solver are the hybridization functions
 :math:`\Delta(i\omega_n)` and the local Hamiltonian
 :math:`\mathcal{H}_\mathrm{loc}` on the impurity. The solver then computes the
-Green's function on the imaginary-time interval :math:`[0,\beta]`.  This is 
-done on a basis of Legendre polynomials, as described in Ref. [#legendre]_. 
+Green's function on the imaginary-time interval :math:`[0,\beta]`.  This can be
+done in the imaginary time representation, as well as on a basis of Legendre
+polynomials, as described in Ref. [#legendre]_.
 Note that our implementation of the algorithm uses a *matrix* representation
 [#ctqmc3]_ of the operators :math:`d^\dagger_{\alpha}`. This allows the use 
 of any local Hamiltonian :math:`\mathcal{H}_\mathrm{loc}` in the algorithm.

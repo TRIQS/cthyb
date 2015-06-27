@@ -20,9 +20,9 @@ This application is a part of our scientific work and we would appreciate if
 projects using it will include a citation to the following relevant papers.  In
 order to help you, we provide a BibTeX entry for each paper.
 
-.. [#ctqmc1] `P. Werner, A. Comanac, L. de' Medici, M. Troyer, and A. J. Millis, Phys. Rev. Lett. 97, 076405 (2006) <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_ (:download:`bibtex file <ctqmc1.bib>`)
-.. [#ctqmc2] `P. Werner and A. J. Millis, Phys. Rev. B 74, 155107 (2006) <http://link.aps.org/doi/10.1103/PhysRevB.74.155107>`_ (:download:`bibtex file <ctqmc2.bib>`)
-.. [#ctqmc3] `E. Gull, Ph.D. thesis, ETH Zurich, Switzerland (2008) <http://e-collection.library.ethz.ch/view/eth:31103>`_ (:download:`bibtex file <ctqmc3.bib>`)
+.. [#ctqmc1] `P. Werner, A. Comanac, L. de' Medici, M. Troyer, and A. J. Millis, Phys. Rev. Lett. 97, 076405 (2006) <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_ (:download:`bibtex file <basicnotions/ctqmc1.bib>`)
+.. [#ctqmc2] `P. Werner and A. J. Millis, Phys. Rev. B 74, 155107 (2006) <http://link.aps.org/doi/10.1103/PhysRevB.74.155107>`_ (:download:`bibtex file <basicnotions/ctqmc2.bib>`)
+.. [#ctqmc3] `E. Gull, Ph.D. thesis, ETH Zurich, Switzerland (2008) <http://e-collection.library.ethz.ch/view/eth:31103>`_ (:download:`bibtex file <basicnotions/ctqmc3.bib>`)
 
 If you find the application useful, giving proper reference and citation is
 indeed a simple way to help convincing funding sources that such projects are

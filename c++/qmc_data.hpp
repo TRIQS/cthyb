@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2013, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -45,14 +45,13 @@ struct qmc_data {
  struct delta_block_adaptor {
   gf_const_view<imtime> delta_block;
 
-  // FIXME COMMENT : can remove all of this, the const prevent = anyway ...
+  // Could remove all of this, the const prevent = anyway ...
   delta_block_adaptor(gf_const_view<imtime> const &delta_block) : delta_block(delta_block) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
   delta_block_adaptor &operator=(delta_block_adaptor &&a) = default;
 
-  // FIXME no need of argument_type, return_type : det_manip now synthetize everything (need to UPDATE doc).
   double operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
    double res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
    return (x.first >= y.first ? res : -res); // x,y first are time_pt, wrapping is automatic in the - operation, but need to

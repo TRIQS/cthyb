@@ -1,16 +1,5 @@
-TRIQS fast hybridization-expansion solver
-Copyright (C) 2013, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
-
-****************************************************
-**********************  WARNING  *******************
-****************************************************
-This code is in alpha stage. 
-While it is known to work on several tests, 
-it is NOT YET READY FOR PRODUCTION for general users.
-It should be reserved to developers and beta-testers
-for now.
-****************************************************
-
+TRIQS continuous-time hybridization-expansion solver
+Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
 
 1. Documentation
 
@@ -37,4 +26,3 @@ later version (see <http://www.gnu.org/licenses/>).
 It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU General Public License for more details.
-

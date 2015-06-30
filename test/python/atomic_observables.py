@@ -3,10 +3,12 @@ from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.U_matrix import U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
+from pytriqs.operators.util.observables import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
-from observables import *
+
+filter_minus_0 = lambda x: 0 if (x<0 and abs(x)<1e-10) else x
 
 beta = 100.0
 # H_int parameters
@@ -50,8 +52,8 @@ S.solve(h_int=H, **p)
 obs = {'E':H,'N':N,'S2':S2,'Sz':Sz,'L2':L2,'Lz':Lz,'LS':LS}
 res = S.atomic_observables(obs)
 
-print ("%10s "*7) % ("Energy","N","S^2","S_z","L^2","L_z","LS")
-print ("%10s "*7) % ("======","=","===","===","===","===","==")
+print ("%9s "*7) % ("Energy","N","S^2","S_z","L^2","L_z","L*S")
+print ("%9s "*7) % ("======","=","===","===","===","===","===")
 
 for v in zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz'],res['LS']):
-    print ("%10.4f "*7) % v
+    print ("%9.4f "*7) % tuple(map(filter_minus_0,v))

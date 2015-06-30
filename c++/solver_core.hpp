@@ -32,12 +32,14 @@ using namespace triqs::utility;
 using mc_weight_type = double;
 using mc_sign_type = mc_weight_type;
 using indices_type = many_body_operator<double>::indices_t;
+using many_body_op_type = triqs::utility::many_body_operator<double>;
 
 class solver_core {
 
  double beta;
  sorted_spaces sosp;
  std::map<std::string, indices_type> gf_struct;
+ many_body_op_type _h_loc;                  // The local Hamiltonian = h_int + h0
  block_gf<imfreq> _G0_iw;                   // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;       // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                   // Green's function containers: Legendre coefficients
@@ -53,6 +55,9 @@ class solver_core {
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
  TRIQS_WRAP_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
  void solve(solve_parameters_t const & p);
+
+ /// The local Hamiltonian of the problem
+ many_body_op_type h_loc() const { return _h_loc; }
 
  /// Set of parameters used in the last call to solve
  solve_parameters_t get_last_solve_parameters() const {return _last_solve_parameters;}

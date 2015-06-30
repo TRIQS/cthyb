@@ -104,7 +104,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
-  auto h_loc = params.h_int;
+  _h_loc = params.h_int;
 
   // Add quadratic terms to h_loc
   int b = 0;
@@ -113,7 +113,7 @@ void solver_core::solve(solve_parameters_t const & params) {
     for (auto const & a1: bl.second) {
       int n2 = 0;
       for (auto const & a2: bl.second) {
-        h_loc = h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
+        _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
         n2++;
       }
       n1++;
@@ -132,19 +132,19 @@ void solver_core::solve(solve_parameters_t const & params) {
   }
 
   // Report what h_loc we are using
-  if (params.verbosity >= 2) std::cout << "The local Hamiltonian of the problem:" << std::endl << h_loc << std::endl;
+  if (params.verbosity >= 2) std::cout << "The local Hamiltonian of the problem:" << std::endl << _h_loc << std::endl;
 
   // Determine block structure
   if (params.partition_method == "autopartition") {
    if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
-   sosp = {h_loc, fops};
+   sosp = {_h_loc, fops};
   } else if (params.partition_method == "quantum_numbers") {
    if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
    if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
-   sosp = {h_loc, params.quantum_numbers, fops};
+   sosp = {_h_loc, params.quantum_numbers, fops};
   } else if (params.partition_method == "none") { // give empty quantum numbers list
    std::cout << "Not partitioning the local Hilbert space" << std::endl;
-   sosp = {h_loc, std::vector<real_operator_t>{}, fops};
+   sosp = {_h_loc, std::vector<real_operator_t>{}, fops};
   } else
    TRIQS_RUNTIME_ERROR << "Partition method " << params.partition_method << " not recognised.";
 

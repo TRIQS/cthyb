@@ -58,6 +58,10 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 c.add_method("""std::map<std::string,std::vector<double>> atomic_observables (std::map<std::string,real_operator_t> obs_map)""",
              doc = """Static observables of the atomic problem """)
 
+c.add_property(name = "h_loc",
+               getter = cfunction("many_body_op_type h_loc ()"),
+               doc = """The local Hamiltonian of the problem """)
+
 c.add_property(name = "last_solve_parameters",
                getter = cfunction("cthyb::solve_parameters_t get_last_solve_parameters ()"),
                doc = """Set of parameters used in the last call to solve """)

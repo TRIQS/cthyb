@@ -19,7 +19,7 @@ Here's the concept explicitly:
   .. attribute:: G_tau
 
     The interacting Green's function. This is a :ref:`full Green's function
-    <fullgreen>` with each block being a :ref:`GfImTime`. G is set after
+    <fullgreen>` with each block being a :ref:`GfImTime`. G_tau is set after
     the solve() method has been called.
 
   .. attribute:: G0_iw

@@ -52,8 +52,9 @@ acting on the effective impurity sites/orbitals. It is very important to
 **include only the quartic terms and not the quadratic terms** in this
 Hamiltonian. The latter terms will be computed from the kownledge of the
 non-interacting Green's function ``S.G0_iw`` as explained below (see Step 7). The
-interacting Hamiltonian is given in the parameter ``h_int`` with the use of
-:ref:`operators`. The arguments in the parenthesis of the ``c()``, ``c_dag()``
+interacting Hamiltonian is given in the parameter ``h_int``.
+.. FIXME with the use of :ref:`operators`. 
+The arguments in the parenthesis of the ``c()``, ``c_dag()``
 and ``n()`` operators must be compatible with the structure of the Green's
 function ``gf_struct``.
 

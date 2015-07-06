@@ -54,36 +54,39 @@ This just sets the parameters of the problem.
 .. literalinclude:: aim.py
   :lines: 11-13
 
-This is the construction of the solver object. The class is described
+This is the construction of the Solver object. The class is described
 in more detail in the section: :ref:`ctqmc_ref`. Basically, the constructor
-of the solver needs two keywords:
+of the Solver needs two keywords:
 
 - ``beta``: the inverse temperature,
 - ``gf_struct``: a dictionary {str:list} describing the block structure of the Green's function.
 
-After the solver is constructed it needs to know what the non-interacting Green's function
-of the impurity is. From this information, the solver will deduce the hybridization function
+This ensures that all quantities within Solver are correctly initialised,
+and in particular that the block structure of all Green's function objects is consistent.
+
+After the Solver is constructed it needs to know what the non-interacting Green's function
+of the impurity is. From this information, the Solver will deduce the hybridization function
 which is used in the algorithm. The non-interacting Green's function must be put in the
 class member ``S.G0_iw``:
 
 .. literalinclude:: aim.py
   :lines: 15-16
 
-At this stage, everything is ready for the solver and we just run it calling its member
+At this stage, everything is ready for the Solver and we just run it calling its member
 function ``solve``:
 
 .. literalinclude:: aim.py
   :lines: 18-23
 
-The run is controlled by the parameters of ``solve``:
+The run is controlled by the parameters of ``solve()``:
 
-- ``h_int``: The interacting part of the local Hamiltonian written with operators. See the section: :ref:`triqslibs:operators`.
+- ``h_int``: The interacting part of the local Hamiltonian written with TRIQS ``Operator``s.
 - ``n_cycles``: The number of Monte Carlo cycles.
 - ``length_cycle``: The number Monte Carlo moves in a cycle.
 - ``random_name``: The name of the random number generator.
 - ``measure_g_l``: We want to accumulate the Green's function in a basis of Legendre polynomials.
 
-When the solver has finished, it puts the result for the interacting Green's
+When ``solve()`` has finished, it puts the result for the interacting Green's
 function in imaginary time in its member ``S.G_tau`` and the Green's function
 in imaginary frequencies in ``S.G_iw``. The last lines of the script save the
 Green's function in the HDF archive.

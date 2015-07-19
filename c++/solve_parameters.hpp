@@ -8,15 +8,19 @@ namespace cthyb {
 struct solve_parameters_t {
 
  /// Interacting part of the atomic Hamiltonian
+ /// type: Operator
  real_operator_t h_int;
 
  /// Number of QMC cycles
  int n_cycles;
 
  /// Partition method
+ /// type: str
  std::string partition_method = "autopartition";
 
  /// Quantum numbers
+ /// type: list(Operator)
+ /// default: []
  std::vector<real_operator_t> quantum_numbers = std::vector<real_operator_t>{};
 
  /// Length of a single QMC cycle
@@ -26,15 +30,18 @@ struct solve_parameters_t {
  int n_warmup_cycles = 5000;
 
  /// Seed for random number generator
+ /// default: 34788 + 928374 * MPI.rank
  int random_seed = 34788 + 928374 * boost::mpi::communicator().rank();
 
  /// Name of random number generator
+ /// type: str
  std::string random_name = "";
 
  /// Maximum runtime in seconds, use -1 to set infinite
  int max_time = -1;
 
  /// Verbosity level
+ /// default: 3 on MPI rank 0, 0 otherwise.
  int verbosity = ((boost::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
  /// Add shifting a move as a move?
@@ -62,10 +69,12 @@ struct solve_parameters_t {
  bool performance_analysis = false;
 
  /// Operator insertion/removal probabilities for different blocks
+ /// type: dict(str:float)
+ /// default: {}
  std::map<std::string,double> proposal_prob = (std::map<std::string,double>{});
 
  solve_parameters_t() {}
- 
+
  solve_parameters_t(real_operator_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
 
 };

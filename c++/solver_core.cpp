@@ -21,9 +21,9 @@
 #include "./solver_core.hpp"
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/variant_int_string.hpp>
 #include <triqs/gfs.hpp>
 #include <fstream>
-#include <boost/variant.hpp>
 
 #include "move_insert.hpp"
 #include "move_remove.hpp"
@@ -37,7 +37,7 @@
 
 namespace cthyb {
 
-struct index_visitor : public boost::static_visitor<> {
+struct index_visitor  {
   std::vector<std::string> indices;
   void operator()(int i) { indices.push_back(std::to_string(i)); }
   void operator()(std::string s) { indices.push_back(s); }
@@ -59,7 +59,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
     int n = bl.second.size();
 
     index_visitor iv;
-    for (auto & ind: bl.second) { boost::apply_visitor(iv, ind); }
+    for (auto & ind: bl.second) { apply_visitor(iv, ind); }
     std::vector<std::vector<std::string>> indices{{iv.indices,iv.indices}};
 
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});

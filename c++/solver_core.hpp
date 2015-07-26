@@ -21,7 +21,6 @@
 #pragma once
 #include <triqs/mc_tools.hpp>
 #include <triqs/utility/callbacks.hpp>
-#include <boost/mpi/communicator.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include "solve_parameters.hpp"
 #include "./qmc_data.hpp"

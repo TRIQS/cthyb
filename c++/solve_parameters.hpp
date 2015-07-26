@@ -1,4 +1,6 @@
 #pragma once
+#include <triqs/mpi/boost.hpp>
+
 namespace cthyb {
 
  using namespace triqs::utility;

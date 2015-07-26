@@ -16,8 +16,8 @@ int main(int argc, char* argv[]) {
   std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
-  boost::mpi::environment env(argc, argv);
-  int rank = boost::mpi::communicator().rank();
+  triqs::mpi::environment env(argc, argv);
+  int rank = triqs::mpi::communicator().rank();
 
   // Parameters
   double beta = 10.0;

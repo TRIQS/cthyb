@@ -116,12 +116,6 @@ struct qmc_data {
   current_sign = (s % 2 == 0 ? 1 : -1);
  }
 
- template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-  ar &boost::serialization::make_nvp("configuration", config) & boost::serialization::make_nvp("dets", dets) &
-      boost::serialization::make_nvp("imp_trace", imp_trace) & boost::serialization::make_nvp("old_sign", old_sign) &
-      boost::serialization::make_nvp("current_sign", current_sign);
- }
-
 };
 
  //--------- DEBUG ---------

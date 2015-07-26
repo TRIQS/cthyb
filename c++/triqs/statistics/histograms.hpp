@@ -21,7 +21,6 @@
 #pragma once
 #include <map>
 #include <fstream>
-#include <boost/mpi.hpp>
 #include <triqs/arrays.hpp>
 
 namespace triqs {
@@ -79,11 +78,11 @@ namespace statistics {
   }
 
   /// Reduce the histogram from all nodes
-  void all_reduce(boost::mpi::communicator & world) {
+  void all_reduce(triqs::mpi::communicator & world) {
    std::vector<uint64_t> tot_data(data.size(),0);
    // FIXME what is the correct Op to add two vectors together?!
    for (int i=0; i<data.size(); i++) {
-    boost::mpi::all_reduce(world, data[i], tot_data[i], std::c14::plus<uint64_t>());
+    tot_data[i]= mpi_all_reduce(data[i],world);
    }
    std::copy(tot_data.begin(),tot_data.end(),data.begin());
   }
@@ -100,7 +99,7 @@ namespace statistics {
 
   /** */
   void dump(std::string s) {
-   boost::mpi::communicator world;
+   triqs::mpi::communicator world;
    all_reduce(world);
    if (world.rank() == 0) {
     std::ofstream f(s);
@@ -160,7 +159,7 @@ namespace statistics {
   // FIXME What happens when this class object is destroyed? Do we call dump of the histo after this dump?!
   /// Dump into text file
   void dump(std::string s) {
-   boost::mpi::communicator world;
+   triqs::mpi::communicator world;
    histo.all_reduce(world);
    if (world.rank() == 0) {
     std::ofstream f(s);
@@ -217,11 +216,11 @@ namespace statistics {
   void activate_dumpfile(std::string dump_file_name) { _dump_file_name = dump_file_name; }
 
   /// Reduce the histogram from all nodes
-  void all_reduce(boost::mpi::communicator & world) {
+  void all_reduce(triqs::mpi::communicator & world) {
    arrays::vector<double> tot_data(_len_array,0.0);
    // FIXME what is the correct Op to add two vectors together?!
    for (int i=0; i<_len_array; i++) {
-    boost::mpi::all_reduce(world, data[i], tot_data[i], std::c14::plus<double>());
+    tot_data[i]= mpi_all_reduce(data[i],world);
    }
    std::copy(tot_data.begin(),tot_data.end(),data.begin());
   }
@@ -229,7 +228,7 @@ namespace statistics {
   // FIXME What happens when this class object is destroyed? Do we call dump of the histo after this dump?!
   /// Dump into text file
   void dump(std::string s) {
-   boost::mpi::communicator world;
+   triqs::mpi::communicator world;
    all_reduce(world);
    if (world.rank() == 0) {
     std::ofstream f(s);

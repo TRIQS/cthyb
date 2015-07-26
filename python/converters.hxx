@@ -47,10 +47,10 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "quantum_numbers"            , res.quantum_numbers              , std::vector<real_operator_t>{});
   _get_optional(dic, "length_cycle"               , res.length_cycle                 , 50);
   _get_optional(dic, "n_warmup_cycles"            , res.n_warmup_cycles              , 5000);
-  _get_optional(dic, "random_seed"                , res.random_seed                  , 34788+928374*boost::mpi::communicator().rank());
+  _get_optional(dic, "random_seed"                , res.random_seed                  , 34788+928374*triqs::mpi::communicator().rank());
   _get_optional(dic, "random_name"                , res.random_name                  , "");
   _get_optional(dic, "max_time"                   , res.max_time                     , -1);
-  _get_optional(dic, "verbosity"                  , res.verbosity                    , ((boost::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "verbosity"                  , res.verbosity                    , ((triqs::mpi::communicator().rank()==0)?3:0));
   _get_optional(dic, "move_shift"                 , res.move_shift                   , true);
   _get_optional(dic, "move_double"                , res.move_double                  , false);
   _get_optional(dic, "use_trace_estimator"        , res.use_trace_estimator          , false);

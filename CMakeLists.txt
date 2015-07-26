@@ -13,10 +13,6 @@ enable_testing()
 # We use shared libraries
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
-# BOOST : triqs does not use any lib, we need boost::mpi in addition
-find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization system)
-link_libraries(${Boost_LIBRARIES})
-
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 

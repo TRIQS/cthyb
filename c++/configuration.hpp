@@ -93,11 +93,6 @@ struct configuration {
   }
  }
 
- template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-  using boost::serialization::make_nvp;
-  ar & make_nvp("id",id) & make_nvp("oplist", oplist) & make_nvp("beta", beta_);
- }
-
  long get_id() const { return id; } // Get the id of the current configuration
  void finalize() {
   id++;

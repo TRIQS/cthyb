@@ -48,12 +48,10 @@ struct measure_state_contrib_hist {
   
  // ---------------------------------------------
 
- void collect_results(boost::mpi::communicator const& c) {
+ void collect_results(triqs::mpi::communicator const& c) {
   arrays::vector<double> contrib_total(imp_tr.n_eigstates);
   std::string s="histo_state_contrib_to_trace.dat";
-  for (int i=0; i<contrib.size(); i++) {
-   boost::mpi::all_reduce(c, this->contrib[i], contrib_total[i], std::c14::plus<>());
-  }
+  for (int i = 0; i < contrib.size(); i++) contrib_total[i] = mpi_all_reduce(contrib[i], c);
   contrib_total /= z;
   if (c.rank() == 0) {
    std::ofstream f(s);

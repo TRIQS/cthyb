@@ -42,7 +42,7 @@ class solver_core {
  block_gf<imfreq> _G0_iw;                   // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;       // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                   // Green's function containers: Legendre coefficients
- boost::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
+ triqs::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
  solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
  mc_sign_type _average_sign;
  arrays::vector<double> state_trace_contribs;

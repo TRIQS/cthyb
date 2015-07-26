@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include "qmc_data.hpp"
-#include <boost/mpi/collectives.hpp>
 #include "triqs/statistics/histograms.hpp"
 
 namespace cthyb {
@@ -43,7 +42,7 @@ struct measure_perturbation_hist {
  }
  // ---------------------------------------------
 
- void collect_results(boost::mpi::communicator const& c) {
+ void collect_results(triqs::mpi::communicator const& c) {
  }
 };
 
@@ -65,7 +64,7 @@ struct measure_perturbation_hist_total {
  }
  // ---------------------------------------------
 
- void collect_results(boost::mpi::communicator const& c) {
+ void collect_results(triqs::mpi::communicator const& c) {
  }
 };
 

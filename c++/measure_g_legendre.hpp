@@ -23,8 +23,6 @@
 #include <triqs/gfs/local/functions.hpp>
 #include <triqs/utility/legendre.hpp>
 #include "qmc_data.hpp"
-#include <boost/serialization/complex.hpp>
-#include <boost/mpi/collectives.hpp>
 
 namespace cthyb {
 
@@ -71,18 +69,15 @@ struct measure_g_legendre {
  }
  // ---------------------------------------------
 
- void collect_results(boost::mpi::communicator const& c) {
+ void collect_results(triqs::mpi::communicator const& c) {
 
-  int64_t total_num;
-  mc_sign_type total_z;
-  boost::mpi::all_reduce(c, z, total_z, std::c14::plus<>());
-  boost::mpi::all_reduce(c, num, total_num, std::c14::plus<>());
+  mc_sign_type total_z = mpi_all_reduce(z,c);
+  int64_t total_num= mpi_all_reduce(num, c);
   average_sign = total_z / total_num;
 
-  auto g_l_in = make_clone(g_l);
-  auto g_l_out = make_clone(g_l);
-  boost::mpi::all_reduce(c, g_l_in, g_l_out, std::c14::plus<>());
-  for (auto l : g_l_out.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(total_z)*beta)) * g_l_out[l];
+  //gf<legendre> g_l_out = mpi_all_reduce(g_l, c);
+  g_l= mpi_all_reduce(g_l, c);
+  for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(total_z)*beta)) * g_l[l];
 
   arrays::matrix<double> id(get_target_shape(g_l));
   id() = 1.0;

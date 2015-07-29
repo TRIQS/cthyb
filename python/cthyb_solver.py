@@ -51,9 +51,9 @@ class Solver(SolverCore):
                      * n_cycles (int): number of measurements to be made.
         perform_tail_fit : boolean, optional, default = False
                            Should the tails of Sigma_iw and G_iw be fitted?
-        fit_n_moments : integer, optional, default = 3
-                        Number of moments to fit in the tail of Sigma_iw.
-        fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, n_moments, order_min)}
+        fit_max_moment : integer, optional, default = 3
+                         Highest moment to fit in the tail of Sigma_iw.
+        fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, max_moment, order_min)}
                             Known moments of Sigma_iw, given as a TailGf object.
         fit_min_n : integer, optional, default = int(0.8 * self.n_iw)
                     Index of iw from which to start fitting.
@@ -88,7 +88,7 @@ class Solver(SolverCore):
             fit_max_n = params_kw.pop("fit_max_n", None)
             fit_min_w = params_kw.pop("fit_min_w", None)
             fit_max_w = params_kw.pop("fit_max_w", None)
-            fit_n_moments = params_kw.pop("fit_n_moments", None)
+            fit_max_moment = params_kw.pop("fit_max_moment", None)
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
         print_warning = False
@@ -113,4 +113,4 @@ class Solver(SolverCore):
             self.Sigma_iw = dyson(G0_iw=self.G0_iw,G_iw=self.G_iw)
             if perform_tail_fit: tail_fit(Sigma_iw=self.Sigma_iw,G0_iw=self.G0_iw,G_iw=self.G_iw,\
                                           fit_min_n=fit_min_n,fit_max_n=fit_max_n,fit_min_w=fit_min_w,fit_max_w=fit_max_w,\
-                                          fit_n_moments=fit_n_moments,fit_known_moments=fit_known_moments)
+                                          fit_max_moment=fit_max_moment,fit_known_moments=fit_known_moments)

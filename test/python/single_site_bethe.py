@@ -38,6 +38,7 @@ p["n_cycles"] = 5000
 p["measure_g_l"] = True
 p["move_double"] = False
 p["perform_tail_fit"] = True
+p["fit_max_moment"] = 2
 
 S.solve(h_int=H, **p)
 

@@ -1,6 +1,9 @@
 # Path to the Sphinx inventory file of the library
 set(TRIQS_INVENTORY_PATH "${TRIQS_PATH}/share/doc/triqs")
 
+# Path to the Sphinx extensions provided by TRIQS
+set(TRIQS_SPHINXEXT_PATH "${TRIQS_PATH}/share/triqs/sphinxext")
+
 # generate the conf.py
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 

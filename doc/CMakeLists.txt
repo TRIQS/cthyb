@@ -1,5 +1,7 @@
 # Path to the Sphinx inventory file of the library
-set(TRIQS_INVENTORY_PATH "${TRIQS_PATH}/share/doc/triqs")
+set(TRIQS_INVENTORY_DIR "${TRIQS_PATH}/share/doc/triqs" CACHE STRING
+    "Path or URL to a directory containing a Sphinx inventory file of the TRIQS library")
+mark_as_advanced(TRIQS_INVENTORY_DIR)
 
 # Path to the Sphinx extensions provided by TRIQS
 set(TRIQS_SPHINXEXT_PATH "${TRIQS_PATH}/share/triqs/sphinxext")

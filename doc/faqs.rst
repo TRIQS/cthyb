@@ -4,6 +4,14 @@
 Frequently-asked questions
 ==========================
 
+Q: Why is my code running so slow?
+----------------------------------
+
+A: If you see massive performance problems (slow down by huge factors like
+100), then you might have an issue with OpenMP when using MKL for instance.
+Setting OMP_NUM_THREADS=1 solves this problem.
+
+
 Q: How do I save the triqs and cthyb hash and script for debugging purposes?
 ----------------------------------------------------------------------------
 

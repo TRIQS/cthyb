@@ -83,12 +83,18 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // determine basis of operators to use
   fundamental_operator_set fops;
+  for (auto const & bl: gf_struct) {
+    for (auto const & a: bl.second) {
+      fops.insert(bl.first, a);
+    }
+  }
+
+  // setup the linear index map
   std::map<std::pair<int,int>,int> linindex;
   int block_index = 0;
   for (auto const & bl: gf_struct) {
     int inner_index = 0;
     for (auto const & a: bl.second) {
-      fops.insert(bl.first, a);
       linindex[std::make_pair(block_index, inner_index)] = fops[{bl.first,a}];
       inner_index++;
     }

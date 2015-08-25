@@ -226,7 +226,7 @@ void solver_core::solve(solve_parameters_t const & params) {
                    "Contribution of atomic states to the trace");
 
   // Run! The empty (starting) configuration has sign = 1
-  qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
+  _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
   // Get the average sign

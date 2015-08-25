@@ -47,6 +47,7 @@ class solver_core {
  solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
  mc_sign_type _average_sign;
  arrays::vector<double> state_trace_contribs;
+ int _solve_status;                         // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
  public:
 
@@ -100,6 +101,9 @@ class solver_core {
   );
   return res;
  }
+
+ /// Status of the solve on exit
+ int solve_status() const { return _solve_status; }
 
 };
 

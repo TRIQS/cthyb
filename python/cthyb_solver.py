@@ -102,7 +102,7 @@ class Solver(SolverCore):
             print warning
 
         # Call the core solver's solve routine
-        SolverCore.solve(self, **params_kw)
+        solve_status = SolverCore.solve(self, **params_kw)
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
@@ -114,3 +114,5 @@ class Solver(SolverCore):
             if perform_tail_fit: tail_fit(Sigma_iw=self.Sigma_iw,G0_iw=self.G0_iw,G_iw=self.G_iw,\
                                           fit_min_n=fit_min_n,fit_max_n=fit_max_n,fit_min_w=fit_min_w,fit_max_w=fit_max_w,\
                                           fit_max_moment=fit_max_moment,fit_known_moments=fit_known_moments)
+
+        return solve_status

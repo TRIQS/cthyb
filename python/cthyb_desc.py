@@ -17,7 +17,6 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/pair.hpp>
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/vector.hpp>
-#include <triqs/python_tools/converters/variant.hpp>
 #include <triqs/python_tools/converters/tuple.hpp>
 using namespace triqs::gfs;
 using triqs::utility::many_body_operator;
@@ -101,6 +100,10 @@ c.add_property(name = "eigensystems",
                doc = """Eigensystems of the atomic problem
   Returns a list of tuples (E,U,S), where H = U * diag(E) * U^+ (for each subspace),
   and S is a list of all Fock states belonging to the subspace """)
+
+c.add_property(name = "solve_status",
+               getter = cfunction("int solve_status ()"),
+               doc = """Status of the solve on exit """)
 
 module.add_class(c)
 

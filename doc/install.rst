@@ -31,6 +31,8 @@ Installation steps
      $ make 
      $ make test 
      $ make install 
+
+.. note:: Be careful with the cmake command above: set TRIQS_PATH, not CMAKE_INSTALL_PREFIX (this variable is only for the TRIQS library)!
  
 Version compatibility 
 --------------------- 

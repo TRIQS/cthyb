@@ -64,7 +64,10 @@ struct solve_parameters_t {
  bool measure_pert_order = false;
 
  /// Measure the contribution of each atomic state to the trace?
- bool measure_state_trace_contrib = false;
+ bool measure_density_matrix= false;
+
+ /// Use the norm of the density matrix in the weight if true, otherwise use Trace
+ bool use_norm_as_weight = false;
 
  /// Analyse performance of trace computation with histograms (developers only)?
  bool performance_analysis = false;

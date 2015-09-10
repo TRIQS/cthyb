@@ -32,7 +32,8 @@ class move_shift_operator {
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  double delta_tau;
- qmc_data::trace_t new_trace;
+ double new_atomic_weight;
+ qmc_data::trace_t new_atomic_reweighting;
  time_pt tau_old, tau_new;
  op_desc op_old, op_new;
  using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
@@ -192,27 +193,27 @@ class move_shift_operator {
   // for quick abandon
   double random_number = rng.preview();
   if (random_number == 0.0) return 0;
-  double p_yee = std::abs(det_ratio / data.trace);
+  double p_yee = std::abs(det_ratio / data.atomic_weight);
 
-  // --- Compute the trace ratio
-  new_trace = data.imp_trace.estimate(p_yee, random_number);
-  if (new_trace == 0.0) {
+  // --- Compute the atomic_weight ratio
+  std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+  if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
-   std::cerr << "trace == 0" << std::endl;
+   std::cerr << "atomic_weight == 0" << std::endl;
 #endif
    return 0;
   }
-  auto trace_ratio = new_trace / data.trace;
-  if (!std::isfinite(trace_ratio)) TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_trace << " " << data.trace << " " << new_trace/data.trace << " in config " << config.get_id();
+  auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
+  if (!std::isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
 
   // --- Compute the weight
-  mc_weight_type p = trace_ratio * det_ratio;
+  mc_weight_type p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
-  std::cerr << "Trace ratio: " << trace_ratio << '\t';
+  std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
   std::cerr << "Det ratio: " << det_ratio << '\t';
   std::cerr << "Weight: " << p << std::endl;
-  std::cerr << "p_yee * newtrace: " << p_yee * new_trace<< std::endl;
+  std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight<< std::endl;
 #endif
 
   return p;
@@ -233,7 +234,10 @@ class move_shift_operator {
   // Update the determinant
   data.dets[block_index].complete_operation();
   data.update_sign();
-  data.trace = new_trace;
+
+  data.atomic_weight = new_atomic_weight;
+  data.atomic_reweighting = new_atomic_reweighting;
+
   if (performance_analysis) histos["shift_length_accepted"] << delta_tau;
 
   auto result = data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);

@@ -45,6 +45,7 @@ endif(SAVE_CONFIGS)
 
 # Compile C++ code
 add_subdirectory(c++)
+#add_subdirectory(tools)
 
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})

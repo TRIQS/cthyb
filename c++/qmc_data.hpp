@@ -61,7 +61,8 @@ struct qmc_data {
 
  std::vector<det_manip::det_manip<delta_block_adaptor>> dets; // The determinants
  int current_sign, old_sign;                                  // Permutation prefactor
- trace_t trace;                                               // The current value of the trace
+ double atomic_weight;                                        // The current value of the trace or norm
+ trace_t atomic_reweighting;                                  // The current value of the reweighting
 
  // Construction
  qmc_data(double beta, solve_parameters_t const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
@@ -74,7 +75,7 @@ struct qmc_data {
       current_sign(1),
       old_sign(1),
       n_inner(n_inner) {
-  trace = imp_trace.estimate();
+  std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
   dets.clear();
   for (auto const &bl : delta.mesh()) {
    if (!is_gf_real(delta[bl])) TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
@@ -126,7 +127,7 @@ struct qmc_data {
  using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
 
  // Print taus of operator sequence in dets
- void print_det_sequence(qmc_data const & data) {
+ inline void print_det_sequence(qmc_data const & data) {
   int i;
   int block_index;
   for (block_index = 0; block_index < data.dets.size() ; ++block_index) {
@@ -142,7 +143,7 @@ struct qmc_data {
   }
  }
 
- void print_det_sequence(det_type const & det) {
+ inline void print_det_sequence(det_type const & det) {
   int i;
   for (i = 0; i < det.size(); ++i) { // c_dag
    std::cout << " ic_dag = " << i << ": tau = " << det.get_x(i).first << std::endl;
@@ -153,7 +154,7 @@ struct qmc_data {
  }
 
  // Check if dets are correctly ordered, otherwise complain
- void check_det_sequence(det_type const & det, int config_id) {
+ inline void check_det_sequence(det_type const & det, int config_id) {
   if (det.size() == 0) return;
   auto tau = det.get_x(0).first;
   for (auto ic_dag = 0; ic_dag < det.size(); ++ic_dag) { // c_dag

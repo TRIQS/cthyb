@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/gfs.hpp>
-#include "qmc_data.hpp"
+#include "./qmc_data.hpp"
 
 namespace cthyb {
 
@@ -28,7 +28,7 @@ using namespace triqs::gfs;
 
 // Measure imaginary time Green's function (one block)
 struct measure_g {
- using mc_sign_type = std::complex<double>;
+ using mc_sign_type = double;
 
  qmc_data const& data;
  gf_view<imtime> g_tau;
@@ -50,15 +50,13 @@ struct measure_g {
   num += 1;
   if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
-  auto corr = real(this->data.imp_trace.full_trace_over_estimator());
-  if (!std::isfinite(corr)) TRIQS_RUNTIME_ERROR << " measure g :corr not finite" << corr;
+  s *= data.atomic_reweighting;
+  z += s;
 
-  z += s * corr;
-
-  foreach(data.dets[a_level], [this, corr, s](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
+  foreach(data.dets[a_level], [this, s](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
    // beta-periodicity is implicit in the argument, just fix the sign properly
    this->g_tau[closest_mesh_pt(double(y.first - x.first))](y.second, x.second) +=
-       (y.first >= x.first ? real(s) : -real(s)) * M * corr;
+       (y.first >= x.first ? s : -s) * M;
   });
  }
  // ---------------------------------------------

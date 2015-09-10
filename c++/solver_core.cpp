@@ -33,7 +33,7 @@
 #include "measure_g.hpp"
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
-#include "measure_state_contrib_hist.hpp"
+#include "measure_density_matrix.hpp"
 
 namespace cthyb {
 
@@ -143,26 +143,29 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Determine block structure
   if (params.partition_method == "autopartition") {
    if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
-   sosp = {_h_loc, fops};
+   hdiag = {_h_loc, fops};
   } else if (params.partition_method == "quantum_numbers") {
    if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
    if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
-   sosp = {_h_loc, params.quantum_numbers, fops};
+   hdiag = {_h_loc, params.quantum_numbers, fops};
   } else if (params.partition_method == "none") { // give empty quantum numbers list
    std::cout << "Not partitioning the local Hilbert space" << std::endl;
-   sosp = {_h_loc, std::vector<real_operator_t>{}, fops};
+   hdiag = {_h_loc, std::vector<real_operator_t>{}, fops};
   } else
    TRIQS_RUNTIME_ERROR << "Partition method " << params.partition_method << " not recognised.";
 
-  if (params.verbosity >= 2) std::cout << "Found " << sosp.n_subspaces() << " subspaces." << std::endl;
+  // save h_loc to be able to rebuild hdiag in an analysis program.
+  //if (_comm.rank() ==0) h5_write(h5::file("h_loc.h5",'w'), "h_loc", _h_loc, fops);
 
-  if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << sosp;
+  if (params.verbosity >= 2) std::cout << "Found " << hdiag.n_blocks() << " subspaces." << std::endl;
+
+  if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << hdiag;
 
   // If one is interested only in the atomic problem
   if (params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
 
   // Initialise Monte Carlo quantities
-  qmc_data data(beta, params, sosp, linindex, _Delta_tau, n_inner);
+  qmc_data data(beta, params, hdiag, linindex, _Delta_tau, n_inner);
   auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
                                                 params.random_seed, params.verbosity);
 
@@ -221,9 +224,12 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_measure(measure_perturbation_hist_total(data, "histo_pert_order.dat"), "Perturbation order");
   }
 
-  if (params.measure_state_trace_contrib)
-   qmc.add_measure(measure_state_contrib_hist{data.imp_trace, state_trace_contribs},
-                   "Contribution of atomic states to the trace");
+  if (params.measure_density_matrix) {
+   if (!params.use_norm_as_weight)
+    TRIQS_RUNTIME_ERROR << "No way ! \n To measure the density_matrix of atomic states, you need to set "
+                           "use_norm_as_weight to True, i.e. to reweigh the QMC";
+   qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
+  }
 
   // Run! The empty (starting) configuration has sign = 1
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));

@@ -2,22 +2,14 @@ Dimension of full Hilbert space: 4
 Number of blocks: 4
 Block 0, relative gs energy : 0
 size = 1
-
-index = 0
 -------------------------
 Block 1, relative gs energy : 0.5
 size = 1
-
-index = 1
 -------------------------
 Block 2, relative gs energy : 1
 size = 1
-
-index = 2
 -------------------------
 Block 3, relative gs energy : 2.5
 size = 1
-
-index = 3
 -------------------------
 

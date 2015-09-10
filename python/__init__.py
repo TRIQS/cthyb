@@ -24,6 +24,6 @@ DOC
 
 """
 from cthyb_solver import Solver
-from cthyb import SolverCore
+from cthyb import SolverCore, SortedSpaces
 
-__all__ = ['Solver', 'SolverCore']
+__all__ = ['Solver', 'SolverCore', 'SortedSpaces']

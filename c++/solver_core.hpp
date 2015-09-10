@@ -33,19 +33,21 @@ using mc_sign_type = mc_weight_type;
 using indices_type = triqs::operators::indices_t;
 using many_body_op_type = triqs::operators::many_body_operator;
 
+using h_loc_diagonalization = sorted_spaces;
+
 class solver_core {
 
  double beta;
- sorted_spaces sosp;
+ h_loc_diagonalization hdiag;
  std::map<std::string, indices_type> gf_struct;
  many_body_op_type _h_loc;                  // The local Hamiltonian = h_int + h0
  block_gf<imfreq> _G0_iw;                   // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;       // Green's function containers: imaginary-time Green's functions
  block_gf<legendre> _G_l;                   // Green's function containers: Legendre coefficients
+ std::vector<matrix<double>> _density_matrix; // density matrix, when used in Norm mode
  triqs::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
  solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
  mc_sign_type _average_sign;
- arrays::vector<double> state_trace_contribs;
  int _solve_status;                         // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
  public:
@@ -56,8 +58,8 @@ class solver_core {
  TRIQS_WRAP_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
  void solve(solve_parameters_t const & p);
 
- /// The local Hamiltonian of the problem
- many_body_op_type h_loc() const { return _h_loc; }
+ /// The local Hamiltonian of the problem : H_loc used in the last call to solve.
+ many_body_op_type const & h_loc() const { return _h_loc; }
 
  /// Set of parameters used in the last call to solve
  solve_parameters_t get_last_solve_parameters() const {return _last_solve_parameters;}
@@ -75,31 +77,16 @@ class solver_core {
  block_gf_view<legendre> G_l() { return _G_l; }
 
  /// Atomic G(tau) in imaginary time
- block_gf_view<imtime> atomic_gf() const { return sosp.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
+ block_gf_view<imtime> atomic_gf() const { return hdiag.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
 
- /// Average contribution of each atomic state to the trace
- arrays::vector<double> const& get_state_trace_contribs() const { return state_trace_contribs; }
+ /// Density matrix
+ std::vector<matrix<double>> const & density_matrix() const { return _density_matrix;}
 
- /// Static observables of the atomic problem
- std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,real_operator_t> const& obs_map) const {
-  return sosp.atomic_observables(obs_map);
- }
+ /// Access to the Hloc diagonalization
+ h_loc_diagonalization const & get_h_loc_diagonalization() const { return hdiag;}
 
  /// Monte Carlo average sign
  mc_sign_type average_sign() const { return _average_sign; }
-
- /// Eigensystems of the atomic problem
- /// Returns a list of tuples (E,U,S), where H = U * diag(E) * U^+ (for each subspace),
- /// and S is a list of all Fock states belonging to the subspace
- std::vector<std::tuple<vector<double>,matrix<double>,std::vector<fock_state_t>>> get_eigensystems() const {
-  decltype(get_eigensystems()) res;
-  for(auto const& es : sosp.get_eigensystems()) res.emplace_back(
-   es.eigenvalues,
-   es.unitary_matrix,
-   es.eigenstates[0].get_hilbert().get_all_fock_states()
-  );
-  return res;
- }
 
  /// Status of the solve on exit
  int solve_status() const { return _solve_status; }

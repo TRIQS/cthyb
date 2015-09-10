@@ -30,7 +30,7 @@ using namespace triqs::gfs;
 
 // Measure Legendre Green's function (one block)
 struct measure_g_legendre {
- using mc_sign_type = std::complex<double>;
+ using mc_sign_type = double;
 
  qmc_data const& data;
  gf_view<legendre> g_l;
@@ -52,19 +52,17 @@ struct measure_g_legendre {
   num += 1;
   if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
-  auto corr = real(this->data.imp_trace.full_trace_over_estimator());
-  if (!std::isfinite(corr)) TRIQS_RUNTIME_ERROR << " measure g :corr not finite" << corr;
-
-  z += s * corr;
+  s *= data.atomic_reweighting;
+  z += s;
 
   auto Tn = triqs::utility::legendre_generator();
 
-  foreach(data.dets[a_level], [this, corr, s, &Tn](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
+  foreach(data.dets[a_level], [this, s, &Tn](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
    double poly_arg = 2*double(y.first - x.first)/beta - 1.0;
    Tn.reset(poly_arg);
 
-   double val = (y.first >= x.first ? real(s) : -real(s)) * M * corr;
-   for (auto l : g_l.mesh()) this->g_l[l](y.second, x.second) += val*Tn.next();
+   double val = (y.first >= x.first ? s : -s) * M;
+   for (auto l : g_l.mesh()) this->g_l[l](y.second, x.second) += val * Tn.next();
   });
  }
  // ---------------------------------------------

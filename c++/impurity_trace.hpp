@@ -36,6 +36,9 @@ namespace cthyb {
  Calculate the trace of the impurity problem.
  ********************************************/
 class impurity_trace {
+
+ bool use_norm_as_weight;
+
  public:
 
  using trace_t = double;
@@ -46,31 +49,28 @@ class impurity_trace {
 
  ~impurity_trace() { cancel_insert_impl(); } // in case of an exception, we need to remove any trial nodes before cleaning the tree!
 
- trace_t estimate(double p_yee = -1, double u_yee = 0);
- trace_t full_trace_over_estimator();
+ std::pair<double, trace_t> compute(double p_yee = -1, double u_yee = 0);
 
- private:
- // Various possible algorithms
- bool use_trace_estimator;
- enum class method_t {
-  full_trace,
-  estimate
- };
- method_t method;
-
- public:
  // ------- Configuration and h_loc data ----------------
 
  const configuration* config;              // config object does exist longer (temporally) than this object.
  const sorted_spaces* sosp;                // access to the diagonalization of h_loc
- int n_orbitals = sosp->n_c_operators();   //
- int n_blocks = sosp->n_subspaces();       //
- int n_eigstates = sosp->space().size();   //
+ const int n_orbitals = sosp->n_c_operators();   //
+ const int n_blocks = sosp->n_blocks();       //
+ const int n_eigstates = sosp->dim();   //
 
  // ------- Trace data ----------------
 
- std::vector<int> first_eigstate_of_block; // Index of the first eigenstate of each block
- arrays::vector<double> state_contrib;     // partial trace contribution of each eigenstate
+ private:
+
+ struct bool_and_matrix {
+  bool is_valid;
+  matrix<double> mat;
+ };
+ arrays::vector<bool_and_matrix> density_matrix; // density_matrix, by block, with a bool to say if it has been recomputed
+
+ public:
+ arrays::vector<bool_and_matrix> const& get_density_matrix() const { return density_matrix; }
 
  // ------------------ Cache data ----------------
 
@@ -106,10 +106,10 @@ class impurity_trace {
  private:
 
  // The dimension of block b
- int get_block_dim(int b) const { return sosp->get_eigensystems()[b].eigenvalues.size(); }
+ int get_block_dim(int b) const { return sosp->get_block_dim(b);}
 
  // the i-th eigenvalue of the block b
- double get_block_eigenval(int b, int i) const { return sosp->get_eigensystems()[b].eigenvalues[i]; }
+ double get_block_eigenval(int b, int i) const { return sosp->get_eigenvalue(b,i); }
 
  // the minimal eigenvalue of the block b
  double get_block_emin(int b) const { return get_block_eigenval(b, 0); }
@@ -128,7 +128,6 @@ class impurity_trace {
  int compute_block_table(node n, int b);
  std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true);
  std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
- trace_t compute_trace(bool to_machine_precision, double p_yee, double u_yee);
 
  void update_cache_impl(node n);
  void update_dtau(node n);
@@ -141,7 +140,6 @@ class impurity_trace {
  int check_one_block_table_linear(node n, int b, bool print); // compare block table to that of a linear method (ie. no tree)
  matrix<double> check_one_block_matrix_linear(node n, int b, bool print); // compare matrix to that of a linear method (ie. no tree)
 
- public:
  /*************************************************************************
   *  Ordinary binary search tree (BST) insertion of the trial nodes
   *************************************************************************/
@@ -336,7 +334,9 @@ class impurity_trace {
   statistics::histogram_segment_bin dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
 
   // Various ratios : trace/bound, trace/first term of the trace, etc..
-  statistics::histogram_segment_bin trace_over_estimator = {0, 2, 100, "histo_trace_over_estimator.dat"};
+  statistics::histogram_segment_bin trace_over_norm= {0, 1.5, 100, "histo_trace_over_norm.dat"};
+  statistics::histogram_segment_bin trace_abs_over_norm = {0, 1.5, 100, "histo_trace_abs_over_norm.dat"};
+  statistics::histogram_segment_bin trace_over_trace_abs = {0, 1.5, 100, "histo_trace_over_trace_abs.dat"};
   statistics::histogram_segment_bin trace_over_bound = {0, 1.5, 100, "histo_trace_over_bound.dat"};
   statistics::histogram_segment_bin trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
   statistics::histogram_segment_bin trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};

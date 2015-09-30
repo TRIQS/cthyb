@@ -8,8 +8,6 @@ from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
 
-filter_minus_0 = lambda x: 0 if (x<0 and abs(x)<1e-10) else x
-
 beta = 100.0
 # H_int parameters
 L = 1 # angular momentum
@@ -41,6 +39,10 @@ L2 = L2_op(spin_names,cubic_names,False)
 Lz = L_op('z',spin_names,cubic_names,False)
 LS = LS_op(spin_names,cubic_names,False)
 
+# Additional splitting terms to lift the degeneracies
+H += 0.22*Sz
+H += 0.33*Lz
+
 # Construct the solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=10000)
 
@@ -55,5 +57,8 @@ res = S.atomic_observables(obs)
 print ("%9s "*7) % ("Energy","N","S^2","S_z","L^2","L_z","L*S")
 print ("%9s "*7) % ("======","=","===","===","===","===","===")
 
-for v in zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz'],res['LS']):
-    print ("%9.4f "*7) % tuple(map(filter_minus_0,v))
+E_sorted_res = sorted(zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz'],res['LS']),
+                      cmp=lambda r1,r2: cmp(r1[0],r2[0]))
+
+filter_minus_0 = lambda x: 0 if (x<0 and abs(x)<1e-10) else x
+for v in E_sorted_res: print ("%9.4f "*7) % tuple(map(filter_minus_0,v))

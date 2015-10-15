@@ -295,10 +295,11 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  // The contribution to the trace from block B is bounded: |Tr_B| <= dim(B) * sum_{B} e^{Emin(B)*dtau}
  // Here we calculate the cumulative bound from each contributing (structurally non-zero) block to 
  // determine at which block we have exceeded the bound and hence can stop.
+ // Can tighten bound on trace by using sqrt(dim(B)) in the case of Frobenius norm only.
  bound_cumul[n_bl] = 0;
  if (!use_norm_as_weight) {
   for (int bl = n_bl - 1; bl >= 0; --bl)
-   bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * get_block_dim(to_sort_lnorm_b[bl].second);
+   bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
  } else {
   for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
  }

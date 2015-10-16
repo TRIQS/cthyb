@@ -34,6 +34,7 @@
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
 #include "measure_density_matrix.hpp"
+#include "measure_average_sign.hpp"
 
 namespace cthyb {
 
@@ -226,17 +227,21 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   if (params.measure_density_matrix) {
    if (!params.use_norm_as_weight)
-    TRIQS_RUNTIME_ERROR << "No way ! \n To measure the density_matrix of atomic states, you need to set "
-                           "use_norm_as_weight to True, i.e. to reweigh the QMC";
+    TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
+                           "use_norm_as_weight to True, i.e. to reweight the QMC";
    qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
+  }
+
+  if (params.use_norm_as_weight) {
+   qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign when using the norm as weight");
   }
 
   // Run! The empty (starting) configuration has sign = 1
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
-  // Get the average sign
-  _average_sign = qmc.average_sign();
+  // Get the average sign from the MC if not using norm as weight + reweighting
+  if (!params.use_norm_as_weight) _average_sign = qmc.average_sign();
 
 }
 

@@ -61,18 +61,6 @@ class Solver(SolverCore):
                     Index of iw to fit until.
         """
 
-        if 'h_loc' in params_kw:
-            if 'h_int' in params_kw:
-                raise ValueError, "You have provided both h_loc and h_int."
-            else:
-                params_kw['h_int'] = params_kw.pop("h_loc")
-	        if mpi.is_master_node():
-                    warning = ("!----------------------------------------------------!\n"
-                               "! WARNING: You should replace h_loc with h_int.      !\n"
-                               "! The deprecated keyword h_loc will soon be removed! !\n"
-                               "!----------------------------------------------------!")
-                    print warning
-
         perform_post_proc = params_kw.pop("perform_post_proc", True)
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
         if perform_post_proc and perform_tail_fit:

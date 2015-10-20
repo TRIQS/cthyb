@@ -114,8 +114,9 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
+  
   _h_loc = params.h_int;
-
+  
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
@@ -123,7 +124,7 @@ void solver_core::solve(solve_parameters_t const & params) {
     for (auto const & a1: bl.second) {
       int n2 = 0;
       for (auto const & a2: bl.second) {
-        _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag(bl.first,a1)*c(bl.first,a2);
+        _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag<double>(bl.first,a1)*c<double>(bl.first,a2);
         n2++;
       }
       n1++;
@@ -147,29 +148,29 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Determine block structure
   if (params.partition_method == "autopartition") {
    if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
-   hdiag = {_h_loc, fops};
+   h_diag = {_h_loc, fops};
   } else if (params.partition_method == "quantum_numbers") {
    if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
    if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
-   hdiag = {_h_loc, params.quantum_numbers, fops};
+   h_diag = {_h_loc, fops, params.quantum_numbers};
   } else if (params.partition_method == "none") { // give empty quantum numbers list
    std::cout << "Not partitioning the local Hilbert space" << std::endl;
-   hdiag = {_h_loc, std::vector<real_operator_t>{}, fops};
+   h_diag = {_h_loc, fops, std::vector<many_body_op_t>{}};
   } else
    TRIQS_RUNTIME_ERROR << "Partition method " << params.partition_method << " not recognised.";
 
-  // save h_loc to be able to rebuild hdiag in an analysis program.
+  // FIXME save h_loc to be able to rebuild h_diag in an analysis program.
   //if (_comm.rank() ==0) h5_write(h5::file("h_loc.h5",'w'), "h_loc", _h_loc, fops);
 
-  if (params.verbosity >= 2) std::cout << "Found " << hdiag.n_blocks() << " subspaces." << std::endl;
+  if (params.verbosity >= 2) std::cout << "Found " << h_diag.n_blocks() << " subspaces." << std::endl;
 
-  if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << hdiag;
+  if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << h_diag;
 
   // If one is interested only in the atomic problem
   if (params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
 
   // Initialise Monte Carlo quantities
-  qmc_data data(beta, params, hdiag, linindex, _Delta_tau, n_inner);
+  qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);
   auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
                                                 params.random_seed, params.verbosity);
 
@@ -243,7 +244,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
-  // Copy real G_tau back to complex quantity
+  // Copy real G_tau back to complex G_tau
   if (params.measure_g_tau) {
    _G_tau = _G_tau_real;
   }

@@ -19,7 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "sorted_spaces.hpp"
+#include "atom_diag.hpp"
+#include "atom_diag_functions.hpp"
 #include "./util.hpp"
 #include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/utility/time_pt.hpp>

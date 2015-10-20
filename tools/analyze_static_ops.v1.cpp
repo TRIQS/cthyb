@@ -2,7 +2,7 @@
 #include <triqs/hilbert_space/space_partition.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/operators/many_body_operator.hpp>
-#include "../c++/sorted_spaces.hpp"
+#include "../c++/atomic_problem.hpp"
 
 using triqs::utility::many_body_operator;
 using triqs::utility::c;
@@ -11,7 +11,7 @@ using triqs::hilbert_space::fundamental_operator_set;
 using triqs::hilbert_space::hilbert_space;
 using triqs::hilbert_space::state;
 using triqs::hilbert_space::imperative_operator;
-using cthyb::sorted_spaces;
+using cthyb::atomic_problem;
 
 int main() {
 
@@ -38,14 +38,14 @@ int main() {
   std::cout << "RVB state: " << rvb_state << std::endl;
 
   // Part II: let's make sure rvb_state is decomposed in a single sub hilbert space
-  sorted_spaces sosp{h_loc, fops};
+  atomic_problem h_diag{h_loc, fops};
   int subspace_number = -1;
   for(long i=0; i<rvb_state.size(); ++i) {
     if(std::abs(rvb_state(i)) > 1.e-10) {
       long j = full_hs.get_fock_state(i); // of course j=i...
       // look for the fock state in all subspaces
-      for(int k=0; k<sosp.n_subspaces(); k++) {
-        if(sosp.subspace(k).has_state(j)) {
+      for(int k=0; k<h_diag.n_subspaces(); k++) {
+        if(h_diag.subspace(k).has_state(j)) {
           if (subspace_number == -1) subspace_number = k;
           else if (subspace_number != k) std::cout << "We have a problem!!! k = " << k << " and subspace_number = " << subspace_number << std::endl;
         }
@@ -56,7 +56,7 @@ int main() {
   // Part III: get the eigenvectors and promote them to
   // the full hilbert space
   // loop over all eigenvectors in all sub hilbert spaces
-  for(auto & es: sosp.get_eigensystems()) {
+  for(auto & es: h_diag.get_eigensystems()) {
     for(auto & ev: es.eigenstates) {
 
       state<hilbert_space, double, false> eigenstate(full_hs);

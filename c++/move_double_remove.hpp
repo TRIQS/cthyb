@@ -24,7 +24,7 @@
 
 namespace cthyb {
 
-// Removal of C, C^dagger operator
+// Removal of 2 C and 2 C^dagger operator
 class move_remove_c_c_cdag_cdag {
 
  qmc_data& data;

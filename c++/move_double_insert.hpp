@@ -23,7 +23,7 @@
 
 namespace cthyb {
 
-// Insertion of C, C^dagger operator
+// Insertion of 2 C and 2 C^dagger operators
 class move_insert_c_c_cdag_cdag {
 
  qmc_data& data;

@@ -1,6 +1,6 @@
 from pytriqs.operators.operators import Operator, c, c_dag, n, dagger
 from pytriqs.archive import *
-from pytriqs.applications.impurity_solvers.cthyb import SortedSpaces
+from pytriqs.applications.impurity_solvers.cthyb import AtomicProblem
 
 f = HDFArchive('dca_beta20_np975_histogram.out.h5','r')
 h_diag =  f['h_diag-0']

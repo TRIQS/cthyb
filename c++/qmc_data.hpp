@@ -32,21 +32,21 @@ using namespace triqs::gfs;
  ***********************/
 struct qmc_data {
 
- configuration config;                          // Configuration
+ configuration config; // Configuration
  time_segment tau_seg;
- std::map<std::pair<int,int>,int> linindex;     // Linear index constructed from block and inner indices 
- sorted_spaces const &sosp;                     // Diagonalization of the atomic problem
- mutable impurity_trace imp_trace; // Calculator of the trace
- std::vector<int> n_inner; 
+ std::map<std::pair<int, int>, int> linindex; // Linear index constructed from block and inner indices
+ atom_diag const &h_diag;                     // Diagonalization of the atomic problem
+ mutable impurity_trace imp_trace;            // Calculator of the trace
+ std::vector<int> n_inner;
 
  using trace_t = impurity_trace::trace_t;
 
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {
-  gf<imtime,matrix_real_valued> delta_block;
+  gf<imtime, matrix_real_valued> delta_block;
 
   // Could remove all of this, the const prevent = anyway ...
-  delta_block_adaptor(gf<imtime,matrix_real_valued> delta_block) : delta_block(std::move(delta_block)) {}
+  delta_block_adaptor(gf<imtime, matrix_real_valued> delta_block) : delta_block(std::move(delta_block)) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
@@ -65,13 +65,13 @@ struct qmc_data {
  trace_t atomic_reweighting;                                  // The current value of the reweighting
 
  // Construction
- qmc_data(double beta, solve_parameters_t const &p, sorted_spaces const &sosp, std::map<std::pair<int,int>,int> linindex,
+ qmc_data(double beta, solve_parameters_t const &p, atom_diag const &h_diag, std::map<std::pair<int, int>, int> linindex,
           block_gf_const_view<imtime> delta, std::vector<int> n_inner)
     : config(beta),
       tau_seg(beta),
-      sosp(sosp),
+      h_diag(h_diag),
       linindex(linindex),
-      imp_trace(config, sosp, p),
+      imp_trace(config, h_diag, p),
       current_sign(1),
       old_sign(1),
       n_inner(n_inner) {
@@ -119,32 +119,20 @@ struct qmc_data {
   old_sign = current_sign;
   current_sign = (s % 2 == 0 ? 1 : -1);
  }
-
 };
 
- //--------- DEBUG ---------
+//--------- DEBUG ---------
 
- using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
+using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
 
- // Print taus of operator sequence in dets
- inline void print_det_sequence(qmc_data const & data) {
-  int i;
-  int block_index;
-  for (block_index = 0; block_index < data.dets.size() ; ++block_index) {
-   auto det = data.dets[block_index];
-   if (det.size() == 0) return;
-   std::cout << "BLOCK = " << block_index << std::endl;
-   for (i = 0; i < det.size(); ++i) { // c_dag
-    std::cout << " ic_dag = " << i << ": tau = " << det.get_x(i).first << std::endl;
-   }
-   for (i = 0; i < det.size(); ++i) { // c
-    std::cout << " ic     = " << i << ": tau = " << det.get_y(i).first << std::endl;
-   }
-  }
- }
-
- inline void print_det_sequence(det_type const & det) {
-  int i;
+// Print taus of operator sequence in dets
+inline void print_det_sequence(qmc_data const &data) {
+ int i;
+ int block_index;
+ for (block_index = 0; block_index < data.dets.size(); ++block_index) {
+  auto det = data.dets[block_index];
+  if (det.size() == 0) return;
+  std::cout << "BLOCK = " << block_index << std::endl;
   for (i = 0; i < det.size(); ++i) { // c_dag
    std::cout << " ic_dag = " << i << ": tau = " << det.get_x(i).first << std::endl;
   }
@@ -152,29 +140,39 @@ struct qmc_data {
    std::cout << " ic     = " << i << ": tau = " << det.get_y(i).first << std::endl;
   }
  }
+}
 
- // Check if dets are correctly ordered, otherwise complain
- inline void check_det_sequence(det_type const & det, int config_id) {
-  if (det.size() == 0) return;
-  auto tau = det.get_x(0).first;
-  for (auto ic_dag = 0; ic_dag < det.size(); ++ic_dag) { // c_dag
-   if (tau < det.get_x(ic_dag).first) {
-    std::cout << "ERROR in det order in config " << config_id << std::endl;
-    print_det_sequence(det);
-    TRIQS_RUNTIME_ERROR << "Det ordering wrong: tau(ic_dag = " << ic_dag << ") = " << double(det.get_x(ic_dag).first);
-   }
-   tau = det.get_x(ic_dag).first;
-  }
-  tau = det.get_y(0).first;
-  for (auto ic = 0; ic < det.size(); ++ic) { // c
-   if (tau < det.get_y(ic).first) {
-    std::cout << "ERROR in det order in config " << config_id << std::endl;
-    print_det_sequence(det);
-    TRIQS_RUNTIME_ERROR << "Det ordering wrong: tau(ic     = " << ic << ") = " << double(det.get_y(ic).first);
-   }
-   tau = det.get_y(ic).first;
-  }
+inline void print_det_sequence(det_type const &det) {
+ int i;
+ for (i = 0; i < det.size(); ++i) { // c_dag
+  std::cout << " ic_dag = " << i << ": tau = " << det.get_x(i).first << std::endl;
  }
+ for (i = 0; i < det.size(); ++i) { // c
+  std::cout << " ic     = " << i << ": tau = " << det.get_y(i).first << std::endl;
+ }
+}
 
+// Check if dets are correctly ordered, otherwise complain
+inline void check_det_sequence(det_type const &det, int config_id) {
+ if (det.size() == 0) return;
+ auto tau = det.get_x(0).first;
+ for (auto ic_dag = 0; ic_dag < det.size(); ++ic_dag) { // c_dag
+  if (tau < det.get_x(ic_dag).first) {
+   std::cout << "ERROR in det order in config " << config_id << std::endl;
+   print_det_sequence(det);
+   TRIQS_RUNTIME_ERROR << "Det ordering wrong: tau(ic_dag = " << ic_dag << ") = " << double(det.get_x(ic_dag).first);
+  }
+  tau = det.get_x(ic_dag).first;
+ }
+ tau = det.get_y(0).first;
+ for (auto ic = 0; ic < det.size(); ++ic) { // c
+  if (tau < det.get_y(ic).first) {
+   std::cout << "ERROR in det order in config " << config_id << std::endl;
+   print_det_sequence(det);
+   TRIQS_RUNTIME_ERROR << "Det ordering wrong: tau(ic     = " << ic << ") = " << double(det.get_y(ic).first);
+  }
+  tau = det.get_y(ic).first;
+ }
+}
 }
 

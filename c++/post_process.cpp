@@ -4,7 +4,7 @@
 #include <triqs/hilbert_space/space_partition.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/operators/many_body_operator.hpp>
-#include "../c++/sorted_spaces.hpp"
+#include "../c++/atomic_problem.hpp"
 #include <iomanip>
 
 using triqs::utility::many_body_operator;
@@ -14,7 +14,7 @@ using triqs::hilbert_space::fundamental_operator_set;
 using triqs::hilbert_space::hilbert_space;
 using triqs::hilbert_space::state;
 using triqs::hilbert_space::imperative_operator;
-using cthyb::sorted_spaces;
+using cthyb::atomic_problem;
 using triqs::arrays::matrix;
 using triqs::h5::file;
 
@@ -54,14 +54,14 @@ post_process::post_process(block_matrix_t const& _density_matrix, many_body_oper
   std::cout << "Content of fops" << std::endl;
   for (auto const& x : fops) std::cout << x.index[0] << std::endl;
 
-  sosp = sorted_spaces{h_loc, fops};
+  h_diag = atomic_problem{h_loc, fops};
   full_hs = hilbert_space(fops);
-  n_blocks = sosp.n_subspaces();
+  n_blocks = h_diag.n_subspaces();
 
   std::cout << "Block energies " << std::endl;
   std::cout << std::setprecision(15);
-  for (int i = 0; i < sosp.get_eigensystems().size(); ++i)
-   std::cout << i << '\t' << sosp.get_block_dim(i) << '\t' << sosp.get_eigensystems()[i].eigenvalues[0] << std::endl;
+  for (int i = 0; i < h_diag.get_eigensystems().size(); ++i)
+   std::cout << i << '\t' << h_diag.get_block_dim(i) << '\t' << h_diag.get_eigensystems()[i].eigenvalues[0] << std::endl;
  }
 
 //--------------------------------
@@ -71,9 +71,9 @@ post_process::post_process(block_matrix_t const& _density_matrix, many_body_oper
   imperative_op_t imp(op, fops);
   block_matrix_t R(n_blocks);
   for (int bl = 0; bl < n_blocks; ++bl) {
-   R[bl] = sosp.make_op_matrix(imp, bl, bl).first;
+   R[bl] = h_diag.make_op_matrix(imp, bl, bl).first;
    // this is in the Fock basis. Now we turn it into the eigenbasis of H.
-   auto const& U = sosp.get_eigensystems()[bl].unitary_matrix;
+   auto const& U = h_diag.get_eigensystems()[bl].unitary_matrix;
    R[bl] = U.transpose() * R[bl] * U; // OR THE OPPOSITE ?
   }
   return R;
@@ -98,9 +98,9 @@ post_process::post_process(block_matrix_t const& _density_matrix, many_body_oper
  double post_process::average_projector(state_t const& st) const {
   // loop over all eigenvectors in all sub hilbert spaces
   // and compute the overlap with the state st
-  std::vector<double> overlap(sosp.space().size());
+  std::vector<double> overlap(h_diag.space().size());
   int index = 0;
-  for (auto& es : sosp.get_eigensystems()) {
+  for (auto& es : h_diag.get_eigensystems()) {
    for (auto& ev : es.eigenstates) {
     // promote ev to a state of the full hilbert_space
     state_t eigenstate(full_hs);
@@ -111,13 +111,13 @@ post_process::post_process(block_matrix_t const& _density_matrix, many_body_oper
     overlap[index++] = dot_product(st, eigenstate);
    }
   }
-  if (index != sosp.space().size()) TRIQS_RUNTIME_ERROR << "Internal error";
+  if (index != h_diag.space().size()) TRIQS_RUNTIME_ERROR << "Internal error";
   // now we close the sum. The density_matrix is Block matrix, need to loop over blocks
   // while overlap are in the full hilbert space
   double r = 0;
   for (int bl = 0; bl < n_blocks; ++bl) {
-   int dim = sosp.get_block_dim(bl);
-   int sh = sosp.get_first_eigstate_of_block(bl);
+   int dim = h_diag.get_block_dim(bl);
+   int sh = h_diag.get_first_eigstate_of_block(bl);
    for (int a = 0; a < dim; ++a)
     for (int b = 0; b < dim; ++b)   r += overlap[sh + a] * density_matrix[bl](a, b) * overlap[sh + b];
   }

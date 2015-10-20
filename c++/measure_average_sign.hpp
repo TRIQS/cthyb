@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include "qmc_data.hpp"
-#include <boost/mpi/collectives.hpp>
 
 namespace cthyb {
 
@@ -49,12 +48,10 @@ struct measure_average_sign {
  }
  // ---------------------------------------------
 
- void collect_results(boost::mpi::communicator const& c) {
+ void collect_results(triqs::mpi::communicator const& c) {
 
-  int64_t total_num;
-  mc_sign_type total_z;
-  boost::mpi::all_reduce(c, z, total_z, std::c14::plus<>());
-  boost::mpi::all_reduce(c, num, total_num, std::c14::plus<>());
+  int64_t total_num = mpi_all_reduce(num,c);
+  mc_sign_type total_z = mpi_all_reduce(z,c);
   average_sign = total_z / total_num;
 
  }

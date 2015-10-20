@@ -1,16 +1,16 @@
 #pragma once
+using many_body_op_t = triqs::operators::many_body_operator_real;
 
 namespace cthyb {
 
  using namespace triqs::operators;
- using real_operator_t = many_body_operator;
 
 // All the arguments of the solve function
 struct solve_parameters_t {
 
  /// Interacting part of the atomic Hamiltonian
  /// type: Operator
- real_operator_t h_int;
+ many_body_op_t h_int;
 
  /// Number of QMC cycles
  int n_cycles;
@@ -22,12 +22,14 @@ struct solve_parameters_t {
  /// Quantum numbers
  /// type: list(Operator)
  /// default: []
- std::vector<real_operator_t> quantum_numbers = std::vector<real_operator_t>{};
+ std::vector<many_body_op_t> quantum_numbers = std::vector<many_body_op_t>{};
 
  /// Length of a single QMC cycle
+ /// default: 50
  int length_cycle = 50;
 
  /// Number of cycles for thermalization
+ /// default: 5000
  int n_warmup_cycles = 5000;
 
  /// Seed for random number generator
@@ -39,6 +41,7 @@ struct solve_parameters_t {
  std::string random_name = "";
 
  /// Maximum runtime in seconds, use -1 to set infinite
+ /// default: -1 = infinite
  int max_time = -1;
 
  /// Verbosity level
@@ -79,7 +82,7 @@ struct solve_parameters_t {
 
  solve_parameters_t() {}
 
- solve_parameters_t(real_operator_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
+ solve_parameters_t(many_body_op_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
 
 };
 }

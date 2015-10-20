@@ -51,14 +51,15 @@ S.G0_iw << inverse(iOmega_n)
 
 S.solve(h_int=H, **p)
 
-obs = {'E':H,'N':N,'S2':S2,'Sz':Sz,'L2':L2,'Lz':Lz,'LS':LS}
-res = S.atomic_observables(obs)
+obs = {'E':H,'N':N,'S2':S2,'Sz':Sz,'L2':L2,'Lz':Lz} #,'LS':LS}
+res = dict ( (name, [item for v in quantum_number_eigenvalues(op,S.h_loc_diagonalization) for item in v ]) for (name,op) in obs.items())
 
 print ("%9s "*7) % ("Energy","N","S^2","S_z","L^2","L_z","L*S")
 print ("%9s "*7) % ("======","=","===","===","===","===","===")
 
-E_sorted_res = sorted(zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz'],res['LS']),
+E_sorted_res = sorted(zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz']),
+#E_sorted_res = sorted(zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz'],res['LS']),
                       cmp=lambda r1,r2: cmp(r1[0],r2[0]))
 
 filter_minus_0 = lambda x: 0 if (x<0 and abs(x)<1e-10) else x
-for v in E_sorted_res: print ("%9.4f "*7) % tuple(map(filter_minus_0,v))
+for v in E_sorted_res: print ("%9.4f "*6) % tuple(map(filter_minus_0,v))

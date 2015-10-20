@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./configuration.hpp"
-#include "./sorted_spaces.hpp"
+#include "./atom_diag.hpp"
 #include "./solve_parameters.hpp"
 #include "triqs/utility/rbt.hpp"
 #include "triqs/statistics/histograms.hpp"
@@ -44,8 +44,8 @@ class impurity_trace {
  using trace_t = double;
  // using trace_t = std::complex<double>; TODO
 
- // construct from the config, the diagonalization of the loc Hamiltoninan, and parameters
- impurity_trace(configuration& c, sorted_spaces const& sosp, solve_parameters_t const& p);
+ // construct from the config, the diagonalization of h_loc, and parameters
+ impurity_trace(configuration& c, atom_diag const& h_diag, solve_parameters_t const& p);
 
  ~impurity_trace() { cancel_insert_impl(); } // in case of an exception, we need to remove any trial nodes before cleaning the tree!
 
@@ -53,11 +53,11 @@ class impurity_trace {
 
  // ------- Configuration and h_loc data ----------------
 
- const configuration* config;              // config object does exist longer (temporally) than this object.
- const sorted_spaces* sosp;                // access to the diagonalization of h_loc
- const int n_orbitals = sosp->n_c_operators();   //
- const int n_blocks = sosp->n_blocks();       //
- const int n_eigstates = sosp->dim();   //
+ const configuration* config;                                  // config object does exist longer (temporally) than this object.
+ const atom_diag* h_diag;                                      // access to the diagonalization of h_loc
+ const int n_orbitals = h_diag->get_fops().size();             // total number of orbital flavours
+ const int n_blocks = h_diag->n_blocks();                      //
+ const int n_eigstates = h_diag->get_full_hilbert_space_dim(); // size of the hilbert space
 
  // ------- Trace data ----------------
 
@@ -106,22 +106,22 @@ class impurity_trace {
  private:
 
  // The dimension of block b
- int get_block_dim(int b) const { return sosp->get_block_dim(b);}
+ int get_block_dim(int b) const { return h_diag->get_block_dim(b);}
 
  // the i-th eigenvalue of the block b
- double get_block_eigenval(int b, int i) const { return sosp->get_eigenvalue(b,i); }
+ double get_block_eigenval(int b, int i) const { return h_diag->get_eigenvalue(b,i); }
 
  // the minimal eigenvalue of the block b
  double get_block_emin(int b) const { return get_block_eigenval(b, 0); }
 
  // node, block -> image of the block by n->op (the operator)
  int get_op_block_map(node n, int b) const {
-  return sosp->fundamental_operator_connect(n->op.dagger, n->op.linear_index, b);
+  return (n->op.dagger ? h_diag->cdag_connection(n->op.linear_index, b) : h_diag->c_connection(n->op.linear_index, b));
  }
 
  // the matrix of n->op, from block b to its image
  matrix<double> const& get_op_block_matrix(node n, int b) const {
-  return sosp->fundamental_operator_matrix(n->op.dagger, n->op.linear_index, b);
+  return (n->op.dagger ? h_diag->cdag_matrix(n->op.linear_index, b) : h_diag->c_matrix(n->op.linear_index, b));
  }
 
  // recursive function for tree traversal

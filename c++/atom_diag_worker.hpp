@@ -19,18 +19,26 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./qmc_data.hpp"
+#include "./atom_diag.hpp"
 
 namespace cthyb {
 
-struct measure_density_matrix {
- using mc_sign_type = double;
- qmc_data const& data;
- std::vector<matrix<double>> & block_dm; // density matrix of each block
- mc_sign_type z = 0;
+// Division of Hilbert Space into sub hilbert spaces, using either autopartitioning or quantum numbers.
+struct atom_diag_worker {
 
- measure_density_matrix(qmc_data const& data, std::vector<matrix<double>> & density_matrix);
- void accumulate(mc_sign_type s);
- void collect_results(triqs::mpi::communicator const& c);
+ atom_diag_worker(atom_diag* hdiag, int n_min = 0, int n_max = 10000) : hdiag(hdiag), n_min(n_min), n_max(n_max) {}
+
+ void autopartition();
+ void partition_with_qn(std::vector<many_body_op_t> const& qn_vector);
+
+ private:
+ atom_diag* hdiag;
+ int n_min, n_max;
+ 
+ // Create matrix of an operator acting from one subspace to another (returns matrix + number of its nonzero elements)
+ matrix<double> make_op_matrix(imperative_operator<hilbert_space> const& op, int from_sp, int to_sp) const;
+
+ void complete();
+ bool fock_state_filter(fock_state_t s);
 };
 }

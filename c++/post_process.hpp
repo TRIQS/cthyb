@@ -1,12 +1,12 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/state.hpp>
-#include "../c++/sorted_spaces.hpp"
+#include "../c++/atomic_problem.hpp"
 
 using triqs::utility::many_body_operator;
 using triqs::hilbert_space::fundamental_operator_set;
 using triqs::hilbert_space::hilbert_space;
 using triqs::hilbert_space::state;
-using cthyb::sorted_spaces;
+using cthyb::atomic_problem;
 using triqs::arrays::matrix;
 
 using block_matrix_t = std::vector<matrix<double>>;
@@ -16,14 +16,14 @@ class post_process {
 
  many_body_operator<double> h_loc;
  fundamental_operator_set fops;
- sorted_spaces sosp;
+ atomic_problem h_diag;
  int n_blocks;
  triqs::hilbert_space::hilbert_space full_hs;
  block_matrix_t density_matrix;
 
  public:
  /// From the density_matrix and the h_loc Hamiltonian
- post_process(block_matrix_t const& density_matrix, many_body_operator<double> const& h_loc);
+ post_process(block_matrix_t const& density_matrix, many_body_operator_real const& h_loc);
 
  /// From an operator op, make the block matrix of its elements between the blocks.
  block_matrix_t matrix_elements(many_body_operator<double> const& op) const;

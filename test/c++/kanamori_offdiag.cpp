@@ -5,7 +5,7 @@
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
-using triqs::operators::many_body_operator;
+using triqs::operators::many_body_operator_real;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
@@ -43,7 +43,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   assert(epsilon.size() == V.size());
 
   // Hamiltonian
-  many_body_operator H;
+  many_body_operator_real H;
   for(int o = 0; o < num_orbitals; ++o){
       H += U *n("up",o)*n("down",o);
   }
@@ -70,7 +70,7 @@ TEST(CtHyb, KanamoriOffDiag) {
 
 #ifdef QN
   // quantum numbers
-  std::vector<many_body_operator> qn;
+  std::vector<many_body_operator_real> qn;
   qn.resize(2);
   for(int o = 0; o < num_orbitals; ++o){
     qn[0] += n("up",o);

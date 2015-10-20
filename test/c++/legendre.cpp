@@ -5,7 +5,7 @@
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
-using triqs::operators::many_body_operator;
+using triqs::operators::many_body_operator_real;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
@@ -31,7 +31,7 @@ TEST(CtHyb, Legendre) {
   // define operators and QN
   auto H = U*n("up",0)*n("down",0) + h*n("up",0) - h*n("down",0);
   // quantum numbers
-  std::vector<many_body_operator> qn {n("up",0), n("down",0)};
+  std::vector<many_body_operator_real> qn {n("up",0), n("down",0)};
   // gf structure
   std::map<std::string, indices_type> gf_struct{{"up",{0}},{"down",{0}}};
 

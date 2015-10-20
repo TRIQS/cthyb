@@ -39,10 +39,10 @@ double double_max = std::numeric_limits<double>::max(); // easier to read
 namespace cthyb {
 
 // -------- Constructor --------
-impurity_trace::impurity_trace(configuration& c, sorted_spaces const& sosp_, solve_parameters_t const& p)
+impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve_parameters_t const& p)
    : config(&c),
-     sosp(&sosp_),
-     histo(p.performance_analysis ? new histograms_t(sosp_.n_blocks()) : nullptr),
+     h_diag(&h_diag_),
+     histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks()) : nullptr),
      density_matrix(n_blocks) {
 
  use_norm_as_weight = p.use_norm_as_weight;
@@ -155,7 +155,7 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   if ((first_dim(r.second) == 1) && (second_dim(r.second) == 1))
    M *= r.second(0, 0);
   else
-   M = M * r.second; // TODO could try to optimise lapack call?
+   M = M * r.second; // FIXME could try to optimise lapack call?
  }
 
  int b3 = b2;
@@ -234,7 +234,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  double lnorm_threshold = double_max - 100;
  std::vector<std::pair<double, int>> init_to_sort_lnorm_b, to_sort_lnorm_b; // pairs of lnorm and b to sort in order of bound
 
- if (tree_size == 0) return {sosp->partition_function(config->beta()), 1}; // simplifies later code
+ if (tree_size == 0) return {partition_function(*h_diag,config->beta()), 1}; // simplifies later code
 
  auto root = tree.get_root();
  // beta - tmax + tmin ! the tree is in REVERSE order
@@ -242,6 +242,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  double dtau_0 = double(tree.max_key());
  double dtau = dtau_beta + dtau_0;
 
+//FIXME
 // #ifdef EXT_DEBUG
 //  std::cout << " Trace computed ---------------" << std::endl;
 //  tree.print(std::cout);
@@ -398,7 +399,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  // else determine reweighting
  auto rw = full_trace / norm_trace;
  if (!std::isfinite(rw)) rw = 1;
- //if (!std::isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
+ //FIXME if (!std::isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
  return {norm_trace, rw};
  }
 

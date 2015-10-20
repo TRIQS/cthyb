@@ -31,16 +31,13 @@ using namespace triqs::utility;
 using mc_weight_type = double;
 using mc_sign_type = mc_weight_type;
 using indices_type = triqs::operators::indices_t;
-using many_body_op_type = triqs::operators::many_body_operator;
-
-using h_loc_diagonalization = sorted_spaces;
 
 class solver_core {
 
  double beta;
- h_loc_diagonalization hdiag;
+ atom_diag h_diag;
  std::map<std::string, indices_type> gf_struct;
- many_body_op_type _h_loc;                  // The local Hamiltonian = h_int + h0
+ many_body_op_t _h_loc;                  // The local Hamiltonian = h_int + h0
  block_gf<imfreq> _G0_iw;                   // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;       // Green's function containers: imaginary-time Green's functions
  block_gf<imtime,matrix_real_valued> _G_tau_real;
@@ -60,10 +57,10 @@ class solver_core {
  void solve(solve_parameters_t const & p);
 
  /// The local Hamiltonian of the problem : H_loc used in the last call to solve.
- many_body_op_type const & h_loc() const { return _h_loc; }
+ many_body_op_t const & h_loc() const { return _h_loc; }
 
  /// Set of parameters used in the last call to solve
- solve_parameters_t get_last_solve_parameters() const {return _last_solve_parameters;}
+ solve_parameters_t last_solve_parameters() const {return _last_solve_parameters;}
 
  /// G0(iw) in imaginary frequencies
  block_gf_view<imfreq> G0_iw() { return _G0_iw; }
@@ -78,13 +75,13 @@ class solver_core {
  block_gf_view<legendre> G_l() { return _G_l; }
 
  /// Atomic G(tau) in imaginary time
- block_gf_view<imtime> atomic_gf() const { return hdiag.atomic_gf(beta,gf_struct,_G_tau[0].mesh().size()); }
+ block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _G_tau[0].mesh().size()); }
 
  /// Density matrix
  std::vector<matrix<double>> const & density_matrix() const { return _density_matrix;}
 
- /// Access to the Hloc diagonalization
- h_loc_diagonalization const & get_h_loc_diagonalization() const { return hdiag;}
+ /// Diagonalization of h_loc
+ atom_diag const & h_loc_diagonalization() const { return h_diag;}
 
  /// Monte Carlo average sign
  mc_sign_type average_sign() const { return _average_sign; }

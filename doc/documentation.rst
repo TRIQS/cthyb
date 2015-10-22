@@ -24,6 +24,7 @@ User guide
    guide/aim
    guide/settingparameters
    guide/random
+   guide/slater_five_band
 
 Reference manual
 ----------------

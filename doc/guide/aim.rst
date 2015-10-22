@@ -5,11 +5,11 @@ An example: the Anderson impurity model
 
 To illustrate how the CTQMC solver works in practice, we show the example of a
 one-orbital Anderson impurity embedded in a flat (Wilson) conduction bath. The
-local Hamiltonian of this problem is simply:
+interacting part of the local Hamiltonian of this problem is simply:
 
 .. math::
 
-  \mathcal{H}_\mathrm{loc} = U n_\uparrow n_\downarrow,
+  \mathcal{H}_\mathrm{int} = U n_\uparrow n_\downarrow,
 
 and the non-interacting Green's function is:
 

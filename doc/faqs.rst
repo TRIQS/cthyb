@@ -4,8 +4,8 @@
 Frequently-asked questions
 ==========================
 
-Q: Why is my code running so slow?
-----------------------------------
+Q: Why is my code running so slowly?
+------------------------------------
 
 A: If you see massive performance problems (slow down by huge factors like
 100), then you might have an issue with OpenMP when using MKL for instance.
@@ -26,3 +26,12 @@ A: Simply add this to your script::
         log["triqs_hash"] = version.triqs_hash
         log["cthyb_hash"] = version.cthyb_hash
         log["script"] = open(sys.argv[0]).read() # read myself !
+
+Q: Why does my data look so noisy?
+----------------------------------
+
+A: If you are running a parallel calculation, ensure that you are using a
+different random seed on each core, i.e., that it is a function of the MPI
+rank::
+
+    param['random_seed'] = 34788 + 928374 * mpi.rank()   # Default random seed

@@ -38,7 +38,7 @@ using namespace triqs::hilbert_space;
 class sorted_spaces {
 
  using indices_t = fundamental_operator_set::indices_t;
- using many_body_op_t = triqs::utility::many_body_operator<double>;
+ using many_body_op_t = triqs::operators::many_body_operator;
 
  public:
  struct eigensystem_t {
@@ -92,7 +92,7 @@ class sorted_spaces {
  double partition_function(double beta) const;
 
  /// The atomic green function
- block_gf<imtime> atomic_gf(double beta, std::map<std::string,many_body_op_t::indices_t> const& gf_struct, int n_tau) const;
+ block_gf<imtime> atomic_gf(double beta, std::map<std::string, indices_t> const& gf_struct, int n_tau) const;
 
  /// The atomic observables
  std::map<std::string,std::vector<double>> atomic_observables(std::map<std::string,many_body_op_t> const& obs_map) const;

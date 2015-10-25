@@ -4,12 +4,12 @@
 #include <triqs/gfs.hpp>
 
 using namespace cthyb;
-using triqs::utility::many_body_operator;
-using triqs::utility::c;
-using triqs::utility::c_dag;
-using triqs::utility::n;
+using triqs::operators::many_body_operator;
+using triqs::operators::c;
+using triqs::operators::c_dag;
+using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::utility::many_body_operator<double>::indices_t;
+using indices_type = triqs::operators::indices_t;
 
 int main(int argc, char* argv[]) {
 
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
   // define operators and QN
   auto H = U*n("up",0)*n("down",0) + h*n("up",0) - h*n("down",0);
   // quantum numbers
-  std::vector<many_body_operator<double>> qn {n("up",0), n("down",0)};
+  std::vector<many_body_operator> qn {n("up",0), n("down",0)};
   // gf structure
   std::map<std::string, indices_type> gf_struct{{"up",{0}},{"down",{0}}};
 

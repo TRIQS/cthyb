@@ -4,12 +4,12 @@
 #include <triqs/gfs.hpp>
 
 using namespace cthyb;
-using triqs::utility::many_body_operator;
-using triqs::utility::c;
-using triqs::utility::c_dag;
-using triqs::utility::n;
+using triqs::operators::many_body_operator;
+using triqs::operators::c;
+using triqs::operators::c_dag;
+using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::utility::many_body_operator<double>::indices_t;
+using indices_type = triqs::operators::indices_t;
 
 int main(int argc, char* argv[]) {
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   assert(epsilon.size() == V.size());
 
   // Hamiltonian
-  many_body_operator<double> H;
+  many_body_operator H;
   for(int o = 0; o < num_orbitals; ++o){
       H += U *n("up",o)*n("down",o);
   }
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef QN
   // quantum numbers
-  std::vector<many_body_operator<double>> qn;
+  std::vector<many_body_operator> qn;
   qn.resize(2);
   for(int o = 0; o < num_orbitals; ++o){
     qn[0] += n("up",o);

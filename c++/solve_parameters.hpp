@@ -2,8 +2,8 @@
 
 namespace cthyb {
 
- using namespace triqs::utility;
- using real_operator_t = many_body_operator<double>;
+ using namespace triqs::operators;
+ using real_operator_t = many_body_operator;
 
 // All the arguments of the solve function
 struct solve_parameters_t {

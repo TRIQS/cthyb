@@ -19,7 +19,7 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/tuple.hpp>
 using namespace triqs::gfs;
-using triqs::utility::many_body_operator;
+using triqs::operators::many_body_operator;
 using namespace cthyb;
 #include "./converters.hxx"
 """)

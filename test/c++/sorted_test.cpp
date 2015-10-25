@@ -4,9 +4,9 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 using namespace cthyb;
-using triqs::utility::many_body_operator;
-using triqs::utility::c;
-using triqs::utility::c_dag;
+using triqs::operators::many_body_operator;
+using triqs::operators::c;
+using triqs::operators::c_dag;
 
 int main() {
 
@@ -18,7 +18,7 @@ int main() {
   auto H = U * n_up * n_down + h*(n_up - n_down);
 
   // put quantum numbers in a vector
-  std::vector<many_body_operator<double>> qn_list{n_up, n_down};
+  std::vector<many_body_operator> qn_list{n_up, n_down};
 
   // chose the fundamental operator set
   fundamental_operator_set fops;

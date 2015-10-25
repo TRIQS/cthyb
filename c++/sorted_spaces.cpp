@@ -356,7 +356,7 @@ double sorted_spaces::partition_function(double beta) const {
 
 // -----------------------------------------------------------------
 
-block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,many_body_op_t::indices_t> const& gf_struct, int n_tau) const {
+block_gf<imtime> sorted_spaces::atomic_gf(double beta, std::map<std::string,indices_t> const& gf_struct, int n_tau) const {
 
 
  double z = partition_function(beta);

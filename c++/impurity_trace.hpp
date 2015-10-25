@@ -27,6 +27,8 @@
 //#define PRINT_CONF_DEBUG
 
 using namespace triqs;
+using triqs::utility::rb_tree;
+using triqs::utility::rbt_insert_error;
 
 namespace cthyb {
 

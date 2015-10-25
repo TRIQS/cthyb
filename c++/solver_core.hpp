@@ -30,8 +30,8 @@ namespace cthyb {
 using namespace triqs::utility;
 using mc_weight_type = double;
 using mc_sign_type = mc_weight_type;
-using indices_type = many_body_operator<double>::indices_t;
-using many_body_op_type = triqs::utility::many_body_operator<double>;
+using indices_type = triqs::operators::indices_t;
+using many_body_op_type = triqs::operators::many_body_operator;
 
 class solver_core {
 

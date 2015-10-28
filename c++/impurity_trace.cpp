@@ -353,7 +353,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
    }
    norm_trace_sq += norm_trace_sq_partial;
    // internal check
-   if ((std::abs(trace_partial) > 1.0000001 * std::sqrt(norm_trace_sq_partial) * get_block_dim(block_index)))
+   if (std::abs(trace_partial) - 1.0000001 * std::sqrt(norm_trace_sq_partial) * get_block_dim(block_index) > 1.e-15)
     TRIQS_RUNTIME_ERROR << "|trace| > dim * norm" << trace_partial << " " << std::sqrt(norm_trace_sq_partial) << "  " << trace_abs;
    if (std::abs(trace_partial - trace(mat)) > 1.e-15) TRIQS_RUNTIME_ERROR << "Internal error : trace and density mismatch";
   }

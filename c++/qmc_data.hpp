@@ -43,10 +43,10 @@ struct qmc_data {
 
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {
-  gf_const_view<imtime> delta_block;
+  gf<imtime, matrix_real_valued, no_tail> delta_block;
 
   // Could remove all of this, the const prevent = anyway ...
-  delta_block_adaptor(gf_const_view<imtime> const &delta_block) : delta_block(delta_block) {}
+  delta_block_adaptor(gf<imtime, matrix_real_valued, no_tail> delta_block) : delta_block(std::move(delta_block)) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
@@ -76,7 +76,10 @@ struct qmc_data {
       n_inner(n_inner) {
   trace = imp_trace.estimate();
   dets.clear();
-  for (auto const & bl : delta.mesh()) dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
+  for (auto const &bl : delta.mesh()) {
+   if (!is_gf_real(delta[bl])) TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
+   dets.emplace_back(delta_block_adaptor(real(delta[bl])), 100);
+  }
  }
 
  qmc_data(qmc_data const &) = default;

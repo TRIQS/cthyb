@@ -45,7 +45,7 @@ S.solve(h_int=H, **p)
 # Calculation is done. Now save a few things
 if mpi.is_master_node():
     with HDFArchive("single_site_bethe.output.h5",'w') as Results:
-        Results["Sigma_iw"] = S.Sigma_iw
+        Results["Sigma_iw"] = S.Sigma_iw.positive_freq_view()
         Results["G_tau"] = S.G_tau
-        Results["G_iw"] = S.G_iw
+        Results["G_iw"] = S.G_iw.positive_freq_view()
         Results["G_l"] = S.G_l

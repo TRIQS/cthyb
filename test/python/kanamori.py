@@ -5,6 +5,7 @@ from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
+from pytriqs.utility.comparison_tests import *
 
 # H_loc parameters
 beta = 10.0
@@ -53,6 +54,11 @@ p["move_double"] = False
 S.solve(h_int=H, **p)
 
 if mpi.is_master_node():
-    with HDFArchive("kanamori.output.h5",'w') as Results:
+    with HDFArchive("kanamori.out.h5",'w') as Results:
         Results["G_tau"] = S.G_tau
         Results["G_leg"] = S.G_l
+
+if mpi.is_master_node():
+    with HDFArchive("kanamori.ref.h5",'r') as Results:
+        assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
+        assert_block_gfs_are_close(Results["G_leg"], S.G_l)

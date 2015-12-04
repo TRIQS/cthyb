@@ -1,8 +1,10 @@
 find_package(TriqsTest)
 
-FILE(COPY DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# Copy h5 files to binary dir
+FILE(GLOB all_h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-triqs_add_test_txt(atomic_observables)
-triqs_add_test_hdf(kanamori " -d 1e-5" )
-triqs_add_test_hdf(single_site_bethe " -d 1e-5" )
-triqs_add_test_hdf(slater " -d 1e-5" )
+triqs_add_python_test(single_site_bethe)
+triqs_add_python_test(atomic_observables)
+triqs_add_python_test(kanamori)
+triqs_add_python_test(slater)

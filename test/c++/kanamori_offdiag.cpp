@@ -2,6 +2,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
 using triqs::operators::many_body_operator;
@@ -11,12 +12,11 @@ using triqs::operators::n;
 using namespace triqs::gfs;
 using indices_type = triqs::operators::indices_t;
 
-int main(int argc, char* argv[]) {
+TEST(CtHyb, KanamoriOffDiag) {
 
   std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
-  triqs::mpi::environment env(argc, argv);
   int rank = triqs::mpi::communicator().rank();
 
   // Parameters
@@ -139,11 +139,19 @@ int main(int argc, char* argv[]) {
 #endif
 
   if(rank==0){
-    triqs::h5::file G_file(filename + ".output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file(filename + ".out.h5",H5F_ACC_TRUNC);
     h5_write(G_file,"G_up",solver.G_tau()[0]);
     h5_write(G_file,"G_down",solver.G_tau()[1]);
   }
 
-  return 0;
+  gf<imtime> g;
+  if(rank==0){
+    triqs::h5::file G_file(filename + ".ref.h5",H5F_ACC_RDONLY);
+    h5_read(G_file, "G_up", g);
+    EXPECT_GF_NEAR(g, solver.G_tau()[0]);
+    h5_read(G_file, "G_down", g);
+    EXPECT_GF_NEAR(g, solver.G_tau()[1]);
+  }
 
 }
+MAKE_MAIN;

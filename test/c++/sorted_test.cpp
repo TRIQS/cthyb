@@ -1,4 +1,5 @@
 #include <triqs/utility/first_include.hpp>
+#include <triqs/test_tools/arrays.hpp>
 #include "./sorted_spaces.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
@@ -8,7 +9,7 @@ using triqs::operators::many_body_operator;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 
-int main() {
+TEST(CtHyb, Sorted) {
 
   // define operators
   double U = 2.0;
@@ -29,5 +30,5 @@ int main() {
   sorted_spaces ss(H, qn_list, fops);
   std::cout << ss << std::endl;
 
-  return 0;
 }
+MAKE_MAIN;

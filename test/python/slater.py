@@ -6,6 +6,7 @@ from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.gf.local import *
+from pytriqs.utility.comparison_tests import *
 
 beta = 100.0
 # H_loc parameters
@@ -52,6 +53,11 @@ for name, g0 in S.G0_iw:
 S.solve(h_int=H, **p)
 
 if mpi.is_master_node():
-    with HDFArchive("slater.output.h5",'w') as Results:
+    with HDFArchive("slater.out.h5",'w') as Results:
         Results["G_tau"] = S.G_tau
         Results["G_leg"] = S.G_l
+
+if mpi.is_master_node():
+    with HDFArchive("slater.ref.h5",'r') as Results:
+        assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
+        assert_block_gfs_are_close(Results["G_leg"], S.G_l)

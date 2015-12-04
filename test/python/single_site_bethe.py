@@ -3,6 +3,7 @@ from pytriqs.gf.local import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
+from pytriqs.utility.comparison_tests import *
 
 #  Example of DMFT single site solution with CTQMC
 
@@ -44,8 +45,16 @@ S.solve(h_int=H, **p)
 
 # Calculation is done. Now save a few things
 if mpi.is_master_node():
-    with HDFArchive("single_site_bethe.output.h5",'w') as Results:
-        Results["Sigma_iw"] = S.Sigma_iw.positive_freq_view()
+    with HDFArchive("single_site_bethe.out.h5",'w') as Results:
+        Results["Sigma_iw"] = S.Sigma_iw
         Results["G_tau"] = S.G_tau
-        Results["G_iw"] = S.G_iw.positive_freq_view()
+        Results["G_iw"] = S.G_iw
         Results["G_l"] = S.G_l
+
+# Check against reference
+if mpi.is_master_node():
+    with HDFArchive("single_site_bethe.ref.h5",'r') as Results:
+        assert_block_gfs_are_close(Results["Sigma_iw"], S.Sigma_iw)
+        assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
+        assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
+        assert_block_gfs_are_close(Results["G_l"], S.G_l)

@@ -1,4 +1,5 @@
 #include <triqs/utility/rbt.hpp>
+#include <triqs/test_tools/arrays.hpp>
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -11,7 +12,8 @@ struct int_ {
   int_(int i = {}) : i(i) {}
 };
 
-int main() {
+TEST(CtHyb, RBT) {
+
  triqs::utility::rb_tree<int,int_> tree;
 
  auto plot = [](triqs::utility::rb_tree<int,int_> & tree) {
@@ -58,4 +60,9 @@ int main() {
  plot(tree);
 
  plot(tree_copy);
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

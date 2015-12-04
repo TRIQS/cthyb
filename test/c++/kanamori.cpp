@@ -2,6 +2,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
 using triqs::operators::many_body_operator;
@@ -11,12 +12,11 @@ using triqs::operators::n;
 using namespace triqs::gfs;
 using indices_type = triqs::operators::indices_t;
 
-int main(int argc, char* argv[]) {
+TEST(CtHyb, Kanamori) {
 
   std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
-  triqs::mpi::environment env(argc, argv);
   int rank = triqs::mpi::communicator().rank();
 
   // Parameters
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   if(rank==0){
-    triqs::h5::file G_file(filename + ".output.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file(filename + ".out.h5",H5F_ACC_TRUNC);
     for(int o = 0; o < num_orbitals; ++o) {
       std::stringstream bup; bup << "G_up-" << o;
       h5_write(G_file, bup.str(), solver.G_tau()[o]);
@@ -117,6 +117,18 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  return 0;
+  gf<imtime> g;
+  if(rank==0){
+    triqs::h5::file G_file(filename + ".ref.h5",H5F_ACC_RDONLY);
+    for(int o = 0; o < num_orbitals; ++o) {
+      std::stringstream bup; bup << "G_up-" << o;
+      h5_read(G_file, bup.str(), g);
+      EXPECT_GF_NEAR(g, solver.G_tau()[o]);
+      std::stringstream bdown; bdown << "G_down-" << o;
+      h5_read(G_file, bdown.str(), g);
+      EXPECT_GF_NEAR(g, solver.G_tau()[num_orbitals+o]);
+    }
+  }
 
 }
+MAKE_MAIN;

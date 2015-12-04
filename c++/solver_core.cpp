@@ -54,6 +54,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
   std::vector<gf<imtime>> g_tau_blocks;
   std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
+  std::vector<gf<imtime,matrix_real_valued>> g_tau_real_blocks; // Local real quantities for accumulation
 
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);
@@ -67,12 +68,14 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
     g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
     g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices});
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
+    g_tau_real_blocks.push_back(gf<imtime,matrix_real_valued>{{beta, Fermion, n_tau}, {n, n}, {}});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
   _G_tau = make_block_gf(block_names, g_tau_blocks);
   _G_l = make_block_gf(block_names, g_l_blocks);
   _Delta_tau = make_block_gf(block_names, delta_tau_blocks);
+  _G_tau_real = make_block_gf(block_names, g_tau_real_blocks);
 
 }
 
@@ -208,7 +211,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
-    qmc.add_measure(measure_g(block, _G_tau[block], data), "G measure (" + g_names[block] + ")");
+    qmc.add_measure(measure_g(block, _G_tau_real[block], data), "G measure (" + g_names[block] + ")");
    }
   }
   if (params.measure_g_l) {
@@ -239,6 +242,11 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Run! The empty (starting) configuration has sign = 1
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
+
+  // Copy real G_tau back to complex quantity
+  if (params.measure_g_tau) {
+   _G_tau = _G_tau_real;
+  }
 
   // Get the average sign from the MC if not using norm as weight + reweighting
   if (!params.use_norm_as_weight) _average_sign = qmc.average_sign();

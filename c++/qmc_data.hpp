@@ -43,10 +43,10 @@ struct qmc_data {
 
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {
-  gf<imtime, matrix_real_valued, no_tail> delta_block;
+  gf<imtime,matrix_real_valued> delta_block;
 
   // Could remove all of this, the const prevent = anyway ...
-  delta_block_adaptor(gf<imtime, matrix_real_valued, no_tail> delta_block) : delta_block(std::move(delta_block)) {}
+  delta_block_adaptor(gf<imtime,matrix_real_valued> delta_block) : delta_block(std::move(delta_block)) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment

@@ -47,7 +47,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   Key key;          // key
   bool color;       // color of parent link
   int N;            // subtree count
-  node left, right; // links to left and right subtrees
+  node left = NULL, right = NULL; // links to left and right subtrees
   bool modified, delete_flag;
 
   node_t(Key const& key, Value const& val, bool color, int N)
@@ -144,6 +144,8 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
 
  rb_tree() : root(nullptr) {}
  ~rb_tree() { rec_free(root); }
+ //rb_tree(rb_tree const& n) =delete;
+ // not tested enough
  rb_tree(rb_tree const& n) : compare(n.compare) {
   if(n.root) root = new node_t(*n.root);
  }

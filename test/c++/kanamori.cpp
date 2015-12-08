@@ -108,25 +108,22 @@ TEST(CtHyb, Kanamori) {
 #endif
 
   if(rank==0){
-    triqs::h5::file G_file(filename + ".out.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file(filename + ".out.h5",'w');
     for(int o = 0; o < num_orbitals; ++o) {
-      std::stringstream bup; bup << "G_up-" << o;
-      h5_write(G_file, bup.str(), solver.G_tau()[o]);
-      std::stringstream bdown; bdown << "G_down-" << o;
-      h5_write(G_file, bdown.str(), solver.G_tau()[num_orbitals+o]);
+      h5_write(G_file, "G_up-" + std::to_string(o), solver.G_tau()[o]);
+      h5_write(G_file, "G_down-" + std::to_string(o), solver.G_tau()[num_orbitals+o]);
     }
   }
 
   gf<imtime> g;
   if(rank==0){
-    triqs::h5::file G_file(filename + ".ref.h5",H5F_ACC_RDONLY);
+   double precision = 1.e-9;
+    triqs::h5::file G_file(filename + ".ref.h5",'r');
     for(int o = 0; o < num_orbitals; ++o) {
-      std::stringstream bup; bup << "G_up-" << o;
-      h5_read(G_file, bup.str(), g);
-      EXPECT_GF_NEAR(g, solver.G_tau()[o]);
-      std::stringstream bdown; bdown << "G_down-" << o;
-      h5_read(G_file, bdown.str(), g);
-      EXPECT_GF_NEAR(g, solver.G_tau()[num_orbitals+o]);
+      h5_read(G_file, "G_up-" + std::to_string(o), g);
+      EXPECT_GF_NEAR(g, solver.G_tau()[o],precision);
+      h5_read(G_file, "G_down-" + std::to_string(o), g);
+      EXPECT_GF_NEAR(g, solver.G_tau()[num_orbitals+o], precision);
     }
   }
 

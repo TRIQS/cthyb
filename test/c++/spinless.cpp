@@ -81,13 +81,13 @@ TEST(CtHyb, Spinless) {
 #endif
 
   if(rank==0){
-    triqs::h5::file G_file(filename + ".out.h5",H5F_ACC_TRUNC);
+    triqs::h5::file G_file(filename + ".out.h5",'w');
     h5_write(G_file,"G_tau",solver.G_tau()[0]);
   }
 
   gf<imtime> g;
   if(rank==0){
-    triqs::h5::file G_file(filename + ".ref.h5",H5F_ACC_RDONLY);
+    triqs::h5::file G_file(filename + ".ref.h5",'r');
     h5_read(G_file, "G_tau", g);
     EXPECT_GF_NEAR(g, solver.G_tau()[0]);
   }

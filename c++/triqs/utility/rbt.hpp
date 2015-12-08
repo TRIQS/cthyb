@@ -47,7 +47,7 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
   Key key;          // key
   bool color;       // color of parent link
   int N;            // subtree count
-  node left = NULL, right = NULL; // links to left and right subtrees
+  node left = nullptr, right = nullptr; // links to left and right subtrees
   bool modified, delete_flag;
 
   node_t(Key const& key, Value const& val, bool color, int N)

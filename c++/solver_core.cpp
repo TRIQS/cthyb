@@ -68,7 +68,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
     g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
     g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices});
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-    g_tau_real_blocks.push_back(gf<imtime,matrix_real_valued>{{beta, Fermion, n_tau}, {n, n}, {}});
+    g_tau_real_blocks.push_back(gf<imtime,matrix_real_valued>{{beta, Fermion, n_tau}, {n, n}});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);

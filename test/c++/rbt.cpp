@@ -69,4 +69,3 @@ int main() {
  for (auto n : tree_copy) std::cout  <<  n->key << std::endl;
 
 }
-

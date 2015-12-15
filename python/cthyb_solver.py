@@ -49,6 +49,8 @@ class Solver(SolverCore):
                      Two required parameters are
                      * h_int (Operator object): the local Hamiltonian of the impurity problem to be solved,
                      * n_cycles (int): number of measurements to be made.
+        perform_post_proc : boolean, optional, default = True
+                            Should G_iw and Sigma_iw be calculated?
         perform_tail_fit : boolean, optional, default = False
                            Should the tails of Sigma_iw and G_iw be fitted?
         fit_max_moment : integer, optional, default = 3

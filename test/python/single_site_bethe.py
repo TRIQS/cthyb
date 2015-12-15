@@ -58,3 +58,8 @@ if mpi.is_master_node():
         assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
         assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
         assert_block_gfs_are_close(Results["G_l"], S.G_l)
+
+# Redondant with previous check
+from pytriqs.utility.h5diff import h5diff
+h5diff("single_site_bethe.out.h5","single_site_bethe.ref.h5")
+

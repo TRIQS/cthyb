@@ -24,6 +24,9 @@
 #include <triqs/utility/exceptions.hpp>
 #include <limits>
 #include <iostream>
+#include <stack>
+#include <vector>
+#include "./rbt_iterators.hpp"
 
 namespace triqs{ namespace utility {
 
@@ -76,13 +79,21 @@ template <typename Key, typename Value, typename Compare = std::less<Key>> class
    right = nullptr;
    Value::reset(std::forward<T>(x)...);
   }
- }; 
+ };
+
+ using iterator = detail::rbt_iterator<rb_tree, node>;
+ using const_iterator = detail::rbt_iterator<const rb_tree, const node>;
+ iterator begin() noexcept { return {this, false}; }
+ iterator end() noexcept { return {this, true}; }
+ const_iterator begin() const noexcept { return {this, false}; }
+ const_iterator end() const noexcept { return {this, true}; }
+ const_iterator cbegin() const noexcept { return {this, false}; }
+ const_iterator cend() const noexcept { return {this, true}; }
 
  /*************************************************************************
-  *  Private functions
-  *************************************************************************/
- private:
- node root; // root of the BST
+ *  Private functions
+ *************************************************************************/
+private : node root; // root of the BST
 
  template <typename Fnt> void apply_recursive(Fnt const& f, node n) const {
   if (n->left) apply_recursive(f, n->left);

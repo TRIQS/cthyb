@@ -117,13 +117,12 @@ TEST(CtHyb, Kanamori) {
 
   gf<imtime> g;
   if(rank==0){
-   double precision = 1.e-9;
     triqs::h5::file G_file(filename + ".ref.h5",'r');
     for(int o = 0; o < num_orbitals; ++o) {
       h5_read(G_file, "G_up-" + std::to_string(o), g);
-      EXPECT_GF_NEAR(g, solver.G_tau()[o],precision);
+      EXPECT_GF_NEAR(g, solver.G_tau()[o]);
       h5_read(G_file, "G_down-" + std::to_string(o), g);
-      EXPECT_GF_NEAR(g, solver.G_tau()[num_orbitals+o], precision);
+      EXPECT_GF_NEAR(g, solver.G_tau()[num_orbitals+o]);
     }
   }
 

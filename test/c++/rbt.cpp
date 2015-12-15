@@ -12,7 +12,7 @@ struct int_ {
   int_(int i = {}) : i(i) {}
 };
 
-TEST(CtHyb, RBT) {
+int main() { 
 
  triqs::utility::rb_tree<int,int_> tree;
 
@@ -60,9 +60,13 @@ TEST(CtHyb, RBT) {
  plot(tree);
 
  plot(tree_copy);
+
+ // -----
+ auto all_nodes_in_order = flatten(tree_copy);
+ for (auto n : all_nodes_in_order) std::cout << n->key << std::endl;
+
+ std::cout  << "---"<< std::endl;
+ for (auto n : tree_copy) std::cout  <<  n->key << std::endl;
+
 }
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

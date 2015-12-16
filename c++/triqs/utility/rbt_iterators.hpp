@@ -29,7 +29,7 @@ namespace utility {
  using get_node_t = std14::conditional_t<std::is_const<RBT>::value, typename RBT::node const, typename RBT::node>;
 
  // flatten the tree in ascending order
- template <typename RBT> std::vector<get_node_t<RBT>> flatten(RBT& tree) {
+ template <typename RBT> std::vector<get_node_t<RBT>> flatten2(RBT& tree) {
   using node_t = get_node_t<RBT>;
   std::vector<node_t> R;
   R.reserve(tree.size());
@@ -46,6 +46,14 @@ namespace utility {
    R.push_back(n);
    n = n->right;
   }
+  return R;
+ }
+
+ template <typename RBT> std::vector<get_node_t<RBT>> flatten(RBT& tree) {
+  using node_t = get_node_t<RBT>;
+  std::vector<node_t> R;
+  R.reserve(tree.size());
+  foreach(tree, [&R](node_t n) { R.push_back(n); });
   return R;
  }
 

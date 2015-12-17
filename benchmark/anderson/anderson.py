@@ -13,7 +13,7 @@ mkind = lambda spin: (spin,0) if use_blocks else ("tot",spin)
 beta = 10.0
 U = 2.0
 mu = 1.0
-h = 0.0
+h = 0.1
 V = 1.0
 epsilon = 2.3
 
@@ -32,6 +32,8 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50000
 p["n_cycles"] = 5000000
+p["measure_density_matrix"] = True
+p["use_norm_as_weight"] = True
 
 results_file_name = "anderson"
 if use_blocks: results_file_name += ".block"
@@ -60,7 +62,7 @@ S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 mpi.report("Preparing the hybridization function...")
 
-# Set hybridization function    
+# Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)
 delta_w << (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
 for spin in spin_names:
@@ -72,7 +74,12 @@ mpi.report("Running the simulation...")
 # Solve the problem
 S.solve(h_int=H, **p)
 
-# Save the results  
+# Save the results
 if mpi.is_master_node():
+    static_observables = {'Nup' : n(*mkind("up")), 'Ndn' : n(*mkind("dn")), 'unity' : Operator(1.0)}
+    dm = S.density_matrix
+    for oname in static_observables.keys():
+        print oname, trace_rho_op(dm,static_observables[oname],S.h_loc_diagonalization)
+
     with HDFArchive(results_file_name,'w') as Results:
         Results['G_tau'] = S.G_tau

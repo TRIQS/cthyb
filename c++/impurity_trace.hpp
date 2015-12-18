@@ -70,6 +70,9 @@ class impurity_trace {
   matrix<double> mat;
  };
  arrays::vector<bool_and_matrix> density_matrix; // density_matrix, by block, with a bool to say if it has been recomputed
+ arrays::vector<bool_and_matrix> atomic_rho;     // atomic density matrix (non-normalized)
+ double atomic_z;                                // atomic partition function
+ double atomic_norm;                             // Frobenius norm of atomic_rho
 
  public:
  arrays::vector<bool_and_matrix> const& get_density_matrix() const { return density_matrix; }

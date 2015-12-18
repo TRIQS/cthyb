@@ -12,6 +12,24 @@ double partition_function(atom_diag const& atom, double beta) {
 
 // -----------------------------------------------------------------
 
+block_matrix_t atomic_density_matrix(atom_diag const& atom, double beta) {
+ double z = partition_function(atom, beta);
+ int n_blocks = atom.n_blocks();
+ block_matrix_t dm(n_blocks);
+ for (int bl = 0; bl < n_blocks; ++bl) {
+  int bl_size = atom.get_block_dim(bl);
+  dm[bl] = matrix<h_scalar_t>(bl_size,bl_size);
+  for(int u = 0; u < bl_size; ++u) {
+   for(int v = 0; v < bl_size; ++v) {
+    dm[bl](u, v) = (u == v) ? std::exp(-beta * atom.get_eigenvalue(bl, u)) / z : 0;
+   }
+  }
+ }
+ return dm;
+}
+
+// -----------------------------------------------------------------
+
 block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::string, indices_t> const& gf_struct,
                                       int n_tau, std::vector<std::pair<int, int>> const& excluded_states) {
 
@@ -61,7 +79,7 @@ block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::str
 
 h_scalar_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom) {
  h_scalar_t result = 0;
- if (atom.n_blocks() != density_matrix.size()) TRIQS_RUNTIME_ERROR << "trace_rho_op : size mismatch : nmber of blocks differ";
+ if (atom.n_blocks() != density_matrix.size()) TRIQS_RUNTIME_ERROR << "trace_rho_op : size mismatch : number of blocks differ";
  for (int bl = 0; bl < atom.n_blocks(); ++bl) {
   if (atom.get_block_dim(bl) != first_dim(density_matrix[bl]))
    TRIQS_RUNTIME_ERROR << "trace_rho_op : size mismatch : size of block " << bl << " differ";

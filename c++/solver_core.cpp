@@ -168,7 +168,10 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << h_diag;
 
   // If one is interested only in the atomic problem
-  if (params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
+  if (params.n_warmup_cycles == 0 && params.n_cycles == 0) {
+   if(params.measure_density_matrix) _density_matrix = atomic_density_matrix(h_diag, beta);
+   return;
+  }
 
   // Initialise Monte Carlo quantities
   qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);

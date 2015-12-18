@@ -56,7 +56,7 @@ impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve
  if(use_norm_as_weight) {
   auto rho = atomic_density_matrix(h_diag_, config->beta());
   for (int bl = 0; bl < n_blocks; ++bl) {
-   atomic_rho[bl] = bool_and_matrix{true, rho[bl]};
+   atomic_rho[bl] = bool_and_matrix{true, rho[bl] * atomic_z};
    for(int u = 0; u < get_block_dim(bl); ++u) {
     auto xx = rho[bl](u, u);
     atomic_norm += xx * xx;

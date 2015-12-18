@@ -21,6 +21,8 @@
 #include "./measure_density_matrix.hpp"
 #include <triqs/mpi/vector.hpp>
 
+#include <iomanip>
+
 namespace cthyb {
 
 measure_density_matrix::measure_density_matrix(qmc_data const& data, std::vector<matrix<double>>& density_matrix)
@@ -67,7 +69,8 @@ void measure_density_matrix::collect_results(triqs::mpi::communicator const& c) 
  double tr = 0;
  for (auto& B : block_dm2) tr += trace(B);
  if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
- if (std::abs(tr - 1) > 1.e-13) std::cerr << "Warning :: Trace of the density matrix is " << tr << " instead of 1";
+ if (std::abs(tr - 1) > 1.e-13) std::cerr << "Warning :: Trace of the density matrix is " <<
+                                std::setprecision(13) << tr << std::setprecision(6) << " instead of 1" << std::endl;
 
 }
 }

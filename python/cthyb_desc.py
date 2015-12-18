@@ -197,6 +197,8 @@ module.add_class(c)
 
 module.add_function ("double partition_function (cthyb::atom_diag atom, double beta)", doc = "The atomic partition function")
 
+module.add_function ("block_matrix_t atomic_density_matrix (cthyb::atom_diag atom, double beta)", doc = "The atomic density matrix")
+
 module.add_function ("block_gf<imtime> atomic_gf (cthyb::atom_diag atom, double beta, std::map<std::string,indices_t> indices_list, int n_tau, std::vector<std::pair<int,int>> excluded_states = {})", doc = "The atomic green function, possibly with excluded states (default none)")
 
 module.add_function ("h_scalar_t trace_rho_op (block_matrix_t density_matrix, many_body_op_t op, cthyb::atom_diag atom)", doc = "Trace (op * density_matrix)")

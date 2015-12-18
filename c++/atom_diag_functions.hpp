@@ -26,6 +26,9 @@ namespace cthyb {
 /// The atomic partition function
 double partition_function(atom_diag const& atom, double beta);
 
+/// The atomic density matrix
+block_matrix_t atomic_density_matrix(atom_diag const& atom, double beta);
+
 /// The atomic green function, possibly with excluded states (default none)
 block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::string, indices_t> const& indices_list, int n_tau,
                            std::vector<std::pair<int, int>> const& excluded_states = {});

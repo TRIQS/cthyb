@@ -43,11 +43,27 @@ impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve
    : config(&c),
      h_diag(&h_diag_),
      histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks()) : nullptr),
+     atomic_z(partition_function(*h_diag, config->beta())),
+     atomic_norm(0),
+     atomic_rho(n_blocks),
      density_matrix(n_blocks) {
 
  use_norm_as_weight = p.use_norm_as_weight;
  // init density_matrix block + bool
  for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix<double>(get_block_dim(bl), get_block_dim(bl))};
+
+ // prepare atomic_rho and atomic_norm
+ if(use_norm_as_weight) {
+  auto rho = atomic_density_matrix(h_diag_, config->beta());
+  for (int bl = 0; bl < n_blocks; ++bl) {
+   atomic_rho[bl] = bool_and_matrix{true, rho[bl]};
+   for(int u = 0; u < get_block_dim(bl); ++u) {
+    auto xx = rho[bl](u, u);
+    atomic_norm += xx * xx;
+   }
+  }
+  atomic_norm = std::sqrt(atomic_norm);
+ }
 }
 
 //====== Recursive operations ======
@@ -234,7 +250,13 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  double lnorm_threshold = double_max - 100;
  std::vector<std::pair<double, int>> init_to_sort_lnorm_b, to_sort_lnorm_b; // pairs of lnorm and b to sort in order of bound
 
- if (tree_size == 0) return {partition_function(*h_diag,config->beta()), 1}; // simplifies later code
+ // simplifies later code
+ if (tree_size == 0) {
+  if(use_norm_as_weight) {
+   density_matrix = atomic_rho;
+   return {atomic_norm, atomic_z / atomic_norm};
+  } else return {atomic_z, 1};
+ }
 
  auto root = tree.get_root();
  // beta - tmax + tmin ! the tree is in REVERSE order

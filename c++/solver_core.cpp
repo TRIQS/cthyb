@@ -81,7 +81,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
 
 /// -------------------------------------------------------------------------------------------
 
-void solver_core::solve(solve_parameters_t const & params) { 
+void solver_core::solve(solve_parameters_t const & params) {
 
   _last_solve_parameters = params;
 
@@ -114,9 +114,9 @@ void solver_core::solve(solve_parameters_t const & params) {
   // Calculate imfreq quantities
   auto G0_iw_inv = map([](gf_const_view<imfreq> x){return triqs::gfs::inverse(x);}, _G0_iw);
   auto Delta_iw = G0_iw_inv;
-  
+
   _h_loc = params.h_int;
-  
+
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
@@ -138,7 +138,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   for (auto const & bl: gf_struct) {
     Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
     Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
-    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]); 
+    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
     b++;
   }
 
@@ -167,7 +167,10 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << h_diag;
 
   // If one is interested only in the atomic problem
-  if (params.n_warmup_cycles == 0 && params.n_cycles == 0) return;
+  if (params.n_warmup_cycles == 0 && params.n_cycles == 0) {
+   if(params.measure_density_matrix) _density_matrix = atomic_density_matrix(h_diag, beta);
+   return;
+  }
 
   // Initialise Monte Carlo quantities
   qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);
@@ -207,7 +210,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
   if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.performance_analysis), "Shift one operator", 1.0);
- 
+
   // Measurements
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();

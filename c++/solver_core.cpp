@@ -239,9 +239,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
   }
 
-  if (params.use_norm_as_weight) {
-   qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign when using the norm as weight");
-  }
+  qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
 
   // Run! The empty (starting) configuration has sign = 1
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
@@ -251,9 +249,6 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.measure_g_tau) {
    _G_tau = _G_tau_real;
   }
-
-  // Get the average sign from the MC if not using norm as weight + reweighting
-  if (!params.use_norm_as_weight) _average_sign = qmc.average_sign();
 
 }
 

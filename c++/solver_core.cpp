@@ -179,10 +179,10 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Moves
   using move_set_type = mc_tools::move_set<mc_sign_type>;
-  move_set_type inserts(qmc.rng());
-  move_set_type removes(qmc.rng());
-  move_set_type double_inserts(qmc.rng());
-  move_set_type double_removes(qmc.rng());
+  move_set_type inserts(qmc.get_rng());
+  move_set_type removes(qmc.get_rng());
+  move_set_type double_inserts(qmc.get_rng());
+  move_set_type double_removes(qmc.get_rng());
 
   auto& delta_names = _Delta_tau.domain().names();
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
@@ -190,14 +190,14 @@ void solver_core::solve(solve_parameters_t const & params) {
    auto const& block_name = delta_names[block];
    auto f = params.proposal_prob.find(block_name);
    double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
-   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
+   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
-     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.performance_analysis),
+     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
                  "Insert Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
-     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.performance_analysis),
+     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
                  "Remove Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
     }
    }
@@ -209,8 +209,8 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_inserts, "Insert four operators", 1.0);
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
-  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.performance_analysis), "Shift one operator", 1.0);
-
+  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), params.performance_analysis), "Shift one operator", 1.0);
+ 
   // Measurements
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();

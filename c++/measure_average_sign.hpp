@@ -50,9 +50,9 @@ struct measure_average_sign {
 
  void collect_results(triqs::mpi::communicator const& c) {
 
-  int64_t total_num = mpi_all_reduce(num,c);
-  mc_sign_type total_z = mpi_all_reduce(z,c);
-  average_sign = total_z / total_num;
+  num = mpi_all_reduce(num,c);
+  z = mpi_all_reduce(z,c);
+  average_sign = z / num;
 
  }
 };

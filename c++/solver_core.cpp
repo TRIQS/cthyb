@@ -245,6 +245,8 @@ void solver_core::solve(solve_parameters_t const & params) {
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
+  std::cout << "Average sign: " << _average_sign << std::endl;
+
   // Copy real G_tau back to complex G_tau
   if (params.measure_g_tau) {
    _G_tau = _G_tau_real;

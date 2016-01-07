@@ -40,7 +40,7 @@ struct measure_average_sign {
 
  void accumulate(mc_sign_type s) {
 
-  sign += s * std::abs(data.atomic_reweighting);
+  sign += s * data.atomic_reweighting;
   z += std::abs(data.atomic_reweighting);
  }
  // ---------------------------------------------

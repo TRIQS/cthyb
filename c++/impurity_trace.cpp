@@ -283,7 +283,8 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
   // This guarantees that the density matrix is blockwise diagonal (otherwise the code will have thrown an error).
   if (measure_density_matrix) {
    if ((block_lnorm_pair.first != b) && (block_lnorm_pair.first != -1))
-    TRIQS_RUNTIME_ERROR << " CCC has a non diagonal block" << b << " " << block_lnorm_pair.first << "\n" << *config;
+    TRIQS_RUNTIME_ERROR << "The product of atomic operators has a matrix element in the off-diagonal block ("
+                        << b << "," << block_lnorm_pair.first << ")\n" << *config;
   }
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.

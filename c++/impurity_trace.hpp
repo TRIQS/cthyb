@@ -38,6 +38,7 @@ namespace cthyb {
 class impurity_trace {
 
  bool use_norm_as_weight;
+ bool measure_density_matrix;
 
  public:
 

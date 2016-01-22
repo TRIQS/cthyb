@@ -180,10 +180,10 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Moves
   using move_set_type = mc_tools::move_set<mc_sign_type>;
-  move_set_type inserts(qmc.rng());
-  move_set_type removes(qmc.rng());
-  move_set_type double_inserts(qmc.rng());
-  move_set_type double_removes(qmc.rng());
+  move_set_type inserts(qmc.get_rng());
+  move_set_type removes(qmc.get_rng());
+  move_set_type double_inserts(qmc.get_rng());
+  move_set_type double_removes(qmc.get_rng());
 
   auto& delta_names = _Delta_tau.domain().names();
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
@@ -191,14 +191,14 @@ void solver_core::solve(solve_parameters_t const & params) {
    auto const& block_name = delta_names[block];
    auto f = params.proposal_prob.find(block_name);
    double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
-   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
+   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
-     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.performance_analysis),
+     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
                  "Insert Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
-     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.rng(), params.performance_analysis),
+     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
                  "Remove Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
     }
    }
@@ -210,14 +210,15 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_inserts, "Insert four operators", 1.0);
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
-  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.rng(), params.performance_analysis), "Shift one operator", 1.0);
+
+  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), params.performance_analysis), "Shift one operator", 1.0);
 
   if (params.move_global.size()) {
-   move_set_type global(qmc.rng());
+   move_set_type global(qmc.get_rng());
    for(auto const& mv : params.move_global) {
     auto const& name = mv.first;
     auto const& substitutions = mv.second;
-    global.add(move_global(name,substitutions,data,qmc.rng()),name,1.0);
+    global.add(move_global(name,substitutions,data,qmc.get_rng()),name,1.0);
    }
    qmc.add_move(global,"Global moves",params.move_global_prob);
   }
@@ -249,21 +250,18 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
   }
 
-  if (params.use_norm_as_weight) {
-   qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign when using the norm as weight");
-  }
+  qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
 
   // Run! The empty (starting) configuration has sign = 1
   _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
+  std::cout << "Average sign: " << _average_sign << std::endl;
+
   // Copy real G_tau back to complex G_tau
   if (params.measure_g_tau) {
    _G_tau = _G_tau_real;
   }
-
-  // Get the average sign from the MC if not using norm as weight + reweighting
-  if (!params.use_norm_as_weight) _average_sign = qmc.average_sign();
 
 }
 

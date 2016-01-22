@@ -35,3 +35,10 @@ different random seed on each core, i.e., that it is a function of the MPI
 rank::
 
     param['random_seed'] = 34788 + 928374 * mpi.rank()   # Default random seed
+
+Q: How do I use the segment picture?
+------------------------------------
+
+A: This cthyb code is based on the matrix formulation and does not include
+optimisations for the segment picture (applicable only in cases with
+density-density interactions only).

@@ -63,16 +63,12 @@ struct measure_g {
 
  void collect_results(triqs::mpi::communicator const& c) {
 
-  int64_t total_num;
-  mc_sign_type total_z;
-  total_z = mpi_all_reduce(z,c);
-  total_num = mpi_all_reduce(num,c);
-  average_sign = total_z / total_num;
+  z = mpi_all_reduce(z,c);
   // Multiply first and last bins by 2 to account for full bins
   g_tau[0] = g_tau[0] * 2;
   g_tau[g_tau.mesh().size() - 1] = g_tau[g_tau.mesh().size() - 1] * 2;
   g_tau = mpi_all_reduce(g_tau, c);
-  g_tau = g_tau / (-real(total_z) * data.config.beta() * g_tau.mesh().delta());
+  g_tau = g_tau / (-real(z) * data.config.beta() * g_tau.mesh().delta());
   // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
   g_tau.singularity()(1) = 1.0;
  }

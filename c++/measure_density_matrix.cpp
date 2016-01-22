@@ -57,17 +57,15 @@ void measure_density_matrix::accumulate(mc_sign_type s) {
 
 void measure_density_matrix::collect_results(triqs::mpi::communicator const& c) {
 
- mc_sign_type total_z = mpi_all_reduce(z, c);
- auto block_dm2 = mpi_all_reduce(block_dm, c);
-
- for (auto& b : block_dm2) b = b / real(total_z);
- block_dm = block_dm2;
+ z = mpi_all_reduce(z, c);
+ block_dm = mpi_all_reduce(block_dm, c);
+ for (auto& b : block_dm) b = b / real(z);
 
  if (c.rank() != 0) return;
 
  // Check: the trace of the density matrix must be 1 by construction
  double tr = 0;
- for (auto& B : block_dm2) tr += trace(B);
+ for (auto& b : block_dm) tr += trace(b);
  if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
  if (std::abs(tr - 1) > 1.e-13) std::cerr << "Warning :: Trace of the density matrix is " <<
                                 std::setprecision(13) << tr << std::setprecision(6) << " instead of 1" << std::endl;

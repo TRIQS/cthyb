@@ -28,31 +28,28 @@ struct measure_average_sign {
 
  qmc_data const& data;
  mc_sign_type & average_sign;
- mc_sign_type z;
- int64_t num;
+ mc_sign_type sign, z;
 
  measure_average_sign(qmc_data const& data, double & average_sign)
     : data(data), average_sign(average_sign) {
   average_sign = 1.0;
   z = 0;
-  num = 0;
+  sign = 0;
  }
  // --------------------
 
  void accumulate(mc_sign_type s) {
 
-  num += 1;
-  s *= data.atomic_reweighting;
-  z += s;
-
+  sign += s * data.atomic_reweighting;
+  z += std::abs(data.atomic_reweighting);
  }
  // ---------------------------------------------
 
  void collect_results(triqs::mpi::communicator const& c) {
 
-  int64_t total_num = mpi_all_reduce(num,c);
-  mc_sign_type total_z = mpi_all_reduce(z,c);
-  average_sign = total_z / total_num;
+  z = mpi_all_reduce(z,c);
+  sign = mpi_all_reduce(sign,c);
+  average_sign = sign / z;
 
  }
 };

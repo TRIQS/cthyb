@@ -38,7 +38,6 @@ struct measure_g_legendre {
  double beta;
  mc_sign_type z;
  int64_t num;
- mc_sign_type average_sign;
 
  measure_g_legendre(int a_level, gf_view<legendre> g_l, qmc_data const& data)
     : data(data), g_l(g_l), a_level(a_level), beta(data.config.beta()) {
@@ -69,12 +68,9 @@ struct measure_g_legendre {
 
  void collect_results(triqs::mpi::communicator const& c) {
 
-  mc_sign_type total_z = mpi_all_reduce(z,c);
-  int64_t total_num= mpi_all_reduce(num, c);
-  average_sign = total_z / total_num;
-
+  z = mpi_all_reduce(z,c);
   g_l = mpi_all_reduce(g_l, c);
-  for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(total_z)*beta)) * g_l[l];
+  for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(z)*beta)) * g_l[l];
 
   arrays::matrix<double> id(get_target_shape(g_l));
   id() = 1.0;

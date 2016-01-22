@@ -49,6 +49,7 @@ impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve
      density_matrix(n_blocks) {
 
  use_norm_as_weight = p.use_norm_as_weight;
+ measure_density_matrix = p.measure_density_matrix;
  // init density_matrix block + bool
  for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix<double>(get_block_dim(bl), get_block_dim(bl))};
 
@@ -280,9 +281,10 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
 
   // Check that the final block is the same as the initial block or -1, indicating structural cancellation
   // This guarantees that the density matrix is blockwise diagonal (otherwise the code will have thrown an error).
-  if (use_norm_as_weight) {
+  if (measure_density_matrix) {
    if ((block_lnorm_pair.first != b) && (block_lnorm_pair.first != -1))
-    TRIQS_RUNTIME_ERROR << " CCC has a non diagonal block" << b << " " << block_lnorm_pair.first << "\n" << *config;
+    TRIQS_RUNTIME_ERROR << "The product of atomic operators has a matrix element in the off-diagonal block ("
+                        << b << "," << block_lnorm_pair.first << ")\n" << *config;
   }
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.

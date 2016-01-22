@@ -7,18 +7,18 @@ Seth, I. Krivenko, M. Ferrero and O. Parcollet. It is based on a hybridization
 expansion of the partition function as described in references [#ctqmc1]_,
 [#ctqmc2]_ with implementation improvements suggested in [#ctqmc3]_.
 
-License
-=======
-
-The solver is published under the `GNU General Public License, version 3
-<http://www.gnu.org/licenses/gpl.html>`_.
-
 Citation
 ========
 
 This application is a part of our scientific work and we would appreciate if
 projects using it will include a citation to the following relevant papers.  In
 order to help you, we provide a BibTeX entry for each paper.
+
+Companion paper to the CTHYB application:
+
+.. [#cthyb] `P. Seth, I. Krivenko, M. Ferrero, and O. Parcollet, Comp. Phys. Comm. 200, 274–284 (2016) <http://dx.doi.org/10.1016/j.cpc.2015.10.023>`_ (:download:`bibtex file <cthyb.bib>`)
+
+Papers discussing the algorithm:
 
 .. [#ctqmc1] `P. Werner, A. Comanac, L. de' Medici, M. Troyer, and A. J. Millis, Phys. Rev. Lett. 97, 076405 (2006) <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_ (:download:`bibtex file <basicnotions/ctqmc1.bib>`)
 .. [#ctqmc2] `P. Werner and A. J. Millis, Phys. Rev. B 74, 155107 (2006) <http://link.aps.org/doi/10.1103/PhysRevB.74.155107>`_ (:download:`bibtex file <basicnotions/ctqmc2.bib>`)
@@ -27,6 +27,14 @@ order to help you, we provide a BibTeX entry for each paper.
 If you find the application useful, giving proper reference and citation is
 indeed a simple way to help convincing funding sources that such projects are
 useful for our community and should be supported.
+
+License
+=======
+
+The CTHYB solver is published under the `GNU General Public License, version 3
+<http://www.gnu.org/licenses/gpl.html>`_.
+
+Note that it *implies* that applications using CTHYB must also be GPL.
 
 Disclaimer
 ==========

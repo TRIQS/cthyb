@@ -17,7 +17,7 @@ namespace arrays {
    for (int a = 0; a < d; ++a) {
     T tmp = 0;
     for (int b = 0; b < d; ++b) tmp += M[bl](a, b) * psi2(block_start + b);
-    r += psi1(block_start + a) * tmp;
+    r += triqs::utility::conj(psi1(block_start + a)) * tmp;
    }
    block_start += d;
   }

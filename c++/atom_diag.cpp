@@ -20,6 +20,8 @@
  ******************************************************************************/
 #include "./atom_diag.hpp"
 #include "./atom_diag_worker.hpp"
+#include <triqs/hilbert_space/state.hpp>
+#include <triqs/hilbert_space/imperative_operator.hpp>
 #include <sstream>
 #include <bitset>
 #include <algorithm>

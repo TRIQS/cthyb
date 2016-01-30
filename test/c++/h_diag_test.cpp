@@ -4,9 +4,9 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 using namespace cthyb;
-using triqs::operators::many_body_operator_real;
 using triqs::operators::c;
 using triqs::operators::c_dag;
+using many_body_operator_real = triqs::operators::many_body_operator_generic<double>;
 
 int main() {
 

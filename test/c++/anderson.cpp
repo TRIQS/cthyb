@@ -5,7 +5,6 @@
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
-using triqs::operators::many_body_operator_real;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
@@ -44,7 +43,7 @@ TEST(CtHyb, Anderson) {
 
 #ifdef QN
   // Quantum numbers
-  std::vector<many_body_operator_real> qn{n_up, n_down};
+  std::vector<many_body_op_t> qn{n_up, n_down};
 #endif
 
   // Construct CTQMC solver

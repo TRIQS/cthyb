@@ -35,7 +35,7 @@ block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::str
 
 
 /// Trace (op * density_matrix)
-h_scalar_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom);
+double trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom);
 
 /// Act with operator op on state st
 full_hilbert_space_state_t act(many_body_op_t const& op, full_hilbert_space_state_t const& st, atom_diag const& atom);

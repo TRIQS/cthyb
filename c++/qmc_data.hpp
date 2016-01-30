@@ -39,21 +39,18 @@ struct qmc_data {
  mutable impurity_trace imp_trace;            // Calculator of the trace
  std::vector<int> n_inner;
 
- using trace_t = impurity_trace::trace_t;
-
  /// This callable object adapts the Delta function for the call of the det.
  struct delta_block_adaptor {
-  gf<imtime, matrix_real_valued> delta_block;
+  gf<imtime, delta_target_t> delta_block; // make a copy. Needed in the real case anyway.
 
-  // Could remove all of this, the const prevent = anyway ...
-  delta_block_adaptor(gf<imtime, matrix_real_valued> delta_block) : delta_block(std::move(delta_block)) {}
+  delta_block_adaptor(gf<imtime, delta_target_t> delta_block) : delta_block(std::move(delta_block)) {}
   delta_block_adaptor(delta_block_adaptor const &) = default;
   delta_block_adaptor(delta_block_adaptor &&) = default;
   delta_block_adaptor &operator=(delta_block_adaptor const &) = delete; // forbid assignment
   delta_block_adaptor &operator=(delta_block_adaptor &&a) = default;
 
-  double operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
-   double res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
+  det_scalar_t operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
+   det_scalar_t res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
    return (x.first >= y.first ? res : -res); // x,y first are time_pt, wrapping is automatic in the - operation, but need to
                                              // compute the sign
   }
@@ -61,8 +58,8 @@ struct qmc_data {
 
  std::vector<det_manip::det_manip<delta_block_adaptor>> dets; // The determinants
  int current_sign, old_sign;                                  // Permutation prefactor
- double atomic_weight;                                        // The current value of the trace or norm
- trace_t atomic_reweighting;                                  // The current value of the reweighting
+ h_scalar_t atomic_weight;                                    // The current value of the trace or norm
+ h_scalar_t atomic_reweighting;                               // The current value of the reweighting
 
  // Construction
  qmc_data(double beta, solve_parameters_t const &p, atom_diag const &h_diag, std::map<std::pair<int, int>, int> linindex,

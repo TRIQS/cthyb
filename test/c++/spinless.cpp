@@ -5,7 +5,6 @@
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
-using triqs::operators::many_body_operator_real;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
@@ -32,7 +31,7 @@ TEST(CtHyb, Spinless) {
 
 #ifdef QN
   // quantum numbers
-  std::vector<many_body_operator_real> qn{n("tot",0)+n("tot",1)};
+  std::vector<many_body_op_t> qn{n("tot",0)+n("tot",1)};
 #endif
 
   // Construct CTQMC solver

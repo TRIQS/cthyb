@@ -112,7 +112,7 @@ c.add_property(name = "atomic_gf",
                doc = """Atomic G(tau) in imaginary time """)
 
 c.add_property(name = "density_matrix",
-               getter = cfunction("std::vector<matrix<double>> density_matrix ()"),
+               getter = cfunction("std::vector<matrix_t> density_matrix ()"),
                doc = """Density matrix """)
 
 c.add_property(name = "h_loc_diagonalization",
@@ -120,7 +120,7 @@ c.add_property(name = "h_loc_diagonalization",
                doc = """Diagonalization of h_loc """)
 
 c.add_property(name = "average_sign",
-               getter = cfunction("mc_sign_type average_sign ()"),
+               getter = cfunction("mc_weight_t average_sign ()"),
                doc = """Monte Carlo average sign """)
 
 c.add_property(name = "solve_status",
@@ -223,7 +223,7 @@ module.add_function ("block_matrix_t atomic_density_matrix (cthyb::atom_diag ato
 
 module.add_function ("block_gf<imtime> atomic_gf (cthyb::atom_diag atom, double beta, std::map<std::string,indices_t> indices_list, int n_tau, std::vector<std::pair<int,int>> excluded_states = {})", doc = """The atomic green function, possibly with excluded states (default none)""")
 
-module.add_function ("h_scalar_t trace_rho_op (block_matrix_t density_matrix, many_body_op_t op, cthyb::atom_diag atom)", doc = """Trace (op * density_matrix)""")
+module.add_function ("double trace_rho_op (block_matrix_t density_matrix, many_body_op_t op, cthyb::atom_diag atom)", doc = "Trace (op * density_matrix)")
 
 module.add_function ("full_hilbert_space_state_t act (many_body_op_t op, full_hilbert_space_state_t st, cthyb::atom_diag atom)", doc = """Act with operator op on state st""")
 

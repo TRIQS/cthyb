@@ -36,7 +36,7 @@ struct atom_diag_worker {
  int n_min, n_max;
  
  // Create matrix of an operator acting from one subspace to another (returns matrix + number of its nonzero elements)
- matrix<double> make_op_matrix(imperative_operator<hilbert_space> const& op, int from_sp, int to_sp) const;
+ matrix_t make_op_matrix(imperative_operator<hilbert_space, h_scalar_t> const& op, int from_sp, int to_sp) const;
 
  void complete();
  bool fock_state_filter(fock_state_t s);

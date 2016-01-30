@@ -33,8 +33,7 @@ class move_insert_c_cdag {
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  double delta_tau;
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
  op_desc op1, op2;
 
@@ -56,7 +55,7 @@ class move_insert_c_cdag {
 
  //---------------------
 
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -115,7 +114,7 @@ class move_insert_c_cdag {
   auto det_ratio = det.try_insert(num_c_dag, num_c, {tau1, op1.inner_index}, {tau2, op2.inner_index});
 
   // proposition probability
-  double t_ratio = std::pow(block_size * config.beta() / double(det.size() + 1), 2);
+  mc_weight_t t_ratio = std::pow(block_size * config.beta() / double(det.size() + 1), 2);
 
   // For quick abandon
   double random_number = rng.preview();
@@ -131,11 +130,11 @@ class move_insert_c_cdag {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio))
+  if (!isfinite(atomic_weight_ratio))
    TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " "
                        << new_atomic_weight / data.atomic_weight << " in config " << config.get_id();
 
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Atomic ratio: " << atomic_weight_ratio << '\t';
@@ -145,13 +144,13 @@ class move_insert_c_cdag {
   std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight<< std::endl;
 #endif
 
-  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio : "<< t_ratio << " in config " << config.get_id();
+  if (!isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio : "<< t_ratio << " in config " << config.get_id();
   return p * t_ratio;
  }
 
  //----------------
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   // insert in the tree
   data.imp_trace.confirm_insert();

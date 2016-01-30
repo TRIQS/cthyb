@@ -54,7 +54,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
   std::vector<gf<imtime>> g_tau_blocks;
   std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
-  std::vector<gf<imtime,matrix_real_valued>> g_tau_real_blocks; // Local real quantities for accumulation
+  std::vector<gf<imtime, delta_target_t>> g_tau_real_blocks; //  Local real (or complex if complex mode) quantities for accumulation 
 
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);
@@ -66,9 +66,9 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
 
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});
     g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices});
+    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices}); // FIXME: cast is ugly
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-    g_tau_real_blocks.push_back(gf<imtime,matrix_real_valued>{{beta, Fermion, n_tau}, {n, n}});
+    g_tau_real_blocks.push_back(gf<imtime, delta_target_t>{{beta, Fermion, n_tau}, {n, n}});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
@@ -124,7 +124,7 @@ void solver_core::solve(solve_parameters_t const & params) {
     for (auto const & a1: bl.second) {
       int n2 = 0;
       for (auto const & a2: bl.second) {
-        _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag<double>(bl.first,a1)*c<double>(bl.first,a2);
+       _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1, n2).real() * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
         n2++;
       }
       n1++;
@@ -174,11 +174,11 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Initialise Monte Carlo quantities
   qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);
-  auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
+  auto qmc = mc_tools::mc_generic<mc_weight_t>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
                                                 params.random_seed, params.verbosity);
 
   // Moves
-  using move_set_type = mc_tools::move_set<mc_sign_type>;
+  using move_set_type = mc_tools::move_set<mc_weight_t>;
   move_set_type inserts(qmc.get_rng());
   move_set_type removes(qmc.get_rng());
   move_set_type double_inserts(qmc.get_rng());
@@ -215,7 +215,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
   if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), params.performance_analysis), "Shift one operator", 1.0);
- 
+
   // Measurements
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();

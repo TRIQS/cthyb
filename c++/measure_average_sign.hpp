@@ -24,13 +24,12 @@
 namespace cthyb {
 
 struct measure_average_sign {
- using mc_sign_type = double;
 
  qmc_data const& data;
- mc_sign_type & average_sign;
- mc_sign_type sign, z;
+ mc_weight_t & average_sign;
+ mc_weight_t sign, z;
 
- measure_average_sign(qmc_data const& data, double & average_sign)
+ measure_average_sign(qmc_data const& data, mc_weight_t & average_sign)
     : data(data), average_sign(average_sign) {
   average_sign = 1.0;
   z = 0;
@@ -38,7 +37,7 @@ struct measure_average_sign {
  }
  // --------------------
 
- void accumulate(mc_sign_type s) {
+ void accumulate(mc_weight_t s) {
 
   sign += s * data.atomic_reweighting;
   z += std::abs(data.atomic_reweighting);

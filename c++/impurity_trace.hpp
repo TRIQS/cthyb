@@ -42,15 +42,12 @@ class impurity_trace {
 
  public:
 
- using trace_t = double;
- // using trace_t = std::complex<double>; TODO
-
  // construct from the config, the diagonalization of h_loc, and parameters
  impurity_trace(configuration& c, atom_diag const& h_diag, solve_parameters_t const& p);
 
  ~impurity_trace() { cancel_insert_impl(); } // in case of an exception, we need to remove any trial nodes before cleaning the tree!
 
- std::pair<double, trace_t> compute(double p_yee = -1, double u_yee = 0);
+ std::pair<h_scalar_t, h_scalar_t> compute(double p_yee = -1, double u_yee = 0);
 
  // ------- Configuration and h_loc data ----------------
 
@@ -66,7 +63,7 @@ class impurity_trace {
 
  struct bool_and_matrix {
   bool is_valid;
-  matrix<double> mat;
+  matrix<h_scalar_t> mat;
  };
  arrays::vector<bool_and_matrix> density_matrix; // density_matrix, by block, with a bool to say if it has been recomputed
  arrays::vector<bool_and_matrix> atomic_rho;     // atomic density matrix (non-normalized)
@@ -83,7 +80,7 @@ class impurity_trace {
  struct cache_t {
   double dtau_l = 0, dtau_r = 0; // difference in tau of this node and left and right sub-trees
   std::vector<int> block_table; // number of blocks limited to 2^15
-  std::vector<arrays::matrix<double>> matrices; // partial product of operator/time evolution matrices
+  std::vector<arrays::matrix<h_scalar_t>> matrices; // partial product of operator/time evolution matrices
   std::vector<double> matrix_lnorms; // -ln(norm(matrix))
   std::vector<bool> matrix_norm_valid; // is the norm of the matrix still valid?
   cache_t(int n_blocks) : block_table(n_blocks), matrix_lnorms(n_blocks), matrices(n_blocks), matrix_norm_valid(n_blocks) {}
@@ -124,14 +121,14 @@ class impurity_trace {
  }
 
  // the matrix of n->op, from block b to its image
- matrix<double> const& get_op_block_matrix(node n, int b) const {
+ matrix<h_scalar_t> const& get_op_block_matrix(node n, int b) const {
   return (n->op.dagger ? h_diag->cdag_matrix(n->op.linear_index, b) : h_diag->c_matrix(n->op.linear_index, b));
  }
 
  // recursive function for tree traversal
  int compute_block_table(node n, int b);
  std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true);
- std::pair<int, arrays::matrix<double>> compute_matrix(node n, int b);
+ std::pair<int, matrix_t> compute_matrix(node n, int b);
 
  void update_cache_impl(node n);
  void update_dtau(node n);
@@ -142,7 +139,7 @@ class impurity_trace {
  void check_cache_integrity(bool print = false);
  void check_cache_integrity_one_node(node n, bool print);
  int check_one_block_table_linear(node n, int b, bool print); // compare block table to that of a linear method (ie. no tree)
- matrix<double> check_one_block_matrix_linear(node n, int b, bool print); // compare matrix to that of a linear method (ie. no tree)
+ matrix_t check_one_block_matrix_linear(node n, int b, bool print); // compare matrix to that of a linear method (ie. no tree)
 
  /*************************************************************************
   *  Ordinary binary search tree (BST) insertion of the trial nodes

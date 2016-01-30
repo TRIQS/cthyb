@@ -32,8 +32,7 @@ class move_shift_operator {
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
  double delta_tau;
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau_old, tau_new;
  op_desc op_old, op_new;
  using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
@@ -56,7 +55,7 @@ class move_shift_operator {
 
  //---------------------
 
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -204,10 +203,10 @@ class move_shift_operator {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
+  if (!isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
 
   // --- Compute the weight
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -221,7 +220,7 @@ class move_shift_operator {
 
  //----------------
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   // Update the tree
   data.imp_trace.confirm_shift();

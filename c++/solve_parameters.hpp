@@ -1,5 +1,5 @@
 #pragma once
-using many_body_op_t = triqs::operators::many_body_operator_real;
+#include "./config.hpp"
 
 namespace cthyb {
 

@@ -10,9 +10,6 @@ project(cthyb CXX)
 set(CMAKE_BUILD_TYPE Release)
 enable_testing()
 
-# We use shared libraries
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 
@@ -35,13 +32,25 @@ message(STATUS "TRIQS : Adding compilation flags detected by the library (C++11/
 add_definitions(${TRIQS_CXX_DEFINITIONS})
 
 # Options for the compilation ...
-option(EXT_DEBUG "Enable extended debugging output" OFF)
-option(SAVE_CONFIGS "Save visited configurations to configs.h5" OFF)
 option(Tests "Enable Tests" ON)
+option(HYBRIDISATION_IS_COMPLEX "If ON, the hybridization Delta(tau) is complex" OFF)
+option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
+option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
+option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
+
+# adjust the macros accordingly
+if(HYBRIDISATION_IS_COMPLEX)
+ add_definitions(-DHYBRIDISATION_IS_COMPLEX)
+endif()
+
+if(LOCAL_HAMILTONIAN_IS_COMPLEX)
+ add_definitions(-DLOCAL_HAMILTONIAN_IS_COMPLEX)
+endif()
 
 if(EXT_DEBUG)
  add_definitions(-DEXT_DEBUG)
 endif(EXT_DEBUG)
+
 if(SAVE_CONFIGS)
  set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save")
  add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})

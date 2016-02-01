@@ -1,7 +1,3 @@
-.. module:: pytriqs.applications.impurity_solvers.cthyb
-
-.. _options:
-
 Measurements: definitions
 =========================
 

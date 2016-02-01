@@ -185,20 +185,25 @@ void solver_core::solve(solve_parameters_t const & params) {
   move_set_type double_removes(qmc.get_rng());
 
   auto& delta_names = _Delta_tau.domain().names();
+  auto get_prob_prop = [&params](std::string const& block_name) {
+   auto f = params.proposal_prob.find(block_name);
+   return (f != params.proposal_prob.end() ? f->second : 1.0);
+  };
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
    int block_size = _Delta_tau[block].data().shape()[1];
    auto const& block_name = delta_names[block];
-   auto f = params.proposal_prob.find(block_name);
-   double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
+   double prop_prob = get_prob_prop(block_name);
    inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
    removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
+     auto const& block_name2 = delta_names[block2];
+     double prop_prob2 = get_prob_prop(block_name2);
      double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
-                 "Insert Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
+                 "Insert Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
      double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
-                 "Remove Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
+                 "Remove Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
     }
    }
   }

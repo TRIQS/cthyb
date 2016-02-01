@@ -6,11 +6,11 @@ from wrap_generator import *
 module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver")
 
 # All the triqs C++/Python modules
-module.use_module('gf')
-module.use_module('operators')
+module.use_module('gf', 'triqs')
+module.use_module('operators', 'triqs')
 
 # Add here all includes beyond what is automatically included by the triqs modules
-module.add_include("../c++/solver_core.hpp")
+module.add_include("solver_core.hpp")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""

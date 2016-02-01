@@ -43,6 +43,8 @@ if(SAVE_CONFIGS)
  add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})
 endif(SAVE_CONFIGS)
 
+include_directories(c++)
+
 # Compile C++ code
 add_subdirectory(c++)
 #add_subdirectory(tools)

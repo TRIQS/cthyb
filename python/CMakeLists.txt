@@ -1,7 +1,11 @@
 # where will the python end up in triqs?
 set(python_destination applications/impurity_solvers/cthyb)
 
-# make a local pytriqs copy
+# site_customize for build
+set(package_name "pytriqs.applications.impurity_solvers")
+configure_file(${CMAKE_SOURCE_DIR}/cmake/sitecustomize.py ${CMAKE_CURRENT_BINARY_DIR}/sitecustomize.py @ONLY)
+
+# make the build_xxx, install python files...
 triqs_prepare_local_pytriqs(${python_destination})
 
 # Build the python module for the solver

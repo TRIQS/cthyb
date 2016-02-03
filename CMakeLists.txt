@@ -30,7 +30,11 @@ endif(${GIT_RESULT} EQUAL 0)
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
-# Details of the code
+# Add the compiling options (-D... ) for C++
+message(STATUS "TRIQS : Adding compilation flags detected by the library (C++11/14, libc++, etc...) ")
+add_definitions(${TRIQS_CXX_DEFINITIONS})
+
+# Options for the compilation ...
 option(EXT_DEBUG "Enable extended debugging output" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5" OFF)
 option(Tests "Enable Tests" ON)

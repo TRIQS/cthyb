@@ -35,7 +35,7 @@
 double double_max = std::numeric_limits<double>::max(); // easier to read
 
 template <typename T>
-// require( is_real_or_complex<T>)
+// require( is_real_or_complex<T>) FIXME?
 double frobenius_norm2(triqs::arrays::matrix<T> const& a) {
  double r = 0;
  for (int i = 0; i < first_dim(a); ++i)
@@ -330,8 +330,8 @@ std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u
  // Put density_matrix to "not recomputed"
  for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
 
- auto trace_contrib_block = std::vector<std::pair<double, int>>{};
-
+ auto trace_contrib_block = std::vector<std::pair<double, int>>{}; //FIXME complex -- can histos handle this?
+ 
  int n_bl = to_sort_lnorm_b.size();                // number of blocks
  auto bound_cumul = std::vector<double>(n_bl + 1); // cumulative sum of the bounds
  // The contribution to the trace from block B is bounded: |Tr_B| <= dim(B) * sum_{B} e^{Emin(B)*dtau}

@@ -32,7 +32,7 @@ class move_insert_c_c_cdag_cdag {
  int block_index1, block_index2, block_size1, block_size2;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau1, delta_tau2;
+ double dtau1, dtau2;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2, tau3, tau4;
  op_desc op1, op2, op3, op4;
@@ -88,11 +88,11 @@ class move_insert_c_c_cdag_cdag {
 #endif
 
   // record the length of the proposed insertion
-  delta_tau1 = double(tau2 - tau1);
-  delta_tau2 = double(tau4 - tau3);
+  dtau1 = double(tau2 - tau1);
+  dtau2 = double(tau4 - tau3);
   if (performance_analysis) {
-   histos["double_insert_length_proposed"] << delta_tau1;
-   histos["double_insert_length_proposed"] << delta_tau2;
+   histos["double_insert_length_proposed"] << dtau1;
+   histos["double_insert_length_proposed"] << dtau2;
   }
 
   // Insert the operators op1, op2, op3, op4 at time tau1, tau2, tau3, tau4
@@ -218,8 +218,8 @@ class move_insert_c_c_cdag_cdag {
   data.atomic_reweighting = new_atomic_reweighting;
 
   if (performance_analysis) {
-   histos["double_insert_length_accepted"] << delta_tau1;
-   histos["double_insert_length_accepted"] << delta_tau2;
+   histos["double_insert_length_accepted"] << dtau1;
+   histos["double_insert_length_accepted"] << dtau2;
   }
 
 #ifdef EXT_DEBUG

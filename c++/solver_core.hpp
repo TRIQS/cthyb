@@ -39,7 +39,7 @@ class solver_core {
  many_body_op_t _h_loc;                         // The local Hamiltonian = h_int + h0
  block_gf<imfreq> _G0_iw;                       // Green's function containers: imaginary-freq Green's functions
  block_gf<imtime> _Delta_tau, _G_tau;           // Green's function containers: imaginary-time Green's functions
- block_gf<imtime, delta_target_t> _G_tau_real;  // intermediate object to accumulate g(tau)
+ block_gf<imtime, delta_target_t> _G_tau_accum; // Intermediate object to accumulate g(tau), either real or complex
  block_gf<legendre> _G_l;                       // Green's function containers: Legendre coefficients
  std::vector<matrix_t> _density_matrix;         // density matrix, when used in Norm mode
  triqs::mpi::communicator _comm;                // define the communicator, here MPI_COMM_WORLD

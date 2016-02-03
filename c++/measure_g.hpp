@@ -32,13 +32,12 @@ struct measure_g {
  qmc_data const& data;
  gf_view<imtime, delta_target_t> g_tau;
  int a_level;
- double beta;
  mc_weight_t z;
  int64_t num;
  mc_weight_t average_sign;
 
  measure_g(int a_level, gf_view<imtime, delta_target_t> g_tau, qmc_data const& data)
-    : data(data), g_tau(g_tau), a_level(a_level), beta(data.config.beta()) {
+    : data(data), g_tau(g_tau), a_level(a_level) {
   g_tau() = 0.0;
   z = 0;
   num = 0;

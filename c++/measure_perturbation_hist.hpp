@@ -25,7 +25,6 @@
 namespace cthyb {
 
 struct measure_perturbation_hist {
- using mc_weight_t = std::complex<double>;
 
  qmc_data const& data;
  int block_index;
@@ -49,7 +48,6 @@ struct measure_perturbation_hist {
 // ----------------------------------------------------------------
 
 struct measure_perturbation_hist_total {
- using mc_weight_t = std::complex<double>;
 
  qmc_data const& data;
  statistics::histogram histo_perturbation_order;

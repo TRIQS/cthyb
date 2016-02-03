@@ -32,7 +32,7 @@ class move_insert_c_cdag {
  int block_index, block_size;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau;
+ double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
  op_desc op1, op2;
@@ -79,8 +79,8 @@ class move_insert_c_cdag {
 #endif
 
   // record the length of the proposed insertion
-  delta_tau = double(tau2 - tau1);
-  if (performance_analysis) histos["insert_length_proposed"] << delta_tau;
+  dtau = double(tau2 - tau1);
+  if (performance_analysis) histos["insert_length_proposed"] << dtau;
 
   // Insert the operators op1 and op2 at time tau1, tau2
   // 1- In the very exceptional case where the insert has failed because an operator is already sitting here
@@ -165,7 +165,7 @@ class move_insert_c_cdag {
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
-  if (performance_analysis) histos["insert_length_accepted"] << delta_tau;
+  if (performance_analysis) histos["insert_length_accepted"] << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Move move_insert_c_cdag accepted" << std::endl;

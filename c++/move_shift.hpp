@@ -31,7 +31,7 @@ class move_shift_operator {
  mc_tools::random_generator& rng;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau;
+ double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau_old, tau_new;
  op_desc op_old, op_new;
@@ -147,8 +147,8 @@ class move_shift_operator {
   }
 
   // Record the length of the proposed shift
-  delta_tau = double(tau_new - tau_old);
-  if (performance_analysis) histos["shift_length_proposed"] << delta_tau;
+  dtau = double(tau_new - tau_old);
+  if (performance_analysis) histos["shift_length_proposed"] << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;
@@ -237,7 +237,7 @@ class move_shift_operator {
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
 
-  if (performance_analysis) histos["shift_length_accepted"] << delta_tau;
+  if (performance_analysis) histos["shift_length_accepted"] << dtau;
 
   auto result = data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
 

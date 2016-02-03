@@ -33,7 +33,7 @@ class move_remove_c_cdag {
  int block_index, block_size;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau;
+ double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
 
@@ -83,8 +83,8 @@ class move_remove_c_cdag {
   tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
 
   // record the length of the proposed removal
-  delta_tau = double(tau2 - tau1);
-  if (performance_analysis) histos["remove_length_proposed"] << delta_tau;
+  dtau = double(tau2 - tau1);
+  if (performance_analysis) histos["remove_length_proposed"] << dtau;
 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
@@ -140,7 +140,7 @@ class move_remove_c_cdag {
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
-  if (performance_analysis) histos["remove_length_accepted"] << delta_tau;
+  if (performance_analysis) histos["remove_length_accepted"] << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Move move_remove_c_cdag accepted" << std::endl;

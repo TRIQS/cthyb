@@ -54,7 +54,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
   std::vector<gf<imtime>> g_tau_blocks;
   std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
-  std::vector<gf<imtime, delta_target_t>> g_tau_real_blocks; //  Local real (or complex if complex mode) quantities for accumulation 
+  std::vector<gf<imtime, delta_target_t>> g_tau_accum_blocks; //  Local real or complex (if complex mode) quantities for accumulation 
 
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);
@@ -68,14 +68,14 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
     g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
     g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices}); // FIXME: cast is ugly
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-    g_tau_real_blocks.push_back(gf<imtime, delta_target_t>{{beta, Fermion, n_tau}, {n, n}});
+    g_tau_accum_blocks.push_back(gf<imtime, delta_target_t>{{beta, Fermion, n_tau}, {n, n}});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
   _G_tau = make_block_gf(block_names, g_tau_blocks);
   _G_l = make_block_gf(block_names, g_l_blocks);
   _Delta_tau = make_block_gf(block_names, delta_tau_blocks);
-  _G_tau_real = make_block_gf(block_names, g_tau_real_blocks);
+  _G_tau_accum = make_block_gf(block_names, g_tau_accum_blocks);
 
 }
 
@@ -124,7 +124,11 @@ void solver_core::solve(solve_parameters_t const & params) {
     for (auto const & a1: bl.second) {
       int n2 = 0;
       for (auto const & a2: bl.second) {
+#ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
+       _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1, n2) * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
+#else
        _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1, n2).real() * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
+#endif
         n2++;
       }
       n1++;
@@ -220,7 +224,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
-    qmc.add_measure(measure_g(block, _G_tau_real[block], data), "G measure (" + g_names[block] + ")");
+    qmc.add_measure(measure_g(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
    }
   }
   if (params.measure_g_l) {
@@ -252,10 +256,8 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   std::cout << "Average sign: " << _average_sign << std::endl;
 
-  // Copy real G_tau back to complex G_tau
-  if (params.measure_g_tau) {
-   _G_tau = _G_tau_real;
-  }
+  // Copy local (real or complex) G_tau back to complex G_tau
+  if (params.measure_g_tau) _G_tau = _G_tau_accum;
 
 }
 

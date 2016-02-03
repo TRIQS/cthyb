@@ -297,7 +297,7 @@ class impurity_trace {
 
   // Inserted nodes
   cancel_insert_impl();                         //  first remove BST inserted nodes
-  for (int i = 0; i <= trial_node_index; ++i) { //  then reinsert the nodes used for real in rb tree
+  for (int i = 0; i <= trial_node_index; ++i) { //  then reinsert the nodes in rb tree, with balancing
    node n = trial_nodes[i].get();
    tree.insert(n->key, {n->op, n_blocks});
   }

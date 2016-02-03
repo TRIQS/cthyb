@@ -60,7 +60,7 @@ using h_scalar_t = dcomplex; // type of scalar for H_loc: double or complex.
 using h_scalar_t = double; // type of scalar for H_loc: double or complex.
 #endif
 
-using mc_weight_t = decltype(h_scalar_t{} * det_scalar_t{});                     // complex iif one is complex
+using mc_weight_t = decltype(h_scalar_t{} * det_scalar_t{});                     // complex iif either is complex
 using many_body_op_t = triqs::operators::many_body_operator_generic<h_scalar_t>; // Operator with real or complex value
 using matrix_t = matrix<h_scalar_t>;
 }

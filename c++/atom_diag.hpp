@@ -173,7 +173,7 @@ class atom_diag {
  int vacuum_block_index;                                    // Block index of the bare vacuum
  int vacuum_inner_index;                                    // Inner index of the bare vacuum
 
- std::vector<std::vector<double>> quantum_numbers; // values of the quantum number for this blocks
+ std::vector<std::vector<quantum_number_t>> quantum_numbers; // values of the quantum number for this blocks
 
  // do not serialize. rebuild by complete_init
  void complete_init();

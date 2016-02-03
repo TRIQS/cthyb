@@ -75,8 +75,12 @@ struct qmc_data {
   std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
   dets.clear();
   for (auto const &bl : delta.mesh()) {
+#ifdef HYBRIDISATION_IS_COMPLEX
+   dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
+#else
    if (!is_gf_real(delta[bl], 1e-10)) TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
    dets.emplace_back(delta_block_adaptor(real(delta[bl])), 100);
+#endif
   }
  }
 

@@ -26,8 +26,8 @@ p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 10000
 p["measure_g_tau"] = False
 p["move_double"] = False
-p["measure_density_matrix"] = True
 p["use_norm_as_weight"] = True
+p["measure_density_matrix"] = True
 
 H = U*n("up",1)*n("dn",1) + U*n("up",2)*n("dn",2)
 H = H + 0.5*h*(n("up",1) - n("dn",1)) + 0.5*h*(n("up",2) - n("dn",2))

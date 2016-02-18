@@ -20,7 +20,6 @@
 ################################################################################
 
 version = "@CTHYB_VERSION@"
-release = "@CTHYB_RELEASE@"
 triqs_hash = "@TRIQS_GIT_HASH@"
 cthyb_hash = "@CTHYB_GIT_HASH@"
 
@@ -29,4 +28,3 @@ def show_version():
 
 def show_git_hash():
   print "\nYou are using the cthyb solver git hash %s based on triqs git hash %s\n"%(cthyb_hash, triqs_hash)
-

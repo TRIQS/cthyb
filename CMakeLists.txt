@@ -51,7 +51,6 @@ include_directories(c++)
 
 # Compile C++ code
 add_subdirectory(c++)
-#add_subdirectory(tools)
 
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
@@ -67,4 +66,3 @@ if (${TRIQS_WITH_PYTHON_SUPPORT})
    add_subdirectory(doc)
  endif(${BUILD_DOC})
 endif()
-

@@ -80,6 +80,9 @@ struct solve_parameters_t {
  /// default: {}
  std::map<std::string,double> proposal_prob = (std::map<std::string,double>{});
 
+ /// Threshold below which imaginary components of Delta and h_loc are set to zero
+ double imag_threshold = 1.e-15;
+
  solve_parameters_t() {}
 
  solve_parameters_t(many_body_op_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}

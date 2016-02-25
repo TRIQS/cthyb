@@ -3,7 +3,7 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver")
+module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver", app_name = "pytriqs.applications.impurity_solvers.cthyb")
 
 # All the triqs C++/Python modules
 module.use_module('gf', 'triqs')
@@ -81,6 +81,8 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 | performance_analysis   | bool            | false                         | Analyse performance of trace computation with histograms (developers only)?    |
 +------------------------+-----------------+-------------------------------+--------------------------------------------------------------------------------+
 | proposal_prob          | dict(str:float) | {}                            | Operator insertion/removal probabilities for different blocks                  |
++------------------------+-----------------+-------------------------------+--------------------------------------------------------------------------------+
+| imag_threshold         | double          | 1.e-15                        | Threshold below which imaginary components of Delta and h_loc are set to zero  |
 +------------------------+-----------------+-------------------------------+--------------------------------------------------------------------------------+ """)
 
 c.add_property(name = "h_loc",

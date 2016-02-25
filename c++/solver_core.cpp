@@ -117,18 +117,27 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   _h_loc = params.h_int;
 
+  // Do I have imaginary components in my local Hamiltonian?
+  auto max_imag = 0.0;
+  for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(real(_G0_iw[b].singularity()(2)))));
+
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
     int n1 = 0;
     for (auto const & a1: bl.second) {
       int n2 = 0;
-      for (auto const & a2: bl.second) {
+      for (auto const& a2 : bl.second) {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
-       _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1, n2) * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
+        dcomplex e_ij;
+        if (max_imag > params.imag_threshold)
+          e_ij = _G0_iw[b].singularity()(2)(n1, n2);
+        else
+          e_ij = _G0_iw[b].singularity()(2)(n1, n2).real();
 #else
-       _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1, n2).real() * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
+        auto e_ij = _G0_iw[b].singularity()(2)(n1, n2).real();
 #endif
+        _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
         n2++;
       }
       n1++;
@@ -138,12 +147,17 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
   b = 0;
+  range _;
   triqs::clef::placeholder<0> iw_;
-  for (auto const & bl: gf_struct) {
-    Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
-    Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
-    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
-    b++;
+  for (auto const& bl : gf_struct) {
+   Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1) * iw_ + G0_iw_inv[b].singularity()(0);
+   Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
+   _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
+   // Force all diagonal elements to be real
+   for (int i : range(bl.second.size())) _Delta_tau[b].data()(_,i,i) = real(_Delta_tau[b].data()(_,i,i));
+   // If off-diagonal elements are below threshold, set to real
+   if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold) _Delta_tau[b].data() = real(_Delta_tau[b].data());
+   b++;
   }
 
   // Report what h_loc we are using

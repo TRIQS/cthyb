@@ -354,15 +354,15 @@ void atom_diag_worker::complete() {
 
  } // end of loop on operators
 
- hdiag->_vacuum_index = -1;
+ hdiag->vacuum_block_index = -1;
  // get the position of the bare vacuum
  for (int bl = 0; bl < hdiag->sub_hilbert_spaces.size(); ++bl) {
   if (hdiag->sub_hilbert_spaces[bl].has_state(0)) {
-   if (hdiag->sub_hilbert_spaces[bl].size() != 1) TRIQS_RUNTIME_ERROR << "The bare vacuum is not in a block of size 1 !";
-   hdiag->_vacuum_index = bl;
+   hdiag->vacuum_block_index = bl;
+   hdiag->vacuum_inner_index = hdiag->sub_hilbert_spaces[bl].get_state_index(0);
    break;
   }
  }
- if (hdiag->_vacuum_index < 0) TRIQS_RUNTIME_ERROR << "I did not find the bare vacuum !!";
+ if (hdiag->vacuum_block_index < 0) TRIQS_RUNTIME_ERROR << "I did not find the bare vacuum !!";
 }
 }

@@ -96,10 +96,13 @@ class atom_diag {
  /// Ground state energy (i.e. min of all subspaces).
  double get_gs_energy() const { return gs_energy; }
 
- /// Vacuum is necessarly a block of size 1. Returns the block index.
- int get_vacuum_block_index() const { return _vacuum_index; }
+ /// Returns the block index of the vacuum state.
+ int get_vacuum_block_index() const { return vacuum_block_index; }
 
- /// Vacuum is necessarly a block of size 1. Returns the state as a long vector in the full Hilbert space.
+ /// Returns the inner index of the vacuum state.
+ int get_vacuum_inner_index() const { return vacuum_inner_index; }
+
+ /// Returns the vacuum state as a long vector in the full Hilbert space.
  full_hilbert_space_state_t get_vacuum_state() const;
 
  /**
@@ -167,7 +170,8 @@ class atom_diag {
  std::vector<std::vector<matrix<h_scalar_t>>> c_matrices;    // c_matrices[operator_linear_index][B] = matrix from block B -> B'
  std::vector<std::vector<matrix<h_scalar_t>>> cdag_matrices; // idem for c dagger operators
  double gs_energy;                                           // Energy of the ground state
- int _vacuum_index;                                          // Index of the bare vacuum
+ int vacuum_block_index;                                     // Block index of the bare vacuum
+ int vacuum_inner_index;                                     // Inner index of the bare vacuum
 
  std::vector<std::vector<h_scalar_t>> quantum_numbers; // values of the quantum number for this blocks
 

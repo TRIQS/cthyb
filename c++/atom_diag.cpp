@@ -68,7 +68,7 @@ std::vector<std::vector<double>> atom_diag::get_energies() const {
 
 full_hilbert_space_state_t atom_diag::get_vacuum_state() const {
  full_hilbert_space_state_t st;
- st[flatten_block_index(_vacuum_index, 0)] = 1;
+ st[flatten_block_index(vacuum_block_index, vacuum_inner_index)] = 1;
  return st;
 }
 
@@ -250,7 +250,8 @@ void h5_write(h5::group fg, std::string const& name, atom_diag const& x) {
  h5_write(gr, "eigensystems", x.eigensystems);
  h5_write(gr, "gs_energy", x.gs_energy);
  h5_write_attribute(gr, "fops", x.fops);
- h5_write(gr, "vacuum_index", x._vacuum_index);
+ h5_write(gr, "vacuum_block_index", x.vacuum_block_index);
+ h5_write(gr, "vacuum_inner_index", x.vacuum_inner_index);
 }
 
 // -----------------------------------------------------------------
@@ -279,7 +280,8 @@ void h5_read(h5::group fg, std::string const& name, atom_diag& x) {
  h5_read(gr, "eigensystems", x.eigensystems);
  h5_read(gr, "gs_energy", x.gs_energy);
  h5_read_attribute(gr, "fops", x.fops);
- h5_read(gr, "vacuum_index", x._vacuum_index);
+ h5_read(gr, "vacuum_block_index", x.vacuum_block_index);
+ h5_read(gr, "vacuum_inner_index", x.vacuum_inner_index);
  x.complete_init();
 }
 }

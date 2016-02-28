@@ -185,7 +185,11 @@ c.add_property(name = "gs_energy",
 
 c.add_property(name = "vacuum_block_index",
                getter = cfunction("int get_vacuum_block_index ()"),
-               doc = """Vacuum is necessarly a block of size 1. Returns the block index. """)
+               doc = """Returns the block index of the vacuum state. """)
+
+c.add_property(name = "vacuum_inner_index",
+               getter = cfunction("int get_vacuum_inner_index ()"),
+               doc = """Returns the inner index of the vacuum state. """)
 
 c.add_property(name = "vacuum_state",
                getter = cfunction("full_hilbert_space_state_t get_vacuum_state ()"),

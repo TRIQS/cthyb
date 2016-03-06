@@ -213,6 +213,5 @@ module.add_function ("std::vector<std::vector<double>> quantum_number_eigenvalue
 
 module.add_function ("std::vector<std::vector<double>> quantum_number_eigenvalues2 (many_body_op_t op, cthyb::atom_diag atom)", doc = "The operator op is supposed to be a quantum number (if not, exception) @return the eigenvalue by block")
 
-
 module.generate_code()
 

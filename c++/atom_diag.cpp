@@ -67,7 +67,8 @@ std::vector<std::vector<double>> atom_diag::get_energies() const {
 // -----------------------------------------------------------------
 
 full_hilbert_space_state_t atom_diag::get_vacuum_state() const {
- full_hilbert_space_state_t st;
+ full_hilbert_space_state_t st(_total_dim);
+ st() = 0;
  st[flatten_block_index(vacuum_block_index, vacuum_inner_index)] = 1;
  return st;
 }

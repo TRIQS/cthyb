@@ -181,7 +181,7 @@ class atom_diag {
  int _total_dim;                           // total_dimension of the Hilbert_space
 
  friend std::ostream& operator<<(std::ostream& os, atom_diag const& ss);
- friend std::string get_triqs_hdf5_data_scheme(atom_diag const&) { return "AtomicDiagonalization"; }
+ friend std::string get_triqs_hdf5_data_scheme(atom_diag const&) { return "AtomDiag"; }
  friend void h5_write(h5::group gr, std::string const& name, atom_diag const&);
  friend void h5_read(h5::group gr, std::string const& name, atom_diag&);
 };

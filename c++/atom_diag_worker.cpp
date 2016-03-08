@@ -202,7 +202,7 @@ void atom_diag_worker::partition_with_qn(std::vector<many_body_op_t> const& qn_v
     if (creation_map[n][origin] == -1)
      creation_map[n][origin] = target;
     else if (creation_map[n][origin] != target)
-     TRIQS_RUNTIME_ERROR << "Internal Error, AtomicProblem, creation";
+     TRIQS_RUNTIME_ERROR << "Internal Error, AtomDiag, creation";
     hdiag->creation_connection(n,map_qn_n[qn_before]) = map_qn_n[qn_after];
    }
 
@@ -216,7 +216,7 @@ void atom_diag_worker::partition_with_qn(std::vector<many_body_op_t> const& qn_v
     if (annihilation_map[n][origin] == -1)
      annihilation_map[n][origin] = target;
     else if (annihilation_map[n][origin] != target)
-     TRIQS_RUNTIME_ERROR << "Internal Error, AtomicProblem, annihilation";
+     TRIQS_RUNTIME_ERROR << "Internal Error, AtomDiag, annihilation";
     hdiag->annihilation_connection(n, map_qn_n[qn_before]) = map_qn_n[qn_after];
    }
   }
@@ -282,7 +282,7 @@ void atom_diag_worker::complete() {
 
   auto eig = linalg::eigenelements(h_matrix);
   eigensystem.eigenvalues = eig.first;
-  eigensystem.unitary_matrix = eig.second.transpose();
+  eigensystem.unitary_matrix = eig.second.transpose(); //FIXME change to dagger?!
   hdiag->gs_energy = std::min(hdiag->gs_energy, eigensystem.eigenvalues[0]);
 
 //FIXME

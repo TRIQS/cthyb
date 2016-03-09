@@ -182,7 +182,6 @@ std::pair<int, matrix<h_scalar_t>> atom_diag::matrix_element_of_monomial(operato
  return {B, std::move(m)};
 }
 
-
 }
 
 // FIXME move into the library

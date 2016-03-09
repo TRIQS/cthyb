@@ -40,28 +40,35 @@ template <> struct py_converter<solve_parameters_t> {
    r = init_default;
  }
 
+ template <typename T> static void _get_optional(PyObject *dic, const char *name, T &r) {
+  if (PyDict_Contains(dic, pyref::string(name)))
+   r = convert_from_python<T>(PyDict_GetItemString(dic, name));
+  else
+   r = T{};
+ }
+
  static solve_parameters_t py2c(PyObject *dic) {
   solve_parameters_t res;
   res.h_int = convert_from_python<many_body_op_t>(PyDict_GetItemString(dic, "h_int"));
   res.n_cycles = convert_from_python<int>(PyDict_GetItemString(dic, "n_cycles"));
-  _get_optional(dic, "partition_method"      , res.partition_method        , "autopartition");
-  _get_optional(dic, "quantum_numbers"       , res.quantum_numbers         , std::vector<many_body_op_t>{});
-  _get_optional(dic, "length_cycle"          , res.length_cycle            , 50);
-  _get_optional(dic, "n_warmup_cycles"       , res.n_warmup_cycles         , 5000);
-  _get_optional(dic, "random_seed"           , res.random_seed             , 34788+928374*triqs::mpi::communicator().rank());
-  _get_optional(dic, "random_name"           , res.random_name             , "");
-  _get_optional(dic, "max_time"              , res.max_time                , -1);
-  _get_optional(dic, "verbosity"             , res.verbosity               , ((triqs::mpi::communicator().rank()==0)?3:0));
-  _get_optional(dic, "move_shift"            , res.move_shift              , true);
-  _get_optional(dic, "move_double"           , res.move_double             , false);
-  _get_optional(dic, "use_trace_estimator"   , res.use_trace_estimator     , false);
-  _get_optional(dic, "measure_g_tau"         , res.measure_g_tau           , true);
-  _get_optional(dic, "measure_g_l"           , res.measure_g_l             , false);
-  _get_optional(dic, "measure_pert_order"    , res.measure_pert_order      , false);
-  _get_optional(dic, "measure_density_matrix", res.measure_density_matrix  , false);
-  _get_optional(dic, "use_norm_as_weight"    , res.use_norm_as_weight      , false);
-  _get_optional(dic, "performance_analysis"  , res.performance_analysis    , false);
-  _get_optional(dic, "proposal_prob"         , res.proposal_prob           , (std::map<std::string,double>{}));
+  _get_optional(dic, "partition_method"      , res.partition_method         ,"autopartition");
+  _get_optional(dic, "quantum_numbers"       , res.quantum_numbers          ,std::vector<many_body_op_t>{});
+  _get_optional(dic, "length_cycle"          , res.length_cycle             ,50);
+  _get_optional(dic, "n_warmup_cycles"       , res.n_warmup_cycles          ,5000);
+  _get_optional(dic, "random_seed"           , res.random_seed              ,34788+928374*triqs::mpi::communicator().rank());
+  _get_optional(dic, "random_name"           , res.random_name              ,"");
+  _get_optional(dic, "max_time"              , res.max_time                 ,-1);
+  _get_optional(dic, "verbosity"             , res.verbosity                ,((triqs::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "move_shift"            , res.move_shift               ,true);
+  _get_optional(dic, "move_double"           , res.move_double              ,false);
+  _get_optional(dic, "use_trace_estimator"   , res.use_trace_estimator      ,false);
+  _get_optional(dic, "measure_g_tau"         , res.measure_g_tau            ,true);
+  _get_optional(dic, "measure_g_l"           , res.measure_g_l              ,false);
+  _get_optional(dic, "measure_pert_order"    , res.measure_pert_order       ,false);
+  _get_optional(dic, "measure_density_matrix", res.measure_density_matrix   ,false);
+  _get_optional(dic, "use_norm_as_weight"    , res.use_norm_as_weight       ,false);
+  _get_optional(dic, "performance_analysis"  , res.performance_analysis     ,false);
+  _get_optional(dic, "proposal_prob"         , res.proposal_prob            ,(std::map<std::string,double>{}));
   return res;
  }
 
@@ -104,11 +111,10 @@ template <> struct py_converter<solve_parameters_t> {
     fs << "\n"<< ++err << " The parameter '" << k << "' is not recognized.";
 #endif
 
-  using conv_t = py_converter<many_body_op_t>;
   _check_mandatory<many_body_op_t               >(dic, fs, err, "h_int"                 , "many_body_op_t");
   _check_mandatory<int                          >(dic, fs, err, "n_cycles"              , "int");
   _check_optional <std::string                  >(dic, fs, err, "partition_method"      , "std::string");
-  _check_optional <std::vector<many_body_op_t> >(dic, fs, err, "quantum_numbers"       , "std::vector<many_body_op_t>");
+  _check_optional <std::vector<many_body_op_t>  >(dic, fs, err, "quantum_numbers"       , "std::vector<many_body_op_t>");
   _check_optional <int                          >(dic, fs, err, "length_cycle"          , "int");
   _check_optional <int                          >(dic, fs, err, "n_warmup_cycles"       , "int");
   _check_optional <int                          >(dic, fs, err, "random_seed"           , "int");

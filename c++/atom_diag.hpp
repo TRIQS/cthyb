@@ -40,7 +40,7 @@ namespace operators = triqs::operators;
 using h_scalar_t = double;                                               // type of scalar for H_loc: double or complex.
 using block_matrix_t = std::vector<matrix<h_scalar_t>>;                  // block diagonal matrix
 using full_hilbert_space_state_t = triqs::arrays::vector<h_scalar_t>;    // the big vector in the full Hilbert space
-using indices_t = fundamental_operator_set::indices_t;                   //
+using indices_t = fundamental_operator_set::indices_t;
 using many_body_op_t = triqs::operators::many_body_operator_real;
 using quantum_number_t = double;
 
@@ -72,6 +72,20 @@ class atom_diag {
 
  /// The dimension of block b
  int get_block_dim(int b) const { return eigensystems[b].eigenvalues.size(); }
+
+ /// The list of fock states for each block
+ std::vector<std::vector<fock_state_t>> get_fock_states() const {
+  std::vector<std::vector<fock_state_t>> fock_states(n_blocks());
+  for (int i : range(n_blocks())) fock_states[i] = sub_hilbert_spaces[i].get_all_fock_states();
+  return fock_states;
+ }
+
+ /// Unitary matrices that transform from Fock states to atomic eigenstates
+ std::vector<matrix<h_scalar_t>> get_unitary_matrices() const {
+  std::vector<matrix<h_scalar_t>> umat(n_blocks());
+  for (int i : range(n_blocks())) umat[i] = get_eigensystem()[i].unitary_matrix;
+  return umat;
+ }
 
  /// Returns the index in the full hilbert space for block_index and i, the index within the block.
  int flatten_block_index(int block_index, int i) const { return first_eigstate_of_block[block_index] + i; }

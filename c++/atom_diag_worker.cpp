@@ -282,7 +282,7 @@ void atom_diag_worker::complete() {
 
   auto eig = linalg::eigenelements(h_matrix);
   eigensystem.eigenvalues = eig.first;
-  eigensystem.unitary_matrix = eig.second.transpose(); //FIXME change to dagger?!
+  eigensystem.unitary_matrix = eig.second.transpose(); // Convert from eigenvectors as rows to columns.
   hdiag->gs_energy = std::min(hdiag->gs_energy, eigensystem.eigenvalues[0]);
 
 //FIXME

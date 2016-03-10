@@ -3,7 +3,7 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver", app_name = "pytriqs.applications.impurity_solvers.cthyb")
+module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver")
 
 # All the triqs C++/Python modules
 module.use_module('gf', 'triqs')

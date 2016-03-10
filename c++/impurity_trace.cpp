@@ -300,8 +300,10 @@ std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u
   // This guarantees that the density matrix is blockwise diagonal (otherwise the code will have thrown an error).
   if (measure_density_matrix) {
    if ((block_lnorm_pair.first != b) && (block_lnorm_pair.first != -1))
-    TRIQS_RUNTIME_ERROR << "The product of atomic operators has a matrix element in the off-diagonal block ("
-                        << b << "," << block_lnorm_pair.first << ")\n" << *config;
+    std::cerr << "WARNING: The product of atomic operators has a matrix element in the off-diagonal block (" << b << ","
+              << block_lnorm_pair.first << ")\n"
+              << "You will not be able to use this density matrix to calculate expectations values of operators that do not "
+                 "commute with the local Hamiltonian!" << std::endl;
   }
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.

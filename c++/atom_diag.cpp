@@ -186,32 +186,6 @@ std::pair<int, matrix<h_scalar_t>> atom_diag::matrix_element_of_monomial(operato
 
 }
 
-// FIXME move into the library
-namespace triqs {
-namespace hilbert_space {
- // -----------------------------------------------------------------
- std::string get_triqs_hdf5_data_scheme(sub_hilbert_space const&) { return "sub_hilbert_space"; }
-
- // -----------------------------------------------------------------
-
- void h5_write(h5::group fg, std::string const& name, sub_hilbert_space const& x) {
-  auto gr = fg.create_group(name);
-  h5_write(gr, "fock_states", x.get_all_fock_states());
-  h5_write(gr, "index", x.get_index());
- }
-
- // -----------------------------------------------------------------
- void h5_read(h5::group fg, std::string const& name, sub_hilbert_space& x) {
-  using h5::h5_read;
-  auto gr = fg.open_group(name);
-  auto fs = h5_read<std::vector<fock_state_t>>(gr, "fock_states");
-  auto index = h5_read<int>(gr, "index");
-  x = sub_hilbert_space{index};
-  for (auto const& s : fs) x.add_fock_state(s);
- }
-}
-}
-
 namespace cthyb {
 // -----------------------------------------------------------------
 std::string get_triqs_hdf5_data_scheme(atom_diag::eigensystem_t const&) { return "atom_diag::eigensystem_t"; }

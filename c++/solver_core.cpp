@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #include "./solver_core.hpp"
+#include "./qmc_data.hpp"
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_int_string.hpp>
@@ -54,7 +55,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
   std::vector<gf<imtime>> g_tau_blocks;
   std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
-  std::vector<gf<imtime, delta_target_t>> g_tau_accum_blocks; //  Local real or complex (if complex mode) quantities for accumulation 
+  std::vector<gf<imtime, delta_target_t>> g_tau_accum_blocks; //  Local real or complex (if complex mode) quantities for accumulation
 
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);

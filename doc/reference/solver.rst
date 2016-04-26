@@ -3,7 +3,7 @@
 Solver
 ======
 
-.. autoclass:: pytriqs.applications.impurity_solvers.cthyb.Solver
+.. autoclass:: cthyb.Solver
    :members:
    :special-members:
    :show-inheritance:

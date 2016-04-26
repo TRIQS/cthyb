@@ -34,6 +34,20 @@
 
 double double_max = std::numeric_limits<double>::max(); // easier to read
 
+template <typename T>
+// require( is_real_or_complex<T>) FIXME?
+double frobenius_norm2(triqs::arrays::matrix<T> const& a) {
+ double r = 0;
+ for (int i = 0; i < first_dim(a); ++i)
+  for (int j = 0; j < second_dim(a); ++j) {
+   auto ab = std::abs(a(i, j));
+   r += ab * ab;
+  }
+ return std::sqrt(r);
+}
+
+
+
 // -----------------------------------------------
 
 namespace cthyb {
@@ -51,15 +65,15 @@ impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve
  use_norm_as_weight = p.use_norm_as_weight;
  measure_density_matrix = p.measure_density_matrix;
  // init density_matrix block + bool
- for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix<double>(get_block_dim(bl), get_block_dim(bl))};
+ for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix_t(get_block_dim(bl), get_block_dim(bl))};
 
  // prepare atomic_rho and atomic_norm
- if(use_norm_as_weight) {
+ if (use_norm_as_weight) {
   auto rho = atomic_density_matrix(h_diag_, config->beta());
   for (int bl = 0; bl < n_blocks; ++bl) {
    atomic_rho[bl] = bool_and_matrix{true, rho[bl] * atomic_z};
-   for(int u = 0; u < get_block_dim(bl); ++u) {
-    auto xx = rho[bl](u, u);
+   for (int u = 0; u < get_block_dim(bl); ++u) {
+    auto xx = std::abs(rho[bl](u, u));
     atomic_norm += xx * xx;
    }
   }
@@ -146,7 +160,7 @@ std::pair<int, double> impurity_trace::compute_block_table_and_bound(node n, int
 // -------- Computation of the matrix ------------------------------
 
 // returns {block that b connects to at this node, matrix for this block on node n (if not structurally zero, i.e. if B' != -1)}
-std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, int b) {
+std::pair<int, matrix_t> impurity_trace::compute_matrix(node n, int b) {
 
  if (b == -1) return {-1, {}};
  if (n == nullptr) return {b, {}};
@@ -163,7 +177,7 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
  int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1)); // relevant block on current node
  if (b2 == -1) return {-1, {}};
 
- matrix<double> M = (!n->delete_flag ? get_op_block_matrix(n, b1) : make_unit_matrix<double>(get_block_dim(b1)));
+ matrix_t M = (!n->delete_flag ? get_op_block_matrix(n, b1) : make_unit_matrix<h_scalar_t>(get_block_dim(b1)));
 
  if (n->right) { // M <- M * exp * r[b]
   dtau_r = double(n->key - tree.min_key(n->right));
@@ -196,8 +210,11 @@ std::pair<int, arrays::matrix<double>> impurity_trace::compute_matrix(node n, in
   // improve the norm if calculating the full_trace
   if (use_norm_of_matrices_in_cache) { // seems slower
    auto norm = frobenius_norm(M);
+   if (std::abs(norm -frobenius_norm2(M))>1.e-12)  TRIQS_RUNTIME_ERROR << " FROB PB" << M;
+   //if (norm < frobenius_norm2(M))  TRIQS_RUNTIME_ERROR << " FROB PB";
+   //if (norm < frobenius_norm2(M)) std::cout  <<norm <<" vs "<< frobenius_norm2(M)<<std::endl;// TRIQS_RUNTIME_ERROR << " FROB PB";
    n->cache.matrix_lnorms[b] = -std::log(norm);
-   if (!std::isfinite(-std::log(norm))) {
+   if (!isfinite(-std::log(norm))) {
     n->cache.matrix_lnorms[b] = double_max;
    }
   }
@@ -244,7 +261,7 @@ void impurity_trace::update_dtau(node n) {
 
 //-------- Compute the full trace ------------------------------------------
 // Returns MC atomic weight and reweighting = trace/(atomic weight)
-std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee, double u_yee) {
+std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u_yee) {
 
  double epsilon = 1.e-15; // Machine precision
  auto log_epsilon0 = -std::log(1.e-15);
@@ -283,8 +300,10 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
   // This guarantees that the density matrix is blockwise diagonal (otherwise the code will have thrown an error).
   if (measure_density_matrix) {
    if ((block_lnorm_pair.first != b) && (block_lnorm_pair.first != -1))
-    TRIQS_RUNTIME_ERROR << "The product of atomic operators has a matrix element in the off-diagonal block ("
-                        << b << "," << block_lnorm_pair.first << ")\n" << *config;
+    std::cerr << "WARNING: The product of atomic operators has a matrix element in the off-diagonal block (" << b << ","
+              << block_lnorm_pair.first << ")\n"
+              << "You will not be able to use this density matrix to calculate expectations values of operators that do not "
+                 "commute with the local Hamiltonian!" << std::endl;
   }
 
   if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.
@@ -307,14 +326,14 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
 
  // Prepare to loop over all blocks (in sorted order).
  // According to estimator, truncate as epsilon.
- trace_t full_trace = 0, first_term = 0;
+ h_scalar_t full_trace = 0, first_term = 0;
  double norm_trace_sq = 0, trace_abs =0;
 
  // Put density_matrix to "not recomputed"
  for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
 
- auto trace_contrib_block = std::vector<std::pair<double, int>>{};
-
+ auto trace_contrib_block = std::vector<std::pair<double, int>>{}; //FIXME complex -- can histos handle this?
+ 
  int n_bl = to_sort_lnorm_b.size();                // number of blocks
  auto bound_cumul = std::vector<double>(n_bl + 1); // cumulative sum of the bounds
  // The contribution to the trace from block B is bounded: |Tr_B| <= dim(B) * sum_{B} e^{Emin(B)*dtau}
@@ -354,7 +373,7 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
 #endif
 
   // trace(mat * exp(- H * (beta - tmax)) * exp (- H * tmin)) to handle the piece outside of the first-last operators.
-  trace_t trace_partial = 0;
+  h_scalar_t trace_partial = 0;
   auto dim = get_block_dim(block_index);
   for (int u = 0; u < dim; ++u) {
    auto x = b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
@@ -398,18 +417,18 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
     histo->dominant_block_bound << block_index;
     histo->dominant_block_energy_bound << get_block_emin(block_index);
    } else
-    histo->trace_first_over_sec_term << trace_partial / first_term;
+    histo->trace_first_over_sec_term << real(trace_partial / first_term);
   }
  } // loop on block
 
  double norm_trace = std::sqrt(norm_trace_sq);
- if (!std::isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;
+ if (!isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;
 
  // Analysis
  if (histo) {
   histo->trace_over_norm << std::abs(full_trace)/ norm_trace;
   histo->trace_abs_over_norm << trace_abs/ norm_trace;
-  histo->trace_over_trace_abs << full_trace / trace_abs;
+  histo->trace_over_trace_abs << real(full_trace / trace_abs);
   std::sort(trace_contrib_block.begin(), trace_contrib_block.end(), std::c14::greater<>());
   histo->dominant_block_trace << begin(trace_contrib_block)->second;
   histo->dominant_block_energy_trace << get_block_emin(begin(trace_contrib_block)->second);
@@ -421,8 +440,8 @@ std::pair<double, impurity_trace::trace_t> impurity_trace::compute(double p_yee,
  if (!use_norm_as_weight) return {full_trace, 1};
  // else determine reweighting
  auto rw = full_trace / norm_trace;
- if (!std::isfinite(rw)) rw = 1;
- //FIXME if (!std::isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
+ if (!isfinite(rw)) rw = 1;
+ //FIXME if (!isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
  return {norm_trace, rw};
  }
 

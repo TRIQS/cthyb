@@ -25,7 +25,7 @@
 
 namespace cthyb {
 
-measure_density_matrix::measure_density_matrix(qmc_data const& data, std::vector<matrix<double>>& density_matrix)
+measure_density_matrix::measure_density_matrix(qmc_data const& data, std::vector<matrix_t>& density_matrix)
    : data(data), block_dm(density_matrix) {
  block_dm.resize(data.imp_trace.get_density_matrix().size());
  for (int i = 0; i < block_dm.size(); ++i) {
@@ -35,7 +35,7 @@ measure_density_matrix::measure_density_matrix(qmc_data const& data, std::vector
 }
 // --------------------
 
-void measure_density_matrix::accumulate(mc_sign_type s) {
+void measure_density_matrix::accumulate(mc_weight_t s) {
  // we assume here that we are in "Norm" mode, i.e. qmc weight is norm, not trace
 
  // We need to recompute since the density_matrix in the trace is changed at each computatation,
@@ -64,7 +64,7 @@ void measure_density_matrix::collect_results(triqs::mpi::communicator const& c) 
  if (c.rank() != 0) return;
 
  // Check: the trace of the density matrix must be 1 by construction
- double tr = 0;
+ h_scalar_t tr = 0;
  for (auto& b : block_dm) tr += trace(b);
  if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
  if (std::abs(tr - 1) > 1.e-13) std::cerr << "Warning :: Trace of the density matrix is " <<

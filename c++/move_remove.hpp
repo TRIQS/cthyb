@@ -33,9 +33,8 @@ class move_remove_c_cdag {
  int block_index, block_size;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau;
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ double dtau;
+ h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
 
  public:
@@ -57,7 +56,7 @@ class move_remove_c_cdag {
 
  //----------------
  
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -84,13 +83,13 @@ class move_remove_c_cdag {
   tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
 
   // record the length of the proposed removal
-  delta_tau = double(tau2 - tau1);
-  if (performance_analysis) histos["remove_length_proposed"] << delta_tau;
+  dtau = double(tau2 - tau1);
+  if (performance_analysis) histos["remove_length_proposed"] << dtau;
 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
   // proposition probability
-  double t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // Size of the det before the try_delete!
+  auto t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // Size of the det before the try_delete!
 
   // For quick abandon 
   double random_number = rng.preview();
@@ -106,11 +105,11 @@ class move_remove_c_cdag {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio))
+  if (!isfinite(atomic_weight_ratio))
    TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " "
                        << new_atomic_weight / data.atomic_weight << " in config " << config.get_id();
 
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -119,14 +118,14 @@ class move_remove_c_cdag {
   std::cerr << "Weight: " << p / t_ratio << std::endl;
 #endif
 
-  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
-  if (!std::isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
+  if (!isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
+  if (!isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
   return p / t_ratio;
  }
 
  //----------------
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   // remove from the tree
   data.imp_trace.confirm_delete();
@@ -141,7 +140,7 @@ class move_remove_c_cdag {
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
-  if (performance_analysis) histos["remove_length_accepted"] << delta_tau;
+  if (performance_analysis) histos["remove_length_accepted"] << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Move move_remove_c_cdag accepted" << std::endl;

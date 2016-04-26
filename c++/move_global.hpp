@@ -41,8 +41,8 @@ class move_global {
  // Substitutions as mappings (old linear index) -> (new op_desc)
  std::vector<op_desc> substitute_c, substitute_c_dag;
 
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ h_scalar_t new_atomic_weight;
+ h_scalar_t new_atomic_reweighting;
  std::set<int> affected_blocks;
  std::vector<det_type> dets_backup;
  int backup_det_index;
@@ -97,7 +97,7 @@ class move_global {
    dets_backup.push_back(data.dets[block_number]);
  }
 
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -122,7 +122,7 @@ class move_global {
   }
 
   // Create new determinants and back up the old ones
-  mc_weight_type old_det = 1.0, new_det = 1.0;
+  mc_weight_t old_det = 1.0, new_det = 1.0;
   for(auto block_index : affected_blocks) {
    auto& det = data.dets[block_index];
    auto& backup_det = dets_backup[++backup_det_index];
@@ -152,10 +152,10 @@ class move_global {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite "
+  if (!isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite "
   << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
 
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -167,7 +167,7 @@ class move_global {
   return p;
  }
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   for(auto & o : data.config)
    o.second = (o.second.dagger ? substitute_c_dag : substitute_c)[o.second.linear_index];

@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #include "./solver_core.hpp"
+#include "./qmc_data.hpp"
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_int_string.hpp>
@@ -55,7 +56,7 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
   std::vector<gf<imtime>> g_tau_blocks;
   std::vector<gf<legendre>> g_l_blocks;
   std::vector<gf<imtime>> delta_tau_blocks;
-  std::vector<gf<imtime,matrix_real_valued>> g_tau_real_blocks; // Local real quantities for accumulation
+  std::vector<gf<imtime, delta_target_t>> g_tau_accum_blocks; //  Local real or complex (if complex mode) quantities for accumulation
 
   for (auto const& bl : gf_struct) {
     block_names.push_back(bl.first);
@@ -67,16 +68,16 @@ solver_core::solver_core(double beta_, std::map<std::string, indices_type> const
 
     g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});
     g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices});
+    g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n,n}, indices}); // FIXME: cast is ugly
     delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-    g_tau_real_blocks.push_back(gf<imtime,matrix_real_valued>{{beta, Fermion, n_tau}, {n, n}});
+    g_tau_accum_blocks.push_back(gf<imtime, delta_target_t>{{beta, Fermion, n_tau}, {n, n}});
   }
 
   _G0_iw = make_block_gf(block_names, g0_iw_blocks);
   _G_tau = make_block_gf(block_names, g_tau_blocks);
   _G_l = make_block_gf(block_names, g_l_blocks);
   _Delta_tau = make_block_gf(block_names, delta_tau_blocks);
-  _G_tau_real = make_block_gf(block_names, g_tau_real_blocks);
+  _G_tau_accum = make_block_gf(block_names, g_tau_accum_blocks);
 
 }
 
@@ -118,14 +119,27 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   _h_loc = params.h_int;
 
+  // Do I have imaginary components in my local Hamiltonian?
+  auto max_imag = 0.0;
+  for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(real(_G0_iw[b].singularity()(2)))));
+
   // Add quadratic terms to h_loc
   int b = 0;
   for (auto const & bl: gf_struct) {
     int n1 = 0;
     for (auto const & a1: bl.second) {
       int n2 = 0;
-      for (auto const & a2: bl.second) {
-        _h_loc = _h_loc + _G0_iw[b].singularity()(2)(n1,n2).real() * c_dag<double>(bl.first,a1)*c<double>(bl.first,a2);
+      for (auto const& a2 : bl.second) {
+#ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
+        dcomplex e_ij;
+        if (max_imag > params.imag_threshold)
+          e_ij = _G0_iw[b].singularity()(2)(n1, n2);
+        else
+          e_ij = _G0_iw[b].singularity()(2)(n1, n2).real();
+#else
+        auto e_ij = _G0_iw[b].singularity()(2)(n1, n2).real();
+#endif
+        _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
         n2++;
       }
       n1++;
@@ -135,12 +149,17 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
   b = 0;
+  range _;
   triqs::clef::placeholder<0> iw_;
-  for (auto const & bl: gf_struct) {
-    Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1)*iw_ + G0_iw_inv[b].singularity()(0);
-    Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
-    _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
-    b++;
+  for (auto const& bl : gf_struct) {
+   Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1) * iw_ + G0_iw_inv[b].singularity()(0);
+   Delta_iw[b] = Delta_iw[b] - G0_iw_inv[b];
+   _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
+   // Force all diagonal elements to be real
+   for (int i : range(bl.second.size())) _Delta_tau[b].data()(_,i,i) = real(_Delta_tau[b].data()(_,i,i));
+   // If off-diagonal elements are below threshold, set to real
+   if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold) _Delta_tau[b].data() = real(_Delta_tau[b].data());
+   b++;
   }
 
   // Report what h_loc we are using
@@ -175,31 +194,35 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Initialise Monte Carlo quantities
   qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);
-  auto qmc = mc_tools::mc_generic<mc_sign_type>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
-                                                params.random_seed, params.verbosity);
+  auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, 1.0, params.verbosity);
 
   // Moves
-  using move_set_type = mc_tools::move_set<mc_sign_type>;
+  using move_set_type = mc_tools::move_set<mc_weight_t>;
   move_set_type inserts(qmc.get_rng());
   move_set_type removes(qmc.get_rng());
   move_set_type double_inserts(qmc.get_rng());
   move_set_type double_removes(qmc.get_rng());
 
   auto& delta_names = _Delta_tau.domain().names();
+  auto get_prob_prop = [&params](std::string const& block_name) {
+   auto f = params.proposal_prob.find(block_name);
+   return (f != params.proposal_prob.end() ? f->second : 1.0);
+  };
   for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
    int block_size = _Delta_tau[block].data().shape()[1];
    auto const& block_name = delta_names[block];
-   auto f = params.proposal_prob.find(block_name);
-   double prop_prob = (f != params.proposal_prob.end() ? f->second : 1.0);
+   double prop_prob = get_prob_prop(block_name);
    inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
    removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
+     auto const& block_name2 = delta_names[block2];
+     double prop_prob2 = get_prob_prop(block_name2);
      double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
-                 "Insert Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
+                 "Insert Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
      double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
-                 "Remove Delta_" + delta_names[block] + "_" + delta_names[block2], 1.0);
+                 "Remove Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
     }
    }
   }
@@ -227,7 +250,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.measure_g_tau) {
    auto& g_names = _G_tau.domain().names();
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
-    qmc.add_measure(measure_g(block, _G_tau_real[block], data), "G measure (" + g_names[block] + ")");
+    qmc.add_measure(measure_g(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
    }
   }
   if (params.measure_g_l) {
@@ -253,15 +276,13 @@ void solver_core::solve(solve_parameters_t const & params) {
   qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
 
   // Run! The empty (starting) configuration has sign = 1
-  _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
+  _solve_status = qmc.warmup_and_accumulate( params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
   std::cout << "Average sign: " << _average_sign << std::endl;
 
-  // Copy real G_tau back to complex G_tau
-  if (params.measure_g_tau) {
-   _G_tau = _G_tau_real;
-  }
+  // Copy local (real or complex) G_tau back to complex G_tau
+  if (params.measure_g_tau) _G_tau = _G_tau_accum;
 
 }
 

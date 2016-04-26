@@ -10,9 +10,6 @@ project(cthyb CXX)
 set(CMAKE_BUILD_TYPE Release)
 enable_testing()
 
-# We use shared libraries
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 
@@ -30,22 +27,39 @@ endif(${GIT_RESULT} EQUAL 0)
 # We want to be installed in the TRIQS tree
 set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
 
-# Details of the code
-option(EXT_DEBUG "Enable extended debugging output" OFF)
-option(SAVE_CONFIGS "Save visited configurations to configs.h5" OFF)
+# Add the compiling options (-D... ) for C++
+message(STATUS "TRIQS : Adding compilation flags detected by the library (C++11/14, libc++, etc...) ")
+add_definitions(${TRIQS_CXX_DEFINITIONS})
+
+# Options for the compilation ...
 option(Tests "Enable Tests" ON)
+option(HYBRIDISATION_IS_COMPLEX "If ON, the hybridization Delta(tau) is complex" OFF)
+option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
+option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
+option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
+
+# adjust the macros accordingly
+if(HYBRIDISATION_IS_COMPLEX)
+ add_definitions(-DHYBRIDISATION_IS_COMPLEX)
+endif()
+
+if(LOCAL_HAMILTONIAN_IS_COMPLEX)
+ add_definitions(-DLOCAL_HAMILTONIAN_IS_COMPLEX)
+endif()
 
 if(EXT_DEBUG)
  add_definitions(-DEXT_DEBUG)
 endif(EXT_DEBUG)
+
 if(SAVE_CONFIGS)
  set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save")
  add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})
 endif(SAVE_CONFIGS)
 
+include_directories(c++)
+
 # Compile C++ code
 add_subdirectory(c++)
-#add_subdirectory(tools)
 
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
@@ -61,4 +75,3 @@ if (${TRIQS_WITH_PYTHON_SUPPORT})
    add_subdirectory(doc)
  endif(${BUILD_DOC})
 endif()
-

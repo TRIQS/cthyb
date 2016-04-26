@@ -2,6 +2,7 @@
 
 namespace cthyb {
 
+double const threshold = 1.e-11;
 
 double partition_function(atom_diag const& atom, double beta) {
  double z = 0;
@@ -18,9 +19,9 @@ block_matrix_t atomic_density_matrix(atom_diag const& atom, double beta) {
  block_matrix_t dm(n_blocks);
  for (int bl = 0; bl < n_blocks; ++bl) {
   int bl_size = atom.get_block_dim(bl);
-  dm[bl] = matrix<h_scalar_t>(bl_size,bl_size);
-  for(int u = 0; u < bl_size; ++u) {
-   for(int v = 0; v < bl_size; ++v) {
+  dm[bl] = matrix<h_scalar_t>(bl_size, bl_size);
+  for (int u = 0; u < bl_size; ++u) {
+   for (int v = 0; v < bl_size; ++v) {
     dm[bl](u, v) = (u == v) ? std::exp(-beta * atom.get_eigenvalue(bl, u)) / z : 0;
    }
   }
@@ -77,7 +78,7 @@ block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::str
 
 // -----------------------------------------------------------------
 
-h_scalar_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom) {
+double trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom) {
  h_scalar_t result = 0;
  if (atom.n_blocks() != density_matrix.size()) TRIQS_RUNTIME_ERROR << "trace_rho_op : size mismatch : number of blocks differ";
  for (int bl = 0; bl < atom.n_blocks(); ++bl) {
@@ -88,7 +89,8 @@ h_scalar_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t con
    if (b_m.first != -1) result += x.coef * dot_product(b_m.second, density_matrix[bl]);
   }
  }
- return result;
+ if (imag(result) > threshold) TRIQS_RUNTIME_ERROR << "trace_rho_op: the result is not real.";
+ return real(result);
 }
 
 // -----------------------------------------------------------------
@@ -99,7 +101,6 @@ full_hilbert_space_state_t act(many_body_op_t const& op, full_hilbert_space_stat
  for (auto const& x : op) {
   for (int bl = 0; bl < atom.n_blocks(); ++bl) {
    auto b_m = atom.matrix_element_of_monomial(x.monomial, bl);
-   // FIXME double : to be removed when ported to the right many_body_operator<double>
    if (b_m.first == -1) continue;
    result(atom.index_range_of_block(b_m.first)) += x.coef * b_m.second * st(atom.index_range_of_block(bl));
   }
@@ -109,20 +110,20 @@ full_hilbert_space_state_t act(many_body_op_t const& op, full_hilbert_space_stat
 
 //---------------------
 
-std::vector<std::vector<double>> quantum_number_eigenvalues(many_body_op_t const& op, atom_diag const& atom) {
+std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(many_body_op_t const& op, atom_diag const& atom) {
 
  auto commutator = op * atom.get_h_atomic() - atom.get_h_atomic() * op;
  if (!commutator.is_zero()) TRIQS_RUNTIME_ERROR << "The operator is not a quantum number";
 
- std::vector<std::vector<double>> result;
+ std::vector<std::vector<quantum_number_t>> result;
 
  for (int bl = 0; bl < atom.n_blocks(); ++bl) {
   auto dim = atom.get_block_dim(bl);
-  result.push_back(std::vector<double>(dim, 0));
+  result.push_back(std::vector<quantum_number_t>(dim, 0));
   for (auto const& x : op) {
    auto b_m = atom.matrix_element_of_monomial(x.monomial, bl);
    if (b_m.first != bl) continue;
-   for (int i = 0; i < dim; ++i) result.back()[i] += x.coef * b_m.second(i, i);
+   for (int i = 0; i < dim; ++i) result.back()[i] += real(x.coef * b_m.second(i, i)); //FIXME leave general, cast into quantum_number_t before returning -- is this possible?
   }
  }
  return result;
@@ -130,38 +131,34 @@ std::vector<std::vector<double>> quantum_number_eigenvalues(many_body_op_t const
 
 //---------------------
 
-template<typename M> 
+template <typename M>
 // require (ImmutableMatrix<M>)
-bool is_diagonal(M const &m) {
- //auto r = trace(abs(m)); //0;
- //for (int i = 0; i < first_dim(m); ++i) r += abs(m(i, i));
- return ((sum(abs(m)) - trace(abs(m))) < 1.e-11);
+bool is_diagonal(M const& m) {
+ return ((sum(abs(m)) - trace(abs(m))) < threshold);
 }
 
-std::vector<std::vector<double>> quantum_number_eigenvalues2(many_body_op_t const& op, atom_diag const& atom) {
+std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues2(many_body_op_t const& op, atom_diag const& atom) {
 
  auto commutator = op * atom.get_h_atomic() - atom.get_h_atomic() * op;
  if (!commutator.is_zero()) TRIQS_RUNTIME_ERROR << "The operator is not a quantum number";
 
  auto d = atom.get_full_hilbert_space_dim();
- matrix<double> M(d, d);
- std::vector<std::vector<double>> result;
+ matrix<quantum_number_t> M(d, d);
+ std::vector<std::vector<quantum_number_t>> result;
 
  for (int bl = 0; bl < atom.n_blocks(); ++bl) {
   auto dim = atom.get_block_dim(bl);
   for (auto const& x : op) {
    auto b_m = atom.matrix_element_of_monomial(x.monomial, bl);
    if (b_m.first == -1) continue;
-   M(atom.index_range_of_block(b_m.first), atom.index_range_of_block(bl)) += x.coef * b_m.second;
-   //for (int i = 0; i < dim; ++i) result.back()[i] += x.coef * b_m.second(i, i);
+   M(atom.index_range_of_block(b_m.first), atom.index_range_of_block(bl)) += real(x.coef * b_m.second);
   }
  }
- // 
  if (!is_diagonal(M)) TRIQS_RUNTIME_ERROR << "The Matrix of the operator is not diagonal !!!";
 
  for (int bl = 0; bl < atom.n_blocks(); ++bl) {
    auto dim = atom.get_block_dim(bl);
-   result.push_back(std::vector<double>(dim, 0));
+   result.push_back(std::vector<quantum_number_t>(dim, 0));
    for (int i = 0; i < dim; ++i) result.back()[i] = M(atom.flatten_block_index(bl, i), atom.flatten_block_index(bl, i));
  }
 

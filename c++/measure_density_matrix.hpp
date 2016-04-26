@@ -24,13 +24,12 @@
 namespace cthyb {
 
 struct measure_density_matrix {
- using mc_sign_type = double;
  qmc_data const& data;
- std::vector<matrix<double>> & block_dm; // density matrix of each block
- mc_sign_type z = 0;
+ std::vector<matrix_t>& block_dm; // density matrix of each block
+ mc_weight_t z = 0;
 
- measure_density_matrix(qmc_data const& data, std::vector<matrix<double>> & density_matrix);
- void accumulate(mc_sign_type s);
+ measure_density_matrix(qmc_data const& data, std::vector<matrix_t> & density_matrix);
+ void accumulate(mc_weight_t s);
  void collect_results(triqs::mpi::communicator const& c);
 };
 }

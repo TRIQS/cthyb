@@ -32,9 +32,8 @@ class move_insert_c_c_cdag_cdag {
  int block_index1, block_index2, block_size1, block_size2;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau1, delta_tau2;
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ double dtau1, dtau2;
+ h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2, tau3, tau4;
  op_desc op1, op2, op3, op4;
 
@@ -58,7 +57,7 @@ class move_insert_c_c_cdag_cdag {
 
  //---------------------
 
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -89,11 +88,11 @@ class move_insert_c_c_cdag_cdag {
 #endif
 
   // record the length of the proposed insertion
-  delta_tau1 = double(tau2 - tau1);
-  delta_tau2 = double(tau4 - tau3);
+  dtau1 = double(tau2 - tau1);
+  dtau2 = double(tau4 - tau3);
   if (performance_analysis) {
-   histos["double_insert_length_proposed"] << delta_tau1;
-   histos["double_insert_length_proposed"] << delta_tau2;
+   histos["double_insert_length_proposed"] << dtau1;
+   histos["double_insert_length_proposed"] << dtau2;
   }
 
   // Insert the operators op1, op2, op3, op4 at time tau1, tau2, tau3, tau4
@@ -117,8 +116,8 @@ class move_insert_c_c_cdag_cdag {
   auto& det2 = data.dets[block_index2];
   int det1_size = det1.size();
   int det2_size = det2.size();
-  double det_ratio;
-  
+  det_scalar_t det_ratio;
+
   // Find the position for insertion in the determinant
   // NB : the determinant stores the C in decreasing time order.
   int num_c_dag1, num_c1, num_c_dag2, num_c2;
@@ -151,7 +150,7 @@ class move_insert_c_c_cdag_cdag {
   }
 
   // proposition probability
-  double t_ratio; 
+  mc_weight_t t_ratio;
   if (block_index1 == block_index2) {
    // (ways to insert 4 operators in det1)/((ways to remove 4 operators from det that is larger by two))
    // Here, we use the fact that the two cdag/c proposed to be removed in the det can be at the same 
@@ -176,9 +175,9 @@ class move_insert_c_c_cdag_cdag {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight /data.atomic_weight << " in config " << config.get_id();
+  if (!isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight /data.atomic_weight << " in config " << config.get_id();
 
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -188,13 +187,13 @@ class move_insert_c_c_cdag_cdag {
   std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight<< std::endl;
 #endif
 
-  if (!std::isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio << " in config " << config.get_id();
+  if (!isfinite(p * t_ratio)) TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  "<< t_ratio << " in config " << config.get_id();
   return p * t_ratio;
  }
 
  //----------------
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   // insert in the tree
   data.imp_trace.confirm_insert();
@@ -219,8 +218,8 @@ class move_insert_c_c_cdag_cdag {
   data.atomic_reweighting = new_atomic_reweighting;
 
   if (performance_analysis) {
-   histos["double_insert_length_accepted"] << delta_tau1;
-   histos["double_insert_length_accepted"] << delta_tau2;
+   histos["double_insert_length_accepted"] << dtau1;
+   histos["double_insert_length_accepted"] << dtau2;
   }
 
 #ifdef EXT_DEBUG

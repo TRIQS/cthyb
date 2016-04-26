@@ -20,6 +20,8 @@
  ******************************************************************************/
 #include "./atom_diag.hpp"
 #include "./atom_diag_worker.hpp"
+#include <triqs/hilbert_space/state.hpp>
+#include <triqs/hilbert_space/imperative_operator.hpp>
 #include <sstream>
 #include <bitset>
 #include <algorithm>
@@ -67,8 +69,9 @@ std::vector<std::vector<double>> atom_diag::get_energies() const {
 // -----------------------------------------------------------------
 
 full_hilbert_space_state_t atom_diag::get_vacuum_state() const {
- full_hilbert_space_state_t st;
- st[flatten_block_index(_vacuum_index, 0)] = 1;
+ full_hilbert_space_state_t st(_total_dim);
+ st() = 0;
+ st[flatten_block_index(vacuum_block_index, vacuum_inner_index)] = 1;
  return st;
 }
 
@@ -181,33 +184,6 @@ std::pair<int, matrix<h_scalar_t>> atom_diag::matrix_element_of_monomial(operato
  return {B, std::move(m)};
 }
 
-
-}
-
-// FIXME move into the library
-namespace triqs {
-namespace hilbert_space {
- // -----------------------------------------------------------------
- std::string get_triqs_hdf5_data_scheme(sub_hilbert_space const&) { return "sub_hilbert_space"; }
-
- // -----------------------------------------------------------------
-
- void h5_write(h5::group fg, std::string const& name, sub_hilbert_space const& x) {
-  auto gr = fg.create_group(name);
-  h5_write(gr, "fock_states", x.get_all_fock_states());
-  h5_write(gr, "index", x.get_index());
- }
-
- // -----------------------------------------------------------------
- void h5_read(h5::group fg, std::string const& name, sub_hilbert_space& x) {
-  using h5::h5_read;
-  auto gr = fg.open_group(name);
-  auto fs = h5_read<std::vector<fock_state_t>>(gr, "fock_states");
-  auto index = h5_read<int>(gr, "index");
-  x = sub_hilbert_space{index};
-  for (auto const& s : fs) x.add_fock_state(s);
- }
-}
 }
 
 namespace cthyb {
@@ -250,7 +226,8 @@ void h5_write(h5::group fg, std::string const& name, atom_diag const& x) {
  h5_write(gr, "eigensystems", x.eigensystems);
  h5_write(gr, "gs_energy", x.gs_energy);
  h5_write_attribute(gr, "fops", x.fops);
- h5_write(gr, "vacuum_index", x._vacuum_index);
+ h5_write(gr, "vacuum_block_index", x.vacuum_block_index);
+ h5_write(gr, "vacuum_inner_index", x.vacuum_inner_index);
 }
 
 // -----------------------------------------------------------------
@@ -279,7 +256,8 @@ void h5_read(h5::group fg, std::string const& name, atom_diag& x) {
  h5_read(gr, "eigensystems", x.eigensystems);
  h5_read(gr, "gs_energy", x.gs_energy);
  h5_read_attribute(gr, "fops", x.fops);
- h5_read(gr, "vacuum_index", x._vacuum_index);
+ h5_read(gr, "vacuum_block_index", x.vacuum_block_index);
+ h5_read(gr, "vacuum_inner_index", x.vacuum_inner_index);
  x.complete_init();
 }
 }

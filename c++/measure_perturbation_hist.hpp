@@ -25,7 +25,6 @@
 namespace cthyb {
 
 struct measure_perturbation_hist {
- using mc_sign_type = std::complex<double>;
 
  qmc_data const& data;
  int block_index;
@@ -36,7 +35,7 @@ struct measure_perturbation_hist {
  }
  // --------------------
 
- void accumulate(mc_sign_type s) {
+ void accumulate(mc_weight_t s) {
 
   histo_perturbation_order << data.dets[block_index].size();
  }
@@ -49,7 +48,6 @@ struct measure_perturbation_hist {
 // ----------------------------------------------------------------
 
 struct measure_perturbation_hist_total {
- using mc_sign_type = std::complex<double>;
 
  qmc_data const& data;
  statistics::histogram histo_perturbation_order;
@@ -59,7 +57,7 @@ struct measure_perturbation_hist_total {
  }
  // --------------------
 
- void accumulate(mc_sign_type s) {
+ void accumulate(mc_weight_t s) {
   histo_perturbation_order << data.config.size() / 2;
  }
  // ---------------------------------------------

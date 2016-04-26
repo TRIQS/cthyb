@@ -34,6 +34,8 @@ Reference manual
 
    reference/solver
    reference/solve_parameters
+   reference/moves
+   reference/observables
 
 FAQs
 ----

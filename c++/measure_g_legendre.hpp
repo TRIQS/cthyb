@@ -30,13 +30,12 @@ using namespace triqs::gfs;
 
 // Measure Legendre Green's function (one block)
 struct measure_g_legendre {
- using mc_sign_type = double;
 
  qmc_data const& data;
  gf_view<legendre> g_l;
  int a_level;
  double beta;
- mc_sign_type z;
+ mc_weight_t z;
  int64_t num;
 
  measure_g_legendre(int a_level, gf_view<legendre> g_l, qmc_data const& data)
@@ -47,7 +46,7 @@ struct measure_g_legendre {
  }
  // --------------------
 
- void accumulate(mc_sign_type s) {
+ void accumulate(mc_weight_t s) {
   num += 1;
   if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
@@ -56,11 +55,11 @@ struct measure_g_legendre {
 
   auto Tn = triqs::utility::legendre_generator();
 
-  foreach(data.dets[a_level], [this, s, &Tn](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, double M) {
+  foreach(data.dets[a_level], [this, s, &Tn](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, det_scalar_t M) {
    double poly_arg = 2*double(y.first - x.first)/beta - 1.0;
    Tn.reset(poly_arg);
 
-   double val = (y.first >= x.first ? s : -s) * M;
+   auto val = (y.first >= x.first ? s : -s) * M;
    for (auto l : g_l.mesh()) this->g_l[l](y.second, x.second) += val * Tn.next();
   });
  }
@@ -72,7 +71,7 @@ struct measure_g_legendre {
   g_l = mpi_all_reduce(g_l, c);
   for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(z)*beta)) * g_l[l];
 
-  arrays::matrix<double> id(get_target_shape(g_l));
+  matrix<double> id(get_target_shape(g_l));
   id() = 1.0;
   enforce_discontinuity(g_l,id);
  }

@@ -35,7 +35,7 @@ block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::str
 
 
 /// Trace (op * density_matrix)
-h_scalar_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom);
+quantum_number_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom);
 
 /// Act with operator op on state st
 full_hilbert_space_state_t act(many_body_op_t const& op, full_hilbert_space_state_t const& st, atom_diag const& atom);
@@ -44,13 +44,13 @@ full_hilbert_space_state_t act(many_body_op_t const& op, full_hilbert_space_stat
  * The operator op is supposed to be a quantum number (if not -> exception)
  * @return the eigenvalue by block
  */
-std::vector<std::vector<double>> quantum_number_eigenvalues(many_body_op_t const& op, atom_diag const& atom);
+std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(many_body_op_t const& op, atom_diag const& atom);
 
 /** 
  * The operator op is supposed to be a quantum number (if not -> exception)
  * @return the eigenvalue by block
  */
-std::vector<std::vector<double>> quantum_number_eigenvalues2(many_body_op_t const& op, atom_diag const& atom);
+std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues2(many_body_op_t const& op, atom_diag const& atom);
 
 
 }

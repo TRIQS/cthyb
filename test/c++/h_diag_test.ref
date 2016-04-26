@@ -13,3 +13,12 @@ Block 3, relative gs energy : 2.5
 size = 1
 -------------------------
 
+Dimension of full Hilbert space: 4
+Number of blocks: 2
+Block 0, relative gs energy : 0
+size = 2
+-------------------------
+Block 1, relative gs energy : 1.2
+size = 2
+-------------------------
+

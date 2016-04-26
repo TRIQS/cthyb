@@ -1,6 +1,6 @@
 // DO NOT EDIT
 // Generated automatically using libclang using the command :
-// c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver" --only_converters
+// c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 
 
 // --- C++ Python converter for solve_parameters_t
@@ -32,6 +32,7 @@ template <> struct py_converter<solve_parameters_t> {
   PyDict_SetItemString( d, "proposal_prob"         , convert_to_python(x.proposal_prob));
   PyDict_SetItemString( d, "move_global"           , convert_to_python(x.move_global));
   PyDict_SetItemString( d, "move_global_prob"      , convert_to_python(x.move_global_prob));
+  PyDict_SetItemString( d, "imag_threshold"        , convert_to_python(x.imag_threshold));
   return d;
  }
 
@@ -42,30 +43,38 @@ template <> struct py_converter<solve_parameters_t> {
    r = init_default;
  }
 
+ template <typename T> static void _get_optional(PyObject *dic, const char *name, T &r) {
+  if (PyDict_Contains(dic, pyref::string(name)))
+   r = convert_from_python<T>(PyDict_GetItemString(dic, name));
+  else
+   r = T{};
+ }
+
  static solve_parameters_t py2c(PyObject *dic) {
   solve_parameters_t res;
   res.h_int = convert_from_python<many_body_op_t>(PyDict_GetItemString(dic, "h_int"));
   res.n_cycles = convert_from_python<int>(PyDict_GetItemString(dic, "n_cycles"));
-  _get_optional(dic, "partition_method"      , res.partition_method        , "autopartition");
-  _get_optional(dic, "quantum_numbers"       , res.quantum_numbers         , std::vector<many_body_op_t>{});
-  _get_optional(dic, "length_cycle"          , res.length_cycle            , 50);
-  _get_optional(dic, "n_warmup_cycles"       , res.n_warmup_cycles         , 5000);
-  _get_optional(dic, "random_seed"           , res.random_seed             , 34788+928374*triqs::mpi::communicator().rank());
-  _get_optional(dic, "random_name"           , res.random_name             , "");
-  _get_optional(dic, "max_time"              , res.max_time                , -1);
-  _get_optional(dic, "verbosity"             , res.verbosity               , ((triqs::mpi::communicator().rank()==0)?3:0));
-  _get_optional(dic, "move_shift"            , res.move_shift              , true);
-  _get_optional(dic, "move_double"           , res.move_double             , false);
-  _get_optional(dic, "use_trace_estimator"   , res.use_trace_estimator     , false);
-  _get_optional(dic, "measure_g_tau"         , res.measure_g_tau           , true);
-  _get_optional(dic, "measure_g_l"           , res.measure_g_l             , false);
-  _get_optional(dic, "measure_pert_order"    , res.measure_pert_order      , false);
-  _get_optional(dic, "measure_density_matrix", res.measure_density_matrix  , false);
-  _get_optional(dic, "use_norm_as_weight"    , res.use_norm_as_weight      , false);
-  _get_optional(dic, "performance_analysis"  , res.performance_analysis    , false);
-  _get_optional(dic, "proposal_prob"         , res.proposal_prob           , (std::map<std::string,double>{}));
-  _get_optional(dic, "move_global"           , res.move_global             , (std::map<std::string,indices_map_t>{}));
-  _get_optional(dic, "move_global_prob"      , res.move_global_prob        , 0.05);
+  _get_optional(dic, "partition_method"      , res.partition_method         ,"autopartition");
+  _get_optional(dic, "quantum_numbers"       , res.quantum_numbers          ,std::vector<many_body_op_t>{});
+  _get_optional(dic, "length_cycle"          , res.length_cycle             ,50);
+  _get_optional(dic, "n_warmup_cycles"       , res.n_warmup_cycles          ,5000);
+  _get_optional(dic, "random_seed"           , res.random_seed              ,34788+928374*triqs::mpi::communicator().rank());
+  _get_optional(dic, "random_name"           , res.random_name              ,"");
+  _get_optional(dic, "max_time"              , res.max_time                 ,-1);
+  _get_optional(dic, "verbosity"             , res.verbosity                ,((triqs::mpi::communicator().rank()==0)?3:0));
+  _get_optional(dic, "move_shift"            , res.move_shift               ,true);
+  _get_optional(dic, "move_double"           , res.move_double              ,false);
+  _get_optional(dic, "use_trace_estimator"   , res.use_trace_estimator      ,false);
+  _get_optional(dic, "measure_g_tau"         , res.measure_g_tau            ,true);
+  _get_optional(dic, "measure_g_l"           , res.measure_g_l              ,false);
+  _get_optional(dic, "measure_pert_order"    , res.measure_pert_order       ,false);
+  _get_optional(dic, "measure_density_matrix", res.measure_density_matrix   ,false);
+  _get_optional(dic, "use_norm_as_weight"    , res.use_norm_as_weight       ,false);
+  _get_optional(dic, "performance_analysis"  , res.performance_analysis     ,false);
+  _get_optional(dic, "proposal_prob"         , res.proposal_prob            ,(std::map<std::string,double>{}));
+  _get_optional(dic, "move_global"           , res.move_global              ,(std::map<std::string,indices_map_t>{}));
+  _get_optional(dic, "move_global_prob"      , res.move_global_prob         ,0.05);
+  _get_optional(dic, "imag_threshold"        , res.imag_threshold           ,1.e-15);
   return res;
  }
 
@@ -96,7 +105,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","measure_density_matrix","use_norm_as_weight","performance_analysis","proposal_prob","move_global","move_global_prob"};
+  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_pert_order","measure_density_matrix","use_norm_as_weight","performance_analysis","proposal_prob","move_global","move_global_prob","imag_threshold"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -130,6 +139,7 @@ template <> struct py_converter<solve_parameters_t> {
   _check_optional <std::map<std::string, double>       >(dic, fs, err, "proposal_prob"         , "std::map<std::string, double>");
   _check_optional <std::map<std::string, indices_map_t>>(dic, fs, err, "move_global"           , "std::map<std::string, indices_map_t>");
   _check_optional <double                              >(dic, fs, err, "move_global_prob"      , "double");
+  _check_optional <double                              >(dic, fs, err, "imag_threshold"        , "double");
   if (err) goto _error;
   return true;
 

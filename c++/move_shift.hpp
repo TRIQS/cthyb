@@ -31,9 +31,8 @@ class move_shift_operator {
  mc_tools::random_generator& rng;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau;
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ double dtau;
+ h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau_old, tau_new;
  op_desc op_old, op_new;
  using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
@@ -56,7 +55,7 @@ class move_shift_operator {
 
  //---------------------
 
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -148,8 +147,8 @@ class move_shift_operator {
   }
 
   // Record the length of the proposed shift
-  delta_tau = double(tau_new - tau_old);
-  if (performance_analysis) histos["shift_length_proposed"] << delta_tau;
+  dtau = double(tau_new - tau_old);
+  if (performance_analysis) histos["shift_length_proposed"] << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;
@@ -204,10 +203,10 @@ class move_shift_operator {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
+  if (!isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
 
   // --- Compute the weight
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -221,7 +220,7 @@ class move_shift_operator {
 
  //----------------
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   // Update the tree
   data.imp_trace.confirm_shift();
@@ -238,7 +237,7 @@ class move_shift_operator {
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
 
-  if (performance_analysis) histos["shift_length_accepted"] << delta_tau;
+  if (performance_analysis) histos["shift_length_accepted"] << dtau;
 
   auto result = data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
 

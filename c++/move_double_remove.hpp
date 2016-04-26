@@ -33,9 +33,8 @@ class move_remove_c_c_cdag_cdag {
  int block_index1, block_index2, block_size1, block_size2;
  bool performance_analysis;
  std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
- double delta_tau1, delta_tau2;
- double new_atomic_weight;
- qmc_data::trace_t new_atomic_reweighting;
+ double dtau1, dtau2;
+ h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2, tau3, tau4;
 
  public:
@@ -58,7 +57,7 @@ class move_remove_c_c_cdag_cdag {
 
  //----------------
  
- mc_weight_type attempt() {
+ mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
   std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -68,7 +67,7 @@ class move_remove_c_c_cdag_cdag {
 
   auto& det1 = data.dets[block_index1];
   auto& det2 = data.dets[block_index2];
-  double det_ratio;
+  det_scalar_t det_ratio;
 
   // Pick two pairs of C, Cdagger to remove at random
   // Remove the operators from the traces
@@ -98,11 +97,11 @@ class move_remove_c_c_cdag_cdag {
   tau3 = data.imp_trace.try_delete(num_c2, block_index2, false);
   tau4 = data.imp_trace.try_delete(num_c_dag2, block_index2, true);
 
-  delta_tau1 = double(tau2 - tau1);
-  delta_tau2 = double(tau4 - tau3);
+  dtau1 = double(tau2 - tau1);
+  dtau2 = double(tau4 - tau3);
   if (performance_analysis) {
-   histos["double_remove_length_proposed"] << delta_tau1;
-   histos["double_remove_length_proposed"] << delta_tau2;
+   histos["double_remove_length_proposed"] << dtau1;
+   histos["double_remove_length_proposed"] << dtau2;
   }
 
   if (block_index1 == block_index2) {
@@ -114,7 +113,7 @@ class move_remove_c_c_cdag_cdag {
   }
 
   // proposition probability
-  double t_ratio;
+  mc_weight_t t_ratio;
   // Note: Must use the size of the det before the try_delete!
   if (block_index1 == block_index2) {
    // Here, we use the fact that the two cdag/c proposed to be removed in the det can be at the same 
@@ -138,9 +137,9 @@ class move_remove_c_c_cdag_cdag {
    return 0;
   }
   auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
-  if (!std::isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
+  if (!isfinite(atomic_weight_ratio)) TRIQS_RUNTIME_ERROR << "atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " " << new_atomic_weight/data.atomic_weight << " in config " << config.get_id();
 
-  mc_weight_type p = atomic_weight_ratio * det_ratio;
+  mc_weight_t p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -149,14 +148,14 @@ class move_remove_c_c_cdag_cdag {
   std::cerr << "Weight: " << p/ t_ratio << std::endl;
 #endif
 
-  if (!std::isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
-  if (!std::isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
+  if (!isfinite(p)) TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
+  if (!isfinite(p / t_ratio)) TRIQS_RUNTIME_ERROR << "p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
   return p / t_ratio;
  }
 
  //----------------
 
- mc_weight_type accept() {
+ mc_weight_t accept() {
 
   // remove from the tree
   data.imp_trace.confirm_delete();
@@ -181,8 +180,8 @@ class move_remove_c_c_cdag_cdag {
   data.atomic_reweighting = new_atomic_reweighting;
 
   if (performance_analysis) {
-   histos["double_remove_length_accepted"] << delta_tau1;
-   histos["double_remove_length_accepted"] << delta_tau2;
+   histos["double_remove_length_accepted"] << dtau1;
+   histos["double_remove_length_accepted"] << dtau2;
   }
 
 #ifdef EXT_DEBUG

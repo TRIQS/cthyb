@@ -23,33 +23,32 @@
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include "solve_parameters.hpp"
-#include "./qmc_data.hpp"
+#include "atom_diag.hpp"
+#include "atom_diag_functions.hpp"
 
 namespace cthyb {
 
 using namespace triqs::utility;
-using mc_weight_type = double;
-using mc_sign_type = mc_weight_type;
 using indices_type = triqs::operators::indices_t;
 
+/**  DOC OF SOLVER CORE*/
 class solver_core {
 
- double beta;
- atom_diag h_diag;
- std::map<std::string, indices_type> gf_struct;
- many_body_op_t _h_loc;                  // The local Hamiltonian = h_int + h0
- block_gf<imfreq> _G0_iw;                   // Green's function containers: imaginary-freq Green's functions
- block_gf<imtime> _Delta_tau, _G_tau;       // Green's function containers: imaginary-time Green's functions
- block_gf<imtime,matrix_real_valued> _G_tau_real;
- block_gf<legendre> _G_l;                   // Green's function containers: Legendre coefficients
- std::vector<matrix<double>> _density_matrix; // density matrix, when used in Norm mode
- triqs::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
- solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
- mc_sign_type _average_sign;
- int _solve_status;                         // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
+ double beta;                                   // inverse temperature
+ atom_diag h_diag;                              // diagonalization of the local problem
+ std::map<std::string, indices_type> gf_struct; // Block structure of the Green function FIXME
+ many_body_op_t _h_loc;                         // The local Hamiltonian = h_int + h0
+ block_gf<imfreq> _G0_iw;                       // Green's function containers: imaginary-freq Green's functions
+ block_gf<imtime> _Delta_tau, _G_tau;           // Green's function containers: imaginary-time Green's functions
+ block_gf<imtime, delta_target_t> _G_tau_accum; // Intermediate object to accumulate g(tau), either real or complex
+ block_gf<legendre> _G_l;                       // Green's function containers: Legendre coefficients
+ std::vector<matrix_t> _density_matrix;         // density matrix, when used in Norm mode
+ triqs::mpi::communicator _comm;                // define the communicator, here MPI_COMM_WORLD
+ solve_parameters_t _last_solve_parameters;     // parameters of the last call to solve
+ mc_weight_t _average_sign;                     // average sign of the QMC
+ int _solve_status;                             // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
  public:
-
  solver_core(double beta, std::map<std::string, indices_type> const & gf_struct, int n_iw=1025, int n_tau=10001, int n_l=50);
 
  /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
@@ -78,13 +77,13 @@ class solver_core {
  block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _G_tau[0].mesh().size()); }
 
  /// Density matrix
- std::vector<matrix<double>> const & density_matrix() const { return _density_matrix;}
+ std::vector<matrix_t> const & density_matrix() const { return _density_matrix;}
 
  /// Diagonalization of h_loc
  atom_diag const & h_loc_diagonalization() const { return h_diag;}
 
  /// Monte Carlo average sign
- mc_sign_type average_sign() const { return _average_sign; }
+ mc_weight_t average_sign() const { return _average_sign; }
 
  /// Status of the solve on exit
  int solve_status() const { return _solve_status; }

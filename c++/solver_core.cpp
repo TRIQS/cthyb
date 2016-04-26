@@ -193,8 +193,7 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Initialise Monte Carlo quantities
   qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);
-  auto qmc = mc_tools::mc_generic<mc_weight_t>(params.n_cycles, params.length_cycle, params.n_warmup_cycles, params.random_name,
-                                                params.random_seed, params.verbosity);
+  auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, 1.0, params.verbosity);
 
   // Moves
   using move_set_type = mc_tools::move_set<mc_weight_t>;
@@ -266,7 +265,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
 
   // Run! The empty (starting) configuration has sign = 1
-  _solve_status = qmc.start(1.0, triqs::utility::clock_callback(params.max_time));
+  _solve_status = qmc.warmup_and_accumulate( params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
   std::cout << "Average sign: " << _average_sign << std::endl;

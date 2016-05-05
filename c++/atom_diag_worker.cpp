@@ -347,7 +347,7 @@ void atom_diag_worker::complete() {
     auto Bp = connection(n, B);
     if (Bp == -1) continue;
     auto M = make_op_matrix(c_op, B, Bp);
-    cmat[B] = conj(hdiag->eigensystems[Bp].unitary_matrix.transpose()) * M * hdiag->eigensystems[B].unitary_matrix;
+    cmat[B] = dagger(hdiag->eigensystems[Bp].unitary_matrix) * M * hdiag->eigensystems[B].unitary_matrix;
    }
    return cmat;
   };

@@ -30,17 +30,26 @@ class move_insert_c_c_cdag_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index1, block_index2, block_size1, block_size2;
- bool performance_analysis;
- std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ // Analysis histograms
+ histogram * histo_proposed1, * histo_proposed2;
+ histogram * histo_accepted1, * histo_accepted2;
  double dtau1, dtau2;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2, tau3, tau4;
  op_desc op1, op2, op3, op4;
 
+ histogram * add_histo(std::string const& name_prefix, int block_index, histo_map_t * histos) {
+  if(!histos) return nullptr;
+  std::string name = name_prefix + "_" + data.delta.domain().names()[block_index];
+  auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
+  return &(new_histo.first->second);
+ }
+
  public:
  //-----------------------------------------------
 
- move_insert_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, qmc_data& data, mc_tools::random_generator& rng, bool performance_analysis)
+ move_insert_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2,
+                           qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
       rng(rng),
@@ -48,11 +57,10 @@ class move_insert_c_c_cdag_cdag {
       block_size1(block_size1),
       block_index2(block_index2),
       block_size2(block_size2),
-      performance_analysis(performance_analysis) {
-  if (performance_analysis) {
-   histos.insert({"double_insert_length_proposed", {0, config.beta(), 100, "histo_double_insert_length_proposed.dat"}});
-   histos.insert({"double_insert_length_accepted", {0, config.beta(), 100, "histo_double_insert_length_accepted.dat"}});
-  }
+      histo_proposed1(add_histo("double_insert_length_proposed", block_index1, histos)),
+      histo_proposed2(add_histo("double_insert_length_proposed", block_index2, histos)),
+      histo_accepted1(add_histo("double_insert_length_accepted", block_index1, histos)),
+      histo_accepted2(add_histo("double_insert_length_accepted", block_index2, histos)) {
  }
 
  //---------------------
@@ -90,9 +98,9 @@ class move_insert_c_c_cdag_cdag {
   // record the length of the proposed insertion
   dtau1 = double(tau2 - tau1);
   dtau2 = double(tau4 - tau3);
-  if (performance_analysis) {
-   histos["double_insert_length_proposed"] << dtau1;
-   histos["double_insert_length_proposed"] << dtau2;
+  if (histo_proposed1) {
+   *histo_proposed1 << dtau1;
+   *histo_proposed2 << dtau2;
   }
 
   // Insert the operators op1, op2, op3, op4 at time tau1, tau2, tau3, tau4
@@ -110,7 +118,7 @@ class move_insert_c_c_cdag_cdag {
    data.imp_trace.cancel_insert();
    return 0;
   }
- 
+
   // Computation of det ratio
   auto& det1 = data.dets[block_index1];
   auto& det2 = data.dets[block_index2];
@@ -133,15 +141,15 @@ class move_insert_c_c_cdag_cdag {
   for (num_c2 = 0; num_c2 < det2_size; ++num_c2) {
    if (det2.get_y(num_c2).first < tau4) break;
   }
-  
+
   // Insert in the det. Returns the ratio of dets (Cf det_manip doc).
   if (block_index1 == block_index2) {
    // The determinant positions that need to be passed to det_manip are those in the *final* det of size N+2.
-   // Shift the operator at the smaller time one step further in the determinant to account for the larger operator. 
+   // Shift the operator at the smaller time one step further in the determinant to account for the larger operator.
    // This shfit must be done in general, and not only when num_c(_dag)1 and num_c(dag_)2 are the same!!
    if (tau1 < tau3) num_c_dag1++; else num_c_dag2++;
    if (tau2 < tau4) num_c1++; else num_c2++;
-   det_ratio = det1.try_insert2(num_c_dag1, num_c_dag2, num_c1, num_c2, {tau1, op1.inner_index}, {tau3, op3.inner_index}, 
+   det_ratio = det1.try_insert2(num_c_dag1, num_c_dag2, num_c1, num_c2, {tau1, op1.inner_index}, {tau3, op3.inner_index},
                                                                              {tau2, op2.inner_index}, {tau4, op4.inner_index});
   } else {
    auto det_ratio1 = det1.try_insert(num_c_dag1, num_c1, {tau1, op1.inner_index}, {tau2, op2.inner_index});
@@ -153,10 +161,10 @@ class move_insert_c_c_cdag_cdag {
   mc_weight_t t_ratio;
   if (block_index1 == block_index2) {
    // (ways to insert 4 operators in det1)/((ways to remove 4 operators from det that is larger by two))
-   // Here, we use the fact that the two cdag/c proposed to be removed in the det can be at the same 
+   // Here, we use the fact that the two cdag/c proposed to be removed in the det can be at the same
    // positions in the det, and thus remove prob is NOT (detsize+2)*(detsize+1)
    t_ratio = std::pow(block_size1 * config.beta() / double(det1.size() + 2), 4);
-  } else { 
+  } else {
    // product of two separate inserts, one in det1 and one in det2
    t_ratio = std::pow(block_size1 * config.beta() / double(det1.size() + 1), 2) * std::pow(block_size2 * config.beta() / double(det2.size() + 1), 2);
   }
@@ -217,9 +225,9 @@ class move_insert_c_c_cdag_cdag {
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
 
-  if (performance_analysis) {
-   histos["double_insert_length_accepted"] << dtau1;
-   histos["double_insert_length_accepted"] << dtau2;
+  if (histo_accepted1) {
+   *histo_accepted1 << dtau1;
+   *histo_accepted2 << dtau2;
   }
 
 #ifdef EXT_DEBUG

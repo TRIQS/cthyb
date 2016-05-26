@@ -53,10 +53,10 @@ double frobenius_norm2(triqs::arrays::matrix<T> const& a) {
 namespace cthyb {
 
 // -------- Constructor --------
-impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve_parameters_t const& p)
+impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve_parameters_t const& p, histo_map_t * hist_map)
    : config(&c),
      h_diag(&h_diag_),
-     histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks()) : nullptr),
+     histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks(), *hist_map) : nullptr),
      atomic_z(partition_function(*h_diag, config->beta())),
      atomic_norm(0),
      atomic_rho(n_blocks),
@@ -202,7 +202,7 @@ std::pair<int, matrix_t> impurity_trace::compute_matrix(node n, int b) {
   else
    M = l.second * M;
  }
- 
+
  if (updating) {
   n->cache.matrices[b] = M;
   n->cache.matrix_norm_valid[b] = true;
@@ -244,9 +244,9 @@ void impurity_trace::update_cache_impl(node n) {
   n->cache.block_table[b] = r.first;
   n->cache.matrix_lnorms[b] = r.second;
   n->cache.matrix_norm_valid[b] = false;
- } 
- // This is not necessary here as all modified nodes are "cleared" 
- //  by tree::clear_modified in the try/cancel/confirm set 
+ }
+ // This is not necessary here as all modified nodes are "cleared"
+ //  by tree::clear_modified in the try/cancel/confirm set
  // n->modified = false;
 }
 
@@ -333,11 +333,11 @@ std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u
  for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
 
  auto trace_contrib_block = std::vector<std::pair<double, int>>{}; //FIXME complex -- can histos handle this?
- 
+
  int n_bl = to_sort_lnorm_b.size();                // number of blocks
  auto bound_cumul = std::vector<double>(n_bl + 1); // cumulative sum of the bounds
  // The contribution to the trace from block B is bounded: |Tr_B| <= dim(B) * sum_{B} e^{Emin(B)*dtau}
- // Here we calculate the cumulative bound from each contributing (structurally non-zero) block to 
+ // Here we calculate the cumulative bound from each contributing (structurally non-zero) block to
  // determine at which block we have exceeded the bound and hence can stop.
  // Can tighten bound on trace by using sqrt(dim(B)) in the case of Frobenius norm only.
  bound_cumul[n_bl] = 0;
@@ -381,7 +381,7 @@ std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u
    trace_partial += x;
    trace_abs += std::abs(x);
   }
- 
+
   if (use_norm_as_weight) { // else we are not allowed to compute this matrix, may make no sense
    // recompute the density matrix
    density_matrix[block_index].is_valid = true;

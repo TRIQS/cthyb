@@ -163,6 +163,9 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Report what h_loc we are using
   if (params.verbosity >= 2) std::cout << "The local Hamiltonian of the problem:" << std::endl << _h_loc << std::endl;
+  // Reset the histograms
+  _performance_analysis.clear();
+  histo_map_t * histo_map = params.performance_analysis ? &_performance_analysis : nullptr;
 
   // Determine block structure
   if (params.partition_method == "autopartition") {
@@ -192,7 +195,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   }
 
   // Initialise Monte Carlo quantities
-  qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner);
+  qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
   auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, 1.0, params.verbosity);
 
   // Moves
@@ -211,16 +214,16 @@ void solver_core::solve(solve_parameters_t const & params) {
    int block_size = _Delta_tau[block].data().shape()[1];
    auto const& block_name = delta_names[block];
    double prop_prob = get_prob_prop(block_name);
-   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Insert Delta_" + block_name, prop_prob);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), params.performance_analysis), "Remove Delta_" + block_name, prop_prob);
+   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), histo_map), "Insert Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), histo_map), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
      auto const& block_name2 = delta_names[block2];
      double prop_prob2 = get_prob_prop(block_name2);
-     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
+     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), histo_map),
                  "Insert Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
-     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), params.performance_analysis),
+     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), histo_map),
                  "Remove Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
     }
    }
@@ -232,7 +235,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_inserts, "Insert four operators", 1.0);
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
-  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), params.performance_analysis), "Shift one operator", 1.0);
+  if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
 
   // Measurements
   if (params.measure_g_tau) {
@@ -250,9 +253,10 @@ void solver_core::solve(solve_parameters_t const & params) {
   if (params.measure_pert_order) {
    auto& g_names = _G_tau.domain().names();
    for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
-    qmc.add_measure(measure_perturbation_hist(block, data, "histo_pert_order_" + g_names[block] + ".dat"), "Perturbation order (" + g_names[block] + ")");
+    auto const& block_name = g_names[block];
+    qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
    }
-   qmc.add_measure(measure_perturbation_hist_total(data, "histo_pert_order.dat"), "Perturbation order");
+   qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
   }
 
   if (params.measure_density_matrix) {

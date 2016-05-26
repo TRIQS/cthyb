@@ -37,17 +37,6 @@ gf_struct = {'up':[0], 'dn':[0]}
 # Hamiltonian
 H = U*n("up",0)*n("dn",0)
 
-# Histograms to be saved
-histos_to_save = [('histo_pert_order_up',int),
-                  ('histo_pert_order_dn',int),
-                  ('histo_pert_order',int),
-                  ('histo_insert_length_proposed',float),
-                  ('histo_insert_length_accepted',float),
-                  ('histo_remove_length_proposed',float),
-                  ('histo_remove_length_accepted',float),
-                  ('histo_shift_length_proposed',float),
-                  ('histo_shift_length_accepted',float)]
-
 # Quantum numbers
 qn = [n("up",0),n("dn",0)]
 p["partition_method"] = "quantum_numbers"
@@ -77,9 +66,14 @@ for e in epsilon:
     S.solve(h_int=H, **p)
 
     if mpi.is_master_node():
-        d = {'G_tau':S.G_tau, 'beta':beta, 'U':U, 'ed':ed, 'V':V, 'e':e}
-
-        for histo_name, type_of_col_1 in histos_to_save:
-            d[histo_name] = read_histo(open(histo_name+'.dat','r'),type_of_col_1)
-
-        arch['epsilon_' + str(e)] = d
+        arch.create_group('epsilon_' + str(e))
+        gr = arch['epsilon_' + str(e)]
+        gr['G_tau'] = S.G_tau
+        gr['beta'] = beta
+        gr['U'] = U
+        gr['ed'] = ed
+        gr['V'] = V
+        gr['e'] = e
+        gr['perturbation_order'] = S.perturbation_order
+        gr['perturbation_order_total'] = S.perturbation_order_total
+        gr['performance_analysis'] = S.performance_analysis

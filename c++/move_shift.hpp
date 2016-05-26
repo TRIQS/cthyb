@@ -29,8 +29,7 @@ class move_shift_operator {
  qmc_data& data;
  configuration& config;
  mc_tools::random_generator& rng;
- bool performance_analysis;
- std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ histogram * histo_proposed, * histo_accepted; // Analysis histograms
  double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau_old, tau_new;
@@ -39,18 +38,21 @@ class move_shift_operator {
  det_type::RollDirection roll_direction;
  int block_index;
 
+ histogram * add_histo(std::string const& name, histo_map_t * histos) {
+  if(!histos) return nullptr;
+  auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
+  return &(new_histo.first->second);
+ }
+
  public:
  //-----------------------------------------------
 
- move_shift_operator(qmc_data& data, mc_tools::random_generator& rng, bool performance_analysis)
+ move_shift_operator(qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
       rng(rng),
-      performance_analysis(performance_analysis) {
-  if (performance_analysis) {
-   histos.insert({"shift_length_proposed", {0, config.beta(), 100, "histo_shift_length_proposed.dat"}});
-   histos.insert({"shift_length_accepted", {0, config.beta(), 100, "histo_shift_length_accepted.dat"}});
-  }
+      histo_proposed(add_histo("shift_length_proposed", histos)),
+      histo_accepted(add_histo("shift_length_accepted", histos)) {
  }
 
  //---------------------
@@ -98,7 +100,7 @@ class move_shift_operator {
   op_new = op_desc{block_index, inner_new, is_dagger, data.linindex[std::make_pair(block_index, inner_new)]};
 
   // --- Determine new time to shift the operator to.
-  // The time must fall in the range between the closest operators on the left and 
+  // The time must fall in the range between the closest operators on the left and
   // right belonging to the same block. First determine these.
 
   time_pt tR, tL;
@@ -113,10 +115,10 @@ class move_shift_operator {
 
     for (ic_dag = 0; ic_dag < det_size; ++ic_dag) { // c_dag
      if (det.get_x(ic_dag).first < tau_old) break;
-    } 
+    }
     for (ic = 0; ic < det_size; ++ic) { // c
      if (det.get_y(ic).first < tau_old) break;
-    } 
+    }
 
     op_pos_in_det = (is_dagger ? ic_dag : ic); // This finds the operator on the right
     --op_pos_in_det; // Rewind by one to find the operator
@@ -128,7 +130,7 @@ class move_shift_operator {
     tR = ((tau_old - tRdag) > (tau_old - tRnodag) ? tRnodag : tRdag);
 
     // Reset iterator to op_old position
-    if (is_dagger) --ic_dag; else --ic; 
+    if (is_dagger) --ic_dag; else --ic;
 
     // Find the times of the operator at the left of op_old with cyclicity
     auto tLdag   = ( ic_dag != 0 ? det.get_x(--ic_dag).first : det.get_x(det_size-1).first );
@@ -148,7 +150,7 @@ class move_shift_operator {
 
   // Record the length of the proposed shift
   dtau = double(tau_new - tau_old);
-  if (performance_analysis) histos["shift_length_proposed"] << dtau;
+  if (histo_proposed) *histo_proposed << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Proposing to shift:" << std::endl;
@@ -183,7 +185,7 @@ class move_shift_operator {
   // Check if we went through \tau = 0 or \tau = \beta
   if (det_size > 1) {
    if ((tau_old > tL) && (tau_new < tL)) roll_direction = (is_dagger ? det_type::Up   : det_type::Left);
-   if ((tau_old < tL) && (tau_new > tL)) roll_direction = (is_dagger ? det_type::Down : det_type::Right); 
+   if ((tau_old < tL) && (tau_new > tL)) roll_direction = (is_dagger ? det_type::Down : det_type::Right);
   }
 
   // Replace old row/column with new operator time/inner_index. Returns the ratio of dets (Cf det_manip doc).
@@ -225,7 +227,7 @@ class move_shift_operator {
   // Update the tree
   data.imp_trace.confirm_shift();
 
-  // Update the configuration 
+  // Update the configuration
   config.erase(tau_old);
   config.insert(tau_new, op_new);
   config.finalize();
@@ -237,7 +239,7 @@ class move_shift_operator {
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
 
-  if (performance_analysis) histos["shift_length_accepted"] << dtau;
+  if (histo_accepted) *histo_accepted << dtau;
 
   auto result = data.current_sign / data.old_sign * data.dets[block_index].roll_matrix(roll_direction);
 

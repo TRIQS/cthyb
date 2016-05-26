@@ -8,6 +8,7 @@ module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc 
 # All the triqs C++/Python modules
 module.use_module('gf', 'triqs')
 module.use_module('operators', 'triqs')
+module.use_module('histograms', 'triqs')
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("solver_core.hpp")
@@ -120,6 +121,18 @@ c.add_property(name = "density_matrix",
 c.add_property(name = "h_loc_diagonalization",
                getter = cfunction("cthyb::atom_diag h_loc_diagonalization ()"),
                doc = """Diagonalization of h_loc """)
+
+c.add_property(name = "perturbation_order_total",
+               getter = cfunction("triqs::statistics::histogram get_perturbation_order_total ()"),
+               doc = """Histogram of the total perturbation order """)
+
+c.add_property(name = "perturbation_order",
+               getter = cfunction("histo_map_t get_perturbation_order ()"),
+               doc = """Histograms of the perturbation order for each block """)
+
+c.add_property(name = "performance_analysis",
+               getter = cfunction("histo_map_t get_performance_analysis ()"),
+               doc = """Histograms related to the performance analysis """)
 
 c.add_property(name = "average_sign",
                getter = cfunction("mc_weight_t average_sign ()"),

@@ -22,6 +22,7 @@
 #include <triqs/mc_tools.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/operators/many_body_operator.hpp>
+#include <triqs/statistics/histograms.hpp>
 #include "solve_parameters.hpp"
 #include "atom_diag.hpp"
 #include "atom_diag_functions.hpp"
@@ -29,6 +30,8 @@
 namespace cthyb {
 
 using namespace triqs::utility;
+using namespace triqs::statistics;
+using histo_map_t = std::map<std::string, histogram>;
 using indices_type = triqs::operators::indices_t;
 
 /**  DOC OF SOLVER CORE*/
@@ -42,9 +45,12 @@ class solver_core {
  block_gf<imtime> _Delta_tau, _G_tau;           // Green's function containers: imaginary-time Green's functions
  block_gf<imtime, delta_target_t> _G_tau_accum; // Intermediate object to accumulate g(tau), either real or complex
  block_gf<legendre> _G_l;                       // Green's function containers: Legendre coefficients
+ histogram _pert_order_total;                   // Histogram of the total perturbation order
+ histo_map_t _pert_order;                       // Histograms of the perturbation order for each block
  std::vector<matrix_t> _density_matrix;         // density matrix, when used in Norm mode
  triqs::mpi::communicator _comm;                // define the communicator, here MPI_COMM_WORLD
  solve_parameters_t _last_solve_parameters;     // parameters of the last call to solve
+ histo_map_t _performance_analysis;             // Histograms used for performance analysis
  mc_weight_t _average_sign;                     // average sign of the QMC
  int _solve_status;                             // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
@@ -81,6 +87,15 @@ class solver_core {
 
  /// Diagonalization of h_loc
  atom_diag const & h_loc_diagonalization() const { return h_diag;}
+
+ /// Histogram of the total perturbation order
+ histogram const& get_perturbation_order_total() const { return _pert_order_total; }
+
+ /// Histograms of the perturbation order for each block
+ histo_map_t const& get_perturbation_order() const { return _pert_order; }
+
+ /// Histograms related to the performance analysis
+ histo_map_t const& get_performance_analysis() const { return _performance_analysis; }
 
  /// Monte Carlo average sign
  mc_weight_t average_sign() const { return _average_sign; }

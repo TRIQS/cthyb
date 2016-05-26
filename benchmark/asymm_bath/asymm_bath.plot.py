@@ -2,6 +2,7 @@
 
 from pytriqs.gf.local import *
 from pytriqs.archive import HDFArchive
+from pytriqs.statistics.histograms import *
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -38,11 +39,11 @@ for e_group_name in arch:
 
     histo_a = plt.axes([.35, .15, .3, .4], axisbg='y')
     opcount_data = []
-    for opcount, w, int_w in reversed(e_group['histo_pert_order']):
+    for w in reversed(e_group['perturbation_order_total'].data):
         if w==0: continue
         opcount_data.insert(0,w)
     histo_a.bar(range(len(opcount_data)), opcount_data)
-    histo_a.set_title('histo_pert_order')
+    histo_a.set_title('perturbation_order')
 
     pp.savefig(plt.gcf())
 
@@ -67,7 +68,8 @@ for e_group_name in arch:
         a.set_ylabel(title)
 
         for name, histo in histos.items():
-            dtau, w, int_w = zip(*histo)
+            w = histo.data
+            dtau = [histo.mesh_point(n) for n in range(len(histo))]
             plt.plot(dtau,w,label=name,linewidth=0.7)
 
         a.legend(loc='upper center',prop={'size':10})
@@ -76,18 +78,22 @@ for e_group_name in arch:
 
     plt.suptitle("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
 
+    histo = e_group['performance_analysis']
     # Move insert
     plt.subplot(3,1,1)
-    plot_histos("Insertion",{"Proposed" : e_group['histo_insert_length_proposed'],
-                             "Accepted" : e_group['histo_insert_length_accepted']})
+    proposed = histo['insert_length_proposed_up'] + histo['insert_length_proposed_dn']
+    accepted = histo['insert_length_accepted_up'] + histo['insert_length_accepted_dn']
+    plot_histos("Insertion",{"Proposed" : proposed, "Accepted" : accepted})
     # Move remove
     plt.subplot(3,1,2)
-    plot_histos("Removal",{"Proposed" : e_group['histo_remove_length_proposed'],
-                           "Accepted" : e_group['histo_remove_length_accepted']})
+    proposed = histo['remove_length_proposed_up'] + histo['remove_length_proposed_dn']
+    accepted = histo['remove_length_accepted_up'] + histo['remove_length_accepted_dn']
+    plot_histos("Removal",{"Proposed" : proposed, "Accepted" : accepted})
     # Move shift
     plt.subplot(3,1,3)
-    plot_histos("Shift",{"Proposed" : e_group['histo_shift_length_proposed'],
-                         "Accepted" : e_group['histo_shift_length_accepted']})
+    proposed = histo['shift_length_proposed']
+    accepted = histo['shift_length_accepted']
+    plot_histos("Shift",{"Proposed" : proposed, "Accepted" : accepted})
 
     pp.savefig(plt.gcf())
 

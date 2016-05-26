@@ -31,31 +31,34 @@ class move_remove_c_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index, block_size;
- bool performance_analysis;
- std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ histogram * histo_proposed, * histo_accepted; // Analysis histograms
  double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
+
+ histogram * add_histo(std::string const& name_prefix, histo_map_t * histos) {
+  if(!histos) return nullptr;
+  std::string name = name_prefix + "_" + data.delta.domain().names()[block_index];
+  auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
+  return &(new_histo.first->second);
+ }
 
  public:
 
  //----------------------------------
 
- move_remove_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, bool performance_analysis)
+ move_remove_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
       rng(rng),
       block_index(block_index),
       block_size(block_size),
-      performance_analysis(performance_analysis) {
-  if (performance_analysis) {
-   histos.insert({"remove_length_proposed", {0, config.beta(), 100, "histo_remove_length_proposed.dat"}});
-   histos.insert({"remove_length_accepted", {0, config.beta(), 100, "histo_remove_length_accepted.dat"}});
-  }
+      histo_proposed(add_histo("remove_length_proposed", histos)),
+      histo_accepted(add_histo("remove_length_accepted", histos)) {
  }
 
  //----------------
- 
+
  mc_weight_t attempt() {
 
 #ifdef EXT_DEBUG
@@ -84,14 +87,14 @@ class move_remove_c_cdag {
 
   // record the length of the proposed removal
   dtau = double(tau2 - tau1);
-  if (performance_analysis) histos["remove_length_proposed"] << dtau;
+  if (histo_proposed) *histo_proposed << dtau;
 
   auto det_ratio = det.try_remove(num_c_dag, num_c);
 
   // proposition probability
   auto t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // Size of the det before the try_delete!
 
-  // For quick abandon 
+  // For quick abandon
   double random_number = rng.preview();
   if (random_number == 0.0) return 0;
   double p_yee = std::abs(det_ratio / t_ratio / data.atomic_weight);
@@ -140,7 +143,7 @@ class move_remove_c_cdag {
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
-  if (performance_analysis) histos["remove_length_accepted"] << dtau;
+  if (histo_accepted) *histo_accepted << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Move move_remove_c_cdag accepted" << std::endl;

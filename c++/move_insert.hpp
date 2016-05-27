@@ -36,9 +36,8 @@ class move_insert_c_cdag {
  time_pt tau1, tau2;
  op_desc op1, op2;
 
- histogram * add_histo(std::string const& name_prefix, histo_map_t * histos) {
+ histogram * add_histo(std::string const& name, histo_map_t * histos) {
   if(!histos) return nullptr;
-  std::string name = name_prefix + "_" + data.delta.domain().names()[block_index];
   auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
   return &(new_histo.first->second);
  }
@@ -46,14 +45,15 @@ class move_insert_c_cdag {
  public:
  //-----------------------------------------------
 
- move_insert_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
+ move_insert_c_cdag(int block_index, int block_size, std::string const& block_name,
+                    qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
       rng(rng),
       block_index(block_index),
       block_size(block_size),
-      histo_proposed(add_histo("insert_length_proposed", histos)),
-      histo_accepted(add_histo("insert_length_accepted", histos)) {
+      histo_proposed(add_histo("insert_length_proposed_" + block_name, histos)),
+      histo_accepted(add_histo("insert_length_accepted_" + block_name, histos)) {
  }
 
  //---------------------

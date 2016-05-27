@@ -214,16 +214,20 @@ void solver_core::solve(solve_parameters_t const & params) {
    int block_size = _Delta_tau[block].data().shape()[1];
    auto const& block_name = delta_names[block];
    double prop_prob = get_prob_prop(block_name);
-   inserts.add(move_insert_c_cdag(block, block_size, data, qmc.get_rng(), histo_map), "Insert Delta_" + block_name, prop_prob);
-   removes.add(move_remove_c_cdag(block, block_size, data, qmc.get_rng(), histo_map), "Remove Delta_" + block_name, prop_prob);
+   inserts.add(move_insert_c_cdag(block, block_size, block_name,
+                                  data, qmc.get_rng(), histo_map), "Insert Delta_" + block_name, prop_prob);
+   removes.add(move_remove_c_cdag(block, block_size, block_name,
+                                  data, qmc.get_rng(), histo_map), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
     for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
      auto const& block_name2 = delta_names[block2];
      double prop_prob2 = get_prob_prop(block_name2);
-     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), histo_map),
+     double_inserts.add(move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, block_name, block_name2,
+                                                  data, qmc.get_rng(), histo_map),
                  "Insert Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
-     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, data, qmc.get_rng(), histo_map),
+     double_removes.add(move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, block_name, block_name2,
+                                                  data, qmc.get_rng(), histo_map),
                  "Remove Delta_" + block_name + "_" + block_name2, prop_prob*prop_prob2);
     }
    }

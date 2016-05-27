@@ -36,9 +36,8 @@ class move_remove_c_cdag {
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
 
- histogram * add_histo(std::string const& name_prefix, histo_map_t * histos) {
+ histogram * add_histo(std::string const& name, histo_map_t * histos) {
   if(!histos) return nullptr;
-  std::string name = name_prefix + "_" + data.delta.domain().names()[block_index];
   auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
   return &(new_histo.first->second);
  }
@@ -47,14 +46,15 @@ class move_remove_c_cdag {
 
  //----------------------------------
 
- move_remove_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
+ move_remove_c_cdag(int block_index, int block_size, std::string const& block_name,
+                    qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
       rng(rng),
       block_index(block_index),
       block_size(block_size),
-      histo_proposed(add_histo("remove_length_proposed", histos)),
-      histo_accepted(add_histo("remove_length_accepted", histos)) {
+      histo_proposed(add_histo("remove_length_proposed_" + block_name, histos)),
+      histo_accepted(add_histo("remove_length_accepted_" + block_name, histos)) {
  }
 
  //----------------

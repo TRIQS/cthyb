@@ -38,9 +38,8 @@ class move_remove_c_c_cdag_cdag {
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2, tau3, tau4;
 
- histogram * add_histo(std::string const& name_prefix, int block_index, histo_map_t * histos) {
+ histogram * add_histo(std::string const& name, histo_map_t * histos) {
   if(!histos) return nullptr;
-  std::string name = name_prefix + "_" + data.delta.domain().names()[block_index];
   auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
   return &(new_histo.first->second);
  }
@@ -49,6 +48,7 @@ class move_remove_c_c_cdag_cdag {
  //----------------------------------
 
  move_remove_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2,
+                           std::string const& block_name1, std::string const& block_name2,
                            qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
@@ -57,10 +57,10 @@ class move_remove_c_c_cdag_cdag {
       block_size1(block_size1),
       block_index2(block_index2),
       block_size2(block_size2),
-      histo_proposed1(add_histo("double_remove_length_proposed", block_index1, histos)),
-      histo_proposed2(add_histo("double_remove_length_proposed", block_index2, histos)),
-      histo_accepted1(add_histo("double_remove_length_accepted", block_index1, histos)),
-      histo_accepted2(add_histo("double_remove_length_accepted", block_index2, histos)) {
+      histo_proposed1(add_histo("double_remove_length_proposed_" + block_name1, histos)),
+      histo_proposed2(add_histo("double_remove_length_proposed_" + block_name2, histos)),
+      histo_accepted1(add_histo("double_remove_length_accepted_" + block_name1, histos)),
+      histo_accepted2(add_histo("double_remove_length_accepted_" + block_name2, histos)) {
  }
 
  //----------------

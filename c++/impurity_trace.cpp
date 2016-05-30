@@ -53,10 +53,10 @@ double frobenius_norm2(triqs::arrays::matrix<T> const& a) {
 namespace cthyb {
 
 // -------- Constructor --------
-impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve_parameters_t const& p)
+impurity_trace::impurity_trace(configuration& c, atom_diag const& h_diag_, solve_parameters_t const& p, histo_map_t * hist_map)
    : config(&c),
      h_diag(&h_diag_),
-     histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks()) : nullptr),
+     histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks(), *hist_map) : nullptr),
      atomic_z(partition_function(*h_diag, config->beta())),
      atomic_norm(0),
      atomic_rho(n_blocks),
@@ -333,7 +333,7 @@ std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u
  for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
 
  auto trace_contrib_block = std::vector<std::pair<double, int>>{}; //FIXME complex -- can histos handle this?
- 
+
  int n_bl = to_sort_lnorm_b.size();                // number of blocks
  auto bound_cumul = std::vector<double>(n_bl + 1); // cumulative sum of the bounds
  // The contribution to the trace from block B is bounded: |Tr_B| <= dim(B) * sum_{B} e^{Emin(B)*dtau}

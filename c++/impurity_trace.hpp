@@ -23,10 +23,12 @@
 #include "./atom_diag.hpp"
 #include "./solve_parameters.hpp"
 #include "triqs/utility/rbt.hpp"
-#include "triqs/statistics/histograms.hpp"
+#include <triqs/statistics/histograms.hpp>
 //#define PRINT_CONF_DEBUG
 
 using namespace triqs;
+using histo_map_t = std::map<std::string, triqs::statistics::histogram>;
+using triqs::statistics::histogram;
 using triqs::utility::rb_tree;
 using triqs::utility::rbt_insert_error;
 
@@ -43,7 +45,7 @@ class impurity_trace {
  public:
 
  // construct from the config, the diagonalization of h_loc, and parameters
- impurity_trace(configuration& c, atom_diag const& h_diag, solve_parameters_t const& p);
+ impurity_trace(configuration& c, atom_diag const& h_diag, solve_parameters_t const& p, histo_map_t * hist_map);
 
  ~impurity_trace() {
   cancel_insert_impl(); // in case of an exception, we need to remove any trial nodes before cleaning the tree!
@@ -421,28 +423,42 @@ class impurity_trace {
  // ---------------- Histograms ----------------
  struct histograms_t {
 
-  histograms_t(int n_subspaces) : n_subspaces(n_subspaces) {};
-  int n_subspaces;
-
   // How many block non zero at root of the tree
-  statistics::histogram n_block_at_root = {n_subspaces, "histo_n_block_at_root.dat"};
-
+  histogram & n_block_at_root;
   // how many block kept after the truncation with the bound
-  statistics::histogram n_block_kept = {n_subspaces, "histo_n_block_kept.dat"};
+  histogram & n_block_kept;
 
   // What is the dominant block in the trace computation ? Sorted by number or energy
-  statistics::histogram dominant_block_bound = {n_subspaces, "histo_dominant_block_bound.dat"};
-  statistics::histogram dominant_block_trace = {n_subspaces, "histo_dominant_block_trace.dat"};
-  statistics::histogram_segment_bin dominant_block_energy_bound = {0, 100, 100, "histo_dominant_block_energy_bound.dat"};
-  statistics::histogram_segment_bin dominant_block_energy_trace = {0, 100, 100, "histo_dominant_block_energy_trace.dat"};
+  histogram & dominant_block_bound;
+  histogram & dominant_block_trace;
+  histogram & dominant_block_energy_bound;
+  histogram & dominant_block_energy_trace;
 
   // Various ratios : trace/bound, trace/first term of the trace, etc..
-  statistics::histogram_segment_bin trace_over_norm= {0, 1.5, 100, "histo_trace_over_norm.dat"};
-  statistics::histogram_segment_bin trace_abs_over_norm = {0, 1.5, 100, "histo_trace_abs_over_norm.dat"};
-  statistics::histogram_segment_bin trace_over_trace_abs = {0, 1.5, 100, "histo_trace_over_trace_abs.dat"};
-  statistics::histogram_segment_bin trace_over_bound = {0, 1.5, 100, "histo_trace_over_bound.dat"};
-  statistics::histogram_segment_bin trace_first_over_sec_term = {0, 1.0, 100, "histo_trace_first_over_sec_term.dat"};
-  statistics::histogram_segment_bin trace_first_term_trace = {0, 1.0, 100, "histo_trace_first_term_trace.dat"};
+  histogram & trace_over_norm;
+  histogram & trace_abs_over_norm;
+  histogram & trace_over_trace_abs;
+  histogram & trace_over_bound;
+  histogram & trace_first_over_sec_term;
+  histogram & trace_first_term_trace;
+
+#define ADD_HISTO(NAME, HISTO) NAME(histos.emplace((#NAME), (HISTO)).first->second)
+  histograms_t(int n_subspaces, histo_map_t & histos) :
+   ADD_HISTO(n_block_at_root,             histogram(0, n_subspaces)),
+   ADD_HISTO(n_block_kept,                histogram(0, n_subspaces)),
+   ADD_HISTO(dominant_block_bound,        histogram(0, n_subspaces)),
+   ADD_HISTO(dominant_block_trace,        histogram(0, n_subspaces)),
+   ADD_HISTO(dominant_block_energy_bound, histogram(0, 100, 100)),
+   ADD_HISTO(dominant_block_energy_trace, histogram(0, 100, 100)),
+   ADD_HISTO(trace_over_norm,             histogram(0, 1.5, 100)),
+   ADD_HISTO(trace_abs_over_norm,         histogram(0, 1.5, 100)),
+   ADD_HISTO(trace_over_trace_abs,        histogram(0, 1.5, 100)),
+   ADD_HISTO(trace_over_bound,            histogram(0, 1.5, 100)),
+   ADD_HISTO(trace_first_over_sec_term,   histogram(0, 1.0, 100)),
+   ADD_HISTO(trace_first_term_trace,      histogram(0, 1.0, 100))
+  {}
+#undef ADD_HISTO
+
  };
  std::unique_ptr<histograms_t> histo;
 };

@@ -86,7 +86,7 @@ double trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& 
    TRIQS_RUNTIME_ERROR << "trace_rho_op : size mismatch : size of block " << bl << " differ";
   for (auto const& x : op) {
    auto b_m = atom.matrix_element_of_monomial(x.monomial, bl);
-   if (b_m.first != -1) result += x.coef * dot_product(b_m.second, density_matrix[bl]);
+   if (b_m.first == bl) result += x.coef * dot_product(b_m.second, density_matrix[bl]);
   }
  }
  if (imag(result) > threshold) TRIQS_RUNTIME_ERROR << "trace_rho_op: the result is not real.";

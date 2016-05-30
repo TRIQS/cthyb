@@ -30,27 +30,30 @@ class move_insert_c_cdag {
  configuration& config;
  mc_tools::random_generator& rng;
  int block_index, block_size;
- bool performance_analysis;
- std::map<std::string, statistics::histogram_segment_bin> histos; // Analysis histograms
+ histogram * histo_proposed, * histo_accepted; // Analysis histograms
  double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
  time_pt tau1, tau2;
  op_desc op1, op2;
 
+ histogram * add_histo(std::string const& name, histo_map_t * histos) {
+  if(!histos) return nullptr;
+  auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
+  return &(new_histo.first->second);
+ }
+
  public:
  //-----------------------------------------------
 
- move_insert_c_cdag(int block_index, int block_size, qmc_data& data, mc_tools::random_generator& rng, bool performance_analysis)
+ move_insert_c_cdag(int block_index, int block_size, std::string const& block_name,
+                    qmc_data& data, mc_tools::random_generator& rng, histo_map_t * histos)
     : data(data),
       config(data.config),
       rng(rng),
       block_index(block_index),
       block_size(block_size),
-      performance_analysis(performance_analysis) {
-  if (performance_analysis) {
-   histos.insert({"insert_length_proposed", {0, config.beta(), 100, "histo_insert_length_proposed.dat"}});
-   histos.insert({"insert_length_accepted", {0, config.beta(), 100, "histo_insert_length_accepted.dat"}});
-  }
+      histo_proposed(add_histo("insert_length_proposed_" + block_name, histos)),
+      histo_accepted(add_histo("insert_length_accepted_" + block_name, histos)) {
  }
 
  //---------------------
@@ -80,7 +83,7 @@ class move_insert_c_cdag {
 
   // record the length of the proposed insertion
   dtau = double(tau2 - tau1);
-  if (performance_analysis) histos["insert_length_proposed"] << dtau;
+  if (histo_proposed) *histo_proposed << dtau;
 
   // Insert the operators op1 and op2 at time tau1, tau2
   // 1- In the very exceptional case where the insert has failed because an operator is already sitting here
@@ -95,7 +98,7 @@ class move_insert_c_cdag {
    data.imp_trace.cancel_insert();
    return 0;
   }
- 
+
   // Computation of det ratio
   auto& det = data.dets[block_index];
   int det_size = det.size();
@@ -165,7 +168,7 @@ class move_insert_c_cdag {
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
   data.atomic_reweighting = new_atomic_reweighting;
-  if (performance_analysis) histos["insert_length_accepted"] << dtau;
+  if (histo_accepted) *histo_accepted << dtau;
 
 #ifdef EXT_DEBUG
   std::cerr << "* Move move_insert_c_cdag accepted" << std::endl;

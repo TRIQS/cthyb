@@ -358,16 +358,16 @@ class impurity_trace {
  // Store copies of the nodes to be replaced
  nodes_storage backup_nodes = {n_blocks};
 
- node try_replace_impl(node n, std::vector<op_desc> const& substitute_c,
-                               std::vector<op_desc> const& substitute_c_dag) noexcept {
+ node try_replace_impl(node n, configuration::oplist_t const& updated_ops) noexcept {
 
   node new_left = nullptr, new_right = nullptr;
-  if(n->left) new_left = try_replace_impl(n->left,substitute_c,substitute_c_dag);
-  if(n->right) new_right = try_replace_impl(n->right,substitute_c,substitute_c_dag);
+  if(n->left) new_left = try_replace_impl(n->left, updated_ops);
+  if(n->right) new_right = try_replace_impl(n->right, updated_ops);
 
   auto const& op = n->op;
-  auto const& new_op = (op.dagger ? substitute_c_dag : substitute_c)[op.linear_index];
-  bool op_changed = new_op.linear_index != op.linear_index;
+  auto it = updated_ops.find(n->key);
+  bool op_changed = it != updated_ops.end();
+  auto const& new_op = op_changed ? it->second : op;
   node new_node = n;
   if(op_changed || new_left != n->left || new_right != n->right) {
    auto key = n->key;
@@ -395,14 +395,13 @@ class impurity_trace {
  }
 
  public:
- void try_replace(std::vector<op_desc> const& substitute_c,
-                  std::vector<op_desc> const& substitute_c_dag) noexcept {
+ void try_replace(configuration::oplist_t const& updated_ops) noexcept {
   if(tree_size == 0) return;
 
   if (!backup_nodes.is_index_reset()) TRIQS_RUNTIME_ERROR << "impurity_trace: improper use of try_replace()";
   backup_nodes.reserve(tree.size());
   auto& root = tree.get_root();
-  root = try_replace_impl(root,substitute_c,substitute_c_dag);
+  root = try_replace_impl(root, updated_ops);
  }
 
  void confirm_replace() {

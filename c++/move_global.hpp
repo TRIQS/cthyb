@@ -41,8 +41,11 @@ class move_global {
  // Substitutions as mappings (old linear index) -> (new op_desc)
  std::vector<op_desc> substitute_c, substitute_c_dag;
 
+ configuration::oplist_t updated_ops;
+
  h_scalar_t new_atomic_weight;
  h_scalar_t new_atomic_reweighting;
+
  std::set<int> affected_blocks;
  std::vector<det_type> dets_backup;
  int backup_det_index;
@@ -108,11 +111,15 @@ class move_global {
   // Derive new arguments of the dets
   std::vector<std::vector<det_type::xy_type>> x(data.dets.size()), y(data.dets.size());
 
+  updated_ops.clear();
   for(auto const& o : data.config) {
    auto const& tau = o.first;
    auto const& old_op = o.second;
    auto const& new_op = (old_op.dagger ? substitute_c_dag : substitute_c)[old_op.linear_index];
    (new_op.dagger ? x : y)[new_op.block_index].emplace_back(tau,new_op.inner_index);
+
+   // TODO
+   if(old_op.linear_index != new_op.linear_index) updated_ops.emplace(tau, new_op);
   }
 
   backup_det_index = -1;
@@ -141,7 +148,7 @@ class move_global {
   if (random_number == 0.0) return 0;
   double p_yee = std::abs(det_ratio / data.atomic_weight);
 
-  data.imp_trace.try_replace(substitute_c,substitute_c_dag);
+  data.imp_trace.try_replace(updated_ops);
 
   // computation of the new trace after insertion
   std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
@@ -160,8 +167,8 @@ class move_global {
 #ifdef EXT_DEBUG
   std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
   std::cerr << "Det ratio: " << det_ratio << '\t';
+  std::cerr << "p_yee: " << p_yee << std::endl;
   std::cerr << "Weight: " << p << std::endl;
-  std::cerr << "p_yee * newtrace: " << p_yee * new_trace<< std::endl;
 #endif
 
   return p;

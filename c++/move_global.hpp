@@ -108,18 +108,44 @@ class move_global {
   std::cerr << "* Attempt for move move_global (" << name << ")" << std::endl;
 #endif
 
-  // Derive new arguments of the dets
-  std::vector<std::vector<det_type::xy_type>> x(data.dets.size()), y(data.dets.size());
-
   updated_ops.clear();
   for(auto const& o : data.config) {
    auto const& tau = o.first;
    auto const& old_op = o.second;
    auto const& new_op = (old_op.dagger ? substitute_c_dag : substitute_c)[old_op.linear_index];
-   (new_op.dagger ? x : y)[new_op.block_index].emplace_back(tau,new_op.inner_index);
-
-   // TODO
    if(old_op.linear_index != new_op.linear_index) updated_ops.emplace(tau, new_op);
+  }
+
+#ifdef EXT_DEBUG
+  std::cerr << updated_ops.size() << " out of " << data.config.size()
+            << " operators can be changed" << std::endl;
+#endif
+
+  // No operators can be updated...
+  if(!updated_ops.size()) return 0;
+
+  // Choose a random number of operators, which will not actually be updated
+  // (we always update at least one operator)
+  int n_no_update = rng(updated_ops.size());
+  // Remove some operators
+  for(int i = 0; i < n_no_update; ++i) {
+   auto it = std::begin(updated_ops);
+   std::advance(it, rng(updated_ops.size()));
+   updated_ops.erase(it);
+  }
+
+#ifdef EXT_DEBUG
+  std::cerr << updated_ops.size() << " operators will actually be changed" << std::endl;
+#endif
+
+  // Derive new arguments of the dets
+  std::vector<std::vector<det_type::xy_type>> x(data.dets.size()), y(data.dets.size());
+
+  for(auto const& o : data.config) {
+   auto const& tau = o.first;
+   auto it = updated_ops.find(tau);
+   auto const& new_op = it == updated_ops.end() ? o.second : it->second;
+   (new_op.dagger ? x : y)[new_op.block_index].emplace_back(tau, new_op.inner_index);
   }
 
   backup_det_index = -1;

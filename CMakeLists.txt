@@ -4,7 +4,7 @@ set (CTHYB_VERSION "1.4")
 # Append triqs installed files to the cmake load path
 list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
 
-# start configuration 
+# start configuration
 cmake_minimum_required(VERSION 2.8)
 project(cthyb CXX)
 set(CMAKE_BUILD_TYPE Release)
@@ -38,15 +38,6 @@ option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
 
-# adjust the macros accordingly
-if(HYBRIDISATION_IS_COMPLEX)
- add_definitions(-DHYBRIDISATION_IS_COMPLEX)
-endif()
-
-if(LOCAL_HAMILTONIAN_IS_COMPLEX)
- add_definitions(-DLOCAL_HAMILTONIAN_IS_COMPLEX)
-endif()
-
 if(EXT_DEBUG)
  add_definitions(-DEXT_DEBUG)
 endif(EXT_DEBUG)
@@ -56,7 +47,7 @@ if(SAVE_CONFIGS)
  add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})
 endif(SAVE_CONFIGS)
 
-include_directories(c++)
+include_directories(${CMAKE_BINARY_DIR}/c++ c++)
 
 # Compile C++ code
 add_subdirectory(c++)
@@ -64,7 +55,7 @@ add_subdirectory(c++)
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
  add_subdirectory(python)
- if (${Tests}) 
+ if (${Tests})
  add_subdirectory(test)
  endif()
  option(BUILD_DOC "Build documentation" OFF)

@@ -29,6 +29,9 @@
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include "./array_suppl.hpp"
 
+#cmakedefine HYBRIDISATION_IS_COMPLEX
+#cmakedefine LOCAL_HAMILTONIAN_IS_COMPLEX
+
 namespace cthyb {
 
 using namespace triqs::arrays;

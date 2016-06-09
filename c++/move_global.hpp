@@ -47,8 +47,11 @@ class move_global {
  h_scalar_t new_atomic_reweighting;
 
  std::set<int> affected_blocks;
- std::vector<det_type> dets_backup;
- int backup_det_index;
+ struct stored_det {
+  det_type det;
+  bool stored;
+ };
+ std::vector<stored_det> dets_backup;
 
  public:
  //-----------------------------------------------
@@ -97,7 +100,7 @@ class move_global {
              << "' changes no operator indices, therefore is useless." << std::endl;
 
   for(auto block_number : affected_blocks)
-   dets_backup.push_back(data.dets[block_number]);
+   dets_backup.push_back({data.dets[block_number],false});
  }
 
  mc_weight_t attempt() {
@@ -148,7 +151,6 @@ class move_global {
    (new_op.dagger ? x : y)[new_op.block_index].emplace_back(tau, new_op.inner_index);
   }
 
-  backup_det_index = -1;
   for(auto block_index : affected_blocks) {
    // New configuration is not compatible with gf_struct
    if(x[block_index].size() != y[block_index].size()) return 0;
@@ -156,15 +158,28 @@ class move_global {
 
   // Create new determinants and back up the old ones
   mc_weight_t old_det = 1.0, new_det = 1.0;
+  int backup_det_index = -1;
   for(auto block_index : affected_blocks) {
    auto& det = data.dets[block_index];
    auto& backup_det = dets_backup[++backup_det_index];
 
-   backup_det = det_type(data.delta[block_index],x[block_index],y[block_index]);
-   std::swap(det,backup_det);
+   try {
+    backup_det.det = det_type(data.delta[block_index],x[block_index],y[block_index]);
+   } catch(triqs::runtime_error &) { // FIXME: Workaround for TRIQS issue #336
+    return 0;
+   }
+   std::swap(det,backup_det.det);
+   backup_det.stored = true;
 
-   old_det *= backup_det.determinant();
+   old_det *= backup_det.det.determinant();
    new_det *= det.determinant();
+  }
+
+  if (new_det == 0.0) {
+#ifdef EXT_DEBUG
+   std::cerr << "new_det == 0" << std::endl;
+#endif
+   return 0;
   }
 
   auto det_ratio = new_det/old_det;
@@ -202,9 +217,10 @@ class move_global {
 
  mc_weight_t accept() {
 
-  for(auto & o : data.config)
-   o.second = (o.second.dagger ? substitute_c_dag : substitute_c)[o.second.linear_index];
+  for(auto const& o : updated_ops) data.config.replace(o.first, o.second);
   config.finalize();
+
+  for(auto & backup_det : dets_backup) backup_det.stored = false;
 
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
@@ -226,10 +242,11 @@ class move_global {
 
   config.finalize();
 
-  if (backup_det_index != -1) {
-   backup_det_index = 0;
-   for(auto block_index : affected_blocks)
-    std::swap(data.dets[block_index],dets_backup[backup_det_index++]);
+  int backup_det_index = -1;
+  for(auto block_index : affected_blocks) {
+    auto& backup_det = dets_backup[++backup_det_index];
+    if(backup_det.stored) std::swap(data.dets[block_index], backup_det.det);
+    backup_det.stored = false;
   }
 
   data.imp_trace.cancel_replace();

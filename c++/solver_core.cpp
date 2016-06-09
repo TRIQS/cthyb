@@ -276,7 +276,7 @@ void solver_core::solve(solve_parameters_t const & params) {
   _solve_status = qmc.warmup_and_accumulate( params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
   qmc.collect_results(_comm);
 
-  std::cout << "Average sign: " << _average_sign << std::endl;
+  if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
 
   // Copy local (real or complex) G_tau back to complex G_tau
   if (params.measure_g_tau) _G_tau = _G_tau_accum;

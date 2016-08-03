@@ -206,12 +206,12 @@ void solver_core::solve(solve_parameters_t const & params) {
   move_set_type double_inserts(qmc.get_rng());
   move_set_type double_removes(qmc.get_rng());
 
-  auto& delta_names = _Delta_tau.domain().names();
+  auto& delta_names = _Delta_tau.block_names();
   auto get_prob_prop = [&params](std::string const& block_name) {
    auto f = params.proposal_prob.find(block_name);
    return (f != params.proposal_prob.end() ? f->second : 1.0);
   };
-  for (size_t block = 0; block < _Delta_tau.domain().size(); ++block) {
+  for (size_t block = 0; block < _Delta_tau.size(); ++block) {
    int block_size = _Delta_tau[block].data().shape()[1];
    auto const& block_name = delta_names[block];
    double prop_prob = get_prob_prop(block_name);
@@ -220,7 +220,7 @@ void solver_core::solve(solve_parameters_t const & params) {
    removes.add(move_remove_c_cdag(block, block_size, block_name,
                                   data, qmc.get_rng(), histo_map), "Remove Delta_" + block_name, prop_prob);
    if (params.move_double) {
-    for (size_t block2 = 0; block2 < _Delta_tau.domain().size(); ++block2) {
+    for (size_t block2 = 0; block2 < _Delta_tau.size(); ++block2) {
      int block_size2 = _Delta_tau[block2].data().shape()[1];
      auto const& block_name2 = delta_names[block2];
      double prop_prob2 = get_prob_prop(block_name2);
@@ -255,20 +255,20 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Measurements
   if (params.measure_g_tau) {
-   auto& g_names = _G_tau.domain().names();
-   for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
+   auto& g_names = _G_tau.block_names();
+   for (size_t block = 0; block < _G_tau.size(); ++block) {
     qmc.add_measure(measure_g(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
    }
   }
   if (params.measure_g_l) {
-   auto& g_names = _G_l.domain().names();
-   for (size_t block = 0; block < _G_l.domain().size(); ++block) {
+   auto& g_names = _G_l.block_names();
+   for (size_t block = 0; block < _G_l.size(); ++block) {
     qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
    }
   }
   if (params.measure_pert_order) {
-   auto& g_names = _G_tau.domain().names();
-   for (size_t block = 0; block < _G_tau.domain().size(); ++block) {
+   auto& g_names = _G_tau.block_names();
+   for (size_t block = 0; block < _G_tau.size(); ++block) {
     auto const& block_name = g_names[block];
     qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
    }

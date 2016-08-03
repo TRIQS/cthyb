@@ -80,7 +80,7 @@ struct qmc_data {
       n_inner(n_inner) {
   std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
   dets.clear();
-  for (auto const &bl : delta.mesh()) {
+  for (auto const &bl : range(delta.size())) {
 #ifdef HYBRIDISATION_IS_COMPLEX
    dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
 #else

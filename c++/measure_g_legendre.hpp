@@ -70,7 +70,7 @@ struct measure_g_legendre {
   g_l = mpi_all_reduce(g_l, c);
   for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0*l+1.0)/(real(z)*beta)) * g_l[l];
 
-  matrix<double> id(get_target_shape(g_l));
+  matrix<double> id(g_l.target_shape());
   id() = 1.0;
   enforce_discontinuity(g_l,id);
  }

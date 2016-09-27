@@ -41,17 +41,17 @@ class move_global {
  // Substitutions as mappings (old linear index) -> (new op_desc)
  std::vector<op_desc> substitute_c, substitute_c_dag;
 
+ // Indices of blocks potentially affected by this move
+ std::set<int> affected_blocks;
+
+ // Operators to be updated
  configuration::oplist_t updated_ops;
 
- h_scalar_t new_atomic_weight;
- h_scalar_t new_atomic_reweighting;
+ // Proposed arguments of the dets
+ std::vector<std::vector<det_type::xy_type>> x, y;
 
- std::set<int> affected_blocks;
- struct stored_det {
-  det_type det;
-  bool stored;
- };
- std::vector<stored_det> dets_backup;
+ h_scalar_t new_atomic_weight;      // Proposed value of the trace or norm
+ h_scalar_t new_atomic_reweighting; // Proposed value of the reweighting
 
  public:
  //-----------------------------------------------
@@ -64,7 +64,8 @@ class move_global {
   config(data.config),
   rng(rng),
   substitute_c(data.linindex.size()),
-  substitute_c_dag(data.linindex.size()) {
+  substitute_c_dag(data.linindex.size()),
+  x(data.dets.size()), y(data.dets.size()) {
 
   auto const& fops = data.h_diag.get_fops();
 
@@ -74,7 +75,7 @@ class move_global {
 
   bool identity = true;
   for(int lin = 0; lin < lin_to_block_inner.size(); ++lin) {
-   int subst_lin, subst_block, subst_inner;
+   int new_lin, new_block, new_inner;
 
    // Does operator with linear index lin have a mapping in substitution_map?
    auto it = std::find_if(std::begin(substitution_map),
@@ -82,25 +83,22 @@ class move_global {
                           [&fops,lin](indices_map_t::value_type const& kv) {return fops[kv.first] == lin;});
 
    // If it does not, it is substituted by itself (subst_linear = lin)
-   subst_lin = (it != std::end(substitution_map)) ? fops[it->second] : lin;
-   std::tie(subst_block,subst_inner) = lin_to_block_inner[subst_lin];
+   new_lin = (it != std::end(substitution_map)) ? fops[it->second] : lin;
+   std::tie(new_block,new_inner) = lin_to_block_inner[new_lin];
 
-   if(subst_lin != lin) {
+   if(new_lin != lin) {
     identity = false;
     affected_blocks.insert(lin_to_block_inner[lin].first);
-    affected_blocks.insert(subst_block);
+    affected_blocks.insert(new_block);
    }
 
-   substitute_c[lin] = op_desc{subst_block,subst_inner,false,subst_lin};
-   substitute_c_dag[lin] = op_desc{subst_block,subst_inner,true,subst_lin};
+   substitute_c[lin]     = op_desc{new_block,new_inner,false,new_lin};
+   substitute_c_dag[lin] = op_desc{new_block,new_inner,true, new_lin};
   }
 
   if(identity)
    std::cerr << "WARNING: global move '" << name
              << "' changes no operator indices, therefore is useless." << std::endl;
-
-  for(auto block_number : affected_blocks)
-   dets_backup.push_back({data.dets[block_number],false});
  }
 
  mc_weight_t attempt() {
@@ -142,7 +140,10 @@ class move_global {
 #endif
 
   // Derive new arguments of the dets
-  std::vector<std::vector<det_type::xy_type>> x(data.dets.size()), y(data.dets.size());
+  for(auto block_index : affected_blocks) {
+   x[block_index].clear();
+   y[block_index].clear();
+  }
 
   for(auto const& o : data.config) {
    auto const& tau = o.first;
@@ -156,33 +157,19 @@ class move_global {
    if(x[block_index].size() != y[block_index].size()) return 0;
   }
 
-  // Create new determinants and back up the old ones
-  mc_weight_t old_det = 1.0, new_det = 1.0;
-  int backup_det_index = -1;
+  // Try refill determinants
+  mc_weight_t det_ratio = 1;
   for(auto block_index : affected_blocks) {
-   auto& det = data.dets[block_index];
-   auto& backup_det = dets_backup[++backup_det_index];
-
-   try {
-    backup_det.det = det_type(data.delta[block_index],x[block_index],y[block_index]);
-   } catch(triqs::runtime_error &) { // FIXME: Workaround for TRIQS issue #336
+   auto & det = data.dets[block_index];
+   mc_weight_t block_det_ratio = det.try_refill(x[block_index], y[block_index]);
+   if(block_det_ratio == .0) {
+#ifdef EXT_DEBUG
+    std::cerr << "block_det_ratio[" << block_index << "] = 0" << std::endl;
+#endif
     return 0;
    }
-   std::swap(det,backup_det.det);
-   backup_det.stored = true;
-
-   old_det *= backup_det.det.determinant();
-   new_det *= det.determinant();
+   det_ratio *= block_det_ratio;
   }
-
-  if (new_det == 0.0) {
-#ifdef EXT_DEBUG
-   std::cerr << "new_det == 0" << std::endl;
-#endif
-   return 0;
-  }
-
-  auto det_ratio = new_det/old_det;
 
   // For quick abandon
   double random_number = rng.preview();
@@ -217,10 +204,12 @@ class move_global {
 
  mc_weight_t accept() {
 
-  for(auto const& o : updated_ops) data.config.replace(o.first, o.second);
+  for(auto const& o : updated_ops)
+   data.config.replace(o.first, o.second);
   config.finalize();
 
-  for(auto & backup_det : dets_backup) backup_det.stored = false;
+  for(auto block_index : affected_blocks)
+   data.dets[block_index].complete_operation();
 
   data.update_sign();
   data.atomic_weight = new_atomic_weight;
@@ -241,14 +230,6 @@ class move_global {
  void reject() {
 
   config.finalize();
-
-  int backup_det_index = -1;
-  for(auto block_index : affected_blocks) {
-    auto& backup_det = dets_backup[++backup_det_index];
-    if(backup_det.stored) std::swap(data.dets[block_index], backup_det.det);
-    backup_det.stored = false;
-  }
-
   data.imp_trace.cancel_replace();
 
 #ifdef EXT_DEBUG

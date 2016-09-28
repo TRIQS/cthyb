@@ -348,7 +348,6 @@ std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u
   for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
  }
 
- // Loop over blocks
  int bl;
  for (bl = 0; bl < n_bl; ++bl) { // sum over all blocks
 

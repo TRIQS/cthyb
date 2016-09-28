@@ -47,7 +47,9 @@ class impurity_trace {
  // construct from the config, the diagonalization of h_loc, and parameters
  impurity_trace(configuration& c, atom_diag const& h_diag, solve_parameters_t const& p, histo_map_t * hist_map);
 
- ~impurity_trace() { cancel_insert_impl(); } // in case of an exception, we need to remove any trial nodes before cleaning the tree!
+ ~impurity_trace() {
+  cancel_insert_impl(); // in case of an exception, we need to remove any trial nodes before cleaning the tree!
+ }
 
  std::pair<h_scalar_t, h_scalar_t> compute(double p_yee = -1, double u_yee = 0);
 
@@ -143,6 +145,40 @@ class impurity_trace {
  int check_one_block_table_linear(node n, int b, bool print); // compare block table to that of a linear method (ie. no tree)
  matrix_t check_one_block_matrix_linear(node n, int b, bool print); // compare matrix to that of a linear method (ie. no tree)
 
+ // Pool of detached nodes
+ class nodes_storage {
+
+  const int n_blocks;
+  std::vector<node> nodes;
+  int i;
+
+  // make a new detached black node
+  node make_new_node() {
+   return new rb_tree_t::node_t(time_pt{}, node_data_t{{}, n_blocks}, false, 1);
+  }
+
+ public:
+  inline nodes_storage(int n_blocks, int size = 0) : n_blocks(n_blocks), i(-1) {
+   for(int j = 0; j < size; ++j) nodes.push_back(make_new_node());
+  }
+  inline ~nodes_storage() { for(auto & n : nodes) delete n; }
+
+  // Change the number of stored nodes
+  inline void reserve(int size) {
+    if(size > nodes.size())
+     for(int j = nodes.size(); j < size; ++j) nodes.push_back(make_new_node());
+  }
+  inline int index() const { return i; }
+  inline bool is_index_reset() const { return i == -1; }
+  inline int reset_index() { int i_ = i; i = -1; return i_; }
+  inline node swap_next(node n) { std::swap(n,nodes[++i]); return n; }
+  inline node swap_prev(node n) { std::swap(n,nodes[i--]); return n; }
+  inline node take_next() { return nodes[++i]; }
+  inline node take_prev() { return nodes[i--]; }
+ };
+
+ public:
+
  /*************************************************************************
   *  Ordinary binary search tree (BST) insertion of the trial nodes
   *************************************************************************/
@@ -151,18 +187,11 @@ class impurity_trace {
 
  int tree_size = 0; // size of the tree +/- the added/deleted node
 
- // make a new detached black node
- std::shared_ptr<rb_tree_t::node_t> make_new_node() const {
-  return std::make_shared<rb_tree_t::node_t>(time_pt{}, node_data_t{{}, n_blocks}, false, 1);
- }
-
  // a pool of trial nodes, ready to be glued in the tree. Max 4 to allow for double insertions
- std::vector<std::shared_ptr<rb_tree_t::node_t>> trial_nodes = {make_new_node(), make_new_node(),
-                                                                make_new_node(), make_new_node()};
+ nodes_storage trial_nodes = {n_blocks,4};
 
  // for each inserted node, need to know {parent_of_node,child_is_left}
  std::vector<std::pair<node, bool>> inserted_nodes = {{nullptr, false}, {nullptr, false}, {nullptr, false}, {nullptr, false}};
- int trial_node_index = -1; // the index of the next available node in trial_nodes
 
  node try_insert_impl(node h, node n) { // implementation
   if (h == nullptr) return n;
@@ -172,18 +201,18 @@ class impurity_trace {
    h->left = try_insert_impl(h->left, n);
   else
    h->right = try_insert_impl(h->right, n);
-  if (inserted_nodes[trial_node_index].first == nullptr) inserted_nodes[trial_node_index] = {h, smaller};
+  if (inserted_nodes[trial_nodes.index()].first == nullptr) inserted_nodes[trial_nodes.index()] = {h, smaller};
   h->modified = true;
   return h;
  }
 
  // unlink all glued trial nodes
  void cancel_insert_impl() {
-  for (int i = 0; i <= trial_node_index; ++i) {
+  for (int i = 0; i <= trial_nodes.index(); ++i) {
    auto& r = inserted_nodes[i];
    if (r.first != nullptr) (r.second ? r.first->left : r.first->right) = nullptr;
   }
-  if (tree_size == trial_node_index + 1) tree.get_root() = nullptr;
+  if (tree_size == trial_nodes.index() + 1) tree.get_root() = nullptr;
  }
 
  /*************************************************************************
@@ -193,10 +222,10 @@ class impurity_trace {
  public:
  // Put a trial node at tau for operator op using an ordinary BST insertion (ie. not red black)
  void try_insert(time_pt const& tau, op_desc const& op) {
-  if (trial_node_index > 3) TRIQS_RUNTIME_ERROR << "Error : more than 4 insertions ";
+  if (trial_nodes.index() > 3) TRIQS_RUNTIME_ERROR << "Error : more than 4 insertions ";
   auto& root = tree.get_root();
-  inserted_nodes[++trial_node_index] = {nullptr, false};
-  node n = trial_nodes[trial_node_index].get(); // get the next available node
+  node n = trial_nodes.take_next(); // get the next available node
+  inserted_nodes[trial_nodes.index()] = {nullptr, false};
   n->reset(tau, op);                            // change the time and op of the node
   root = try_insert_impl(root, n);              // insert it using a regular BST, no red black
   tree_size++;
@@ -205,7 +234,7 @@ class impurity_trace {
  // Remove all trial nodes from the tree
  void cancel_insert() {
   cancel_insert_impl();
-  trial_node_index = -1;
+  trial_nodes.reset_index();
   tree_size = tree.size();
   tree.clear_modified();
   check_cache_integrity();
@@ -214,11 +243,13 @@ class impurity_trace {
  // confirm the insertion of the nodes, with red black balance
  void confirm_insert() {
   cancel_insert_impl();                         // remove BST inserted nodes
-  for (int i = 0; i <= trial_node_index; ++i) { // then reinsert the nodes in in balanced RBT
-   node n = trial_nodes[i].get();
-   tree.insert(n->key, {n->op, n_blocks});
+  // then reinsert the nodes in in balanced RBT
+  int imax = trial_nodes.reset_index();
+  for (int i = 0; i <= imax; ++i) {
+    node n = trial_nodes.take_next();
+    tree.insert(n->key, {n->op, n_blocks});
   }
-  trial_node_index = -1;
+  trial_nodes.reset_index();
   update_cache();
   tree_size = tree.size();
   tree.clear_modified();
@@ -282,7 +313,7 @@ class impurity_trace {
 
   // Inserted nodes
   cancel_insert_impl();
-  trial_node_index = -1;
+  trial_nodes.reset_index();
 
   // Deleted nodes
   for (auto& n : removed_nodes) n->delete_flag = false;
@@ -299,11 +330,14 @@ class impurity_trace {
 
   // Inserted nodes
   cancel_insert_impl();                         //  first remove BST inserted nodes
-  for (int i = 0; i <= trial_node_index; ++i) { //  then reinsert the nodes in rb tree, with balancing
-   node n = trial_nodes[i].get();
-   tree.insert(n->key, {n->op, n_blocks});
+
+  //  then reinsert the nodes used for real in rb tree
+  int imax = trial_nodes.reset_index();
+  for (int i = 0; i <= imax; ++i) {
+    node n = trial_nodes.take_next();
+    tree.insert(n->key, {n->op, n_blocks});
   }
-  trial_node_index = -1;
+  trial_nodes.reset_index();
 
   // Deleted nodes
   for (auto& k : removed_keys) tree.delete_node(k); // CANNOT use the node here
@@ -314,6 +348,73 @@ class impurity_trace {
   update_cache();
   tree_size = tree.size();
   tree.clear_modified();
+  check_cache_integrity();
+ }
+
+ /*************************************************************************
+  * Node replacement (replace op_desc according to a substitution table)
+  *************************************************************************/
+ private:
+ // Store copies of the nodes to be replaced
+ nodes_storage backup_nodes = {n_blocks};
+
+ node try_replace_impl(node n, configuration::oplist_t const& updated_ops) noexcept {
+
+  node new_left = nullptr, new_right = nullptr;
+  if(n->left) new_left = try_replace_impl(n->left, updated_ops);
+  if(n->right) new_right = try_replace_impl(n->right, updated_ops);
+
+  auto const& op = n->op;
+  auto it = updated_ops.find(n->key);
+  bool op_changed = it != updated_ops.end();
+  auto const& new_op = op_changed ? it->second : op;
+  node new_node = n;
+  if(op_changed || new_left != n->left || new_right != n->right) {
+   auto key = n->key;
+   auto color = n->color;
+   auto N = n->N;
+
+   new_node = backup_nodes.swap_next(n);
+   if(op_changed) new_node->reset(key,new_op);
+   else           new_node->reset(key,op);
+   new_node->left = new_left;
+   new_node->right = new_right;
+   new_node->color = color;
+   new_node->N = N;
+   new_node->modified = true;
+  }
+  return new_node;
+ }
+
+ node cancel_replace_impl(node n) {
+  node n_in_tree = n;
+  if(n_in_tree && n_in_tree->modified) n = backup_nodes.swap_prev(n);
+  if(n_in_tree->right) cancel_replace_impl(n_in_tree->right);
+  if(n_in_tree->left) cancel_replace_impl(n_in_tree->left);
+  return n;
+ }
+
+ public:
+ void try_replace(configuration::oplist_t const& updated_ops) noexcept {
+  if(tree_size == 0) return;
+
+  if (!backup_nodes.is_index_reset()) TRIQS_RUNTIME_ERROR << "impurity_trace: improper use of try_replace()";
+  backup_nodes.reserve(tree.size());
+  auto& root = tree.get_root();
+  root = try_replace_impl(root, updated_ops);
+ }
+
+ void confirm_replace() {
+  backup_nodes.reset_index();
+  update_cache();
+  tree.clear_modified();
+  check_cache_integrity();
+ }
+
+ void cancel_replace() {
+  if(tree_size ==0 || backup_nodes.is_index_reset()) return;
+  auto& root = tree.get_root();
+  root = cancel_replace_impl(root);
   check_cache_integrity();
  }
 

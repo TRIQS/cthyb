@@ -3,7 +3,8 @@
 
 namespace cthyb {
 
- using namespace triqs::operators;
+using namespace triqs::operators;
+using indices_map_t = std::map<triqs::operators::indices_t,triqs::operators::indices_t>;
 
 // All the arguments of the solve function
 struct solve_parameters_t {
@@ -79,6 +80,15 @@ struct solve_parameters_t {
  /// type: dict(str:float)
  /// default: {}
  std::map<std::string,double> proposal_prob = (std::map<std::string,double>{});
+
+ /// List of global moves (with their names).
+ /// Each move is specified with an index substitution dictionary
+ /// type: dict(str : dict(indices : indices))
+ /// default: {}
+ std::map<std::string,indices_map_t> move_global = (std::map<std::string,indices_map_t>{});
+
+ /// Overall probability of the global moves
+ double move_global_prob = 0.05;
 
  /// Threshold below which imaginary components of Delta and h_loc are set to zero
  double imag_threshold = 1.e-15;

@@ -36,7 +36,7 @@ struct op_desc {
  int block_index;   // the block index of the operator
  int inner_index;   // the inner index inside the block
  bool dagger;       // is the operator a dagger
- long linear_index; // the cumulative index 
+ long linear_index; // the cumulative index
 
  friend std::ostream& operator<<(std::ostream& out, op_desc const& op) {
   out << (op.dagger ? "Cdag(" : "C(") << op.block_index << "," << op.inner_index << ")";
@@ -70,13 +70,15 @@ struct configuration {
  int size() const { return oplist.size(); }
 
  void insert(time_pt tau, op_desc op) {oplist.insert({tau,op});}
+ void replace(time_pt tau, op_desc op) {oplist[tau] = op;}
  void erase(time_pt const & t) { oplist.erase(t); }
+ void clear() { oplist.clear(); }
 
  oplist_t::iterator begin() { return oplist.begin(); }
  oplist_t::iterator end() { return oplist.end();}
  oplist_t::const_iterator begin() const { return oplist.begin();}
  oplist_t::const_iterator end() const { return oplist.end(); }
- 
+
  friend std::ostream& operator<<(std::ostream& out, configuration const& c) {
   for (auto const& op : c) out << "tau = " << op.first << " : " << op.second << std::endl;
   return out;

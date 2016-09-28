@@ -44,8 +44,8 @@ It can be enabled by setting ``move_double`` to ``True``.
 Remove two pairs of operators
 *****************************
 
-Randomly choose two block indices :math:`A` and :math:`B`, two operators with the block index 
-:math:`A`, :math:`c^\dagger_{Ai_1}(\tau_1), c_{Aj_1}(\tau'_1)` and two operators with the block index 
+Randomly choose two block indices :math:`A` and :math:`B`, two operators with the block index
+:math:`A`, :math:`c^\dagger_{Ai_1}(\tau_1), c_{Aj_1}(\tau'_1)` and two operators with the block index
 :math:`B`, :math:`c^\dagger_{Bi_2}(\tau_2), c_{Bj_2}(\tau'_2)`. Try to remove the chosen operators.
 
 Probability of choosing a particular block index can be adjusted through the parameter ``proposal_prob``.
@@ -65,3 +65,25 @@ Randomly choose one operator from the configuration. Choose a random inner index
 a random time point. Try to move the chosen operator to the new time position and replace its inner index.
 
 This move helps to reduce statistical noise. It is enabled by default and can be disabled with ``move_shift = False``.
+
+Global move - change of operator indices
+****************************************
+
+Randomly choose one of the user-provided index substitution maps,
+`(old block index, old inner index) -> (new block index, new inner index)`.
+Find all operators in the configuration, whose indices are to be changed according to the
+chosen substitution map. Let the total number of such operators be :math:`N_{max}`.
+A uniformly distributed integer :math:`N\in[1;N_{max}]` is then generated, and
+:math:`N` randomly picked operators (out of :math:`N_{max}`) actually change their indices.
+
+This move is disabled by default, because it is much slower than the rest of the moves.
+It can alleviate some ergodicity problems occuring at lower temperatures (confinement in a local minimum).
+*However, one may not assume that all problems of this kind are automatically solved by the move.*
+
+Proposal probability of the global move is set by ``move_global_prob`` parameter.
+The substitution maps must be passed as a dictionary to ``move_global`` parameter.
+The dictionary has the following format:
+
+``dict(map_name : dict((A_1,i_1) : (B_1,j_1), (A_2,i_2) : (B_2,j_2), ...), ...)``
+
+An empty dictionary (default) disables the move completely.

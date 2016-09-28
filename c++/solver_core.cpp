@@ -31,6 +31,7 @@
 #include "move_double_insert.hpp"
 #include "move_double_remove.hpp"
 #include "move_shift.hpp"
+#include "move_global.hpp"
 #include "measure_g.hpp"
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"
@@ -239,7 +240,18 @@ void solver_core::solve(solve_parameters_t const & params) {
    qmc.add_move(double_inserts, "Insert four operators", 1.0);
    qmc.add_move(double_removes, "Remove four operators", 1.0);
   }
+
   if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
+
+  if (params.move_global.size()) {
+   move_set_type global(qmc.get_rng());
+   for(auto const& mv : params.move_global) {
+    auto const& name = mv.first;
+    auto const& substitutions = mv.second;
+    global.add(move_global(name,substitutions,data,qmc.get_rng()),name,1.0);
+   }
+   qmc.add_move(global,"Global moves",params.move_global_prob);
+  }
 
   // Measurements
   if (params.measure_g_tau) {
@@ -262,7 +274,6 @@ void solver_core::solve(solve_parameters_t const & params) {
    }
    qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
   }
-
   if (params.measure_density_matrix) {
    if (!params.use_norm_as_weight)
     TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "

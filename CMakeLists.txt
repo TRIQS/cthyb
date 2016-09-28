@@ -38,12 +38,17 @@ option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
 
+if(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
+ message(FATAL_ERROR "Combination of options HYBRIDISATION_IS_COMPLEX=ON "
+                     "and LOCAL_HAMILTONIAN_IS_COMPLEX=OFF is not supported.")
+endif(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
+
 if(EXT_DEBUG)
  add_definitions(-DEXT_DEBUG)
 endif(EXT_DEBUG)
 
 if(SAVE_CONFIGS)
- set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save")
+ set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
  add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})
 endif(SAVE_CONFIGS)
 

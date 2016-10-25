@@ -24,6 +24,15 @@ DOC
 
 """
 from cthyb_solver import Solver
-from cthyb import SolverCore, AtomDiag, quantum_number_eigenvalues, trace_rho_op, act, atomic_gf
+from cthyb import SolverCore
+from cthyb import (AtomDiag,
+                   partition_function,
+                   atomic_density_matrix,
+                   atomic_gf, trace_rho_op, act,
+                   quantum_number_eigenvalues,
+                   quantum_number_eigenvalues2)
 
-__all__ = ['Solver', 'SolverCore', 'AtomDiag', 'quantum_number_eigenvalues', 'trace_rho_op', 'act','atomic_gf']
+__all__ = ['Solver', 'SolverCore',
+           'AtomDiag', 'partition_function', 'atomic_density_matrix',
+           'atomic_gf', 'trace_rho_op', 'act',
+           'quantum_number_eigenvalues', 'quantum_number_eigenvalues2']

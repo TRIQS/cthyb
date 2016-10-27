@@ -78,7 +78,7 @@ class atom_diag {
 
  /// Return the range of indices of block B
  TRIQS_CPP2PY_IGNORE range index_range_of_block(int bl) const {
-  return range{first_eigstate_of_block[bl], first_eigstate_of_block[bl] + get_block_dim(bl) + 1};
+  return range{first_eigstate_of_block[bl], first_eigstate_of_block[bl] + get_block_dim(bl)};
  }
 
  /// Get the eigensystem

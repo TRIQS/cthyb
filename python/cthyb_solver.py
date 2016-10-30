@@ -15,15 +15,15 @@ class Solver(SolverCore):
                Inverse temperature.
         gf_struct : dict{str:list}
                     Structure of the Green's functions. It must be a
-                    dictionary which maps the name of each block of the
+                    dictionary, which maps the name of each block of the
                     Green's function as a string to a list of integer
                     indices.
-                    For example: { 'up': [1,2,3], 'down', [1,2,3] }.
+                    For example: ``{'up': [1,2,3], 'down', [1,2,3]}``.
         n_iw : integer, optional
                Number of Matsubara frequencies used for the Green's functions.
-        n_tau: integer, optional
+        n_tau : integer, optional
                Number of imaginary time points used for the Green's functions.
-        n_l: integer, optional
+        n_l : integer, optional
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
         # Initialise the core solver
@@ -40,27 +40,27 @@ class Solver(SolverCore):
     def solve(self, **params_kw):
         """
         Solve the impurity problem.
-        If measure_g_tau (default = True), G_iw and Sigma_iw will be calculated and their tails fitted.
+        If ``measure_g_tau`` (default = ``True``), ``G_iw`` and ``Sigma_iw`` will be calculated and their tails fitted.
         In addition to the solver parameters, parameters to control the tail fitting can be provided.
 
         Parameters
         ----------
-        **params_kw: dict {'param':value} that is passed to the core solver.
-                     Two required parameters are
-                     * h_int (Operator object): the local Hamiltonian of the impurity problem to be solved,
-                     * n_cycles (int): number of measurements to be made.
-        perform_post_proc : boolean, optional, default = True
-                            Should G_iw and Sigma_iw be calculated?
-        perform_tail_fit : boolean, optional, default = False
-                           Should the tails of Sigma_iw and G_iw be fitted?
+        params_kw : dict {'param':value} that is passed to the core solver.
+                     Two required :ref:`parameters <solve_parameters>` are
+                        * `h_int` (:ref:`Operator object <triqslibs:operators>`): the local Hamiltonian of the impurity problem to be solved,
+                        * `n_cycles` (int): number of measurements to be made.
+        perform_post_proc : boolean, optional, default = ``True``
+                            Should ``G_iw`` and ``Sigma_iw`` be calculated?
+        perform_tail_fit : boolean, optional, default = ``False``
+                           Should the tails of ``Sigma_iw`` and ``G_iw`` be fitted?
         fit_max_moment : integer, optional, default = 3
-                         Highest moment to fit in the tail of Sigma_iw.
-        fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, max_moment, order_min)}
-                            Known moments of Sigma_iw, given as a TailGf object.
-        fit_min_n : integer, optional, default = int(0.8 * self.n_iw)
-                    Index of iw from which to start fitting.
-        fit_max_n : integer, optional, default = n_iw
-                    Index of iw to fit until.
+                         Highest moment to fit in the tail of ``Sigma_iw``.
+        fit_known_moments : dict{str:``TailGf`` object}, optional, default = {'block_name': ``TailGf(dim1, dim2, max_moment, order_min``)}
+                            Known moments of ``Sigma_iw``, given as a :ref:`TailGf <triqslibs:tailgf>` object.
+        fit_min_n : integer, optional, default = ``int(0.8 * self.n_iw)``
+                    Index of ``iw`` from which to start fitting.
+        fit_max_n : integer, optional, default = ``n_iw``
+                    Index of ``iw`` to fit until.
         """
 
         perform_post_proc = params_kw.pop("perform_post_proc", True)

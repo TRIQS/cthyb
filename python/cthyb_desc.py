@@ -1,5 +1,5 @@
 # Generated automatically using the command :
-# c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
+# c++2py.py ../c++/solver_core.hpp -I../../cthyb.build/c++ -I../c++ -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 from wrap_generator import *
 
 # The module
@@ -26,14 +26,14 @@ module.add_preamble("""
 using namespace triqs::gfs;
 using triqs::operators::many_body_operator;
 using namespace cthyb;
-#include "./converters.hxx"
+#include "./cthyb_converters.hxx"
 """)
 
 # The class solver_core
 c = class_(
         py_type = "SolverCore",  # name of the python class
         c_type = "solver_core",   # name of the C++ class
-        doc = r"",   # doc of the C++ class
+        doc = r"Core class of the cthyb solver",   # doc of the C++ class
 )
 
 c.add_constructor("""(double beta, std::map<std::string,indices_type> gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50)""",
@@ -63,7 +63,7 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
 | verbosity              | int                                 | 3 on MPI rank 0, 0 otherwise. | Verbosity level                                                                                        |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
-| move_shift             | bool                                | true                          | Add shifting a move as a move?                                                                         |
+| move_shift             | bool                                | true                          | Add shifting an operator as a move?                                                                    |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
 | move_double            | bool                                | false                         | Add double insertions as a move?                                                                       |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
@@ -75,7 +75,7 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
 | measure_pert_order     | bool                                | false                         | Measure perturbation order?                                                                            |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
-| measure_density_matrix | bool                                | false                         | Measure the contribution of each atomic state to the trace?                                            |
+| measure_density_matrix | bool                                | false                         | Measure the reduced impurity density matrix?                                                           |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
 | use_norm_as_weight     | bool                                | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                          |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
@@ -83,7 +83,7 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
 | proposal_prob          | dict(str:float)                     | {}                            | Operator insertion/removal probabilities for different blocks                                          |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
-| move_global            | dict(str : dict(indices : indices)) | {}                            | List of global moves (with their names). Each move is specified with an index substitution dictionary  |
+| move_global            | dict(str : dict(indices : indices)) | {}                            | List of global moves (with their names). Each move is specified with an index substitution dictionary. |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
 | move_global_prob       | double                              | 0.05                          | Overall probability of the global moves                                                                |
 +------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------+
@@ -92,59 +92,59 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 
 c.add_property(name = "h_loc",
                getter = cfunction("many_body_op_t h_loc ()"),
-               doc = """The local Hamiltonian of the problem : H_loc used in the last call to solve. """)
+               doc = """The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``. """)
 
 c.add_property(name = "last_solve_parameters",
                getter = cfunction("cthyb::solve_parameters_t last_solve_parameters ()"),
-               doc = """Set of parameters used in the last call to solve """)
-
-c.add_property(name = "G0_iw",
-               getter = cfunction("block_gf_view<imfreq> G0_iw ()"),
-               doc = """G0(iw) in imaginary frequencies """)
+               doc = """Set of parameters used in the last call to ``solve()``. """)
 
 c.add_property(name = "Delta_tau",
                getter = cfunction("block_gf_view<imtime> Delta_tau ()"),
-               doc = """Delta(tau) in imaginary time """)
+               doc = """:math:`\\Delta(\\tau)` in imaginary time. """)
+
+c.add_property(name = "G0_iw",
+               getter = cfunction("block_gf_view<imfreq> G0_iw ()"),
+               doc = """:math:`G_0(i\\omega)` in imaginary frequencies. """)
 
 c.add_property(name = "G_tau",
                getter = cfunction("block_gf_view<imtime> G_tau ()"),
-               doc = """G(tau) in imaginary time """)
+               doc = """Accumulated :math:`G(\\tau)` in imaginary time. """)
 
 c.add_property(name = "G_l",
                getter = cfunction("block_gf_view<legendre> G_l ()"),
-               doc = """G_l in Legendre polynomials representation """)
+               doc = """Accumulated :math:`G_l` in Legendre polynomials representation. """)
 
 c.add_property(name = "atomic_gf",
                getter = cfunction("block_gf_view<imtime> atomic_gf ()"),
-               doc = """Atomic G(tau) in imaginary time """)
+               doc = """Atomic :math:`G(\\tau)` in imaginary time. """)
 
 c.add_property(name = "density_matrix",
                getter = cfunction("std::vector<matrix_t> density_matrix ()"),
-               doc = """Density matrix """)
+               doc = """Accumulated density matrix. """)
 
 c.add_property(name = "h_loc_diagonalization",
                getter = cfunction("cthyb::atom_diag h_loc_diagonalization ()"),
-               doc = """Diagonalization of h_loc """)
+               doc = """Diagonalization of :math:`H_{loc}`. """)
 
 c.add_property(name = "perturbation_order_total",
                getter = cfunction("triqs::statistics::histogram get_perturbation_order_total ()"),
-               doc = """Histogram of the total perturbation order """)
+               doc = """Histogram of the total perturbation order. """)
 
 c.add_property(name = "perturbation_order",
                getter = cfunction("histo_map_t get_perturbation_order ()"),
-               doc = """Histograms of the perturbation order for each block """)
+               doc = """Histograms of the perturbation order for each block. """)
 
 c.add_property(name = "performance_analysis",
                getter = cfunction("histo_map_t get_performance_analysis ()"),
-               doc = """Histograms related to the performance analysis """)
+               doc = """Histograms related to the performance analysis. """)
 
 c.add_property(name = "average_sign",
                getter = cfunction("mc_weight_t average_sign ()"),
-               doc = """Monte Carlo average sign """)
+               doc = """Monte Carlo average sign. """)
 
 c.add_property(name = "solve_status",
                getter = cfunction("int solve_status ()"),
-               doc = """Status of the solve on exit """)
+               doc = """Status of the ``solve()`` on exit. """)
 
 module.add_class(c)
 

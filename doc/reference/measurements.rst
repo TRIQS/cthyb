@@ -1,7 +1,9 @@
+.. _measurements:
+
 Measurements: definitions
 =========================
 
-Here we list all the observables that can be measured by the solver along with their definition.
+Here we list all the observables that can be measured by the solver along with their definitions.
 Each measurement can be turned on or off via the corresponding :doc:`solve() parameters <parameters>`.
 
 Green's function
@@ -52,15 +54,15 @@ The number of Legendre coefficients to be measured is specified through construc
 Impurity density matrix
 -----------------------
 
-The impurity density matrix (a.k.a. reduced density matrix) is the full density matrix of the system 
+The impurity density matrix (a.k.a. reduced density matrix) is the full density matrix of the system
 with the bath degrees of freedom traced out.
 
 .. math::
 
     \hat\rho_\mathrm{imp} = \mathrm{Tr}_\mathrm{bath}[e^{-\beta\hat H}/Z].
 
-One can use this object to estimate average values of the static (:math:`\tau`-independent)
-impurity observables,
+One can use this object to :ref:`estimate average values <static>`
+of the static (:math:`\tau`-independent) impurity observables,
 
 .. math::
 
@@ -75,11 +77,11 @@ The impurity density matrix is accessible as ``density_matrix`` attribute of the
     Presently the density matrix is treated as block-diagonal with the same block structure as
     :math:`\hat H_\mathrm{loc}`. The block-offdiagonal matrix elements are not accumulated,
     so results can only be reliably used with static observables of the same block structure.
-    
+
     The ``density_matrix`` attribute returns a list of matrices, one matrix per diagonal block.
 
-Average perturbation order
---------------------------
+Perturbation order histograms
+-----------------------------
 
 The perturbation order within a block :math:`A` is defined as a half of the number of
 operators with the block index :math:`A` in the dynamical trace.
@@ -93,12 +95,8 @@ Statistical histograms of the block-wise, as well as total perturbation orders w
     These two kinds of histograms are independent measurements. The total perturbation order histogram
     is expressed as a convolution of the block-wise histograms solely for the non-interacting systems.
 
-.. warning::
-    Update this section when the histograms are accessible through solver's attributes.
-
-For each block, the corresponding partial histogram is dumped to a text file
-`histo_pert_order_<block_name>.dat` upon completion of the simulation. The total histogram is
-dumped to `histo_pert_order.dat`.
+For each block, the corresponding partial histogram is accessible as ``perturbation_order[block_name]``.
+The ``perturbation_order_total`` attribute holds the total perturbation order histogram.
 
 Average sign
 ------------

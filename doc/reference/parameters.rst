@@ -1,1 +1,1 @@
-../../python/parameters.rst
+../../python/cthyb_parameters.rst

@@ -1,9 +1,11 @@
+.. _moves:
+
 QMC moves
 =========
 
 In ``cthyb``, a *configuration* (state of the Markov chain) is a :math:`\tau`-ordered sequence
-of an even number of creation and annihilation operators :math:`c^\dagger_{Ai}(\tau), c_{Bj}(\tau)` with block indices
-:math:`A, B` and inner indice :math:`i, j`.
+of an even number of creation and annihilation operators :math:`c^\dagger_{Ai}(\tau), c_{Bj}(\tau)` with block
+indices :math:`A, B` and inner indices :math:`i, j`.
 
 Here is a list of all moves (updates) used to organize random walk in the space of possible configurations.
 

@@ -34,7 +34,7 @@ using namespace triqs::statistics;
 using histo_map_t = std::map<std::string, histogram>;
 using indices_type = triqs::operators::indices_t;
 
-/**  DOC OF SOLVER CORE*/
+/// Core class of the cthyb solver
 class solver_core {
 
  double beta;                                   // inverse temperature
@@ -61,46 +61,46 @@ class solver_core {
  TRIQS_WRAP_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
  void solve(solve_parameters_t const & p);
 
- /// The local Hamiltonian of the problem : H_loc used in the last call to solve.
+ /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
  many_body_op_t const & h_loc() const { return _h_loc; }
 
- /// Set of parameters used in the last call to solve
+ /// Set of parameters used in the last call to ``solve()``.
  solve_parameters_t last_solve_parameters() const {return _last_solve_parameters;}
 
- /// G0(iw) in imaginary frequencies
- block_gf_view<imfreq> G0_iw() { return _G0_iw; }
-
- /// Delta(tau) in imaginary time
+ /// :math:`\Delta(\tau)` in imaginary time.
  block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
- /// G(tau) in imaginary time
+ /// :math:`G_0(i\omega)` in imaginary frequencies.
+ block_gf_view<imfreq> G0_iw() { return _G0_iw; }
+
+ /// Accumulated :math:`G(\tau)` in imaginary time.
  block_gf_view<imtime> G_tau() { return _G_tau; }
 
- /// G_l in Legendre polynomials representation
+ /// Accumulated :math:`G_l` in Legendre polynomials representation.
  block_gf_view<legendre> G_l() { return _G_l; }
 
- /// Atomic G(tau) in imaginary time
+ /// Atomic :math:`G(\tau)` in imaginary time.
  block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _G_tau[0].mesh().size()); }
 
- /// Density matrix
+ /// Accumulated density matrix.
  std::vector<matrix_t> const & density_matrix() const { return _density_matrix;}
 
- /// Diagonalization of h_loc
+ /// Diagonalization of :math:`H_{loc}`.
  atom_diag const & h_loc_diagonalization() const { return h_diag;}
 
- /// Histogram of the total perturbation order
+ /// Histogram of the total perturbation order.
  histogram const& get_perturbation_order_total() const { return _pert_order_total; }
 
- /// Histograms of the perturbation order for each block
+ /// Histograms of the perturbation order for each block.
  histo_map_t const& get_perturbation_order() const { return _pert_order; }
 
- /// Histograms related to the performance analysis
+ /// Histograms related to the performance analysis.
  histo_map_t const& get_performance_analysis() const { return _performance_analysis; }
 
- /// Monte Carlo average sign
+ /// Monte Carlo average sign.
  mc_weight_t average_sign() const { return _average_sign; }
 
- /// Status of the solve on exit
+ /// Status of the ``solve()`` on exit.
  int solve_status() const { return _solve_status; }
 
 };

@@ -14,15 +14,15 @@ S = Solver(beta = beta, gf_struct = {'up':[0],'down':[0]})
 for random_name in ['mt11213b','lagged_fibonacci607']:
 
     for spin, g0 in S.G0_iw:
-        g0 << inverse( iOmega_n - e_f - V**2 * Wilson(D) )
-  
+        g0 << inverse(iOmega_n - e_f - V**2 * Wilson(D))
+
     # Solve using random_name as a generator
     S.solve(h_int = U * n('up',0) * n('down',0),   # Local Hamiltonian
             n_cycles = 100000,                     # Number of QMC cycles
             length_cycle = 200,                    # Length of one cycle
-            n_warmup_cycles = 10000,               # Warmup cycles
+            n_warmup_cycles = 10000,               # Number of warmup cycles
             random_name = random_name)             # Name of the random generator
-  
+
     # Save the results in an hdf5 file (only on the master node)
     if mpi.is_master_node():
         with HDFArchive("random.h5") as Results:

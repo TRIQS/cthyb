@@ -7,14 +7,14 @@ The :ref:`TRIQS-based <triqslibs:welcome>` hybridization-expansion solver
 allows to solve the generic problem of a quantum impurity embedded in a
 conduction bath for an arbitrary local interaction vertex.  The "impurity" can
 be any set of orbitals, on one or several atoms. To be more specific, the
-Hamiltonian of the problem has the form:
+Hamiltonian of the problem has the form
 
 .. math::
 
   \hat H  = \sum_{k,\alpha} \epsilon_{k,\alpha} c^\dagger_{k,\alpha} c_{k,\alpha} + \sum_{k,\alpha}
-            V_{k,\alpha} ( c^\dagger_{k,\alpha} d_{\alpha} + h.c. ) -
+            (V_{k,\alpha} c^\dagger_{k,\alpha} d_{\alpha} + h.c.) -
             \mu \sum_\alpha d^\dagger_\alpha d_\alpha +
-            \hat \sum_{\alpha\beta} h_{\alpha\beta} d^\dagger_\alpha d_\beta +
+            \sum_{\alpha\beta} h_{\alpha\beta} d^\dagger_\alpha d_\beta +
             \frac{1}{2}\sum_{\alpha\beta\gamma\delta} U_{\alpha\beta\gamma\delta}
             d^\dagger_\alpha d^\dagger_\beta d_\delta d_\gamma.
 
@@ -25,7 +25,7 @@ and the impurity is given by:
 
 .. math::
 
-  \Delta_{\alpha,\beta} (i \omega_n) = \sum_k \frac{V_{k,\alpha} V^*_{k,\beta}}{i \omega_n - \epsilon_{k,\alpha}},
+  \Delta_{\alpha\beta} (i \omega_n) = \sum_k \frac{V_{k,\alpha} V^*_{k,\beta}}{i \omega_n - \epsilon_{k,\alpha}},
 
 so that the non-interacting Green's function of the impurity is:
 

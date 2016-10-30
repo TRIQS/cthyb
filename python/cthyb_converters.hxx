@@ -1,9 +1,12 @@
 // DO NOT EDIT
 // Generated automatically using libclang using the command :
-// c++2py.py ../c++/solver_core.hpp -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
+// c++2py.py ../c++/solver_core.hpp -I../../cthyb.build/c++ -I../c++ -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 
 
 // --- C++ Python converter for solve_parameters_t
+#include <triqs/python_tools/converters/vector.hpp>
+#include <triqs/python_tools/converters/string.hpp>
+#include <algorithm>
 
 namespace triqs { namespace py_tools {
 
@@ -98,8 +101,8 @@ template <> struct py_converter<solve_parameters_t> {
  }
 
  static bool is_convertible(PyObject *dic, bool raise_exception) {
-  if (!PyDict_Check(dic)) {
-   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Not a python dict");}
+  if (dic == nullptr or !PyDict_Check(dic)) {
+   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "The function must be called with named arguments");}
    return false;
   }
   std::stringstream fs, fs2; int err=0;

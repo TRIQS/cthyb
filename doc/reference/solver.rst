@@ -4,6 +4,9 @@ Solver
 ======
 
 .. autoclass:: cthyb.Solver
-   :members:
-   :special-members:
-   :show-inheritance:
+    :members:
+    :special-members: __init__
+    :show-inheritance:
+    :inherited-members:
+    :exclude-members: __weakref__
+    :member-order: bysource

@@ -49,7 +49,7 @@ struct solve_parameters_t {
  /// default: 3 on MPI rank 0, 0 otherwise.
  int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
- /// Add shifting a move as a move?
+ /// Add shifting an operator as a move?
  bool move_shift = true;
 
  /// Add double insertions as a move?
@@ -67,7 +67,7 @@ struct solve_parameters_t {
  /// Measure perturbation order?
  bool measure_pert_order = false;
 
- /// Measure the contribution of each atomic state to the trace?
+ /// Measure the reduced impurity density matrix?
  bool measure_density_matrix= false;
 
  /// Use the norm of the density matrix in the weight if true, otherwise use Trace
@@ -82,7 +82,7 @@ struct solve_parameters_t {
  std::map<std::string,double> proposal_prob = (std::map<std::string,double>{});
 
  /// List of global moves (with their names).
- /// Each move is specified with an index substitution dictionary
+ /// Each move is specified with an index substitution dictionary.
  /// type: dict(str : dict(indices : indices))
  /// default: {}
  std::map<std::string,indices_map_t> move_global = (std::map<std::string,indices_map_t>{});

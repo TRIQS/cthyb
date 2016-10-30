@@ -21,17 +21,17 @@ operators, or by moving operators in the configuration. Note that it is a
 finite-temperature algorithm, and so :math:`\tau \in [0,\beta]`, where
 :math:`\beta` is the inverse temperature. The Monte Carlo weight of a
 configuration is essentially the product of the trace :math:`\mathrm{Tr} \,
-\mathcal{C}` and the determinant of a matrix whose elements are the
+\mathcal{C}` and the determinant of a matrix, whose elements are the
 hybridization functions :math:`\Delta_{\alpha_i \alpha_j'} (\tau_i - \tau_j')`.
 
 The main inputs of the solver are the hybridization functions
 :math:`\Delta(i\omega_n)` and the local Hamiltonian
-:math:`\mathcal{H}_\mathrm{loc}` on the impurity. The solver then computes the
+:math:`\mathcal{H}_\mathrm{loc}` of the impurity. The solver then computes the
 Green's function on the imaginary-time interval :math:`[0,\beta]`.  This can be
 done in the imaginary time representation, as well as on a basis of Legendre
 polynomials, as described in Ref. [#legendre]_.
 Note that our implementation of the algorithm uses a *matrix* representation
-[#ctqmc3]_ of the operators :math:`d^\dagger_{\alpha}`. This allows the use 
+[#ctqmc3]_ of the operators :math:`d^\dagger_{\alpha}`. This allows the use
 of any local Hamiltonian :math:`\mathcal{H}_\mathrm{loc}` in the algorithm.
 
 .. [#ctqmc1] P. Werner, A. Comanac, L. de' Medici, M. Troyer, and
@@ -40,5 +40,5 @@ of any local Hamiltonian :math:`\mathcal{H}_\mathrm{loc}` in the algorithm.
              M. Troyer, and P.Werner, Rev. Mod. Phys. 83, 349 (2011).
 .. [#legendre] L. Boehnke, H. Hafermann, M. Ferrero, F. Lechermann, and O. Parcollet,
                Phys. Rev. B 84, 075145 (2011).
-.. [#ctqmc3] P. Werner and A. J. Millis, 
+.. [#ctqmc3] P. Werner and A. J. Millis,
              Phys. Rev. B 74, 155107 (2006).

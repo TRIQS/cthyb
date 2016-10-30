@@ -1,7 +1,7 @@
 .. _aim:
 
 An example: the Anderson impurity model
-========================================
+=======================================
 
 To illustrate how the CTQMC solver works in practice, we show the example of a
 one-orbital Anderson impurity embedded in a flat (Wilson) conduction bath. The
@@ -19,7 +19,7 @@ and the non-interacting Green's function is:
 
 In this example, there is a Coulomb interaction :math:`U` on the impurity level,
 which is at an energy :math:`\epsilon_f`. The bath Green's function is :math:`\Gamma(i
-\omega_n)` and it has a flat density of states over the interval
+\omega_n)`, and it has a flat density of states over the interval
 :math:`[-1,1]`.  Finally, :math:`V` is the hybridization amplitude between the
 impurity and the bath. Let us solve this problem with the CTQMC solver. Here is
 the python :download:`script <aim.py>`:
@@ -28,7 +28,8 @@ the python :download:`script <aim.py>`:
 
 Running this script on a single processor takes about 5 minutes and generates
 an HDF5 archive file called :file:`aim_solution.h5`. This file contains the Green's
-function in imaginary time and in imaginary frequencies found by the solver.
+function in imaginary time, in imaginary frequencies, and in Legendre polynomial basis
+found by the solver.
 Let us plot the Green's function:
 
 .. plot:: guide/aim_plot.py
@@ -55,7 +56,7 @@ This just sets the parameters of the problem.
   :lines: 11-13
 
 This is the construction of the Solver object. The class is described
-in more detail in the section: :ref:`ctqmc_ref`. Basically, the constructor
+in more detail in the section :ref:`ctqmc_ref`. Basically, the constructor
 of the Solver needs two keywords:
 
 - ``beta``: the inverse temperature,
@@ -80,9 +81,9 @@ function ``solve``:
 
 The run is controlled by the parameters of ``solve()``:
 
-- ``h_int``: The interacting part of the local Hamiltonian written with TRIQS ``Operator``s.
+- ``h_int``: The interacting part of the local Hamiltonian written with :ref:`TRIQS operators <triqslibs:operators>`.
 - ``n_cycles``: The number of Monte Carlo cycles.
-- ``length_cycle``: The number Monte Carlo moves in a cycle.
+- ``length_cycle``: The number of Monte Carlo moves in a cycle.
 - ``random_name``: The name of the random number generator.
 - ``measure_g_l``: We want to accumulate the Green's function in a basis of Legendre polynomials.
 

@@ -21,12 +21,11 @@ with::
 The first parameter of the solver is the inverse temperature. In order to
 complete the construction of the instance, you need to figure out what is the
 correct structure of the Green's function for the problem you are considering.
-As emphasized earlier, you should always try to take advantage of a possible
-block structure of the Green's function. In a spin-conserving system, the Green's function
-can often be (at least) cut into *up* and *down* spin sectors.  When the
-structure is clear you can set the parameter ``gf_struct``, which is a ``dict()``
-mapping a string that gives the name of the block to a list of the indices of
-the block.
+You should always try to take advantage of a possible block structure of the
+Green's function. In a spin-conserving system, the Green's function can often
+be (at least) cut into *up* and *down* spin sectors.  When the structure is
+clear you can set the parameter ``gf_struct``, which is a ``dict()`` mapping a
+string that gives the name of the block to a list of the indices of the block.
 
 Examples
 ........
@@ -61,7 +60,7 @@ function ``gf_struct``.
 Examples
 ........
 
-* For a single-band Hubbard model with a local Coulom interaction::
+* For a single-band Hubbard model with a local Coulomb interaction::
 
     h_int = U * n('up',0) * n('down',0)
 
@@ -109,12 +108,12 @@ Green's function of the problem. From the knowledge of this Green's function,
 the solver can extract the hybridization function used in the algorithm and the
 quadratic terms of the local Hamiltonian. The non-interacting Green's function
 must be initialized in the member ``G0_iw`` of the solver instance. For example,
-one would write::
+one would write ::
 
   for name, g0 in S.G0_iw:
-    g0 << inverse( iOmega_n - e_f - V**2 * Wilson(D) )
+    g0 << inverse(iOmega_n - e_f - V**2 * Wilson(D))
 
-to initialize the Green's function of an impurity imbedded in a flat conduction
+to initialize the Green's function of an impurity embedded in a flat conduction
 bath.
 
 Step 8 - we're ready to go!
@@ -146,9 +145,9 @@ At the end of the run, the solver has computed the following objects:
   * The interacting Green's function of the problem on the Matsubara frequency
     axis. This is in the class member ``G_iw``.
 
-  * The interacting Legendre Green's function of the problem, if `measure_g_l=True`. 
+  * The interacting Legendre Green's function of the problem, if `measure_g_l=True`.
     This is put in the member ``G_l``. This output is useful to decide how many
-    Legendre coefficients should be used. 
+    Legendre coefficients should be used.
 
 Final Step - analyze the output
 -------------------------------
@@ -157,8 +156,10 @@ One of the most important checks that needs to be done is to ensure that the
 high-frequency behaviour of your imaginary frequency Green's function and
 self-energy are correct and lead to physically sensible values. You should use
 the fitting function ``tail_fit`` (provided in ``pytriqs.gf.local``) to determine the
-optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.  See :ref:`here <triqslibs:gf_tail>`
-for more details on the tail fitting tool.
+optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.  See :ref:`here <triqslibs:tailgf>`
+for more details on the tail fitting tool. This post-processing task can also be
+delegated to the ``Solver`` object by setting ``perform_tail_fit = True``
+and other :ref:`solve() <ctqmc_ref>` parameters related to tail fitting.
 
 If you use the Legendre expansion, you should also decide on the ideal number
 of Legendre coefficients to keep for the following runs. If you have saved the
@@ -171,6 +172,6 @@ Legendre Green's function in an archive, you can then plot it:
 From this plot you see that for :math:`l > 30`, the value of the
 coefficient is of the order of the statistical noise. There is therefore no
 information in the coefficients with :math:`l > 30` and one can set
-``n_l = 30`` for the following runs. Of course, if you will use
-more statistics or a larger number of cores, you may have to reajust this
+``n_l = 30`` for the following runs. Of course, if you are going to use
+more statistics or a larger number of cores, you may have to readjust this
 value.

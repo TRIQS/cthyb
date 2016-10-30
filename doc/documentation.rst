@@ -1,5 +1,3 @@
-.. module:: pytriqs.applications.impurity_solvers.cthyb
-
 .. _documentation:
 
 Documentation
@@ -12,8 +10,6 @@ Basic notions
    :maxdepth: 1
 
    basicnotions/cthyb
-   basicnotions/concept
-
 
 User guide
 ----------
@@ -24,7 +20,9 @@ User guide
    guide/aim
    guide/settingparameters
    guide/random
+   guide/dmft
    guide/slater_five_band
+   guide/static
 
 Reference manual
 ----------------
@@ -35,7 +33,7 @@ Reference manual
    reference/solver
    reference/solve_parameters
    reference/moves
-   reference/observables
+   reference/measurements
 
 FAQs
 ----

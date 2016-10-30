@@ -1,5 +1,6 @@
-
 .. highlight:: bash
+
+.. _install:
 
 Installation
 ============
@@ -47,7 +48,7 @@ and look at all available versions::
 
 Checkout the version of the code that you want::
 
-     $ git co 1.0.0
+     $ git checkout 1.0.0
 
 Then follow the steps 2 to 4 described above to compile the code.
 
@@ -56,7 +57,7 @@ Custom CMake options
 
 Functionality of ``cthyb`` can be tweaked using extra compile-time options passed to CMake::
 
-    cmake -DTRIQS_PATH=path_to_triqs -DOPTION1=value1 -OPTION2=value2 ... ../cthyb.src
+    cmake -DTRIQS_PATH=path_to_triqs -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
 
 +---------------------------------------------------------------+-----------------------------------+
 | Options                                                       | Syntax                            |
@@ -65,7 +66,7 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
 +---------------------------------------------------------------+-----------------------------------+
 | Build the documentation locally                               | -DBUILD_DOC=ON                    |
 +---------------------------------------------------------------+-----------------------------------+
-| Allow the hybridization \Delta(tau) to be is complex          | -DHYBRIDISATION_IS_COMPLEX=ON     |
+| Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON     |
 +---------------------------------------------------------------+-----------------------------------+
 | Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON |
 +---------------------------------------------------------------+-----------------------------------+

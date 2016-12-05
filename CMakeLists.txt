@@ -35,6 +35,7 @@ add_definitions(${TRIQS_CXX_DEFINITIONS})
 option(Tests "Enable Tests" ON)
 option(HYBRIDISATION_IS_COMPLEX "If ON, the hybridization Delta(tau) is complex" OFF)
 option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
+option(MEASURE_G2 "Enable the two-particle Green's function measurement (requires C++14 and NFFT)" OFF)
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
 
@@ -42,6 +43,17 @@ if(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
  message(FATAL_ERROR "Combination of options HYBRIDISATION_IS_COMPLEX=ON "
                      "and LOCAL_HAMILTONIAN_IS_COMPLEX=OFF is not supported.")
 endif(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
+
+# 2-particle GF measurement requires C++14 and NFFT
+if(MEASURE_G2)
+ if(NOT ${TRIQS_USE_CPP14})
+  message(WARNING "TRIQS library compiled in C++11 mode, two-particle Green's function measurement will be disabled")
+  set(MEASURE_G2 OFF)
+ elseif(NOT TRIQS_CXX_DEFINITIONS MATCHES "-DHAVE_NFFT")
+  message(WARNING "TRIQS library compiled without NFFT support, two-particle Green's function measurement will be disabled")
+  set(MEASURE_G2 OFF)
+ endif()
+endif(MEASURE_G2)
 
 if(EXT_DEBUG)
  add_definitions(-DEXT_DEBUG)

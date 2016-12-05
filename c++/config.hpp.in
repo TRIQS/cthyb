@@ -31,6 +31,7 @@
 
 #cmakedefine HYBRIDISATION_IS_COMPLEX
 #cmakedefine LOCAL_HAMILTONIAN_IS_COMPLEX
+#cmakedefine MEASURE_G2
 
 namespace cthyb {
 

@@ -44,12 +44,9 @@ if(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
                      "and LOCAL_HAMILTONIAN_IS_COMPLEX=OFF is not supported.")
 endif(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
 
-# 2-particle GF measurement requires C++14 and NFFT
+# 2-particle GF measurement requires NFFT
 if(MEASURE_G2)
- if(NOT ${TRIQS_USE_CPP14})
-  message(WARNING "TRIQS library compiled in C++11 mode, two-particle Green's function measurement will be disabled")
-  set(MEASURE_G2 OFF)
- elseif(NOT TRIQS_CXX_DEFINITIONS MATCHES "-DHAVE_NFFT")
+ if(NOT TRIQS_CXX_DEFINITIONS MATCHES "-DHAVE_NFFT")
   message(WARNING "TRIQS library compiled without NFFT support, two-particle Green's function measurement will be disabled")
   set(MEASURE_G2 OFF)
  endif()

@@ -82,5 +82,4 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
     * Combination of options ``HYBRIDISATION_IS_COMPLEX=ON`` and ``LOCAL_HAMILTONIAN_IS_COMPLEX=OFF``
       is not supported.
 
-    * The two-particle Green's function measurement requires the TRIQS library to be built in the C++14
-      mode, and with NFFT support.
+    * The two-particle Green's function measurement requires the TRIQS library to be built with NFFT support.

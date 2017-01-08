@@ -37,6 +37,9 @@
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
+#ifdef MEASURE_G2
+#include "measure_g2.hpp"
+#endif
 
 namespace cthyb {
 
@@ -80,6 +83,18 @@ namespace cthyb {
     _G_l         = make_block_gf(block_names, g_l_blocks);
     _Delta_tau   = make_block_gf(block_names, delta_tau_blocks);
     _G_tau_accum = make_block_gf(block_names, g_tau_accum_blocks);
+
+#ifdef MEASURE_G2
+    // Fill G^2 containers with empty blocks
+    using g2_inu_v_t = std::vector<g2_iw_inu_inup_block_t>;
+    std::vector<g2_inu_v_t> g2_inu_blocks(gf_struct.size(), g2_inu_v_t(gf_struct.size()));
+    _G2_iw_inu_inup_pp    = make_block2_gf(block_names, block_names, g2_inu_blocks);
+    _G2_iw_inu_inup_ph    = make_block2_gf(block_names, block_names, g2_inu_blocks);
+    using g2_legendre_v_t = std::vector<g2_iw_l_lp_block_t>;
+    std::vector<g2_legendre_v_t> g2_legendre_blocks(gf_struct.size(), g2_legendre_v_t(gf_struct.size()));
+    _G2_iw_l_lp_pp = make_block2_gf(block_names, block_names, g2_legendre_blocks);
+    _G2_iw_l_lp_ph = make_block2_gf(block_names, block_names, g2_legendre_blocks);
+#endif
   }
 
   /// -------------------------------------------------------------------------------------------
@@ -238,6 +253,7 @@ namespace cthyb {
 
     if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
 
+<<<<<<< HEAD
     if (params.move_global.size()) {
       move_set_type global(qmc.get_rng());
       for (auto const &mv : params.move_global) {
@@ -247,6 +263,94 @@ namespace cthyb {
       }
       qmc.add_move(std::move(global), "Global moves", params.move_global_prob);
     }
+=======
+    #ifdef MEASURE_G2 if (params.measure_g2_inu || params.measure_g2_legendre) {
+      auto g2_blocks_to_measure = params.measure_g2_blocks;
+
+      // Measure all blocks
+      if (g2_blocks_to_measure.empty()) {
+        for (auto const &bn1 : gf_struct) {
+          for (auto const &bn2 : gf_struct) { g2_blocks_to_measure.emplace(bn1.first, bn2.first); }
+        }
+      } else { // Check the blocks we've been asked to measure
+        for (auto const &bn : g2_blocks_to_measure) {
+          if (!gf_struct.count(bn.first)) TRIQS_RUNTIME_ERROR << "Invalid left block name " << bn.first << " for G^2 measurement";
+          if (!gf_struct.count(bn.second)) TRIQS_RUNTIME_ERROR << "Invalid right block name " << bn.second << " for G^2 measurement";
+        }
+      }
+
+      if (!params.measure_g2_pp && !params.measure_g2_ph)
+        TRIQS_RUNTIME_ERROR << "You must switch on at least one of measure_g2_pp and measure_g2_ph!";
+
+      auto const &delta_names = _Delta_tau.domain().names();
+      for (int b1 = 0; b1 < delta_names.size(); ++b1) {
+        for (int b2 = 0; b2 < delta_names.size(); ++b2) {
+          auto const &bn1 = delta_names[b1];
+          auto const &bn2 = delta_names[b2];
+          if (!g2_blocks_to_measure.count({bn1, bn2})) continue;
+
+          int s1 = get_target_shape(_Delta_tau[b1])[0];
+          int s3 = get_target_shape(_Delta_tau[b2])[0];
+          int s2 = params.measure_g2_block_order == AABB ? s1 : s3;
+          int s4 = params.measure_g2_block_order == AABB ? s3 : s1;
+
+          auto make_measure_name = [&bn1, &bn2](bool legendre, g2_channel channel, block_order bo) {
+            return std::string("G^2 measure, ") + (legendre ? "Legendre" : "Matsubara") + ", " + (channel == PP ? "pp" : "ph")
+               + (bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") : (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")"));
+          };
+
+          int n_iw = params.measure_g2_n_iw;
+
+          // Matsubara measurements
+          if (params.measure_g2_inu) {
+            int n_inu = params.measure_g2_n_inu;
+            if (params.measure_g2_pp) {
+              auto &block = _G2_iw_inu_inup_pp[{b1, b2}];
+              block       = g2_iw_inu_inup_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
+              if (params.measure_g2_block_order == AABB)
+                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data), make_measure_name(false, PP, AABB));
+              else
+                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data), make_measure_name(false, PP, ABBA));
+            }
+
+            if (params.measure_g2_ph) {
+              auto &block = _G2_iw_inu_inup_ph[{b1, b2}];
+              block       = g2_iw_inu_inup_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
+              if (params.measure_g2_block_order == AABB)
+                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data), make_measure_name(false, PH, AABB));
+              else
+                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data), make_measure_name(false, PH, ABBA));
+            }
+          }
+
+          // Legendre measurements
+          if (params.measure_g2_legendre) {
+            size_t n_l = params.measure_g2_n_l;
+            if (params.measure_g2_pp) {
+              auto &block = _G2_iw_l_lp_pp[{b1, b2}];
+              block       = g2_iw_l_lp_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
+              if (params.measure_g2_block_order == AABB)
+                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data), make_measure_name(true, PP, AABB));
+              else
+                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data), make_measure_name(true, PP, ABBA));
+            }
+
+            if (params.measure_g2_ph) {
+              auto &block = _G2_iw_l_lp_ph[{b1, b2}];
+              block       = g2_iw_l_lp_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
+              if (params.measure_g2_block_order == AABB)
+                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data), make_measure_name(true, PH, AABB));
+              else
+                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data), make_measure_name(true, PH, ABBA));
+            }
+          }
+        }
+      }
+    }
+#endif
+
+    qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
+>>>>>>> [measure_g2] Skeleton of measurements and related code
 
     // Measurements
     if (params.measure_g_tau) {

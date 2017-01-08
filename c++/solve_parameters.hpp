@@ -93,7 +93,7 @@ struct solve_parameters_t {
 
  /// List of block index pairs of G^2 to measure.
  /// default: measure all blocks
- std::vector<std::pair<std::string,std::string>> measure_g2_blocks = (std::vector<std::pair<std::string,std::string>>{});
+ std::set<std::pair<std::string,std::string>> measure_g2_blocks = (std::set<std::pair<std::string,std::string>>{});
 
  /// Number of bosonic Matsubara frequencies for G^2 measurement.
  int measure_g2_n_iw = 30;

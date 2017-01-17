@@ -10,6 +10,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../c++ ${TRIQS_INCLUDE_ALL})
 
 # Simple tests
 set(SIMPLE_TESTS h_diag_test rbt)
+if(MEASURE_G2)
+    set(SIMPLE_TESTS ${SIMPLE_TESTS} nfft)
+endif(MEASURE_G2)
 foreach(t ${SIMPLE_TESTS})
     add_executable(${t} ${CMAKE_CURRENT_SOURCE_DIR}/${t}.cpp)
     triqs_set_rpath_for_target(${t})

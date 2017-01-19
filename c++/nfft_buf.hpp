@@ -111,6 +111,19 @@ template <int Rank> struct nfft_buf_t {
   }
  }
 
+ // Reset fiw_arr view
+ void set_fiw_arr(array_view<dcomplex, Rank> new_fiw_arr) {
+  using triqs::arrays::get_shape;
+  assert(get_shape(new_fiw_arr) == get_shape(fiw_arr));
+  fiw_arr.rebind(new_fiw_arr);
+ }
+
+ // Function to check whether buffer is empty
+ bool is_empty() const { return buf_counter == 0; }
+
+ // Function to check whether buffer is filled
+ bool is_full() const { return (buf_counter >= buf_size); }
+
  private:
  // Triqs array to contain the final NFFT output in matsubara frequencies
  array_view<dcomplex, Rank> fiw_arr;
@@ -138,9 +151,6 @@ template <int Rank> struct nfft_buf_t {
 
  // Get pointer to array containing the NFFT output h(k)
  const dcomplex *fk_arr() const { return reinterpret_cast<dcomplex *>(plan_ptr->f_hat); }
-
- // Function to check whether buffer is filled
- bool is_full() const { return (buf_counter >= buf_size); }
 
  // Perform NFFT transform and accumulate inside fiw_arr
  void do_nfft() {

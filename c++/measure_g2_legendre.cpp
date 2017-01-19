@@ -20,11 +20,17 @@
  ******************************************************************************/
 #include "measure_g2.hpp"
 
+#ifndef NDEBUG
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#endif
+
 namespace cthyb {
 
 template<g2_channel Channel, block_order Order>
-measure_g2_legendre<Channel,Order>::measure_g2_legendre(int b1, int b2, g2_iw_l_lp_block_view g2, qmc_data const& data) :
- b1(b1), b2(b2), g2(g2), data(data) {
+measure_g2_legendre<Channel,Order>::measure_g2_legendre(int A, int B, g2_iw_l_lp_block_view g2, qmc_data const& data) :
+ A(A), B(B), diag_block(A == B), g2(g2), data(data),
+ size_A(get_target_shape(data.delta[A])[0]),
+ size_B(get_target_shape(data.delta[B])[0]) {
 // TODO
 }
 

@@ -62,7 +62,7 @@ public:
  // Add a new matrix element to the input buffer
  void push_back(std::pair<time_pt,int> const& x, std::pair<time_pt,int> const& y, dcomplex fxy);
 
- // Run trunsformation
+ // Run transformation
  void transform();
 
  TRIQS_CLEF_IMPLEMENT_LAZY_CALL();

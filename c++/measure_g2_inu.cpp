@@ -18,6 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include <array>
 #include "measure_g2.hpp"
 #include "nfft_buf.hpp"
 

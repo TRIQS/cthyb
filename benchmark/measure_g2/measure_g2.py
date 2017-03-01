@@ -23,7 +23,7 @@ n_iw = 1024
 g2_n_iw = 5
 g2_n_inu = 10
 g2_n_l = 10
-g2_blocks = set([("up","up"),("up","dn"),("dn","up"),("dn","dn")])
+g2_blocks = set([("up","up"),("up","dn"),("dn","up")])
 
 p = {}
 p["verbosity"] = 2
@@ -94,9 +94,7 @@ for bn in g2_blocks:
 # Save the results
 if mpi.is_master_node():
     with HDFArchive("measure_g2.h5",'w') as ar:
-        #measured_blocks = lambda g2: {bn : g2[bn] for bn in g2_blocks}
-        measured_blocks = lambda g2: g2
-        ar['G2_iw_inu_inup_pp'] = measured_blocks(S.G2_iw_inu_inup_pp)
-        ar['G2_iw_inu_inup_ph'] = measured_blocks(S.G2_iw_inu_inup_ph)
-        ar['G2_iw_l_lp_pp'] = measured_blocks(S.G2_iw_l_lp_pp)
-        ar['G2_iw_l_lp_ph'] = measured_blocks(S.G2_iw_l_lp_ph)
+        ar['G2_iw_inu_inup_pp'] = S.G2_iw_inu_inup_pp
+        ar['G2_iw_inu_inup_ph'] = S.G2_iw_inu_inup_ph
+        ar['G2_iw_l_lp_pp'] = S.G2_iw_l_lp_pp
+        ar['G2_iw_l_lp_ph'] = S.G2_iw_l_lp_ph

@@ -253,7 +253,6 @@ namespace cthyb {
 
     if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
 
-<<<<<<< HEAD
     if (params.move_global.size()) {
       move_set_type global(qmc.get_rng());
       for (auto const &mv : params.move_global) {
@@ -263,8 +262,9 @@ namespace cthyb {
       }
       qmc.add_move(std::move(global), "Global moves", params.move_global_prob);
     }
-=======
-    #ifdef MEASURE_G2 if (params.measure_g2_inu || params.measure_g2_legendre) {
+
+#ifdef MEASURE_G2
+    if (params.measure_g2_inu || params.measure_g2_legendre) {
       auto g2_blocks_to_measure = params.measure_g2_blocks;
 
       // Measure all blocks
@@ -348,9 +348,6 @@ namespace cthyb {
       }
     }
 #endif
-
-    qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
->>>>>>> [measure_g2] Skeleton of measurements and related code
 
     // Measurements
     if (params.measure_g_tau) {

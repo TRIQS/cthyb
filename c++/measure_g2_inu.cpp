@@ -20,7 +20,6 @@
  ******************************************************************************/
 #include <array>
 #include "measure_g2.hpp"
-#include "nfft_buf.hpp"
 
 #ifndef NDEBUG
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
@@ -65,7 +64,7 @@ void measure_g2_inu<Channel,Order>::accumulate(mc_weight_t s) {
  auto const& det_B = data.dets[B];
  if(det_A.size() == 0 || det_B.size() == 0) return;
 
- auto do_transform = [this](det_type const& det, details::nfft_matrix_t & nfft_matrix) {
+ auto nfft_fill = [this](det_type const& det, details::nfft_matrix_t & nfft_matrix) {
   foreach(det, [&nfft_matrix](std::pair<time_pt,int> const& x, std::pair<time_pt,int> const& y,
                               det_scalar_t M) {
    nfft_matrix.push_back(x,y,M);
@@ -84,36 +83,36 @@ void measure_g2_inu<Channel,Order>::accumulate(mc_weight_t s) {
  clef::placeholder<6> d_;
 
  if(Order == AABB || diag_block) {
-  nfft_matrix_ab.reset();
-  do_transform(det_A, nfft_matrix_ab);
+  nfft_matrix_ab.resize_bufs(det_A.size()*det_A.size());
+  nfft_fill(det_A, nfft_matrix_ab);
   nfft_matrix_ab.transform();
 
-  nfft_matrix_cd.reset();
-  do_transform(det_B, nfft_matrix_cd);
+  nfft_matrix_cd.resize_bufs(det_B.size()*det_B.size());
+  nfft_fill(det_B, nfft_matrix_cd);
   nfft_matrix_cd.transform();
 
   if(Channel == PH)
    g2(iw_,inu_,inup_)(a_,b_,c_,d_) << g2(iw_,inu_,inup_)(a_,b_,c_,d_) +
-    s * nfft_matrix_ab(a_,b_)(-inu_,inu_+iw_) * nfft_matrix_cd(c_,d_)(-inup_-iw_,inup_);
+    s * nfft_matrix_ab()(-inu_,inu_+iw_)(a_,b_) * nfft_matrix_cd()(-inup_-iw_,inup_)(c_,d_);
   else
    g2(iw_,inu_,inup_)(a_,b_,c_,d_) << g2(iw_,inu_,inup_)(a_,b_,c_,d_) +
-    s * nfft_matrix_ab(a_,b_)(-inu_,iw_-inup_) * nfft_matrix_cd(c_,d_)(-iw_+inu_,inup_);
+    s * nfft_matrix_ab()(-inu_,iw_-inup_)(a_,b_) * nfft_matrix_cd()(-iw_+inu_,inup_)(c_,d_);
  }
  if(Order == ABBA || diag_block) {
-  nfft_matrix_ad.reset();
-  do_transform(det_A, nfft_matrix_ad);
+  nfft_matrix_ad.resize_bufs(det_A.size()*det_A.size());
+  nfft_fill(det_A, nfft_matrix_ad);
   nfft_matrix_ad.transform();
 
-  nfft_matrix_cb.reset();
-  do_transform(det_B, nfft_matrix_cb);
+  nfft_matrix_cb.resize_bufs(det_B.size()*det_B.size());
+  nfft_fill(det_B, nfft_matrix_cb);
   nfft_matrix_cb.transform();
 
   if(Channel == PH)
    g2(iw_,inu_,inup_)(a_,b_,c_,d_) << g2(iw_,inu_,inup_)(a_,b_,c_,d_) -
-    s * nfft_matrix_ad(a_,d_)(-inu_,inup_) * nfft_matrix_cb(c_,b_)(-inup_-iw_,inu_+iw_);
+    s * nfft_matrix_ad()(-inu_,inup_)(a_,d_) * nfft_matrix_cb()(-inup_-iw_,inu_+iw_)(c_,b_);
   else
    g2(iw_,inu_,inup_)(a_,b_,c_,d_) << g2(iw_,inu_,inup_)(a_,b_,c_,d_) -
-    s * nfft_matrix_ad(a_,d_)(-inu_,inup_) * nfft_matrix_cb(c_,b_)(-iw_+inu_,iw_-inup_);
+    s * nfft_matrix_ad()(-inu_,inup_)(a_,d_) * nfft_matrix_cb()(-iw_+inu_,iw_-inup_)(c_,b_);
  }
 }
 
@@ -131,42 +130,45 @@ template class measure_g2_inu<PH,ABBA>;
 
 namespace details {
 
+#ifdef NDEBUG
+ bool nfft_matrix_t::do_checks = false;
+#else
+ bool nfft_matrix_t::do_checks = true;
+#endif
+
 nfft_matrix_t::nfft_matrix_t(int size1, int size2, double beta, int n_freq1, int n_freq2) :
- data(size1, size2), beta(beta), max_n_tau(0) {
- data() = data_t{{}, res_gf_t{{{beta, Fermion, n_freq1}, {beta, Fermion, n_freq2}}, {}}};
+ size1(size1), size2(size2), max_n_tau(1),
+ result({{{beta, Fermion, n_freq1}, {beta, Fermion, n_freq2}}, {size1, size2}}) {
+ buffers.reserve(size1*size2);
+ for(int a : range(size1))
+ for(int b : range(size2))
+  buffers.emplace_back(result.mesh(), max_n_tau, do_checks);
 }
 
-void nfft_matrix_t::reset() {
- foreach(data, [this](int i1, int i2){
-  auto & d = data(i1,i2);
-  d.input.clear();
- });
- max_n_tau = 0;
+void nfft_matrix_t::resize_bufs(int n_tau) {
+ if(n_tau > max_n_tau) {
+  max_n_tau = n_tau;
+  for(auto & buf : buffers) buf = {result.mesh(), max_n_tau, do_checks};
+ }
 }
 
 void nfft_matrix_t::push_back(std::pair<time_pt,int> const& x, std::pair<time_pt,int> const& y, dcomplex fxy) {
- auto & input = data(x.second, y.second).input;
- input.emplace_back(std::array<double,2>{double(x.first), double(y.first)}, fxy);
- max_n_tau = std::max(max_n_tau, input.size());
+ buffers[x.second*size2 + y.second].push_back({double(x.first), double(y.first)}, fxy);
 }
 
-nfft_matrix_t::res_gf_view nfft_matrix_t::operator()(int n1, int n2) const {
- return data(n1,n2).result;
-}
+auto nfft_matrix_t::operator()() const -> res_gf_t const& { return result; }
 
 void nfft_matrix_t::transform() {
- nfft_buf_t<2> buf(data(0,0).result.data(), max_n_tau, beta, do_checks);
-
- foreach(data, [this,&buf](int i1, int i2) {
-  auto & d = data(i1,i2);
-  if(d.input.empty()) {
-   d.result() = 0;
-   return;
+ for(int a : range(size1))
+ for(int b : range(size2)) {
+  auto & buf = buffers[a*size2 + b];
+  if(buf.is_empty()) {
+   slice_target_to_scalar(result, a, b) = 0;
+  } else {
+   buf.flush();
+   buf.fill_gf(slice_target_to_scalar(result, a, b));
   }
-  buf.set_fiw_arr(d.result.data());
-  for(auto const& x : d.input) buf.push_back(x.first, x.second);
-  if(!buf.is_empty()) buf.flush();
- });
+ }
 }
 
 }

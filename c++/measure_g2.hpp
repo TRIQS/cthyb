@@ -24,6 +24,7 @@
 #include <triqs/mpi/base.hpp>
 #include <triqs/clef.hpp>
 #include "qmc_data.hpp"
+#include "nfft_buf.hpp"
 
 namespace cthyb {
 
@@ -36,17 +37,12 @@ namespace details {
 // NFFT transform of a matrix-valued function of two tau arguments
 class nfft_matrix_t {
 
-// Perform NFFT checks
-#ifdef NDEBUG
- static constexpr bool do_checks = false;
-#else
- static constexpr bool do_checks = true;
-#endif
+ // Perform NFFT checks
+ static bool do_checks;
 
 public:
 
- using res_gf_t = gf<cartesian_product<imfreq,imfreq>, scalar_valued>;
- using res_gf_view = gf_const_view<cartesian_product<imfreq,imfreq>, scalar_valued>;
+ using res_gf_t = gf<cartesian_product<imfreq,imfreq>, matrix_valued>;
 
  nfft_matrix_t() = default;
 
@@ -56,31 +52,31 @@ public:
  // to calculate the Fourier transformation on
  nfft_matrix_t(int size1, int size2, double beta, int n_freq1, int n_freq2);
 
- // Clear all input buffers
- void reset();
+ // Resize all NFFT buffers if their capacity is insufficient
+ void resize_bufs(int n_tau);
 
- // Add a new matrix element to the input buffer
+ // Add a new matrix element to the NFFT buffer
  void push_back(std::pair<time_pt,int> const& x, std::pair<time_pt,int> const& y, dcomplex fxy);
 
  // Run transformation
  void transform();
 
- TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
- // Access a matrix element of the transformation result
- res_gf_view operator()(int n1, int n2) const;
+ // Access the result g_{ab}(iw_1, i_w2)
+ res_gf_t const& operator()() const;
 
 private:
 
- // Inverse temperature
- double beta;
- // Input and output data
- struct data_t {
-  std::vector<std::pair<std::array<double,2>,dcomplex>> input;
-  gf<cartesian_product<imfreq,imfreq>, scalar_valued> result;
- };
- array<data_t,2> data;
- // Maximal number of tau-pairs over all matrix elements
- size_t max_n_tau;
+ // Matrix sizes
+ int size1, size2;
+
+ // Maximum number of tau-pairs over all matrix elements int max_n_tau;
+ int max_n_tau;
+
+ // NFFT transformation result
+ res_gf_t result;
+
+ // NFFT buffers
+ std::vector<nfft_buf_t<2>> buffers;
 };
 
 }

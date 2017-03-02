@@ -2,7 +2,7 @@
 set (CTHYB_VERSION "1.5")
 
 # Append triqs installed files to the cmake load path
-list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${TRIQS_PATH}/share/triqs/cmake)
 
 # start configuration
 cmake_minimum_required(VERSION 2.8)
@@ -46,15 +46,17 @@ endif(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
 
 # 2-particle GF measurement requires NFFT
 if(MEASURE_G2)
- if(NOT TRIQS_CXX_DEFINITIONS MATCHES "-DHAVE_NFFT")
-  message(WARNING "TRIQS library compiled without NFFT support, two-particle Green's function measurement will be disabled")
+ find_package(NFFT)
+ if(NOT NFFT_INCLUDE_DIR)
+  message(WARNING "Could not find NFFT, two-particle Green's function measurement will be disabled")
   set(MEASURE_G2 OFF)
- endif()
- try_compile(HAVE_NFFT3MP ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/include_nfft3mp.cpp)
- if(NOT HAVE_NFFT3MP)
-  message(WARNING "Could not find nfft3mp.h, two-particle Green's function measurement will be disabled")
-  set(MEASURE_G2 OFF)
- endif()
+ else(NOT NFFT_INCLUDE_DIR)
+  include_directories(${NFFT_INCLUDE_DIR})
+  link_libraries(${NFFT_LIBRARIES})
+  if(NFFT_OLD_API)
+   add_definitions(-DNFFT_OLD_API)
+  endif(NFFT_OLD_API)
+ endif(NOT NFFT_INCLUDE_DIR)
 endif(MEASURE_G2)
 
 if(EXT_DEBUG)

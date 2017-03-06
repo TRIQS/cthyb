@@ -234,11 +234,11 @@ void solver_core::solve(solve_parameters_t const & params) {
    }
   }
 
-  qmc.add_move(inserts, "Insert two operators", 1.0);
-  qmc.add_move(removes, "Remove two operators", 1.0);
+  qmc.add_move(std::move(inserts), "Insert two operators", 1.0);
+  qmc.add_move(std::move(removes), "Remove two operators", 1.0);
   if (params.move_double) {
-   qmc.add_move(double_inserts, "Insert four operators", 1.0);
-   qmc.add_move(double_removes, "Remove four operators", 1.0);
+   qmc.add_move(std::move(double_inserts), "Insert four operators", 1.0);
+   qmc.add_move(std::move(double_removes), "Remove four operators", 1.0);
   }
 
   if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
@@ -250,7 +250,7 @@ void solver_core::solve(solve_parameters_t const & params) {
     auto const& substitutions = mv.second;
     global.add(move_global(name,substitutions,data,qmc.get_rng()),name,1.0);
    }
-   qmc.add_move(global,"Global moves",params.move_global_prob);
+   qmc.add_move(std::move(global),"Global moves",params.move_global_prob);
   }
 
   // Measurements

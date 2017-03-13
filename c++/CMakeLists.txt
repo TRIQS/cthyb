@@ -1,4 +1,5 @@
 # The solver
+<<<<<<< HEAD
 set(LIBRARY_SOURCES
     solver_core.cpp
     atom_diag.cpp

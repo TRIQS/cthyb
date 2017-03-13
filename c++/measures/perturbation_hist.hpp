@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "qmc_data.hpp"
-#include "triqs/statistics/histograms.hpp"
+#include "../qmc_data.hpp"
+#include <triqs/statistics/histograms.hpp>
 
 namespace cthyb {
 
@@ -34,16 +34,13 @@ namespace cthyb {
        : data(data), block_index(block_index), histo_perturbation_order(hist) {
       histo_perturbation_order = {0, 1000};
     }
-    // --------------------
 
     void accumulate(mc_weight_t s) { histo_perturbation_order << data.dets[block_index].size(); }
-    // ---------------------------------------------
 
     void collect_results(triqs::mpi::communicator const &c) { histo_perturbation_order = mpi_all_reduce(histo_perturbation_order, c); }
   };
 
-  // ----------------------------------------------------------------
-
+  // -----------------------------------------------------------------------------
   struct measure_perturbation_hist_total {
 
     qmc_data const &data;
@@ -52,10 +49,8 @@ namespace cthyb {
     measure_perturbation_hist_total(qmc_data const &data, statistics::histogram &hist) : data(data), histo_perturbation_order(hist) {
       histo_perturbation_order = {0, 1000};
     }
-    // --------------------
 
     void accumulate(mc_weight_t s) { histo_perturbation_order << data.config.size() / 2; }
-    // ---------------------------------------------
 
     void collect_results(triqs::mpi::communicator const &c) { histo_perturbation_order = mpi_all_reduce(histo_perturbation_order, c); }
   };

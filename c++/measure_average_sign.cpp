@@ -18,26 +18,27 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once
-#include "./qmc_data.hpp"
-#include <triqs/gfs.hpp>
+#include "measure_average_sign.hpp"
 
 namespace cthyb {
 
-using namespace triqs::gfs;
+measure_average_sign::measure_average_sign(qmc_data const& data, mc_weight_t& average_sign)
+   : data(data), average_sign(average_sign) {
+ average_sign = 1.0;
+ z = 0;
+ sign = 0;
+}
 
-// Measure imaginary time Green's function (one block)
-struct measure_g {
+void measure_average_sign::accumulate(mc_weight_t s) {
 
- qmc_data const& data;
- gf_view<imtime, g_target_t> g_tau;
- int a_level;
- mc_weight_t z;
- int64_t num;
- mc_weight_t average_sign;
+ sign += s * data.atomic_reweighting;
+ z += std::abs(data.atomic_reweighting);
+}
 
- measure_g(int a_level, gf_view<imtime, g_target_t> g_tau, qmc_data const& data);
- void accumulate(mc_weight_t s);
- void collect_results(triqs::mpi::communicator const& c);
-};
+void measure_average_sign::collect_results(triqs::mpi::communicator const& c) {
+
+ z = mpi_all_reduce(z, c);
+ sign = mpi_all_reduce(sign, c);
+ average_sign = sign / z;
+}
 }

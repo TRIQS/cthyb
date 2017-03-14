@@ -24,50 +24,39 @@
 
 namespace cthyb {
 
-struct measure_perturbation_hist {
+  struct measure_perturbation_hist {
 
- qmc_data const& data;
- int block_index;
- statistics::histogram & histo_perturbation_order;
+    qmc_data const &data;
+    int block_index;
+    statistics::histogram &histo_perturbation_order;
 
- measure_perturbation_hist(int block_index, qmc_data const& data, statistics::histogram & hist)
-    : data(data), block_index(block_index), histo_perturbation_order(hist) {
-  histo_perturbation_order = {0, 1000};
- }
- // --------------------
+    measure_perturbation_hist(int block_index, qmc_data const &data, statistics::histogram &hist)
+       : data(data), block_index(block_index), histo_perturbation_order(hist) {
+      histo_perturbation_order = {0, 1000};
+    }
+    // --------------------
 
- void accumulate(mc_weight_t s) {
+    void accumulate(mc_weight_t s) { histo_perturbation_order << data.dets[block_index].size(); }
+    // ---------------------------------------------
 
-  histo_perturbation_order << data.dets[block_index].size();
- }
- // ---------------------------------------------
+    void collect_results(triqs::mpi::communicator const &c) { histo_perturbation_order = mpi_all_reduce(histo_perturbation_order, c); }
+  };
 
- void collect_results(triqs::mpi::communicator const& c) {
-  histo_perturbation_order = mpi_all_reduce(histo_perturbation_order, c);
- }
-};
+  // ----------------------------------------------------------------
 
-// ----------------------------------------------------------------
+  struct measure_perturbation_hist_total {
 
-struct measure_perturbation_hist_total {
+    qmc_data const &data;
+    statistics::histogram &histo_perturbation_order;
 
- qmc_data const& data;
- statistics::histogram & histo_perturbation_order;
+    measure_perturbation_hist_total(qmc_data const &data, statistics::histogram &hist) : data(data), histo_perturbation_order(hist) {
+      histo_perturbation_order = {0, 1000};
+    }
+    // --------------------
 
- measure_perturbation_hist_total(qmc_data const& data, statistics::histogram & hist)
-    : data(data), histo_perturbation_order(hist) {
-  histo_perturbation_order = {0, 1000};
- }
- // --------------------
+    void accumulate(mc_weight_t s) { histo_perturbation_order << data.config.size() / 2; }
+    // ---------------------------------------------
 
- void accumulate(mc_weight_t s) {
-  histo_perturbation_order << data.config.size() / 2;
- }
- // ---------------------------------------------
-
- void collect_results(triqs::mpi::communicator const& c) {
-  histo_perturbation_order = mpi_all_reduce(histo_perturbation_order, c);
- }
-};
-
+    void collect_results(triqs::mpi::communicator const &c) { histo_perturbation_order = mpi_all_reduce(histo_perturbation_order, c); }
+  };
 }

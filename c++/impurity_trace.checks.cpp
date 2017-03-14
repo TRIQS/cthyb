@@ -23,15 +23,15 @@
 
 void impurity_trace::check_cache_integrity(bool print) {
 #ifdef CHECK_CACHE
- static int check_counter = 0;
- ++check_counter;
- if (check_counter % 10 == 0) {
-  if (print) std::cout << " ---- Cache integrity check ---- " << std::endl;
-  if (print) std::cout << " check_counter = config number = " << check_counter << std::endl;
-  if (print) tree.graphviz(std::ofstream("tree_cache_check"));
-  foreach_subtree_first(tree, [&](node y) { this->check_cache_integrity_one_node(y, print); });
-  if (print) std::cout << " ---- Cache integrity completed ---- " << std::endl;
- }
+  static int check_counter = 0;
+  ++check_counter;
+  if (check_counter % 10 == 0) {
+    if (print) std::cout << " ---- Cache integrity check ---- " << std::endl;
+    if (print) std::cout << " check_counter = config number = " << check_counter << std::endl;
+    if (print) tree.graphviz(std::ofstream("tree_cache_check"));
+    foreach_subtree_first(tree, [&](node y) { this->check_cache_integrity_one_node(y, print); });
+    if (print) std::cout << " ---- Cache integrity completed ---- " << std::endl;
+  }
 #endif
 }
 
@@ -39,63 +39,61 @@ void impurity_trace::check_cache_integrity(bool print) {
 
 int impurity_trace::check_one_block_table_linear(node n, int b, bool print) {
 
- int B = b;
- foreach_reverse(tree, n, [&](node y) {
-  if (B == -1) return;
-  auto BB = B;
-  B = (y->delete_flag ? B : this->get_op_block_map(y, B));
-  if (print)
-   std::cout << "linear computation : " << y->key << " " << y->op.dagger << " " << y->op.linear_index << " | " << BB << " -> "
-             << B << std::endl;
- });
- return B;
+  int B = b;
+  foreach_reverse(tree, n, [&](node y) {
+    if (B == -1) return;
+    auto BB = B;
+    B       = (y->delete_flag ? B : this->get_op_block_map(y, B));
+    if (print)
+      std::cout << "linear computation : " << y->key << " " << y->op.dagger << " " << y->op.linear_index << " | " << BB << " -> " << B << std::endl;
+  });
+  return B;
 }
 
 //--------------------- Compute block table for one subtree, using an ordered traversal of the subtree -------------------
 
 matrix_t impurity_trace::check_one_block_matrix_linear(node top, int b, bool print) {
 
- node p = tree.max(top);
- matrix_t M = make_unit_matrix<h_scalar_t>(get_block_dim(b));
- auto _ = arrays::range();
+  node p     = tree.max(top);
+  matrix_t M = make_unit_matrix<h_scalar_t>(get_block_dim(b));
+  auto _     = arrays::range();
 
- foreach_reverse(tree, top, [&](node n) {
+  foreach_reverse(tree, top, [&](node n) {
     // multiply by the exponential unless it is the first call, i.e. first operator n==p
-  if (n != p) {
-   auto dtau = double(n->key - p->key);
-   //  M <- exp * M
-   auto dim = first_dim(M); // same as get_block_dim(b1);
-   for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau * get_block_eigenval(b, i));
-   // M <- Op * M
-  }
-  // multiply by operator matrix unless it is delete_flag
-  if (!n->delete_flag) {
-   int bp = this->get_op_block_map(n, b);
-   if (bp == -1) TRIQS_RUNTIME_ERROR << " Nasty error ";
-   M = get_op_block_matrix(n, b) * M;
-   b = bp;
-  }
-  p = n;
- });
+    if (n != p) {
+      auto dtau = double(n->key - p->key);
+      //  M <- exp * M
+      auto dim = first_dim(M); // same as get_block_dim(b1);
+      for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau * get_block_eigenval(b, i));
+      // M <- Op * M
+    }
+    // multiply by operator matrix unless it is delete_flag
+    if (!n->delete_flag) {
+      int bp = this->get_op_block_map(n, b);
+      if (bp == -1) TRIQS_RUNTIME_ERROR << " Nasty error ";
+      M = get_op_block_matrix(n, b) * M;
+      b = bp;
+    }
+    p = n;
+  });
 
- return M;
+  return M;
 }
 //-------------------- Cache integrity check for one node --------------------------------
 
 void impurity_trace::check_cache_integrity_one_node(node n, bool print) {
- if (n == nullptr) return;
- if (print) std::cout << " ... checking cache integrity for node " << n->key << std::endl;
+  if (n == nullptr) return;
+  if (print) std::cout << " ... checking cache integrity for node " << n->key << std::endl;
 
- // debug check : redo the linear calculation
- auto& ca = n->cache;
- for (int b = 0; b < n_blocks; ++b) {
-  auto check = check_one_block_table_linear(n, b, false);
-  if (ca.block_table[b] != check) {
-   std::cout << " Inconsistent block table for block " << b << " : cache =  " << ca.block_table[b] << " while it should be  "
-             << check << std::endl;
-   check_one_block_table_linear(n, b, true);
-   TRIQS_RUNTIME_ERROR << " FATAL ";
+  // debug check : redo the linear calculation
+  auto &ca = n->cache;
+  for (int b = 0; b < n_blocks; ++b) {
+    auto check = check_one_block_table_linear(n, b, false);
+    if (ca.block_table[b] != check) {
+      std::cout << " Inconsistent block table for block " << b << " : cache =  " << ca.block_table[b] << " while it should be  " << check
+                << std::endl;
+      check_one_block_table_linear(n, b, true);
+      TRIQS_RUNTIME_ERROR << " FATAL ";
+    }
   }
- }
 }
-

@@ -25,50 +25,47 @@
 
 namespace cthyb {
 
-measure_density_matrix::measure_density_matrix(qmc_data const& data, std::vector<matrix_t>& density_matrix)
-   : data(data), block_dm(density_matrix) {
- block_dm.resize(data.imp_trace.get_density_matrix().size());
- for (int i = 0; i < block_dm.size(); ++i) {
-  block_dm[i] = data.imp_trace.get_density_matrix()[i].mat;
-  block_dm[i]() = 0;
- }
-}
-// --------------------
-
-void measure_density_matrix::accumulate(mc_weight_t s) {
- // we assume here that we are in "Norm" mode, i.e. qmc weight is norm, not trace
-
- // We need to recompute since the density_matrix in the trace is changed at each computatation,
- // in particular at the last failed attempt.
- // So we need to compute it, without any Yee threshold.
- data.imp_trace.compute();
- z += s * data.atomic_reweighting;
- s /= data.atomic_weight; // accumulate matrix / norm since weight is norm * det
-
- // Careful: there is no reweighting factor here!
- int size = block_dm.size();
- for (int i = 0; i < size; ++i)
-  if (data.imp_trace.get_density_matrix()[i].is_valid) {
-   block_dm[i] += s * data.imp_trace.get_density_matrix()[i].mat;
+  measure_density_matrix::measure_density_matrix(qmc_data const &data, std::vector<matrix_t> &density_matrix) : data(data), block_dm(density_matrix) {
+    block_dm.resize(data.imp_trace.get_density_matrix().size());
+    for (int i = 0; i < block_dm.size(); ++i) {
+      block_dm[i]   = data.imp_trace.get_density_matrix()[i].mat;
+      block_dm[i]() = 0;
+    }
   }
-}
+  // --------------------
 
-// ---------------------------------------------
+  void measure_density_matrix::accumulate(mc_weight_t s) {
+    // we assume here that we are in "Norm" mode, i.e. qmc weight is norm, not trace
 
-void measure_density_matrix::collect_results(triqs::mpi::communicator const& c) {
+    // We need to recompute since the density_matrix in the trace is changed at each computatation,
+    // in particular at the last failed attempt.
+    // So we need to compute it, without any Yee threshold.
+    data.imp_trace.compute();
+    z += s * data.atomic_reweighting;
+    s /= data.atomic_weight; // accumulate matrix / norm since weight is norm * det
 
- z = mpi_all_reduce(z, c);
- block_dm = mpi_all_reduce(block_dm, c);
- for (auto& b : block_dm) b = b / real(z);
+    // Careful: there is no reweighting factor here!
+    int size = block_dm.size();
+    for (int i = 0; i < size; ++i)
+      if (data.imp_trace.get_density_matrix()[i].is_valid) { block_dm[i] += s * data.imp_trace.get_density_matrix()[i].mat; }
+  }
 
- if (c.rank() != 0) return;
+  // ---------------------------------------------
 
- // Check: the trace of the density matrix must be 1 by construction
- h_scalar_t tr = 0;
- for (auto& b : block_dm) tr += trace(b);
- if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
- if (std::abs(tr - 1) > 1.e-13) std::cerr << "Warning :: Trace of the density matrix is " <<
-                                std::setprecision(13) << tr << std::setprecision(6) << " instead of 1" << std::endl;
+  void measure_density_matrix::collect_results(triqs::mpi::communicator const &c) {
 
-}
+    z                          = mpi_all_reduce(z, c);
+    block_dm                   = mpi_all_reduce(block_dm, c);
+    for (auto &b : block_dm) b = b / real(z);
+
+    if (c.rank() != 0) return;
+
+    // Check: the trace of the density matrix must be 1 by construction
+    h_scalar_t tr = 0;
+    for (auto &b : block_dm) tr += trace(b);
+    if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
+    if (std::abs(tr - 1) > 1.e-13)
+      std::cerr << "Warning :: Trace of the density matrix is " << std::setprecision(13) << tr << std::setprecision(6) << " instead of 1"
+                << std::endl;
+  }
 }

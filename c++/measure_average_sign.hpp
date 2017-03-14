@@ -23,34 +23,31 @@
 
 namespace cthyb {
 
-struct measure_average_sign {
+  struct measure_average_sign {
 
- qmc_data const& data;
- mc_weight_t & average_sign;
- mc_weight_t sign, z;
+    qmc_data const &data;
+    mc_weight_t &average_sign;
+    mc_weight_t sign, z;
 
- measure_average_sign(qmc_data const& data, mc_weight_t & average_sign)
-    : data(data), average_sign(average_sign) {
-  average_sign = 1.0;
-  z = 0;
-  sign = 0;
- }
- // --------------------
+    measure_average_sign(qmc_data const &data, mc_weight_t &average_sign) : data(data), average_sign(average_sign) {
+      average_sign = 1.0;
+      z            = 0;
+      sign         = 0;
+    }
+    // --------------------
 
- void accumulate(mc_weight_t s) {
+    void accumulate(mc_weight_t s) {
 
-  sign += s * data.atomic_reweighting;
-  z += std::abs(data.atomic_reweighting);
- }
- // ---------------------------------------------
+      sign += s * data.atomic_reweighting;
+      z += std::abs(data.atomic_reweighting);
+    }
+    // ---------------------------------------------
 
- void collect_results(triqs::mpi::communicator const& c) {
+    void collect_results(triqs::mpi::communicator const &c) {
 
-  z = mpi_all_reduce(z,c);
-  sign = mpi_all_reduce(sign,c);
-  average_sign = sign / z;
-
- }
-};
-
+      z            = mpi_all_reduce(z, c);
+      sign         = mpi_all_reduce(sign, c);
+      average_sign = sign / z;
+    }
+  };
 }

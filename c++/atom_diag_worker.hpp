@@ -23,22 +23,22 @@
 
 namespace cthyb {
 
-// Division of Hilbert Space into sub hilbert spaces, using either autopartitioning or quantum numbers.
-struct atom_diag_worker {
+  // Division of Hilbert Space into sub hilbert spaces, using either autopartitioning or quantum numbers.
+  struct atom_diag_worker {
 
- atom_diag_worker(atom_diag* hdiag, int n_min = 0, int n_max = 10000) : hdiag(hdiag), n_min(n_min), n_max(n_max) {}
+    atom_diag_worker(atom_diag *hdiag, int n_min = 0, int n_max = 10000) : hdiag(hdiag), n_min(n_min), n_max(n_max) {}
 
- void autopartition();
- void partition_with_qn(std::vector<many_body_op_t> const& qn_vector);
+    void autopartition();
+    void partition_with_qn(std::vector<many_body_op_t> const &qn_vector);
 
- private:
- atom_diag* hdiag;
- int n_min, n_max;
- 
- // Create matrix of an operator acting from one subspace to another (returns matrix + number of its nonzero elements)
- matrix_t make_op_matrix(imperative_operator<hilbert_space, h_scalar_t> const& op, int from_sp, int to_sp) const;
+    private:
+    atom_diag *hdiag;
+    int n_min, n_max;
 
- void complete();
- bool fock_state_filter(fock_state_t s);
-};
+    // Create matrix of an operator acting from one subspace to another (returns matrix + number of its nonzero elements)
+    matrix_t make_op_matrix(imperative_operator<hilbert_space, h_scalar_t> const &op, int from_sp, int to_sp) const;
+
+    void complete();
+    bool fock_state_filter(fock_state_t s);
+  };
 }

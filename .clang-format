@@ -1,32 +1,45 @@
 BasedOnStyle: LLVM
 
 AccessModifierOffset: 0
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: false
 AlignEscapedNewlinesLeft: false
+AlignOperands: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: false
+BinPackArguments: true
 BinPackParameters: true 
-BreakBeforeBinaryOperators: false
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Attach
-ColumnLimit: 130
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializersBeforeComma: false
+#BreakStringLiterals: false # new option for clang >=3.9
+ColumnLimit: 150
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 3
+ContinuationIndentWidth: 3
 Cpp11BracedListStyle: true
-DerivePointerBinding : true
+DerivePointerBinding : false
 IndentCaseLabels: true
-#IndentFunctionDeclarationAfterType:true
-IndentWidth: 1
-MaxEmptyLinesToKeep: 3
-NamespaceIndentation : Inner
-PointerBindsToType: true
+IndentWidth: 2
+Language: Cpp
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation : All
+PointerAlignment: Right
+ReflowComments: false
+SortIncludes: false
 SpaceAfterControlStatementKeyword: true
 SpaceBeforeAssignmentOperators: true
 SpaceInEmptyParentheses: false
 SpacesInParentheses: false
 Standard: Cpp11
-TabWidth: 1
+TabWidth: 2
 UseTab: Never
-

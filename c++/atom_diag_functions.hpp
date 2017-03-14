@@ -23,34 +23,31 @@
 
 namespace cthyb {
 
-/// The atomic partition function
-double partition_function(atom_diag const& atom, double beta);
+  /// The atomic partition function
+  double partition_function(atom_diag const &atom, double beta);
 
-/// The atomic density matrix
-block_matrix_t atomic_density_matrix(atom_diag const& atom, double beta);
+  /// The atomic density matrix
+  block_matrix_t atomic_density_matrix(atom_diag const &atom, double beta);
 
-/// The atomic green function, possibly with excluded states (default none)
-block_gf<imtime> atomic_gf(atom_diag const& atom, double beta, std::map<std::string, indices_t> const& indices_list, int n_tau,
-                           std::vector<std::pair<int, int>> const& excluded_states = {});
+  /// The atomic green function, possibly with excluded states (default none)
+  block_gf<imtime> atomic_gf(atom_diag const &atom, double beta, std::map<std::string, indices_t> const &indices_list, int n_tau,
+                             std::vector<std::pair<int, int>> const &excluded_states = {});
 
+  /// Trace (op * density_matrix)
+  quantum_number_t trace_rho_op(block_matrix_t const &density_matrix, many_body_op_t const &op, atom_diag const &atom);
 
-/// Trace (op * density_matrix)
-quantum_number_t trace_rho_op(block_matrix_t const& density_matrix, many_body_op_t const& op, atom_diag const& atom);
+  /// Act with operator op on state st
+  full_hilbert_space_state_t act(many_body_op_t const &op, full_hilbert_space_state_t const &st, atom_diag const &atom);
 
-/// Act with operator op on state st
-full_hilbert_space_state_t act(many_body_op_t const& op, full_hilbert_space_state_t const& st, atom_diag const& atom);
-
-/** 
+  /** 
  * The operator op is supposed to be a quantum number (if not -> exception)
  * @return the eigenvalue by block
  */
-std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(many_body_op_t const& op, atom_diag const& atom);
+  std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(many_body_op_t const &op, atom_diag const &atom);
 
-/** 
+  /** 
  * The operator op is supposed to be a quantum number (if not -> exception)
  * @return the eigenvalue by block
  */
-std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues2(many_body_op_t const& op, atom_diag const& atom);
-
-
+  std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues2(many_body_op_t const &op, atom_diag const &atom);
 }

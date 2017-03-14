@@ -19,19 +19,19 @@ TEST(CtHyb, Spinless) {
   int rank = triqs::mpi::communicator().rank();
 
   // Parameters
-  double beta = 10.0;
-  double U = 2.0;
-  double mu = 1.0;
+  double beta    = 10.0;
+  double U       = 2.0;
+  double mu      = 1.0;
   double epsilon = 2.3;
-  double t = 0.1;
+  double t       = 0.1;
 
   // define operators
-  auto H = U*n("tot",0)*n("tot",1) - t*c_dag("tot",0)*c("tot",1) - t*c_dag("tot",1)*c("tot",0);
-  std::map<std::string, indices_type> gf_struct{{"tot",{0,1}}};
+  auto H = U * n("tot", 0) * n("tot", 1) - t * c_dag("tot", 0) * c("tot", 1) - t * c_dag("tot", 1) * c("tot", 0);
+  std::map<std::string, indices_type> gf_struct{{"tot", {0, 1}}};
 
 #ifdef QN
   // quantum numbers
-  std::vector<many_body_op_t> qn{n("tot",0)+n("tot",1)};
+  std::vector<many_body_op_t> qn{n("tot", 0) + n("tot", 1)};
 #endif
 
   // Construct CTQMC solver
@@ -39,34 +39,35 @@ TEST(CtHyb, Spinless) {
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;
-  auto delta_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
+  auto delta_iw = gf<imfreq>{{beta, Fermion}, {2, 2}};
 
   using triqs::arrays::range;
-  auto d00 = slice_target(delta_iw, range(0,1), range(0,1));
-  auto d11 = slice_target(delta_iw, range(1,2), range(1,2));
-  auto d01 = slice_target(delta_iw, range(0,1), range(1,2));
-  auto d10 = slice_target(delta_iw, range(1,2), range(0,1));
-  d00(om_) << (om_-epsilon)*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) +(om_+epsilon)*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
+  auto d00 = slice_target(delta_iw, range(0, 1), range(0, 1));
+  auto d11 = slice_target(delta_iw, range(1, 2), range(1, 2));
+  auto d01 = slice_target(delta_iw, range(0, 1), range(1, 2));
+  auto d10 = slice_target(delta_iw, range(1, 2), range(0, 1));
+  d00(om_) << (om_ - epsilon) * (1.0 / (om_ - epsilon - t)) * (1.0 / (om_ - epsilon + t))
+        + (om_ + epsilon) * (1.0 / (om_ + epsilon - t)) * (1.0 / (om_ + epsilon + t));
   d11(om_) << d00(om_);
-  d01(om_) << -t*(1.0/(om_-epsilon-t))*(1.0/(om_-epsilon+t)) -t*(1.0/(om_+epsilon-t))*(1.0/(om_+epsilon+t));
+  d01(om_) << -t * (1.0 / (om_ - epsilon - t)) * (1.0 / (om_ - epsilon + t)) - t * (1.0 / (om_ + epsilon - t)) * (1.0 / (om_ + epsilon + t));
   d10(om_) << d01(om_);
 
   // Set G0
-  auto g0_iw = gf<imfreq>{{beta, Fermion}, {2,2}};
+  auto g0_iw = gf<imfreq>{{beta, Fermion}, {2, 2}};
   g0_iw(om_) << om_ + mu - delta_iw(om_);
-  solver.G0_iw()[0] = triqs::gfs::inverse( g0_iw );
+  solver.G0_iw()[0] = triqs::gfs::inverse(g0_iw);
 
   // Solve parameters
-  int n_cycles = 5000;
-  auto p = solve_parameters_t(H, n_cycles);
-  p.random_name = "";
-  p.random_seed = 123 * rank + 567;
-  p.max_time = -1;
-  p.length_cycle = 50;
+  int n_cycles      = 5000;
+  auto p            = solve_parameters_t(H, n_cycles);
+  p.random_name     = "";
+  p.random_seed     = 123 * rank + 567;
+  p.max_time        = -1;
+  p.length_cycle    = 50;
   p.n_warmup_cycles = 50;
-  p.move_double = false;
+  p.move_double     = false;
 #ifdef QN
-  p.quantum_numbers = qn;
+  p.quantum_numbers  = qn;
   p.partition_method = "quantum_numbers";
 #endif
 
@@ -79,17 +80,16 @@ TEST(CtHyb, Spinless) {
   filename += "_qn";
 #endif
 
-  if(rank==0){
-    triqs::h5::file G_file(filename + ".out.h5",'w');
-    h5_write(G_file,"G_tau",solver.G_tau()[0]);
+  if (rank == 0) {
+    triqs::h5::file G_file(filename + ".out.h5", 'w');
+    h5_write(G_file, "G_tau", solver.G_tau()[0]);
   }
 
   gf<imtime> g;
-  if(rank==0){
-    triqs::h5::file G_file(filename + ".ref.h5",'r');
+  if (rank == 0) {
+    triqs::h5::file G_file(filename + ".ref.h5", 'r');
     h5_read(G_file, "G_tau", g);
     EXPECT_GF_NEAR(g, solver.G_tau()[0]);
   }
-
 }
 MAKE_MAIN;

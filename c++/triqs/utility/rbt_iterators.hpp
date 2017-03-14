@@ -23,82 +23,82 @@
 #include <stack>
 
 namespace triqs {
-namespace utility {
+  namespace utility {
 
- template <typename RBT>
- using get_node_t = std14::conditional_t<std::is_const<RBT>::value, typename RBT::node const, typename RBT::node>;
+    template <typename RBT> using get_node_t = std14::conditional_t<std::is_const<RBT>::value, typename RBT::node const, typename RBT::node>;
 
- // flatten the tree in ascending order
- template <typename RBT> std::vector<get_node_t<RBT>> flatten2(RBT& tree) {
-  using node_t = get_node_t<RBT>;
-  std::vector<node_t> R;
-  R.reserve(tree.size());
-  std::stack<node_t> stack;
-  node_t n = tree.get_root();
-  while (1) {
-   while (n != nullptr) {
-    stack.push(n);
-    n = n->left;
-   }
-   if (stack.size() == 0) break;
-   n = stack.top();
-   stack.pop();
-   R.push_back(n);
-   n = n->right;
-  }
-  return R;
- }
-
- template <typename RBT> std::vector<get_node_t<RBT>> flatten(RBT& tree) {
-  using node_t = get_node_t<RBT>;
-  std::vector<node_t> R;
-  R.reserve(tree.size());
-  foreach(tree, [&R](node_t n) { R.push_back(n); });
-  return R;
- }
-
- /// implementation of iterators
- namespace detail {
- 
-  // forward iterator
-  template <typename RBT, typename Node> class rbt_iterator : public std::iterator<std::forward_iterator_tag, Node> {
-
-   RBT* tree = nullptr;
-   Node n = nullptr;
-   Node current = nullptr;
-   std::stack<Node> stack;
-
-   public:
-   rbt_iterator() = default;
-   rbt_iterator(RBT* tree, bool at_end) : tree(tree), n(at_end ? nullptr : tree->get_root()) { operator++(); }
-
-   rbt_iterator& operator++() {
-    while (n != nullptr) {
-     stack.push(n);
-     n = n->left;
+    // flatten the tree in ascending order
+    template <typename RBT> std::vector<get_node_t<RBT>> flatten2(RBT &tree) {
+      using node_t = get_node_t<RBT>;
+      std::vector<node_t> R;
+      R.reserve(tree.size());
+      std::stack<node_t> stack;
+      node_t n = tree.get_root();
+      while (1) {
+        while (n != nullptr) {
+          stack.push(n);
+          n = n->left;
+        }
+        if (stack.size() == 0) break;
+        n = stack.top();
+        stack.pop();
+        R.push_back(n);
+        n = n->right;
+      }
+      return R;
     }
-    if (stack.size() != 0) {
-     n = stack.top();
-     stack.pop();
-     current = n;
-     n = n->right;
-    } else
-     current = nullptr;
-    return *this;
-   }
 
-   Node& operator*() { return current; }
-   Node& operator->() { return current; }
+    template <typename RBT> std::vector<get_node_t<RBT>> flatten(RBT &tree) {
+      using node_t = get_node_t<RBT>;
+      std::vector<node_t> R;
+      R.reserve(tree.size());
+      foreach (tree, [&R](node_t n) { R.push_back(n); })
+        ;
+      return R;
+    }
 
-   rbt_iterator operator++(int) {
-    auto c = *this;
-    operator++();
-    return c;
-   }
+    /// implementation of iterators
+    namespace detail {
 
-   bool operator==(rbt_iterator const& other) const { return (other.current == current); }
-   bool operator!=(rbt_iterator const& other) const { return (!operator==(other)); }
-  };
- }
-}
+      // forward iterator
+      template <typename RBT, typename Node> class rbt_iterator : public std::iterator<std::forward_iterator_tag, Node> {
+
+        RBT *tree    = nullptr;
+        Node n       = nullptr;
+        Node current = nullptr;
+        std::stack<Node> stack;
+
+        public:
+        rbt_iterator() = default;
+        rbt_iterator(RBT *tree, bool at_end) : tree(tree), n(at_end ? nullptr : tree->get_root()) { operator++(); }
+
+        rbt_iterator &operator++() {
+          while (n != nullptr) {
+            stack.push(n);
+            n = n->left;
+          }
+          if (stack.size() != 0) {
+            n = stack.top();
+            stack.pop();
+            current = n;
+            n       = n->right;
+          } else
+            current = nullptr;
+          return *this;
+        }
+
+        Node &operator*() { return current; }
+        Node &operator->() { return current; }
+
+        rbt_iterator operator++(int) {
+          auto c = *this;
+          operator++();
+          return c;
+        }
+
+        bool operator==(rbt_iterator const &other) const { return (other.current == current); }
+        bool operator!=(rbt_iterator const &other) const { return (!operator==(other)); }
+      };
+    }
+  }
 }

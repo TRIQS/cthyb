@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./measure_density_matrix.hpp"
+#include "./density_matrix.hpp"
 #include <triqs/mpi/vector.hpp>
 
 #include <iomanip>

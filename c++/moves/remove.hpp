@@ -21,7 +21,7 @@
 #pragma once
 #include <algorithm>
 #include <triqs/mc_tools.hpp>
-#include "./qmc_data.hpp"
+#include "../qmc_data.hpp"
 
 namespace cthyb {
 

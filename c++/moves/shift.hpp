@@ -19,42 +19,35 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./qmc_data.hpp"
+#include "../qmc_data.hpp"
 #include <triqs/mc_tools.hpp>
 
 namespace cthyb {
 
-// Insertion of 2 C and 2 C^dagger operators
-class move_insert_c_c_cdag_cdag {
+// Move a C or C^dagger operator to a different time
+class move_shift_operator {
 
  qmc_data& data;
  configuration& config;
  mc_tools::random_generator& rng;
- int block_index1, block_index2, block_size1, block_size2;
- // Analysis histograms
- histogram *histo_proposed1, *histo_proposed2;
- histogram *histo_accepted1, *histo_accepted2;
- double dtau1, dtau2;
+ histogram *histo_proposed, *histo_accepted; // Analysis histograms
+ double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
- time_pt tau1, tau2, tau3, tau4;
- op_desc op1, op2, op3, op4;
+ time_pt tau_old, tau_new;
+ op_desc op_old, op_new;
+ using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
+ det_type::RollDirection roll_direction;
+ int block_index;
 
  histogram* add_histo(std::string const& name, histo_map_t* histos);
 
  public:
- move_insert_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, std::string const& block_name1,
-                           std::string const& block_name2, qmc_data& data, mc_tools::random_generator& rng, histo_map_t* histos)
+ move_shift_operator(qmc_data& data, mc_tools::random_generator& rng, histo_map_t* histos)
     : data(data),
       config(data.config),
       rng(rng),
-      block_index1(block_index1),
-      block_size1(block_size1),
-      block_index2(block_index2),
-      block_size2(block_size2),
-      histo_proposed1(add_histo("double_insert_length_proposed_" + block_name1, histos)),
-      histo_proposed2(add_histo("double_insert_length_proposed_" + block_name2, histos)),
-      histo_accepted1(add_histo("double_insert_length_accepted_" + block_name1, histos)),
-      histo_accepted2(add_histo("double_insert_length_accepted_" + block_name2, histos)) {}
+      histo_proposed(add_histo("shift_length_proposed", histos)),
+      histo_accepted(add_histo("shift_length_accepted", histos)) {}
 
  mc_weight_t attempt();
  mc_weight_t accept();

@@ -19,35 +19,36 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./qmc_data.hpp"
 #include <triqs/mc_tools.hpp>
+#include "../qmc_data.hpp"
 
 namespace cthyb {
 
-// Move a C or C^dagger operator to a different time
-class move_shift_operator {
+// Insertion of C, C^dagger operator
+class move_insert_c_cdag {
 
  qmc_data& data;
  configuration& config;
  mc_tools::random_generator& rng;
+ int block_index, block_size;
  histogram *histo_proposed, *histo_accepted; // Analysis histograms
  double dtau;
  h_scalar_t new_atomic_weight, new_atomic_reweighting;
- time_pt tau_old, tau_new;
- op_desc op_old, op_new;
- using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
- det_type::RollDirection roll_direction;
- int block_index;
+ time_pt tau1, tau2;
+ op_desc op1, op2;
 
  histogram* add_histo(std::string const& name, histo_map_t* histos);
 
  public:
- move_shift_operator(qmc_data& data, mc_tools::random_generator& rng, histo_map_t* histos)
+ move_insert_c_cdag(int block_index, int block_size, std::string const& block_name, qmc_data& data,
+                    mc_tools::random_generator& rng, histo_map_t* histos)
     : data(data),
       config(data.config),
       rng(rng),
-      histo_proposed(add_histo("shift_length_proposed", histos)),
-      histo_accepted(add_histo("shift_length_accepted", histos)) {}
+      block_index(block_index),
+      block_size(block_size),
+      histo_proposed(add_histo("insert_length_proposed_" + block_name, histos)),
+      histo_accepted(add_histo("insert_length_accepted_" + block_name, histos)) {}
 
  mc_weight_t attempt();
  mc_weight_t accept();

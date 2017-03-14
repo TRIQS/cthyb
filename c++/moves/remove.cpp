@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "./move_remove.hpp"
+#include "./remove.hpp"
 
 namespace cthyb {
 

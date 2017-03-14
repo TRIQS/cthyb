@@ -19,36 +19,43 @@
  *
  ******************************************************************************/
 #pragma once
+#include "../qmc_data.hpp"
 #include <triqs/mc_tools.hpp>
-#include "./qmc_data.hpp"
+
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <numeric>
+#include <set>
+#include <vector>
 
 namespace cthyb {
 
-// Insertion of C, C^dagger operator
-class move_insert_c_cdag {
+class move_global {
+
+ std::string name;
 
  qmc_data& data;
  configuration& config;
  mc_tools::random_generator& rng;
- int block_index, block_size;
- histogram *histo_proposed, *histo_accepted; // Analysis histograms
- double dtau;
- h_scalar_t new_atomic_weight, new_atomic_reweighting;
- time_pt tau1, tau2;
- op_desc op1, op2;
 
- histogram* add_histo(std::string const& name, histo_map_t* histos);
+ // Substitutions as mappings (old linear index) -> (new op_desc)
+ std::vector<op_desc> substitute_c, substitute_c_dag;
+
+ // Indices of blocks potentially affected by this move
+ std::set<int> affected_blocks;
+
+ // Operators to be updated
+ configuration::oplist_t updated_ops;
+
+ // Proposed arguments of the dets
+ std::vector<std::vector<det_type::xy_type>> x, y;
+
+ h_scalar_t new_atomic_weight;      // Proposed value of the trace or norm
+ h_scalar_t new_atomic_reweighting; // Proposed value of the reweighting
 
  public:
- move_insert_c_cdag(int block_index, int block_size, std::string const& block_name, qmc_data& data,
-                    mc_tools::random_generator& rng, histo_map_t* histos)
-    : data(data),
-      config(data.config),
-      rng(rng),
-      block_index(block_index),
-      block_size(block_size),
-      histo_proposed(add_histo("insert_length_proposed_" + block_name, histos)),
-      histo_accepted(add_histo("insert_length_accepted_" + block_name, histos)) {}
+ move_global(std::string const& name, indices_map_t const& substitution_map, qmc_data& data, mc_tools::random_generator& rng);
 
  mc_weight_t attempt();
  mc_weight_t accept();

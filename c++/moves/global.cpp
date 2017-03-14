@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "./move_global.hpp"
+#include "./global.hpp"
 
 namespace cthyb {
 

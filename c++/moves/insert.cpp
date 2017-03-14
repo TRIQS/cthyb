@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "./move_insert.hpp"
+#include "./insert.hpp"
 
 namespace cthyb {
 

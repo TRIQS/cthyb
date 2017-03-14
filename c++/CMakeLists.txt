@@ -1,5 +1,5 @@
 # The solver
-add_library(cthyb_c solver_core.cpp atom_diag.cpp atom_diag_functions.cpp atom_diag_worker.cpp impurity_trace.cpp measure_density_matrix.cpp move_insert.cpp move_remove.cpp move_shift.cpp move_global.cpp move_double_insert.cpp move_double_remove.cpp)
+add_library(cthyb_c solver_core.cpp atom_diag.cpp atom_diag_functions.cpp atom_diag_worker.cpp impurity_trace.cpp measure_density_matrix.cpp ./moves/insert.cpp ./moves/remove.cpp ./moves/shift.cpp ./moves/global.cpp ./moves/double_insert.cpp ./moves/double_remove.cpp)
 target_link_libraries(cthyb_c ${TRIQS_LIBRARY_ALL})
 include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_CURRENT_SOURCE_DIR})
 triqs_set_rpath_for_target(cthyb_c)

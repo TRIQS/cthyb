@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "./move_double_remove.hpp"
+#include "./double_remove.hpp"
 
 namespace cthyb {
 

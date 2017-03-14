@@ -26,12 +26,12 @@
 #include <triqs/gfs.hpp>
 #include <fstream>
 
-#include "move_insert.hpp"
-#include "move_remove.hpp"
-#include "move_double_insert.hpp"
-#include "move_double_remove.hpp"
-#include "move_shift.hpp"
-#include "move_global.hpp"
+#include "./moves/insert.hpp"
+#include "./moves/remove.hpp"
+#include "./moves/double_insert.hpp"
+#include "./moves/double_remove.hpp"
+#include "./moves/shift.hpp"
+#include "./moves/global.hpp"
 #include "measure_g.hpp"
 #include "measure_g_legendre.hpp"
 #include "measure_perturbation_hist.hpp"

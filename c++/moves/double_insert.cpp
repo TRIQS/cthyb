@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "./move_double_insert.hpp"
+#include "./double_insert.hpp"
 
 namespace cthyb {
 

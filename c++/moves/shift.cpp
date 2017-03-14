@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include "./move_shift.hpp"
+#include "./shift.hpp"
 
 namespace cthyb {
 

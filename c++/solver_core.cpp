@@ -32,11 +32,11 @@
 #include "./moves/double_remove.hpp"
 #include "./moves/shift.hpp"
 #include "./moves/global.hpp"
-#include "measure_g.hpp"
-#include "measure_g_legendre.hpp"
-#include "measure_perturbation_hist.hpp"
-#include "measure_density_matrix.hpp"
-#include "measure_average_sign.hpp"
+#include "./measures/g.hpp"
+#include "./measures/g_legendre.hpp"
+#include "./measures/perturbation_hist.hpp"
+#include "./measures/density_matrix.hpp"
+#include "./measures/average_sign.hpp"
 
 namespace cthyb {
 

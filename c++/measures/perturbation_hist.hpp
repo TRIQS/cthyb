@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "qmc_data.hpp"
-#include "triqs/statistics/histograms.hpp"
+#include "../qmc_data.hpp"
+#include <triqs/statistics/histograms.hpp>
 
 namespace cthyb {
 

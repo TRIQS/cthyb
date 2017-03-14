@@ -18,46 +18,42 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "measure_g_legendre.hpp"
+#include "./g.hpp"
 
 namespace cthyb {
 
 using namespace triqs::gfs;
 
-measure_g_legendre::measure_g_legendre(int a_level, gf_view<legendre> g_l, qmc_data const& data)
-   : data(data), g_l(g_l), a_level(a_level), beta(data.config.beta()) {
- g_l() = 0.0;
+measure_g::measure_g(int a_level, gf_view<imtime, g_target_t> g_tau, qmc_data const& data)
+   : data(data), g_tau(g_tau), a_level(a_level) {
+ g_tau() = 0.0;
  z = 0;
  num = 0;
 }
 
-void measure_g_legendre::accumulate(mc_weight_t s) {
+void measure_g::accumulate(mc_weight_t s) {
  num += 1;
  if (num < 0) TRIQS_RUNTIME_ERROR << " Overflow of counter ";
 
  s *= data.atomic_reweighting;
  z += s;
 
- auto Tn = triqs::utility::legendre_generator();
-
- foreach (data.dets[a_level], [this, s, &Tn](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, det_scalar_t M) {
-  double poly_arg = 2 * double(y.first - x.first) / beta - 1.0;
-  Tn.reset(poly_arg);
-
-  auto val = (y.first >= x.first ? s : -s) * M;
-  for (auto l : g_l.mesh()) this->g_l[l](y.second, x.second) += val * Tn.next();
+ foreach (data.dets[a_level], [this, s](std::pair<time_pt, int> const& x, std::pair<time_pt, int> const& y, det_scalar_t M) {
+  // beta-periodicity is implicit in the argument, just fix the sign properly
+  this->g_tau[closest_mesh_pt(double(y.first - x.first))](y.second, x.second) += (y.first >= x.first ? s : -s) * M;
  })
   ;
 }
 
-void measure_g_legendre::collect_results(triqs::mpi::communicator const& c) {
+void measure_g::collect_results(triqs::mpi::communicator const& c) {
 
  z = mpi_all_reduce(z, c);
- g_l = mpi_all_reduce(g_l, c);
- for (auto l : g_l.mesh()) g_l[l] = -(sqrt(2.0 * l + 1.0) / (real(z) * beta)) * g_l[l];
-
- matrix<double> id(get_target_shape(g_l));
- id() = 1.0;
- enforce_discontinuity(g_l, id);
+ // Multiply first and last bins by 2 to account for full bins
+ g_tau[0] = g_tau[0] * 2;
+ g_tau[g_tau.mesh().size() - 1] = g_tau[g_tau.mesh().size() - 1] * 2;
+ g_tau = mpi_all_reduce(g_tau, c);
+ g_tau = g_tau / (-real(z) * data.config.beta() * g_tau.mesh().delta());
+ // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
+ g_tau.singularity()(1) = 1.0;
 }
 }

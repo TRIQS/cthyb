@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "qmc_data.hpp"
+#include "../qmc_data.hpp"
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/functions/functions.hpp>
 #include <triqs/utility/legendre.hpp>

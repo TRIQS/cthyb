@@ -1,19 +1,20 @@
 # The solver
-<<<<<<< HEAD
 set(LIBRARY_SOURCES
     solver_core.cpp
     atom_diag.cpp
     atom_diag_functions.cpp
     atom_diag_worker.cpp
     impurity_trace.cpp
-    ./measures/density_matrix.cpp
-    ./moves/shift.cpp
-    ./moves/remove.cpp
-    ./moves/insert.cpp
-    ./moves/global.cpp
-    ./moves/double_remove.cpp
-    ./moves/double_insert.cpp
-    )
+    moves/insert.cpp
+    moves/remove.cpp
+    moves/shift.cpp
+    moves/global.cpp
+    moves/double_insert.cpp
+    moves/double_remove.cpp
+    measures/average_sign.cpp
+    measures/density_matrix.cpp
+    measures/g.cpp
+    measures/g_legendre.cpp)
 if(MEASURE_G2)
  set(LIBRARY_SOURCES ${LIBRARY_SOURCES} measure_g2_inu.cpp measure_g2_legendre.cpp)
 endif(MEASURE_G2)

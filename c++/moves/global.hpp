@@ -49,7 +49,8 @@ namespace cthyb {
     configuration::oplist_t updated_ops;
 
     // Proposed arguments of the dets
-    std::vector<std::vector<det_type::xy_type>> x, y;
+    std::vector<std::vector<det_type::x_type>> x;
+    std::vector<std::vector<det_type::y_type>> y;
 
     h_scalar_t new_atomic_weight;      // Proposed value of the trace or norm
     h_scalar_t new_atomic_reweighting; // Proposed value of the reweighting

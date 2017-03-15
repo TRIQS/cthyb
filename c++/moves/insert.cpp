@@ -162,6 +162,7 @@ namespace cthyb {
 
     config.finalize();
     data.imp_trace.cancel_insert();
+    data.dets[block_index].reject_last_try();
 
 #ifdef EXT_DEBUG
     std::cerr << "* Move move_insert_c_cdag rejected" << std::endl;

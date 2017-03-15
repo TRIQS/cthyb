@@ -232,6 +232,12 @@ namespace cthyb {
 
     config.finalize();
     data.imp_trace.cancel_insert();
+    if (block_index1 == block_index2) {
+      data.dets[block_index1].reject_last_try();
+    } else {
+      data.dets[block_index1].reject_last_try();
+      data.dets[block_index2].reject_last_try();
+    }
 
 #ifdef EXT_DEBUG
     std::cerr << "* Move move_insert_c_c_cdag_cdag rejected" << std::endl;

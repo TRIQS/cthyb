@@ -33,6 +33,7 @@ namespace cthyb {
      : data(data),
        config(data.config),
        rng(rng),
+       block_index(0),
        histo_proposed(add_histo("shift_length_proposed", histos)),
        histo_accepted(add_histo("shift_length_accepted", histos)) {}
 
@@ -238,6 +239,7 @@ namespace cthyb {
 
     config.finalize();
     data.imp_trace.cancel_shift();
+    data.dets[block_index].reject_last_try();
 
 #ifdef EXT_DEBUG
     std::cerr << "* Move move_shift_operator rejected" << std::endl;

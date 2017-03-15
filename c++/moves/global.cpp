@@ -191,6 +191,7 @@ namespace cthyb {
 
     config.finalize();
     data.imp_trace.cancel_replace();
+    for (auto block_index : affected_blocks) data.dets[block_index].reject_last_try();
 
 #ifdef EXT_DEBUG
     std::cerr << "* Move move_global '" << name << "' rejected" << std::endl;

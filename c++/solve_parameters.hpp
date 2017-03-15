@@ -66,6 +66,9 @@ namespace cthyb {
     /// Measure G_l (Legendre)?
     bool measure_g_l = false;
 
+    /// Measure G^2(tau,tau',tau'')
+    bool measure_g2_tau = false;
+
     /// Measure G^2(iomega,inu,inu')
     bool measure_g2_inu = false;
 
@@ -84,6 +87,9 @@ namespace cthyb {
     /// List of block index pairs of G^2 to measure.
     /// default: measure all blocks
     std::set<std::pair<std::string, std::string>> measure_g2_blocks = (std::set<std::pair<std::string, std::string>>{});
+
+    /// Number of imaginary time slices for G^2 measurement.
+    int measure_g2_n_tau = 10;
 
     /// Number of bosonic Matsubara frequencies for G^2 measurement.
     int measure_g2_n_iw = 30;

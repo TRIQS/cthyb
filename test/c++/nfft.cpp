@@ -1,9 +1,9 @@
-#include <nfft_buf.hpp>
 #include <random>
 #include <triqs/gfs.hpp>
 #include <triqs/test_tools/gfs.hpp>
+#include <triqs/experimental/nfft_buf.hpp>
 
-using namespace cthyb;
+using namespace triqs::experimental;
 
 // Check that int holds at least 4 Bytes
 static_assert(sizeof(int) >= sizeof(int32_t), " Error: sizeof(int) < 4 Byte ");

@@ -28,12 +28,14 @@ template <> struct py_converter<solve_parameters_t> {
   PyDict_SetItemString( d, "use_trace_estimator"   , convert_to_python(x.use_trace_estimator));
   PyDict_SetItemString( d, "measure_g_tau"         , convert_to_python(x.measure_g_tau));
   PyDict_SetItemString( d, "measure_g_l"           , convert_to_python(x.measure_g_l));
+  PyDict_SetItemString( d, "measure_g2_tau"        , convert_to_python(x.measure_g2_tau));
   PyDict_SetItemString( d, "measure_g2_inu"        , convert_to_python(x.measure_g2_inu));
   PyDict_SetItemString( d, "measure_g2_legendre"   , convert_to_python(x.measure_g2_legendre));
   PyDict_SetItemString( d, "measure_g2_pp"         , convert_to_python(x.measure_g2_pp));
   PyDict_SetItemString( d, "measure_g2_ph"         , convert_to_python(x.measure_g2_ph));
   PyDict_SetItemString( d, "measure_g2_block_order", convert_to_python(x.measure_g2_block_order));
   PyDict_SetItemString( d, "measure_g2_blocks"     , convert_to_python(x.measure_g2_blocks));
+  PyDict_SetItemString( d, "measure_g2_n_tau"      , convert_to_python(x.measure_g2_n_tau));
   PyDict_SetItemString( d, "measure_g2_n_iw"       , convert_to_python(x.measure_g2_n_iw));
   PyDict_SetItemString( d, "measure_g2_n_inu"      , convert_to_python(x.measure_g2_n_inu));
   PyDict_SetItemString( d, "measure_g2_n_l"        , convert_to_python(x.measure_g2_n_l));
@@ -79,12 +81,14 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "use_trace_estimator"   , res.use_trace_estimator      ,false);
   _get_optional(dic, "measure_g_tau"         , res.measure_g_tau            ,true);
   _get_optional(dic, "measure_g_l"           , res.measure_g_l              ,false);
+  _get_optional(dic, "measure_g2_tau"        , res.measure_g2_tau           ,false);
   _get_optional(dic, "measure_g2_inu"        , res.measure_g2_inu           ,false);
   _get_optional(dic, "measure_g2_legendre"   , res.measure_g2_legendre      ,false);
   _get_optional(dic, "measure_g2_pp"         , res.measure_g2_pp            ,true);
   _get_optional(dic, "measure_g2_ph"         , res.measure_g2_ph            ,true);
   _get_optional(dic, "measure_g2_block_order", res.measure_g2_block_order   ,AABB);
   _get_optional(dic, "measure_g2_blocks"     , res.measure_g2_blocks        ,(std::set<std::pair<std::string,std::string>>{}));
+  _get_optional(dic, "measure_g2_n_tau"      , res.measure_g2_n_tau         ,10);
   _get_optional(dic, "measure_g2_n_iw"       , res.measure_g2_n_iw          ,30);
   _get_optional(dic, "measure_g2_n_inu"      , res.measure_g2_n_inu         ,30);
   _get_optional(dic, "measure_g2_n_l"        , res.measure_g2_n_l           ,20);
@@ -126,7 +130,7 @@ template <> struct py_converter<solve_parameters_t> {
   std::stringstream fs, fs2; int err=0;
 
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
-  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_g2_inu","measure_g2_legendre","measure_g2_pp","measure_g2_ph","measure_g2_block_order","measure_g2_blocks","measure_g2_n_iw","measure_g2_n_inu","measure_g2_n_l","measure_pert_order","measure_density_matrix","use_norm_as_weight","performance_analysis","proposal_prob","move_global","move_global_prob","imag_threshold"};
+  std::vector<std::string> ks, all_keys = {"h_int","n_cycles","partition_method","quantum_numbers","length_cycle","n_warmup_cycles","random_seed","random_name","max_time","verbosity","move_shift","move_double","use_trace_estimator","measure_g_tau","measure_g_l","measure_g2_tau","measure_g2_inu","measure_g2_legendre","measure_g2_pp","measure_g2_ph","measure_g2_block_order","measure_g2_blocks","measure_g2_n_tau","measure_g2_n_iw","measure_g2_n_inu","measure_g2_n_l","measure_pert_order","measure_density_matrix","use_norm_as_weight","performance_analysis","proposal_prob","move_global","move_global_prob","imag_threshold"};
   pyref keys = PyDict_Keys(dic);
   if (!convertible_from_python<std::vector<std::string>>(keys, true)) {
    fs << "\nThe dict keys are not strings";
@@ -153,12 +157,14 @@ template <> struct py_converter<solve_parameters_t> {
   _check_optional <bool                                          >(dic, fs, err, "use_trace_estimator"   , "bool");
   _check_optional <bool                                          >(dic, fs, err, "measure_g_tau"         , "bool");
   _check_optional <bool                                          >(dic, fs, err, "measure_g_l"           , "bool");
+  _check_optional <bool                                          >(dic, fs, err, "measure_g2_tau"        , "bool");
   _check_optional <bool                                          >(dic, fs, err, "measure_g2_inu"        , "bool");
   _check_optional <bool                                          >(dic, fs, err, "measure_g2_legendre"   , "bool");
   _check_optional <bool                                          >(dic, fs, err, "measure_g2_pp"         , "bool");
   _check_optional <bool                                          >(dic, fs, err, "measure_g2_ph"         , "bool");
   _check_optional <cthyb::block_order                            >(dic, fs, err, "measure_g2_block_order", "cthyb::block_order");
   _check_optional <std::set<std::pair<std::string, std::string> >>(dic, fs, err, "measure_g2_blocks"     , "std::set<std::pair<std::string, std::string> >");
+  _check_optional <int                                           >(dic, fs, err, "measure_g2_n_tau"      , "int");
   _check_optional <int                                           >(dic, fs, err, "measure_g2_n_iw"       , "int");
   _check_optional <int                                           >(dic, fs, err, "measure_g2_n_inu"      , "int");
   _check_optional <int                                           >(dic, fs, err, "measure_g2_n_l"        , "int");

@@ -26,26 +26,22 @@
 
 namespace cthyb {
 
-template<g2_channel Channel, block_order Order>
-measure_g2_legendre<Channel,Order>::measure_g2_legendre(int A, int B, g2_iw_l_lp_block_view g2, qmc_data const& data) :
- A(A), B(B), diag_block(A == B), g2(g2), data(data),
- size_A(get_target_shape(data.delta[A])[0]),
- size_B(get_target_shape(data.delta[B])[0]) {
-// TODO
-}
+  template <g2_channel Channel, block_order Order>
+  measure_g2_legendre<Channel, Order>::measure_g2_legendre(int A, int B, g2_view_type g2, qmc_data const &data)
+     : A(A), B(B), diag_block(A == B), g2(g2), data(data), size_A(data.delta[A].target_shape()[0]), size_B(data.delta[B].target_shape()[0]) {
+    // TODO
+  }
 
-template<g2_channel Channel, block_order Order>
-void measure_g2_legendre<Channel,Order>::accumulate(mc_weight_t s) {
-// TODO
-}
+  template <g2_channel Channel, block_order Order> void measure_g2_legendre<Channel, Order>::accumulate(mc_weight_t s) {
+    // TODO
+  }
 
-template<g2_channel Channel, block_order Order>
-void measure_g2_legendre<Channel,Order>::collect_results(triqs::mpi::communicator const& c) {
-// TODO
-}
+  template <g2_channel Channel, block_order Order> void measure_g2_legendre<Channel, Order>::collect_results(triqs::mpi::communicator const &c) {
+    // TODO
+  }
 
-template class measure_g2_legendre<PP,AABB>;
-template class measure_g2_legendre<PP,ABBA>;
-template class measure_g2_legendre<PH,AABB>;
-template class measure_g2_legendre<PH,ABBA>;
+  template class measure_g2_legendre<PP, AABB>;
+  template class measure_g2_legendre<PP, ABBA>;
+  template class measure_g2_legendre<PH, AABB>;
+  template class measure_g2_legendre<PH, ABBA>;
 }

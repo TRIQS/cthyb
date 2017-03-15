@@ -38,9 +38,7 @@
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
-#ifdef MEASURE_G2
 #include "./measures/g2.hpp"
-#endif
 
 namespace cthyb {
 
@@ -66,20 +64,19 @@ namespace cthyb {
 
     // Allocate (empty) two particle greens functions
 
-      // empty meshes (zero mesh pts)
-      gf_mesh<imfreq> fermi_iw_mesh{beta, Fermion, 0};
-      gf_mesh<imfreq> bose_iw_mesh{beta, Boson, 0}; 
-      gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, 0}; 
-      
-      gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
-      gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
+    // empty meshes (zero mesh pts)
+    gf_mesh<imfreq> fermi_iw_mesh{beta, Fermion, 0};
+    gf_mesh<imfreq> bose_iw_mesh{beta, Boson, 0};
+    gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, 0};
 
-      _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
-      _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
+    gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
+    gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
-      _G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
-      _G2_iw_l_lp_ph = make_block2_gf(g2_leg_mesh, gf_struct);
+    _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
+    _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
 
+    _G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
+    _G2_iw_l_lp_ph = make_block2_gf(g2_leg_mesh, gf_struct);
   }
 
   /// -------------------------------------------------------------------------------------------
@@ -199,7 +196,7 @@ namespace cthyb {
     // --------------------------------------------------------------------------
     // Moves
     // --------------------------------------------------------------------------
-    
+
     using move_set_type = mc_tools::move_set<mc_weight_t>;
     move_set_type inserts(qmc.get_rng());
     move_set_type removes(qmc.get_rng());
@@ -211,7 +208,7 @@ namespace cthyb {
       auto f = params.proposal_prob.find(block_name);
       return (f != params.proposal_prob.end() ? f->second : 1.0);
     };
-    
+
     for (size_t block = 0; block < _Delta_tau.size(); ++block) {
       int block_size         = _Delta_tau[block].data().shape()[1];
       auto const &block_name = delta_names[block];
@@ -258,7 +255,6 @@ namespace cthyb {
 
     // Two-particle correlators
 
-#ifdef MEASURE_G2
     if (params.measure_g2_inu || params.measure_g2_legendre) {
       auto g2_blocks_to_measure = params.measure_g2_blocks;
 
@@ -301,7 +297,8 @@ namespace cthyb {
             int n_inu = params.measure_g2_n_inu;
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_inu_inup_pp(b1, b2);
-              block       = g2_iw_inu_inup_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
+              block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+                 {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data), make_measure_name(false, PP, AABB));
               else
@@ -310,7 +307,8 @@ namespace cthyb {
 
             if (params.measure_g2_ph) {
               auto &block = _G2_iw_inu_inup_ph(b1, b2);
-              block       = g2_iw_inu_inup_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
+              block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+                 {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data), make_measure_name(false, PH, AABB));
               else
@@ -323,7 +321,8 @@ namespace cthyb {
             size_t n_l = params.measure_g2_n_l;
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_l_lp_pp(b1, b2);
-              block       = g2_iw_l_lp_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
+              block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
+                 {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data), make_measure_name(true, PP, AABB));
               else
@@ -332,61 +331,61 @@ namespace cthyb {
 
             if (params.measure_g2_ph) {
               auto &block = _G2_iw_l_lp_ph(b1, b2);
-              block       = g2_iw_l_lp_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
+              block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
+                 {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data), make_measure_name(true, PH, AABB));
               else
                 qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data), make_measure_name(true, PH, ABBA));
             }
-          }
         }
       }
     }
-#endif
-
-    // Single-particle correlators
-    
-    if (params.measure_g_tau) {
-      auto &g_names = _G_tau.block_names();
-      for (size_t block = 0; block < _G_tau.size(); ++block) {
-        qmc.add_measure(measure_g(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
-      }
-    }
-    if (params.measure_g_l) {
-      auto &g_names = _G_l.block_names();
-      for (size_t block = 0; block < _G_l.size(); ++block) {
-        qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
-      }
-    }
-
-    // Other measurements
-    if (params.measure_pert_order) {
-      auto &g_names = _G_tau.block_names();
-      for (size_t block = 0; block < _G_tau.size(); ++block) {
-        auto const &block_name = g_names[block];
-        qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
-      }
-      qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
-    }
-    if (params.measure_density_matrix) {
-      if (!params.use_norm_as_weight)
-        TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
-                               "use_norm_as_weight to True, i.e. to reweight the QMC";
-      qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
-    }
-
-    qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
-
-    // --------------------------------------------------------------------------
-    
-    // Run! The empty (starting) configuration has sign = 1
-    _solve_status =
-       qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
-    qmc.collect_results(_comm);
-
-    if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
-
-    // Copy local (real or complex) G_tau back to complex G_tau
-    if (params.measure_g_tau) _G_tau = _G_tau_accum;
   }
+
+  // Single-particle correlators
+
+  if (params.measure_g_tau) {
+    auto &g_names = _G_tau.block_names();
+    for (size_t block = 0; block < _G_tau.size(); ++block) {
+      qmc.add_measure(measure_g(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
+    }
+  }
+  if (params.measure_g_l) {
+    auto &g_names = _G_l.block_names();
+    for (size_t block = 0; block < _G_l.size(); ++block) {
+      qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
+    }
+  }
+
+  // Other measurements
+  if (params.measure_pert_order) {
+    auto &g_names = _G_tau.block_names();
+    for (size_t block = 0; block < _G_tau.size(); ++block) {
+      auto const &block_name = g_names[block];
+      qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
+    }
+    qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
+  }
+  if (params.measure_density_matrix) {
+    if (!params.use_norm_as_weight)
+      TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
+                             "use_norm_as_weight to True, i.e. to reweight the QMC";
+    qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
+  }
+
+  qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
+
+  // --------------------------------------------------------------------------
+
+  // Run! The empty (starting) configuration has sign = 1
+  _solve_status =
+     qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
+  qmc.collect_results(_comm);
+
+  if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
+
+  // Copy local (real or complex) G_tau back to complex G_tau
+  if (params.measure_g_tau) _G_tau = _G_tau_accum;
+}
 }

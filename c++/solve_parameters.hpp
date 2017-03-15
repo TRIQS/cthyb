@@ -6,9 +6,7 @@ namespace cthyb {
   using namespace triqs::operators;
   using indices_map_t = std::map<triqs::operators::indices_t, triqs::operators::indices_t>;
 
-#ifdef MEASURE_G2
   enum block_order { AABB, ABBA };
-#endif
 
   // All the arguments of the solve function
   struct solve_parameters_t {
@@ -68,7 +66,6 @@ namespace cthyb {
     /// Measure G_l (Legendre)?
     bool measure_g_l = false;
 
-#ifdef MEASURE_G2
     /// Measure G^2(iomega,inu,inu')
     bool measure_g2_inu = false;
 
@@ -96,7 +93,6 @@ namespace cthyb {
 
     /// Number of Legendre coefficients for G^2(iomega,l,l') measurement.
     int measure_g2_n_l = 20;
-#endif
 
     /// Measure perturbation order?
     bool measure_pert_order = false;

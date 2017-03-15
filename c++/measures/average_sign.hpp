@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../qmc_data.hpp"
+#include "qmc_data.hpp"
 
 namespace cthyb {
 

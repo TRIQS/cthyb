@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include <array>
-#include "measure_g2.hpp"
+#include "./g2.hpp"
 
 #ifndef NDEBUG
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK

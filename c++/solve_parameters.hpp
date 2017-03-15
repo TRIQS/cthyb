@@ -7,11 +7,11 @@ namespace cthyb {
   using indices_map_t = std::map<triqs::operators::indices_t, triqs::operators::indices_t>;
 
 #ifdef MEASURE_G2
-enum block_order {AABB, ABBA};
+  enum block_order { AABB, ABBA };
 #endif
 
-// All the arguments of the solve function
-struct solve_parameters_t {
+  // All the arguments of the solve function
+  struct solve_parameters_t {
 
     /// Interacting part of the atomic Hamiltonian
     /// type: Operator
@@ -68,49 +68,41 @@ struct solve_parameters_t {
     /// Measure G_l (Legendre)?
     bool measure_g_l = false;
 
-<<<<<<< HEAD
+#ifdef MEASURE_G2
+    /// Measure G^2(iomega,inu,inu')
+    bool measure_g2_inu = false;
+
+    /// Measure G^2(iomega,l,l')
+    bool measure_g2_legendre = false;
+
+    /// Measure G^2 within particle-particle channel.
+    bool measure_g2_pp = true;
+
+    /// Measure G^2 within particle-hole channel.
+    bool measure_g2_ph = true;
+
+    /// Order of block indices in the definition of G^2.
+    block_order measure_g2_block_order = AABB;
+
+    /// List of block index pairs of G^2 to measure.
+    /// default: measure all blocks
+    std::set<std::pair<std::string, std::string>> measure_g2_blocks = (std::set<std::pair<std::string, std::string>>{});
+
+    /// Number of bosonic Matsubara frequencies for G^2 measurement.
+    int measure_g2_n_iw = 30;
+
+    /// Number of fermionic Matsubara frequencies for G^2 measurement.
+    int measure_g2_n_inu = 30;
+
+    /// Number of Legendre coefficients for G^2(iomega,l,l') measurement.
+    int measure_g2_n_l = 20;
+#endif
+
     /// Measure perturbation order?
     bool measure_pert_order = false;
 
     /// Measure the reduced impurity density matrix?
     bool measure_density_matrix = false;
-=======
-#ifdef MEASURE_G2
- /// Measure G^2(iomega,inu,inu')
- bool measure_g2_inu = false;
-
- /// Measure G^2(iomega,l,l')
- bool measure_g2_legendre = false;
-
- /// Measure G^2 within particle-particle channel.
- bool measure_g2_pp = true;
-
- /// Measure G^2 within particle-hole channel.
- bool measure_g2_ph = true;
-
- /// Order of block indices in the definition of G^2.
- block_order measure_g2_block_order = AABB;
-
- /// List of block index pairs of G^2 to measure.
- /// default: measure all blocks
- std::set<std::pair<std::string,std::string>> measure_g2_blocks = (std::set<std::pair<std::string,std::string>>{});
-
- /// Number of bosonic Matsubara frequencies for G^2 measurement.
- int measure_g2_n_iw = 30;
-
- /// Number of fermionic Matsubara frequencies for G^2 measurement.
- int measure_g2_n_inu = 30;
-
- /// Number of Legendre coefficients for G^2(iomega,l,l') measurement.
- int measure_g2_n_l = 20;
-#endif
-
- /// Measure perturbation order?
- bool measure_pert_order = false;
-
- /// Measure the reduced impurity density matrix?
- bool measure_density_matrix = false;
->>>>>>> [measure_g2] Interface part of the G^{(2)} measurement.
 
     /// Use the norm of the density matrix in the weight if true, otherwise use Trace
     bool use_norm_as_weight = false;

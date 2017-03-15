@@ -23,8 +23,8 @@
 #include <vector>
 #include <triqs/mpi/base.hpp>
 #include <triqs/clef.hpp>
-#include "qmc_data.hpp"
-#include "nfft_buf.hpp"
+#include "../qmc_data.hpp"
+#include "../nfft_buf.hpp"
 
 namespace cthyb {
 

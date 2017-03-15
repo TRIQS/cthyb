@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/mc_tools.hpp>
+#include <triqs/gfs/types.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/statistics/histograms.hpp>
@@ -34,13 +35,6 @@ namespace cthyb {
   using histo_map_t  = std::map<std::string, histogram>;
   using indices_type = triqs::operators::indices_t;
 
-#ifdef MEASURE_G2
-  using g2_iw_inu_inup_t       = block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>;
-  using g2_iw_l_lp_t           = block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
-  using g2_iw_inu_inup_block_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>;
-  using g2_iw_l_lp_block_t     = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
-#endif
-
   /// Core class of the cthyb solver
   class solver_core {
 
@@ -48,16 +42,17 @@ namespace cthyb {
     atom_diag h_diag;                              // diagonalization of the local problem
     std::map<std::string, indices_type> gf_struct; // Block structure of the Green function FIXME
     many_body_op_t _h_loc;                         // The local Hamiltonian = h_int + h0
+
     block_gf<imfreq> _G0_iw;                       // Green's function containers: imaginary-freq Green's functions
     block_gf<imtime> _Delta_tau, _G_tau;           // Green's function containers: imaginary-time Green's functions
     block_gf<imtime, g_target_t> _G_tau_accum;     // Intermediate object to accumulate g(tau), either real or complex
     block_gf<legendre> _G_l;                       // Green's function containers: Legendre coefficients
-#ifdef MEASURE_G2
-    g2_iw_inu_inup_t _G2_iw_inu_inup_pp; // Two-particle Green’s function, fermionic matsubaras, pp-channel
-    g2_iw_inu_inup_t _G2_iw_inu_inup_ph; // Two-particle Green’s function, fermionic matsubaras, ph-channel
-    g2_iw_l_lp_t _G2_iw_l_lp_pp;         // Two-particle Green’s function, Legendre coefficients, pp-channel
-    g2_iw_l_lp_t _G2_iw_l_lp_ph;         // Two-particle Green’s function, Legendre coefficients, ph-channel
-#endif
+
+    block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> _G2_iw_inu_inup_pp; // Two-particle Green’s function, fermionic matsubaras, pp-channel
+    block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> _G2_iw_inu_inup_ph; // Two-particle Green’s function, fermionic matsubaras, ph-channel
+    block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> _G2_iw_l_lp_pp; // Two-particle Green’s function, Legendre coefficients, pp-channel
+    block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> _G2_iw_l_lp_ph; // Two-particle Green’s function, Legendre coefficients, ph-channel
+
     histogram _pert_order_total;               // Histogram of the total perturbation order
     histo_map_t _pert_order;                   // Histograms of the perturbation order for each block
     std::vector<matrix_t> _density_matrix;     // density matrix, when used in Norm mode
@@ -93,7 +88,6 @@ namespace cthyb {
     /// Accumulated :math:`G_l` in Legendre polynomials representation.
     block_gf_view<legendre> G_l() { return _G_l; }
 
-#ifdef MEASURE_G2
     /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
     g2_iw_inu_inup_view G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
 
@@ -105,7 +99,6 @@ namespace cthyb {
 
     /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
     g2_iw_l_lp_view G2_iw_l_lp_ph() { return _G2_iw_l_lp_ph; }
-#endif
 
     /// Atomic :math:`G(\tau)` in imaginary time.
     block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _G_tau[0].mesh().size()); }

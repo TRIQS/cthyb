@@ -38,7 +38,7 @@
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
 #ifdef MEASURE_G2
-#include "measure_g2.hpp"
+#include "./measures/g2.hpp"
 #endif
 
 namespace cthyb {

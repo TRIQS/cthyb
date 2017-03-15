@@ -24,6 +24,7 @@
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_int_string.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/gfs/types.hpp>
 #include <fstream>
 
 #include "./moves/insert.hpp"
@@ -56,45 +57,29 @@ namespace cthyb {
       TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau
                           << ".";
 
-    std::vector<std::string> block_names;
-    std::vector<gf<imfreq>> g0_iw_blocks;
-    std::vector<gf<imtime>> g_tau_blocks;
-    std::vector<gf<legendre>> g_l_blocks;
-    std::vector<gf<imtime>> delta_tau_blocks;
-    std::vector<gf<imtime, delta_target_t>> g_tau_accum_blocks; //  Local real or complex (if complex mode) quantities for accumulation
+    // Allocate single particle greens functions
+    _G0_iw       = make_block_gf(gf_mesh<imfreq>{beta, Fermion, n_iw}, gf_struct);
+    _G_tau       = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
+    _G_l         = make_block_gf(gf_mesh<legendre>{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct); // FIXME: cast is ugly
+    _Delta_tau   = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
+    _G_tau_accum = make_block_gf<delta_target_t>(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
 
-    for (auto const &bl : gf_struct) {
-      block_names.push_back(bl.first);
-      int n = bl.second.size();
+    // Allocate (empty) two particle greens functions
 
-      index_visitor iv;
-      for (auto &ind : bl.second) { apply_visitor(iv, ind); }
-      std::vector<std::vector<std::string>> indices{{iv.indices, iv.indices}};
+      // empty meshes (zero mesh pts)
+      gf_mesh<imfreq> fermi_iw_mesh{beta, Fermion, 0};
+      gf_mesh<imfreq> bose_iw_mesh{beta, Boson, 0}; 
+      gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, 0}; 
+      
+      gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
+      gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
-      g0_iw_blocks.push_back(gf<imfreq>{{beta, Fermion, n_iw}, {n, n}, indices});
-      g_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-      g_l_blocks.push_back(gf<legendre>{{beta, Fermion, static_cast<size_t>(n_l)}, {n, n}, indices}); // FIXME: cast is ugly
-      delta_tau_blocks.push_back(gf<imtime>{{beta, Fermion, n_tau}, {n, n}, indices});
-      g_tau_accum_blocks.push_back(gf<imtime, delta_target_t>{{beta, Fermion, n_tau}, {n, n}});
-    }
+      _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
+      _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
 
-    _G0_iw       = make_block_gf(block_names, g0_iw_blocks);
-    _G_tau       = make_block_gf(block_names, g_tau_blocks);
-    _G_l         = make_block_gf(block_names, g_l_blocks);
-    _Delta_tau   = make_block_gf(block_names, delta_tau_blocks);
-    _G_tau_accum = make_block_gf(block_names, g_tau_accum_blocks);
+      _G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
+      _G2_iw_l_lp_ph = make_block2_gf(g2_leg_mesh, gf_struct);
 
-#ifdef MEASURE_G2
-    // Fill G^2 containers with empty blocks
-    using g2_inu_v_t = std::vector<g2_iw_inu_inup_block_t>;
-    std::vector<g2_inu_v_t> g2_inu_blocks(gf_struct.size(), g2_inu_v_t(gf_struct.size()));
-    _G2_iw_inu_inup_pp    = make_block2_gf(block_names, block_names, g2_inu_blocks);
-    _G2_iw_inu_inup_ph    = make_block2_gf(block_names, block_names, g2_inu_blocks);
-    using g2_legendre_v_t = std::vector<g2_iw_l_lp_block_t>;
-    std::vector<g2_legendre_v_t> g2_legendre_blocks(gf_struct.size(), g2_legendre_v_t(gf_struct.size()));
-    _G2_iw_l_lp_pp = make_block2_gf(block_names, block_names, g2_legendre_blocks);
-    _G2_iw_l_lp_ph = make_block2_gf(block_names, block_names, g2_legendre_blocks);
-#endif
   }
 
   /// -------------------------------------------------------------------------------------------
@@ -211,7 +196,10 @@ namespace cthyb {
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
     auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, 1.0, params.verbosity);
 
+    // --------------------------------------------------------------------------
     // Moves
+    // --------------------------------------------------------------------------
+    
     using move_set_type = mc_tools::move_set<mc_weight_t>;
     move_set_type inserts(qmc.get_rng());
     move_set_type removes(qmc.get_rng());
@@ -223,6 +211,7 @@ namespace cthyb {
       auto f = params.proposal_prob.find(block_name);
       return (f != params.proposal_prob.end() ? f->second : 1.0);
     };
+    
     for (size_t block = 0; block < _Delta_tau.size(); ++block) {
       int block_size         = _Delta_tau[block].data().shape()[1];
       auto const &block_name = delta_names[block];
@@ -262,6 +251,12 @@ namespace cthyb {
       }
       qmc.add_move(std::move(global), "Global moves", params.move_global_prob);
     }
+
+    // --------------------------------------------------------------------------
+    // Measurements
+    // --------------------------------------------------------------------------
+
+    // Two-particle correlators
 
 #ifdef MEASURE_G2
     if (params.measure_g2_inu || params.measure_g2_legendre) {
@@ -349,7 +344,8 @@ namespace cthyb {
     }
 #endif
 
-    // Measurements
+    // Single-particle correlators
+    
     if (params.measure_g_tau) {
       auto &g_names = _G_tau.block_names();
       for (size_t block = 0; block < _G_tau.size(); ++block) {
@@ -362,6 +358,8 @@ namespace cthyb {
         qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
       }
     }
+
+    // Other measurements
     if (params.measure_pert_order) {
       auto &g_names = _G_tau.block_names();
       for (size_t block = 0; block < _G_tau.size(); ++block) {
@@ -379,6 +377,8 @@ namespace cthyb {
 
     qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
 
+    // --------------------------------------------------------------------------
+    
     // Run! The empty (starting) configuration has sign = 1
     _solve_status =
        qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));

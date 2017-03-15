@@ -31,7 +31,6 @@
 
 #cmakedefine HYBRIDISATION_IS_COMPLEX
 #cmakedefine LOCAL_HAMILTONIAN_IS_COMPLEX
-#cmakedefine MEASURE_G2
 
 namespace cthyb {
 
@@ -68,17 +67,5 @@ using mc_weight_t = decltype(h_scalar_t{} * det_scalar_t{});                    
 using many_body_op_t = triqs::operators::many_body_operator_generic<h_scalar_t>; // Operator with real or complex value
 using matrix_t = matrix<h_scalar_t>;
 using g_target_t = std14::conditional_t<triqs::is_complex<mc_weight_t>::value, matrix_valued, matrix_real_valued>;
-
-#ifdef MEASURE_G2
-using g2_iw_inu_inup_t = block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>;
-using g2_iw_l_lp_t = block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
-using g2_iw_inu_inup_view = block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>;
-using g2_iw_l_lp_view = block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
-
-using g2_iw_inu_inup_block_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>;
-using g2_iw_l_lp_block_t = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
-using g2_iw_inu_inup_block_view = gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>;
-using g2_iw_l_lp_block_view = gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
-#endif
 
 }

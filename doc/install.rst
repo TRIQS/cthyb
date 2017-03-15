@@ -70,8 +70,6 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
 +---------------------------------------------------------------+-----------------------------------+
 | Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON |
 +---------------------------------------------------------------+-----------------------------------+
-| Enable the two-particle Green's function measurement          | -DMEASURE_G2=ON                   |
-+---------------------------------------------------------------+-----------------------------------+
 | Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                    |
 +---------------------------------------------------------------+-----------------------------------+
 | Save visited configurations to configs.h5 (*developers only*) | -DSAVE_CONFIGS=ON                 |

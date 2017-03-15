@@ -11,10 +11,9 @@ set(LIBRARY_SOURCES
     moves/global.cpp
     moves/double_insert.cpp
     moves/double_remove.cpp
-    measures/density_matrix.cpp)
-if(MEASURE_G2)
- set(LIBRARY_SOURCES ${LIBRARY_SOURCES} measures/g2_inu.cpp measures/g2_legendre.cpp)
-endif(MEASURE_G2)
+    measures/density_matrix.cpp
+    measures/g2_inu.cpp
+    measures/g2_legendre.cpp)
 
 add_library(cthyb_c ${LIBRARY_SOURCES})
 

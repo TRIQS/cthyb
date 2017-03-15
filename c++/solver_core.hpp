@@ -89,16 +89,16 @@ namespace cthyb {
     block_gf_view<legendre> G_l() { return _G_l; }
 
     /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
-    g2_iw_inu_inup_view G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
+    block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
 
     /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
-    g2_iw_inu_inup_view G2_iw_inu_inup_ph() { return _G2_iw_inu_inup_ph; }
+    block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_ph() { return _G2_iw_inu_inup_ph; }
 
     /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
-    g2_iw_l_lp_view G2_iw_l_lp_pp() { return _G2_iw_l_lp_pp; }
+    block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_pp() { return _G2_iw_l_lp_pp; }
 
     /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
-    g2_iw_l_lp_view G2_iw_l_lp_ph() { return _G2_iw_l_lp_ph; }
+    block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_ph() { return _G2_iw_l_lp_ph; }
 
     /// Atomic :math:`G(\tau)` in imaginary time.
     block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _G_tau[0].mesh().size()); }

@@ -282,15 +282,15 @@ namespace cthyb {
       if (!params.measure_g2_pp && !params.measure_g2_ph)
         TRIQS_RUNTIME_ERROR << "You must switch on at least one of measure_g2_pp and measure_g2_ph!";
 
-      auto const &delta_names = _Delta_tau.domain().names();
+      auto const &delta_names = _Delta_tau.block_names();
       for (int b1 = 0; b1 < delta_names.size(); ++b1) {
         for (int b2 = 0; b2 < delta_names.size(); ++b2) {
           auto const &bn1 = delta_names[b1];
           auto const &bn2 = delta_names[b2];
           if (!g2_blocks_to_measure.count({bn1, bn2})) continue;
 
-          int s1 = get_target_shape(_Delta_tau[b1])[0];
-          int s3 = get_target_shape(_Delta_tau[b2])[0];
+          int s1 = _Delta_tau[b1].target_shape()[0];
+          int s3 = _Delta_tau[b2].target_shape()[0];
           int s2 = params.measure_g2_block_order == AABB ? s1 : s3;
           int s4 = params.measure_g2_block_order == AABB ? s3 : s1;
 
@@ -305,7 +305,7 @@ namespace cthyb {
           if (params.measure_g2_inu) {
             int n_inu = params.measure_g2_n_inu;
             if (params.measure_g2_pp) {
-              auto &block = _G2_iw_inu_inup_pp[{b1, b2}];
+              auto &block = _G2_iw_inu_inup_pp(b1, b2);
               block       = g2_iw_inu_inup_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data), make_measure_name(false, PP, AABB));
@@ -314,7 +314,7 @@ namespace cthyb {
             }
 
             if (params.measure_g2_ph) {
-              auto &block = _G2_iw_inu_inup_ph[{b1, b2}];
+              auto &block = _G2_iw_inu_inup_ph(b1, b2);
               block       = g2_iw_inu_inup_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data), make_measure_name(false, PH, AABB));
@@ -327,7 +327,7 @@ namespace cthyb {
           if (params.measure_g2_legendre) {
             size_t n_l = params.measure_g2_n_l;
             if (params.measure_g2_pp) {
-              auto &block = _G2_iw_l_lp_pp[{b1, b2}];
+              auto &block = _G2_iw_l_lp_pp(b1, b2);
               block       = g2_iw_l_lp_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data), make_measure_name(true, PP, AABB));
@@ -336,7 +336,7 @@ namespace cthyb {
             }
 
             if (params.measure_g2_ph) {
-              auto &block = _G2_iw_l_lp_ph[{b1, b2}];
+              auto &block = _G2_iw_l_lp_ph(b1, b2);
               block       = g2_iw_l_lp_block_t{{{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data), make_measure_name(true, PH, AABB));

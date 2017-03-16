@@ -41,15 +41,16 @@ namespace cthyb {
     z    = 0;
     num  = 0;
 
-    using triqs::experimental::nfft_matrix_t;
+    using triqs::experimental::nfft_array_t;
 
+    const double beta = data.config.beta();
     if (Order == AABB || diag_block) {
-      nfft_matrix_ab = nfft_matrix_t(size_A, size_A, data.config.beta(), n_inu, n_iw - 1 + n_inu);
-      nfft_matrix_cd = nfft_matrix_t(size_B, size_B, data.config.beta(), n_iw - 1 + n_inu, n_inu);
+      nfft_matrix_ab = nfft_array_t<2, 2>({{beta, Fermion, n_inu}, {beta, Fermion, n_iw - 1 + n_inu}}, {size_A, size_A});
+      nfft_matrix_cd = nfft_array_t<2, 2>({{beta, Fermion, n_iw - 1 + n_inu}, {beta, Fermion, n_inu}}, {size_B, size_B});
     }
     if (Order == ABBA || diag_block) {
-      nfft_matrix_ad = nfft_matrix_t(size_A, size_A, data.config.beta(), n_inu, n_inu);
-      nfft_matrix_cb = nfft_matrix_t(size_B, size_B, data.config.beta(), n_iw - 1 + n_inu, n_iw - 1 + n_inu);
+      nfft_matrix_ad = nfft_array_t<2, 2>({{beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {size_A, size_A});
+      nfft_matrix_cb = nfft_array_t<2, 2>({{beta, Fermion, n_iw - 1 + n_inu}, {beta, Fermion, n_iw - 1 + n_inu}}, {size_B, size_B});
     }
   }
 
@@ -64,9 +65,10 @@ namespace cthyb {
     auto const &det_B = data.dets[B];
     if (det_A.size() == 0 || det_B.size() == 0) return;
 
-    auto nfft_fill = [this](det_type const &det, triqs::experimental::nfft_matrix_t &nfft_matrix) {
+    auto nfft_fill = [this](det_type const &det, triqs::experimental::nfft_array_t<2, 2> &nfft_matrix) {
       foreach (det,
-               [&nfft_matrix](std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y, det_scalar_t M) { nfft_matrix.push_back(x, y, M); })
+               [&nfft_matrix](std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y, det_scalar_t M) {
+               nfft_matrix.push_back({double(x.first), double(y.first)}, {x.second, y.second}, M); })
         ;
     };
 

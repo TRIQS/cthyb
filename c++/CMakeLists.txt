@@ -14,8 +14,7 @@ set(LIBRARY_SOURCES
     measures/density_matrix.cpp
     measures/g2_tau.cpp
     measures/g2_inu.cpp
-    measures/g2_legendre.cpp
-    triqs/experimental/nfft_matrix.cpp)
+    measures/g2_legendre.cpp)
 
 add_library(cthyb_c ${LIBRARY_SOURCES})
 

@@ -49,7 +49,7 @@ namespace triqs {
 
     using dcomplex = std::complex<double>;
 
-    // NFFT buffer for tensor-valued functions
+    // NFFT buffer
     template <int Rank> class nfft_buf_t {
 
       template <typename = std::make_index_sequence<Rank>> struct imfreq_product;

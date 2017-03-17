@@ -88,10 +88,10 @@ namespace triqs {
       template <size_t... Is> inline void transform_impl(mini_vector<int, TargetRank> const &ind_arr, std14::index_sequence<Is...>) {
         auto &buf = select_buffer(ind_arr, std14::make_index_sequence<TargetRank>());
         if (buf.is_empty()) {
-          slice_target_to_scalar(result, ind_arr[Is]...) = 0;
+          result.data()(ellipsis(), ind_arr[Is]...) = 0;
         } else {
           buf.flush();
-          buf.fill_gf(slice_target_to_scalar(result, ind_arr[Is]...));
+          buf.fill_array(result.data()(ellipsis(), ind_arr[Is]...));
         }
       }
 

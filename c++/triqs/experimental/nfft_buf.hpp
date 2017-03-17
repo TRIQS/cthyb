@@ -132,9 +132,7 @@ namespace triqs {
         buf_counter = 0;
       }
 
-      template <typename... GF> void fill_gf(gf_view<GF...> g) {
-        assert(g.mesh() == fiw_mesh);
-        auto &data = g.data();
+      void fill_array(array_view<dcomplex, Rank> data) {
         if (all_fermion) {
           int count = 0;
           for (auto it = data.begin(); it != data.end(); ++it, ++count) {

@@ -66,7 +66,7 @@ void Nfft::test_equid() {
  }
  buf_equid.push_back({beta - 1e-10}, 0.5 * f(beta - 1e-10));
 
- buf_equid.fill_gf(slice_target_to_scalar(giw_nfft_equid,0,0));
+ buf_equid.fill_array(giw_nfft_equid.data()(ellipsis(),0,0));
 
  // normalize, and care for half-points at 0^+ and \beta^-
  giw_nfft_equid *= beta / (n_tau - 1);
@@ -100,7 +100,7 @@ void Nfft::test_equid() {
  // Care to flush remaining points since 10000 is not an even multiple of 4000
  buf_multi.flush();
 
- buf_equid.fill_gf(slice_target_to_scalar(giw_nfft_multi,0,0));
+ buf_equid.fill_array(giw_nfft_multi.data()(ellipsis(),0,0));
 
  // normalize, and care for half-points at 0^+ and \beta^-
  giw_nfft_multi *= beta / (n_tau - 1);
@@ -168,7 +168,7 @@ void Nfft::test_rng() {
   buf_rng.push_back({tau}, f(tau));
  }
 
- buf_rng.fill_gf(slice_target_to_scalar(giw_nfft_rng,0,0));
+ buf_rng.fill_array(giw_nfft_rng.data()(ellipsis(),0,0));
 
  // normalize
  giw_nfft_rng *= beta / n_tau;
@@ -246,7 +246,7 @@ void Nfft::test_2d() {
   buf_2d.push_back({beta - 1e-10, tau_j}, 0.5 * f_tau(beta - 1e-10) * b_tau(tau_j));
  }
  // ====
- buf_2d.fill_gf(giw_nfft_2d());
+ buf_2d.fill_array(giw_nfft_2d.data()(ellipsis()));
 
  // normalize, care for half-points at 0^+ and \beta^-
  giw_nfft_2d *= beta * beta / (n_tau - 1) / (n_tau - 1);

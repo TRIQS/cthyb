@@ -22,8 +22,8 @@
 
 #include <vector>
 #include <triqs/mpi/base.hpp>
-#include <triqs/clef.hpp>
-#include <triqs/experimental/nfft_array.hpp>
+#include <triqs/statistics/histograms.hpp>
+#include "../nfft_array.hpp"
 #include "../qmc_data.hpp"
 
 namespace cthyb {
@@ -46,10 +46,10 @@ namespace cthyb {
     int64_t num;
 
     // Objects that perform 2D NFFT transforms
-    triqs::experimental::nfft_array_t<2, 2> nfft_matrix_ab, nfft_matrix_cd;
-    triqs::experimental::nfft_array_t<2, 2> nfft_matrix_ad, nfft_matrix_cb;
+    nfft_array_t<2, 2> nfft_matrix_ab, nfft_matrix_cd;
+    nfft_array_t<2, 2> nfft_matrix_ad, nfft_matrix_cb;
 
-    measure_g2_inu(int A, int B, g2_view_type g2, qmc_data const &data);
+    measure_g2_inu(int A, int B, g2_view_type g2, qmc_data const &data, int buf_size_A, int buf_size_B);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
   };

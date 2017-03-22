@@ -56,7 +56,8 @@ void Nfft::test_equid() {
  auto giw_nfft_equid = gf<imfreq>{{beta, stat, n_iw}, shape};
 
  // nfft_buffer
- nfft_buf_t<1> buf_equid(giw_nfft_equid.mesh(), buf_size, true);
+ nfft_buf_t<1> buf_equid(giw_nfft_equid.mesh(), giw_nfft_equid.data()(ellipsis(),0,0),
+                         buf_size, true);
 
  // Generate data with equidistant \tau-grid (care for weights at beginning and end)
  buf_equid.push_back({0.0}, 0.5 * f(0.0));
@@ -65,8 +66,6 @@ void Nfft::test_equid() {
   buf_equid.push_back({tau}, f(tau));
  }
  buf_equid.push_back({beta - 1e-10}, 0.5 * f(beta - 1e-10));
-
- buf_equid.fill_array(giw_nfft_equid.data()(ellipsis(),0,0));
 
  // normalize, and care for half-points at 0^+ and \beta^-
  giw_nfft_equid *= beta / (n_tau - 1);
@@ -86,7 +85,8 @@ void Nfft::test_equid() {
  auto giw_nfft_multi = gf<imfreq>{{beta, stat, n_iw}, shape};
 
  // nfft_buffer with size 4000 = 2 * buf_size / 5
- nfft_buf_t<1> buf_multi(giw_nfft_multi.mesh(), 2 * buf_size / 5, true);
+ nfft_buf_t<1> buf_multi(giw_nfft_multi.mesh(), giw_nfft_multi.data()(ellipsis(),0,0),
+                         2 * buf_size / 5, true);
 
  // Generate data with equidistant \tau-grid (care for weights at beginning and end)
  // Buffer performs multiple transforms as buf_size < n_tau
@@ -99,8 +99,6 @@ void Nfft::test_equid() {
 
  // Care to flush remaining points since 10000 is not an even multiple of 4000
  buf_multi.flush();
-
- buf_equid.fill_array(giw_nfft_multi.data()(ellipsis(),0,0));
 
  // normalize, and care for half-points at 0^+ and \beta^-
  giw_nfft_multi *= beta / (n_tau - 1);
@@ -160,15 +158,14 @@ void Nfft::test_rng() {
 
  // nfft_buffer
  n_tau = 1e+6;
- nfft_buf_t<1> buf_rng(giw_nfft_rng.mesh(), buf_size, true);
+ nfft_buf_t<1> buf_rng(giw_nfft_rng.mesh(), giw_nfft_rng.data()(ellipsis(),0,0),
+                       buf_size, true);
 
  // Generate values at random tau points
  for (int i = 0; i < n_tau; ++i) {
   double tau = double(distribution(generator)) * beta;
   buf_rng.push_back({tau}, f(tau));
  }
-
- buf_rng.fill_array(giw_nfft_rng.data()(ellipsis(),0,0));
 
  // normalize
  giw_nfft_rng *= beta / n_tau;
@@ -220,7 +217,8 @@ void Nfft::test_2d() {
                     {{{beta, Fermion, n_iw_f}, {beta, Boson, n_iw_b}}, {}};
 
  // nfft_buffer
- nfft_buf_t<2> buf_2d(giw_nfft_2d.mesh(), buf_size, true);
+ nfft_buf_t<2> buf_2d(giw_nfft_2d.mesh(), giw_nfft_2d.data(),
+                      buf_size, true);
 
  // ==== Generate 2d data with equidistant \tau-grids (care for weights at edges and corners)
  // Corner Points with weight 0.25
@@ -246,7 +244,6 @@ void Nfft::test_2d() {
   buf_2d.push_back({beta - 1e-10, tau_j}, 0.5 * f_tau(beta - 1e-10) * b_tau(tau_j));
  }
  // ====
- buf_2d.fill_array(giw_nfft_2d.data()(ellipsis()));
 
  // normalize, care for half-points at 0^+ and \beta^-
  giw_nfft_2d *= beta * beta / (n_tau - 1) / (n_tau - 1);

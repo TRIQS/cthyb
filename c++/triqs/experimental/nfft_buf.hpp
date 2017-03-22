@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <cmath>
 #include <array>
 #include <numeric>
 #include <utility>
@@ -35,14 +36,7 @@
 #endif
 
 namespace triqs {
-  namespace experimental {
-
-    // FIXME: remove when merged into TRIQS library master
-    template <typename T, int Rank> T sum(triqs::arrays::mini_vector<T, Rank> const &a) {
-      T res = {};
-      for (int i = 0; i < Rank; ++i) res += a[i];
-      return res;
-    }
+namespace experimental {
 
     using namespace triqs::arrays;
     using namespace triqs::gfs;
@@ -58,8 +52,8 @@ namespace triqs {
       public:
       using freq_mesh_t = gf_mesh<typename imfreq_product<>::type>;
 
-      nfft_buf_t(freq_mesh_t const &fiw_mesh, int buf_size, bool do_checks = false)
-         : fiw_mesh(fiw_mesh), plan_ptr(std::make_unique<nfft_plan>()), buf_counter(0), buf_size(buf_size), do_checks(do_checks) {
+      nfft_buf_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, Rank> fiw_arr, int buf_size, bool do_checks = false)
+         : fiw_mesh(fiw_mesh), fiw_arr(fiw_arr), plan_ptr(std::make_unique<nfft_plan>()), buf_counter(0), buf_size(buf_size), do_checks(do_checks) {
 
         // Initialize NFFT plans
         all_fermion   = true;
@@ -82,6 +76,7 @@ namespace triqs {
       }
 
       ~nfft_buf_t() {
+        if (buf_counter != 0) std::cerr << " WARNING: Points in NFFT Buffer lost \n";
         if (plan_ptr) nfft_finalize(plan_ptr.get());
       }
 
@@ -91,9 +86,19 @@ namespace triqs {
       nfft_buf_t &operator=(nfft_buf_t const &) = delete;
       nfft_buf_t &operator=(nfft_buf_t &&) = default;
 
+      /// Rebind nfft buffer to new accumulation container of same shape
+      void rebind(array_view<dcomplex, Rank> new_fiw_arr) {
+        flush();
+        assert(get_shape(new_fiw_arr) == get_shape(fiw_arr) ||
+               get_shape(fiw_arr) == get_shape(array_view<dcomplex, Rank>{}));
+        fiw_arr.rebind(new_fiw_arr);
+      }
+
       // Insert tau-vector {\tau_1, \tau_2, ... } \in [0,\beta_1)x[0,\beta_2)x...
       // and the corresponding f(tau) into the NFFT buffer
       void push_back(std::array<double, Rank> const &tau_arr, dcomplex ftau) {
+
+        assert(plan_ptr);
 
         // Write the set of shifted and normalized tau values (i. e. x values) to
         // the NFFT buffer and sum \tau/\beta for fermions
@@ -123,6 +128,11 @@ namespace triqs {
 
       /// Flush contents of the nfft buffer
       void flush() {
+
+        assert(plan_ptr);
+
+        if(is_empty()) return;
+
         // Trivial initialization of the remaining points
         for (int i = buf_counter; i < buf_size; ++i) {
           fx_arr()[i] = 0.0;
@@ -132,22 +142,6 @@ namespace triqs {
         buf_counter = 0;
       }
 
-      void fill_array(array_view<dcomplex, Rank> data) {
-        if (all_fermion) {
-          int count = 0;
-          for (auto it = data.begin(); it != data.end(); ++it, ++count) {
-            int factor = (sum(it.indices()) % 2 ? -1 : 1);
-            *it        = fk_arr()[count] * factor * common_factor;
-          }
-        } else {
-          for (auto it = data.begin(); it != data.end(); ++it) {
-            long count = nfft_indexmap[it.indices() + index_shifts];
-            int factor = (sum(it.indices()) % 2 ? -1 : 1);
-            *it        = fk_arr()[count] * factor * common_factor;
-          }
-        }
-      }
-
       // Function to check whether buffer is empty
       bool is_empty() const { return buf_counter == 0; }
 
@@ -155,8 +149,12 @@ namespace triqs {
       bool is_full() const { return buf_counter >= buf_size; }
 
       private:
+
       // Imaginary frequency (multi-)mesh
       freq_mesh_t fiw_mesh;
+
+      // TRIQS array to contain the final NFFT output in matsubara frequencies
+      array_view<dcomplex, Rank> fiw_arr;
 
       // Are all mesh components fermionic?
       bool all_fermion;
@@ -207,6 +205,21 @@ namespace triqs {
 
         // Execute transform
         nfft_adjoint(plan_ptr.get());
+
+        // Accumulate results in fiw_arr. Care to normalize results afterwards
+        if (all_fermion) {
+          int count = 0;
+          for (auto it = fiw_arr.begin(); it != fiw_arr.end(); ++it, ++count) {
+            int factor = (sum(it.indices()) % 2 ? -1 : 1);
+            *it        += fk_arr()[count] * factor * common_factor;
+          }
+        } else {
+          for (auto it = fiw_arr.begin(); it != fiw_arr.end(); ++it) {
+            int count = nfft_indexmap[it.indices() + index_shifts];
+            int factor = (sum(it.indices()) % 2 ? -1 : 1);
+            *it        += fk_arr()[count] * factor * common_factor;
+          }
+        }
       }
     };
   }

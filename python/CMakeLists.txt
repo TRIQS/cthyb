@@ -18,3 +18,6 @@ install(TARGETS cthyb DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${python_destina
 # add version file
 configure_file(version.py.in version.py)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${python_destination})
+
+# Install utilities
+install(FILES util.py DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${python_destination})

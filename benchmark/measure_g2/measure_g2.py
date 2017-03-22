@@ -4,6 +4,7 @@ from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.applications.impurity_solvers.cthyb import *
+from pytriqs.applications.impurity_solvers.cthyb.util import estimate_nfft_buf_size
 from pytriqs.gf.local import *
 import numpy as np
 
@@ -37,6 +38,11 @@ p["use_norm_as_weight"] = True
 p["measure_density_matrix"] = False
 p["measure_g_tau"] = False
 p["measure_g_l"] = False
+
+# Parameters for the preliminary run
+p_pre = p.copy()
+p_pre["measure_pert_order"] = True
+
 p["measure_g2_inu"] = True
 p["measure_g2_legendre"] = True
 p["measure_g2_pp"] = True
@@ -75,9 +81,13 @@ for e, v in zip(epsilon,V):
 
 S.G0_iw << inverse(iOmega_n + mu - delta_w)
 
-mpi.report("Running the simulation...")
-
 # Solve the problem
+mpi.report("Preliminary run...")
+S.solve(h_int=H, **p_pre)
+
+p["nfft_buf_sizes"] = estimate_nfft_buf_size(gf_struct, S.perturbation_order)
+
+mpi.report("Running the simulation...")
 S.solve(h_int=H, **p)
 
 # Check shapes of g2 containers

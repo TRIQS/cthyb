@@ -100,6 +100,10 @@ namespace cthyb {
     /// Number of Legendre coefficients for G^2(iomega,l,l') measurement.
     int measure_g2_n_l = 20;
 
+    /// NFFT buffer sizes for different blocks
+    /// default: 100 for every block
+    std::map<std::string, int> nfft_buf_sizes = (std::map<std::string, int>{});
+
     /// Measure perturbation order?
     bool measure_pert_order = false;
 

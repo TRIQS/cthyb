@@ -290,10 +290,20 @@ namespace cthyb {
           int s2 = params.measure_g2_block_order == AABB ? s1 : s3;
           int s4 = params.measure_g2_block_order == AABB ? s3 : s1;
 
-          auto make_measure_name = [&bn1, &bn2](std::string type, g2_channel channel, block_order bo) {
-            return std::string("G^2 measure, ") + type + ", " + (channel == PP ? "pp" : "ph")
-               + (bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") : (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")"));
-          };
+          struct {
+            std::string bn1, bn2;
+            auto block_quadruple(block_order bo) const {
+              return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") :
+                                  (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
+            }
+            auto operator()(imtime, block_order bo) { return std::string("G^2 measure, ImTime") + block_quadruple(bo); }
+            auto operator()(imfreq, g2_channel channel, block_order bo) {
+              return std::string("G^2 measure, Matsubara, ") + (channel == PP ? "pp" : "ph") + block_quadruple(bo);
+            }
+            auto operator()(legendre, g2_channel channel, block_order bo) {
+              return std::string("G^2 measure, Legendre, ") + (channel == PP ? "pp" : "ph") + block_quadruple(bo);
+            }
+          } make_measure_name {bn1, bn2};
 
           // Imaginary time measurements
           if (params.measure_g2_tau) {
@@ -301,9 +311,9 @@ namespace cthyb {
             auto &block = _G2_tau(b1, b2);
 	    block = gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>{
 	      {{beta, Fermion, n_tau}, {beta, Fermion, n_tau}, {beta, Fermion, n_tau}}, {s1, s2, s3, s4}};
-            qmc.add_measure(measure_g2_tau(b1, b2, block, data), make_measure_name("ImTime", PP, AABB));
+            qmc.add_measure(measure_g2_tau(b1, b2, block, data), make_measure_name(imtime(), AABB));
           }
-	  
+
           int n_iw = params.measure_g2_n_iw;
 
           // Matsubara measurements
@@ -314,9 +324,9 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data), make_measure_name("Matsubara", PP, AABB));
+                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data), make_measure_name(imfreq(), PP, AABB));
               else
-                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data), make_measure_name("Matsubara", PP, ABBA));
+                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data), make_measure_name(imfreq(), PP, ABBA));
             }
 
             if (params.measure_g2_ph) {
@@ -324,9 +334,9 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data), make_measure_name("Matsubara", PH, AABB));
+                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data), make_measure_name(imfreq(), PH, AABB));
               else
-                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data), make_measure_name("Matsubara", PH, ABBA));
+                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data), make_measure_name(imfreq(), PH, ABBA));
             }
           }
 
@@ -338,9 +348,9 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data), make_measure_name("Legendre", PP, AABB));
+                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data), make_measure_name(legendre(), PP, AABB));
               else
-                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data), make_measure_name("Legendre", PP, ABBA));
+                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data), make_measure_name(legendre(), PP, ABBA));
             }
 
             if (params.measure_g2_ph) {
@@ -348,9 +358,9 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data), make_measure_name("Legendre", PH, AABB));
+                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data), make_measure_name(legendre(), PH, AABB));
               else
-                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data), make_measure_name("Legendre", PH, ABBA));
+                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data), make_measure_name(legendre(), PH, ABBA));
             }
         }
       }

@@ -18,23 +18,20 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 r"""
-DOC
-
+Utility functions
 """
-from cthyb_solver import Solver
-from cthyb import SolverCore
-from cthyb import (AtomDiag,
-                   partition_function,
-                   atomic_density_matrix,
-                   atomic_gf, trace_rho_op, act,
-                   quantum_number_eigenvalues,
-                   quantum_number_eigenvalues2)
-from util import estimate_nfft_buf_size
+from math import ceil
+from numpy import argmax
 
-__all__ = ['Solver', 'SolverCore',
-           'AtomDiag', 'partition_function', 'atomic_density_matrix',
-           'atomic_gf', 'trace_rho_op', 'act',
-           'quantum_number_eigenvalues', 'quantum_number_eigenvalues2',
-           'estimate_nfft_buf_size']
+def estimate_nfft_buf_size(gf_struct, pert_order_histograms):
+    buf_sizes = {}
+    for bn in gf_struct:
+        if not bn in pert_order_histograms:
+            raise RuntimeError("estimate_nfft_buf_size: no histogram for block '%s' is provided" % bn)
+        else:
+            max_order = argmax(pert_order_histograms[bn].data)
+            block_size = len(gf_struct[bn])
+            buf_sizes[bn] = int(max(ceil((max_order * max_order) / (block_size * block_size)), 1))
+
+    return buf_sizes

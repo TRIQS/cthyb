@@ -319,14 +319,20 @@ namespace cthyb {
           // Matsubara measurements
           if (params.measure_g2_inu) {
             int n_inu = params.measure_g2_n_inu;
+
+            int buf_size1 = params.nfft_buf_sizes.count(bn1) ? params.nfft_buf_sizes.count(bn1) : 100;
+            int buf_size2 = params.nfft_buf_sizes.count(bn2) ? params.nfft_buf_sizes.count(bn2) : 100;
+
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_inu_inup_pp(b1, b2);
               block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data), make_measure_name(imfreq(), PP, AABB));
+                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(imfreq(), PP, AABB));
               else
-                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data), make_measure_name(imfreq(), PP, ABBA));
+                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(imfreq(), PP, ABBA));
             }
 
             if (params.measure_g2_ph) {
@@ -334,9 +340,11 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data), make_measure_name(imfreq(), PH, AABB));
+                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(imfreq(), PH, AABB));
               else
-                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data), make_measure_name(imfreq(), PH, ABBA));
+                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(imfreq(), PH, ABBA));
             }
           }
 

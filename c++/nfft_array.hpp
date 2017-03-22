@@ -25,12 +25,12 @@
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/experimental/nfft_buf.hpp>
 
-namespace triqs {
-
-  namespace experimental {
+namespace cthyb {
 
     using namespace triqs::arrays;
+    using namespace triqs::gfs;
     using triqs::utility::time_pt;
+    using triqs::experimental::nfft_buf_t;
 
     // NFFT transform of an array-valued function of MeshRank tau arguments
     template <int MeshRank, int TargetRank> class nfft_array_t {
@@ -43,28 +43,19 @@ namespace triqs {
 
       // fiw_mesh - Matsubara frequency mesh
       // shape - target shape
-      nfft_array_t(freq_mesh_t const &fiw_mesh, mini_vector<int, TargetRank> const &shape) : indexmap(shape), max_n_tau(1), result(fiw_mesh, shape) {
-        long n = result.data().domain().number_of_elements();
+      nfft_array_t(freq_mesh_t const &fiw_mesh, mini_vector<int, TargetRank> const &shape, array<int, TargetRank> const &buf_sizes) :
+      // FORTRAN_LAYOUT ensures that every nfft_buf receives a contiguous view
+      indexmap(shape), result(fiw_mesh, shape, FORTRAN_LAYOUT) {
+        auto & data = result.data();
+        long n = data.domain().number_of_elements();
         buffers.reserve(n);
-        for (int i : range(n))
+        foreach(buf_sizes, [this, &data, &buf_sizes](auto... ind) {
 #ifdef NDEBUG
-          buffers.emplace_back(result.mesh(), max_n_tau, false);
+          buffers.emplace_back(result.mesh(), data(ellipsis(), ind...), buf_sizes(ind...), false);
 #else
-          buffers.emplace_back(result.mesh(), max_n_tau, true);
+          buffers.emplace_back(result.mesh(), data(ellipsis(), ind...), buf_sizes(ind...), true);
 #endif
-      }
-
-      // Resize all NFFT buffers if their capacity is insufficient
-      void resize_bufs(int n_tau) {
-        if (n_tau > max_n_tau) {
-          max_n_tau = n_tau;
-          for (auto &buf : buffers)
-#ifdef NDEBUG
-            buf = {result.mesh(), max_n_tau, false};
-#else
-            buf = {result.mesh(), max_n_tau, true};
-#endif
-        }
+        });
       }
 
       // Add a new element to the NFFT buffer
@@ -73,33 +64,20 @@ namespace triqs {
       }
 
       // Run transformation
-      void transform() {
-        for (auto const &ind_arr : indexmap.domain()) { transform_impl(ind_arr, std14::make_index_sequence<TargetRank>()); }
+      void flush() {
+        for (auto & buf : buffers) buf.flush();
       }
 
       // Access the result g_{ab...}(iw_1, iw_2, ...)
-      res_gf_t const &operator()() { return result; }
+      res_gf_t &operator()() { return result; }
 
       private:
       template <size_t... Is> inline nfft_buf_t<MeshRank> &select_buffer(mini_vector<int, TargetRank> const &ind_arr, std14::index_sequence<Is...>) {
         return buffers[indexmap(ind_arr[Is]...)];
       }
 
-      template <size_t... Is> inline void transform_impl(mini_vector<int, TargetRank> const &ind_arr, std14::index_sequence<Is...>) {
-        auto &buf = select_buffer(ind_arr, std14::make_index_sequence<TargetRank>());
-        if (buf.is_empty()) {
-          result.data()(ellipsis(), ind_arr[Is]...) = 0;
-        } else {
-          buf.flush();
-          buf.fill_array(result.data()(ellipsis(), ind_arr[Is]...));
-        }
-      }
-
       // Index map for the target array
       indexmaps::cuboid::map<TargetRank> indexmap;
-
-      // Maximum number of tau-pairs over all elements
-      int max_n_tau;
 
       // NFFT buffers
       std::vector<nfft_buf_t<MeshRank>> buffers;
@@ -107,5 +85,4 @@ namespace triqs {
       // NFFT transformation result
       res_gf_t result;
     };
-  }
 }

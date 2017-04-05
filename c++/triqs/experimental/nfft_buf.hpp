@@ -28,12 +28,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 
-#define NFFT_PRECISION_DOUBLE
-#ifdef DNFFT_OLD_API
 #include <nfft3.h>
-#else
-#include <nfft3mp.h>
-#endif
 
 namespace triqs {
 namespace experimental {

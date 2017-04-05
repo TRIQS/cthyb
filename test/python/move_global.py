@@ -1,6 +1,6 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.observables import S_op

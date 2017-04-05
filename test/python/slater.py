@@ -5,7 +5,7 @@ from pytriqs.operators.util.U_matrix import U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 
 beta = 100.0

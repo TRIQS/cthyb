@@ -1,5 +1,5 @@
 import numpy as np
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, atomic_gf
 from pytriqs.utility.comparison_tests import *

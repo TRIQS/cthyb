@@ -2,7 +2,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import numpy as np
 
 # Input parameters

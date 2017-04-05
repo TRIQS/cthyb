@@ -5,7 +5,7 @@ from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.statistics.histograms import Histogram
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import numpy as np
 
 spin_names = ("up","dn")

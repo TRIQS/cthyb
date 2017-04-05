@@ -1,6 +1,6 @@
 import numpy as np
 from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, atomic_gf
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.archive import HDFArchive

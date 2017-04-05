@@ -6,7 +6,7 @@ from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.operators.util.observables import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 beta = 100.0
 # H_int parameters

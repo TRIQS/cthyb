@@ -6,8 +6,6 @@ from wrap_generator import *
 module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver")
 
 # All the triqs C++/Python modules
-module.use_module('gf', 'triqs')
-module.use_module('multivar', 'triqs')
 module.use_module('operators', 'triqs')
 module.use_module('histograms', 'triqs')
 

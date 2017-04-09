@@ -64,11 +64,13 @@ namespace cthyb {
     const int A;                 // Index of block A within gf_struct
     const int B;                 // Index of block B within gf_struct
     const bool diag_block;       // A == B
-    const size_t size_A, size_B; // Sizes of blocks A and B
     mc_weight_t z;
     int64_t num;
 
-    measure_g2_legendre(int b1, int b2, g2_view_type g2, qmc_data const &data);
+    // Object that performs NFFT transform
+    nfft_array_t<1, 6> nfft_tensor_abcd;
+
+    measure_g2_legendre(int b1, int b2, g2_view_type g2, qmc_data const &data, int buf_size_A, int buf_size_B);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
   };

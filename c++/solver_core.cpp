@@ -316,12 +316,12 @@ namespace cthyb {
 
           int n_iw = params.measure_g2_n_iw;
 
+          int buf_size1 = params.nfft_buf_sizes.count(bn1) ? params.nfft_buf_sizes.count(bn1) : 100;
+          int buf_size2 = params.nfft_buf_sizes.count(bn2) ? params.nfft_buf_sizes.count(bn2) : 100;
+
           // Matsubara measurements
           if (params.measure_g2_inu) {
             int n_inu = params.measure_g2_n_inu;
-
-            int buf_size1 = params.nfft_buf_sizes.count(bn1) ? params.nfft_buf_sizes.count(bn1) : 100;
-            int buf_size2 = params.nfft_buf_sizes.count(bn2) ? params.nfft_buf_sizes.count(bn2) : 100;
 
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_inu_inup_pp(b1, b2);
@@ -356,9 +356,11 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data), make_measure_name(legendre(), PP, AABB));
+                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(legendre(), PP, AABB));
               else
-                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data), make_measure_name(legendre(), PP, ABBA));
+                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(legendre(), PP, ABBA));
             }
 
             if (params.measure_g2_ph) {
@@ -366,9 +368,11 @@ namespace cthyb {
               block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data), make_measure_name(legendre(), PH, AABB));
+                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(legendre(), PH, AABB));
               else
-                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data), make_measure_name(legendre(), PH, ABBA));
+                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(legendre(), PH, ABBA));
             }
         }
       }

@@ -46,8 +46,11 @@ namespace cthyb {
     int64_t num;
 
     // Objects that perform 2D NFFT transforms
-    nfft_array_t<2, 2> nfft_matrix_ab, nfft_matrix_cd;
-    nfft_array_t<2, 2> nfft_matrix_ad, nfft_matrix_cb;
+    nfft_array_t<2, 2> nfft_M_ab, nfft_M_cd;
+    nfft_array_t<2, 2> nfft_M_ad, nfft_M_cb;
+
+    // Results of NFFT transforms
+    gf<cartesian_product<imfreq, imfreq>, matrix_valued> M_ab, M_cd, M_ad, M_cb;
 
     measure_g2_inu(int A, int B, g2_view_type g2, qmc_data const &data, int buf_size_A, int buf_size_B);
     void accumulate(mc_weight_t s);
@@ -64,11 +67,12 @@ namespace cthyb {
     const int A;                 // Index of block A within gf_struct
     const int B;                 // Index of block B within gf_struct
     const bool diag_block;       // A == B
+    const size_t n_l;            // Number of Legendre coefficients
     mc_weight_t z;
     int64_t num;
 
     // Object that performs NFFT transform
-    nfft_array_t<1, 6> nfft_tensor_abcd;
+    nfft_array_t<1, 6> nfft_abcd;
 
     measure_g2_legendre(int b1, int b2, g2_view_type g2, qmc_data const &data, int buf_size_A, int buf_size_B);
     void accumulate(mc_weight_t s);

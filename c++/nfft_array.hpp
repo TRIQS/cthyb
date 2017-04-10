@@ -38,22 +38,22 @@ namespace cthyb {
       public:
       using freq_mesh_t = typename nfft_buf_t<MeshRank>::freq_mesh_t;
       using res_gf_t    = gf<typename freq_mesh_t::var_t, tensor_valued<TargetRank>>;
+      static constexpr int result_rank = MeshRank + TargetRank;
 
       nfft_array_t() = default;
 
       // fiw_mesh - Matsubara frequency mesh
-      // shape - target shape
-      nfft_array_t(freq_mesh_t const &fiw_mesh, mini_vector<int, TargetRank> const &shape, array<int, TargetRank> const &buf_sizes) :
-      // FORTRAN_LAYOUT ensures that every nfft_buf receives a contiguous view
-      indexmap(shape), result(fiw_mesh, shape, FORTRAN_LAYOUT) {
-        auto & data = result.data();
-        long n = data.domain().number_of_elements();
-        buffers.reserve(n);
-        foreach(buf_sizes, [this, &data, &buf_sizes](auto... ind) {
+      // fiw_arr_ - array to contain the final NFFT output
+      // buf_sizes - sizes of NFFT buffers
+      nfft_array_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, result_rank> fiw_arr_,
+                   array<int, TargetRank> const &buf_sizes) :
+      indexmap(make_target_shape(fiw_arr_.shape())), fiw_arr(fiw_arr_) {
+        buffers.reserve(indexmap.domain().number_of_elements());
+        foreach(buf_sizes, [this, &fiw_mesh, &buf_sizes](auto... ind) {
 #ifdef NDEBUG
-          buffers.emplace_back(result.mesh(), data(ellipsis(), ind...), buf_sizes(ind...), false);
+          buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), false);
 #else
-          buffers.emplace_back(result.mesh(), data(ellipsis(), ind...), buf_sizes(ind...), true);
+          buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), true);
 #endif
         });
       }
@@ -68,12 +68,15 @@ namespace cthyb {
         for (auto & buf : buffers) buf.flush();
       }
 
-      // Access the result g_{ab...}(iw_1, iw_2, ...)
-      res_gf_t &operator()() { return result; }
-
       private:
       template <size_t... Is> inline nfft_buf_t<MeshRank> &select_buffer(mini_vector<int, TargetRank> const &ind_arr, std14::index_sequence<Is...>) {
         return buffers[indexmap(ind_arr[Is]...)];
+      }
+
+      mini_vector<int, TargetRank> make_target_shape(mini_vector<int, result_rank> const& shape) {
+        std::vector<int> res(TargetRank);
+        for(int n = 0; n < TargetRank; ++n) res[n] = shape[n + MeshRank];
+        return mini_vector<int, TargetRank>(res);
       }
 
       // Index map for the target array
@@ -83,6 +86,6 @@ namespace cthyb {
       std::vector<nfft_buf_t<MeshRank>> buffers;
 
       // NFFT transformation result
-      res_gf_t result;
+      array_view<dcomplex, result_rank> fiw_arr;
     };
 }

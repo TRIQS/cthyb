@@ -23,7 +23,7 @@ n_iw = 1024
 
 g2_n_iw = 5
 g2_n_inu = 10
-g2_n_l = 10
+g2_n_l = 4
 g2_blocks = set([("up","up"),("up","dn"),("dn","up")])
 
 p = {}
@@ -33,7 +33,7 @@ p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50000
-p["n_cycles"] = 5000
+p["n_cycles"] = 500
 p["use_norm_as_weight"] = True
 p["measure_density_matrix"] = False
 p["measure_g_tau"] = False
@@ -104,6 +104,14 @@ for bn in g2_blocks:
 # Save the results
 if mpi.is_master_node():
     with HDFArchive("measure_g2.h5",'w') as ar:
+        ar['beta'] = beta
+        ar['U'] = U
+        ar['mu'] = mu
+        ar['J'] = J
+        ar['epsilon'] = epsilon
+        ar['V'] = V
+        p['measure_g2_blocks'] = list(p['measure_g2_blocks'])
+        ar['solve_params'] = p
         ar['G2_iw_inu_inup_pp'] = S.G2_iw_inu_inup_pp
         ar['G2_iw_inu_inup_ph'] = S.G2_iw_inu_inup_ph
         ar['G2_iw_l_lp_pp'] = S.G2_iw_l_lp_pp

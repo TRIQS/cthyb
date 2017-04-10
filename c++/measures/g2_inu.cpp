@@ -48,12 +48,16 @@ namespace cthyb {
     buf_sizes_B() = buf_size_B;
 
     if (Order == AABB || diag_block) {
-      nfft_matrix_ab = nfft_array_t<2, 2>({{beta, Fermion, n_inu}, {beta, Fermion, n_iw - 1 + n_inu}}, {size_A, size_A}, buf_sizes_A);
-      nfft_matrix_cd = nfft_array_t<2, 2>({{beta, Fermion, n_iw - 1 + n_inu}, {beta, Fermion, n_inu}}, {size_B, size_B}, buf_sizes_B);
+      M_ab = decltype(M_ab){{{beta, Fermion, n_inu}, {beta, Fermion, n_iw - 1 + n_inu}}, {size_A, size_A}};
+      M_cd = decltype(M_cd){{{beta, Fermion, n_iw - 1 + n_inu}, {beta, Fermion, n_inu}}, {size_B, size_B}};
+      nfft_M_ab = nfft_array_t<2, 2>(M_ab.mesh(), M_ab.data(), buf_sizes_A);
+      nfft_M_cd = nfft_array_t<2, 2>(M_cd.mesh(), M_cd.data(), buf_sizes_B);
     }
     if (Order == ABBA || diag_block) {
-      nfft_matrix_ad = nfft_array_t<2, 2>({{beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {size_A, size_A}, buf_sizes_A);
-      nfft_matrix_cb = nfft_array_t<2, 2>({{beta, Fermion, n_iw - 1 + n_inu}, {beta, Fermion, n_iw - 1 + n_inu}}, {size_B, size_B}, buf_sizes_B);
+      M_ad = decltype(M_ad){{{beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {size_A, size_A}};
+      M_cb = decltype(M_cb){{{beta, Fermion, n_iw - 1 + n_inu}, {beta, Fermion, n_iw - 1 + n_inu}}, {size_B, size_B}};
+      nfft_M_ad = nfft_array_t<2, 2>(M_ad.mesh(), M_ad.data(), buf_sizes_A);
+      nfft_M_cb = nfft_array_t<2, 2>(M_cb.mesh(), M_cb.data(), buf_sizes_B);
     }
   }
 
@@ -87,36 +91,36 @@ namespace cthyb {
     clef::placeholder<6> d_;
 
     if (Order == AABB || diag_block) {
-      nfft_matrix_ab().data()() = .0;
-      nfft_fill(det_A, nfft_matrix_ab);
-      nfft_matrix_ab.flush();
+      M_ab() = 0;
+      nfft_fill(det_A, nfft_M_ab);
+      nfft_M_ab.flush();
 
-      nfft_matrix_cd().data()() = .0;
-      nfft_fill(det_B, nfft_matrix_cd);
-      nfft_matrix_cd.flush();
+      M_cd() = 0;
+      nfft_fill(det_B, nfft_M_cd);
+      nfft_M_cd.flush();
 
       if (Channel == PH)
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
-              + s * nfft_matrix_ab()(-inu_, inu_ + iw_)(a_, b_) * nfft_matrix_cd()(-inup_ - iw_, inup_)(c_, d_);
+              + s * M_ab(-inu_, inu_ + iw_)(a_, b_) * M_cd(-inup_ - iw_, inup_)(c_, d_);
       else
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
-              + s * nfft_matrix_ab()(-inu_, iw_ - inup_)(a_, b_) * nfft_matrix_cd()(-iw_ + inu_, inup_)(c_, d_);
+              + s * M_ab(-inu_, iw_ - inup_)(a_, b_) * M_cd(-iw_ + inu_, inup_)(c_, d_);
     }
     if (Order == ABBA || diag_block) {
-      nfft_matrix_ad().data()() = .0;
-      nfft_fill(det_A, nfft_matrix_ad);
-      nfft_matrix_ad.flush();
+      M_ad() = 0;
+      nfft_fill(det_A, nfft_M_ad);
+      nfft_M_ad.flush();
 
-      nfft_matrix_cb().data()() = .0;
-      nfft_fill(det_B, nfft_matrix_cb);
-      nfft_matrix_cb.flush();
+      M_cb() = 0;
+      nfft_fill(det_B, nfft_M_cb);
+      nfft_M_cb.flush();
 
       if (Channel == PH)
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
-              - s * nfft_matrix_ad()(-inu_, inup_)(a_, d_) * nfft_matrix_cb()(-inup_ - iw_, inu_ + iw_)(c_, b_);
+              - s * M_ad(-inu_, inup_)(a_, d_) * M_cb(-inup_ - iw_, inu_ + iw_)(c_, b_);
       else
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
-              - s * nfft_matrix_ad()(-inu_, inup_)(a_, d_) * nfft_matrix_cb()(-iw_ + inu_, iw_ - inup_)(c_, b_);
+              - s * M_ad(-inu_, inup_)(a_, d_) * M_cb(-iw_ + inu_, iw_ - inup_)(c_, b_);
     }
   }
 

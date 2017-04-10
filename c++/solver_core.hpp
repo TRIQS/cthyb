@@ -90,7 +90,7 @@ namespace cthyb {
     /// Accumulated :math:`G_l` in Legendre polynomials representation.
     block_gf_view<legendre> G_l() { return _G_l; }
 
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` 
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)`
     block2_gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> G2_tau() { return _G2_tau; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.

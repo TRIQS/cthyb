@@ -51,6 +51,110 @@ This measurement is controlled through the switch ``measure_g_l``.
 The result of accumulation is accessible as ``G_l`` attribute of the solver object.
 The number of Legendre coefficients to be measured is specified through constructor's parameter ``n_l``.
 
+Two-particle Green's functions
+------------------------------
+
+CTHYB implements several ways to measure the two-particle Green's functions.
+We define :math:`G^{(2)}` in the imaginary time as
+
+.. math::
+
+    G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4) =
+    \langle\mathcal{T}_\tau c^\dagger_\alpha(\tau_1) c_\beta(\tau_2) c^\dagger_\gamma(\tau_3) c_\delta(\tau_4)\rangle.
+
+.. NOTE::
+
+    Are we actually going to measure this one?
+
+Depending on the value of the ``measure_g2_block_order`` parameter the combined block/inner indices
+:math:`\alpha,\beta,\gamma,\delta` are interpreted differently.
+
+* ``measure_g2_block_order = 'AABB'``: :math:`\{\alpha,\beta,\gamma,\delta\} = \{(A,a),(A,b),(B,c),(B,d)\}`;
+* ``measure_g2_block_order = 'ABBA'``: :math:`\{\alpha,\beta,\gamma,\delta\} = \{(A,a),(B,b),(B,c),(A,d)\}`.
+
+These two combinations exhaust all the possibilities for non-vanishing contributions to :math:`G^{(2)}`.
+
+Measuring :math:`G^{(2)}` is in general expensive, and in some cases time can be saved by skipping
+particular block pairs :math:`(A,B)`. Block pairs to be measured are selected via the ``measure_g2_blocks``
+parameter (all possible pairs are selected by default):
+
+``measure_g2_blocks = set([("A1","B1"), ("A2","B2"), ...])``
+
+One bosonic and two fermionic Matsubara frequencies
+***************************************************
+
+This measurement is activated by setting ``measure_g2_inu = True``.
+It includes two sub-measurements, one in the particle-hole channel, and one in the particle-particle channel.
+
+* Particle-hole channel, switched on by ``measure_g2_ph = True``.
+
+    .. math::
+
+        G^{(2)ph}_{\alpha\beta\gamma\delta}(\omega;\nu,\nu') =
+        \frac{1}{\beta}\int_0^\beta d\tau_1d\tau_2d\tau_3d\tau_4\
+        e^{-i\nu\tau_1} e^{i(\nu+\omega)\tau_2} e^{-i(\nu'+\omega)\tau_3} e^{i\nu'\tau_4}
+        G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4).
+
+    Accumulation result is available via ``G2_iw_inu_inup_ph`` solver attribute.
+
+* Particle-particle channel, switched on by ``measure_g2_pp = True``.
+
+    .. math::
+
+        G^{(2)pp}_{\alpha\beta\gamma\delta}(\omega;\nu,\nu') =
+        \frac{1}{\beta}\int_0^\beta d\tau_1d\tau_2d\tau_3d\tau_4\
+        e^{-i\nu\tau_1} e^{i(\omega-\nu')\tau_2} e^{-i(\omega-\nu)\tau_3} e^{i\nu'\tau_4}
+        G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4).
+
+    Accumulation result is available via ``G2_iw_inu_inup_pp`` solver attribute.
+
+Both sub-measurements can be enabled at the same time.
+Numbers of bosonic and fermionic Matsubara frequencies are set by ``measure_g2_n_iw``
+and ``measure_g2_n_inu`` parameters respectively.
+
+One bosonic Matsubara frequency and two Legendre coefficients
+*************************************************************
+
+This measurement is activated by setting ``measure_g2_legendre = True``.
+As in the previous paragraph, it includes two sub-measurements.
+
+* Particle-hole channel, switched on by ``measure_g2_ph = True``.
+
+    .. math::
+
+        G^{(2)ph}_{\alpha\beta\gamma\delta}(\omega_m;\ell,\ell') \equiv \sum_{n,n'\in\mathbb{Z}}
+        \bar T_{2n+m+1,\ell}
+        G^{(2)ph}_{\alpha\beta\gamma\delta}(\omega_m;\nu_n,\nu_{n'})
+        \bar T^*_{2n'+m+1,\ell'}.
+
+    Accumulation result is available via ``G2_iw_l_lp_ph`` solver attribute.
+
+
+* Particle-particle channel, switched on by ``measure_g2_pp = True``.
+
+    .. math::
+
+        G^{(2)pp}_{\alpha\beta\gamma\delta}(\omega_m;\ell,\ell') \equiv \sum_{n,n'\in\mathbb{Z}}
+        \bar T_{2n+m+1,\ell}
+        G^{(2)pp}_{\alpha\beta\gamma\delta}(\omega_m;\nu_n,\nu_{n'})
+        \bar T^*_{2n'+m+1,\ell'}.
+
+    Accumulation result is available via ``G2_iw_l_lp_pp`` solver attribute.
+
+Here we have introduced transformation matrices from the Matsubara frequency domain to the
+Legendre polynomial basis:
+
+.. math::
+
+    \bar T_{o,\ell} \equiv \frac{\sqrt{2\ell+1}}{\beta}
+    \int_0^\beta d\tau e^{io\pi\frac{\tau}{\beta}} P_\ell[x(\tau)] =
+    \sqrt{2\ell+1}i^o i^\ell j_\ell\left(\frac{o\pi}{2}\right).
+
+Both sub-measurements can be enabled at the same time.
+Numbers of bosonic Matsubara frequencies and Legendre coefficients are set by ``measure_g2_n_iw``
+and ``measure_g2_n_l`` parameters respectively.
+
+
 Impurity density matrix
 -----------------------
 

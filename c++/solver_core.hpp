@@ -48,12 +48,12 @@ namespace cthyb {
     block_gf<imtime, g_target_t> _G_tau_accum;     // Intermediate object to accumulate g(tau), either real or complex
     block_gf<legendre> _G_l;                       // Green's function containers: Legendre coefficients
 
-    block2_gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> _G2_tau; // Two-particle Green’s function
+    block2_gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> _G2_tau; // Two-particle Green's function
 
-    block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> _G2_iw_inu_inup_pp; // Two-particle Green’s function, fermionic matsubaras, pp-channel
-    block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> _G2_iw_inu_inup_ph; // Two-particle Green’s function, fermionic matsubaras, ph-channel
-    block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> _G2_iw_l_lp_pp; // Two-particle Green’s function, Legendre coefficients, pp-channel
-    block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> _G2_iw_l_lp_ph; // Two-particle Green’s function, Legendre coefficients, ph-channel
+    block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> _G2_iw_inu_inup_pp; // Two-particle Green's function, fermionic matsubaras, pp-channel
+    block2_gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> _G2_iw_inu_inup_ph; // Two-particle Green's function, fermionic matsubaras, ph-channel
+    block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> _G2_iw_l_lp_pp; // Two-particle Green's function, Legendre coefficients, pp-channel
+    block2_gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> _G2_iw_l_lp_ph; // Two-particle Green's function, Legendre coefficients, ph-channel
 
     histogram _pert_order_total;               // Histogram of the total perturbation order
     histo_map_t _pert_order;                   // Histograms of the perturbation order for each block
@@ -90,19 +90,19 @@ namespace cthyb {
     /// Accumulated :math:`G_l` in Legendre polynomials representation.
     block_gf_view<legendre> G_l() { return _G_l; }
 
-    /// Accumulated two-particle Green’s function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` 
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` 
     block2_gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> G2_tau() { return _G2_tau; }
 
-    /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
     block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
 
-    /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
     block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_ph() { return _G2_iw_inu_inup_ph; }
 
-    /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
     block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_pp() { return _G2_iw_l_lp_pp; }
 
-    /// Accumulated two-particle Green’s function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
     block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_ph() { return _G2_iw_l_lp_ph; }
 
     /// Atomic :math:`G(\tau)` in imaginary time.

@@ -144,23 +144,23 @@ c.add_property(name = "G_l",
 
 c.add_property(name = "G2_tau",
                getter = cfunction("block2_gf_view<cartesian_product<imtime,imtime,imtime>,tensor_valued<4>> G2_tau ()"),
-               doc = """Accumulated two-particle Green\xe2\x80\x99s function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` """)
+               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` """)
 
 c.add_property(name = "G2_iw_inu_inup_pp",
                getter = cfunction("block2_gf_view<cartesian_product<imfreq,imfreq,imfreq>,tensor_valued<4>> G2_iw_inu_inup_pp ()"),
-               doc = """Accumulated two-particle Green\xe2\x80\x99s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel. """)
+               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel. """)
 
 c.add_property(name = "G2_iw_inu_inup_ph",
                getter = cfunction("block2_gf_view<cartesian_product<imfreq,imfreq,imfreq>,tensor_valued<4>> G2_iw_inu_inup_ph ()"),
-               doc = """Accumulated two-particle Green\xe2\x80\x99s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel. """)
+               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel. """)
 
 c.add_property(name = "G2_iw_l_lp_pp",
                getter = cfunction("block2_gf_view<cartesian_product<imfreq,legendre,legendre>,tensor_valued<4>> G2_iw_l_lp_pp ()"),
-               doc = """Accumulated two-particle Green\xe2\x80\x99s function :math:`G^{(2)}(i\\omega,l,l\')` in the pp-channel. """)
+               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,l,l\')` in the pp-channel. """)
 
 c.add_property(name = "G2_iw_l_lp_ph",
                getter = cfunction("block2_gf_view<cartesian_product<imfreq,legendre,legendre>,tensor_valued<4>> G2_iw_l_lp_ph ()"),
-               doc = """Accumulated two-particle Green\xe2\x80\x99s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel. """)
+               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel. """)
 
 c.add_property(name = "atomic_gf",
                getter = cfunction("block_gf_view<imtime> atomic_gf ()"),

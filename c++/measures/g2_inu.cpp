@@ -18,6 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
 #include "./g2.hpp"
 
 #ifndef NDEBUG
@@ -102,9 +103,19 @@ namespace cthyb {
       if (Channel == PH)
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
               + s * M_ab(-inu_, inu_ + iw_)(a_, b_) * M_cd(-inup_ - iw_, inup_)(c_, d_);
-      else
+      else if (Channel == PP)
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
               + s * M_ab(-inu_, iw_ - inup_)(a_, b_) * M_cd(-iw_ + inu_, inup_)(c_, d_);
+      else if (Channel == AllFermionic) {
+	clef::placeholder<0> w1;
+	clef::placeholder<1> w2;
+	clef::placeholder<2> w3;
+        g2(w1, w2, w3)(a_, b_, c_, d_) << g2(w1, w2, w3)(a_, b_, c_, d_)
+	  + s * M_ab(w2, w1)(b_, a_) * M_cd(w1 + w3 - w2, w3)(d_, c_);
+      }
+      else
+	TRIQS_RUNTIME_ERROR << "g2_inu: error Channel " << Channel << " is not implemented.";
+	
     }
     if (Order == ABBA || diag_block) {
       M_ad() = 0;
@@ -118,9 +129,18 @@ namespace cthyb {
       if (Channel == PH)
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
               - s * M_ad(-inu_, inup_)(a_, d_) * M_cb(-inup_ - iw_, inu_ + iw_)(c_, b_);
-      else
+      else if (Channel == PP)
         g2(iw_, inu_, inup_)(a_, b_, c_, d_) << g2(iw_, inu_, inup_)(a_, b_, c_, d_)
               - s * M_ad(-inu_, inup_)(a_, d_) * M_cb(-iw_ + inu_, iw_ - inup_)(c_, b_);
+      else if (Channel == AllFermionic) {
+	clef::placeholder<0> w1;
+	clef::placeholder<1> w2;
+	clef::placeholder<2> w3;
+        g2(w1, w2, w3)(a_, b_, c_, d_) << g2(w1, w2, w3)(a_, b_, c_, d_)
+	  - s * M_ab(w1 + w3 - w2, w1)(d_, a_) * M_cd(w2, w3)(b_, c_);
+      }
+      else
+	TRIQS_RUNTIME_ERROR << "g2_inu: error Channel " << Channel << " is not implemented.";
     }
   }
 
@@ -130,8 +150,12 @@ namespace cthyb {
     g2 = g2 / (real(z) * data.config.beta());
   }
 
+  template class measure_g2_inu<AllFermionic, AABB>;
+  template class measure_g2_inu<AllFermionic, ABBA>;
+
   template class measure_g2_inu<PP, AABB>;
   template class measure_g2_inu<PP, ABBA>;
+  
   template class measure_g2_inu<PH, AABB>;
   template class measure_g2_inu<PH, ABBA>;
 }

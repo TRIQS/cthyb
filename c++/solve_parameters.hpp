@@ -75,11 +75,14 @@ namespace cthyb {
     /// Measure G^2(iomega,l,l')
     bool measure_g2_legendre = false;
 
+    /// Measure G^2 with three fermionic frequencies
+    bool measure_g2_inu_fermionic = false;
+
     /// Measure G^2 within particle-particle channel.
-    bool measure_g2_pp = true;
+    bool measure_g2_pp = false;
 
     /// Measure G^2 within particle-hole channel.
-    bool measure_g2_ph = true;
+    bool measure_g2_ph = false;
 
     /// Order of block indices in the definition of G^2.
     block_order measure_g2_block_order = AABB;

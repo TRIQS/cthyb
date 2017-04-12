@@ -72,10 +72,12 @@ namespace cthyb {
     gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, 1};
 
     gf_mesh<cartesian_product<imtime, imtime, imtime>> g2_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
+    gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_inu_mesh{fermi_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
     gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
     _G2_tau = make_block2_gf(g2_tau_mesh, gf_struct);
+    _G2_inu = make_block2_gf(g2_inu_mesh, gf_struct);
 
     _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
     _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
@@ -275,8 +277,8 @@ namespace cthyb {
         }
       }
 
-      if (!params.measure_g2_pp && !params.measure_g2_ph)
-        TRIQS_RUNTIME_ERROR << "You must switch on at least one of measure_g2_pp and measure_g2_ph!";
+      if (!(params.measure_g2_pp || params.measure_g2_ph || params.measure_g2_inu_fermionic))
+        TRIQS_RUNTIME_ERROR << "You must switch on at least one of measure_g2_pp, measure_g2_ph, and measure_g2_inu_fermionic!";
 
       auto const &delta_names = _Delta_tau.block_names();
       for (int b1 = 0; b1 < delta_names.size(); ++b1) {
@@ -322,6 +324,18 @@ namespace cthyb {
           // Matsubara measurements
           if (params.measure_g2_inu) {
             int n_inu = params.measure_g2_n_inu;
+
+            if (params.measure_g2_inu_fermionic) {
+              auto &block = _G2_inu(b1, b2);
+              block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+                 {{beta, Fermion, n_inu}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
+              if (params.measure_g2_block_order == AABB)
+                qmc.add_measure(measure_g2_inu<AllFermionic, AABB>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(imfreq(), AllFermionic, AABB));
+              else
+                qmc.add_measure(measure_g2_inu<AllFermionic, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
+                                make_measure_name(imfreq(), AllFermionic, ABBA));
+            }
 
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_inu_inup_pp(b1, b2);

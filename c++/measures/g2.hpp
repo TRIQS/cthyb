@@ -30,7 +30,7 @@ namespace cthyb {
 
   using namespace triqs::arrays;
 
-  enum g2_channel { PP, PH };
+  enum g2_channel { PP, PH, AllFermionic };
 
   // Measure one block of G^2(iomega,inu,inu')
   template <g2_channel Channel, block_order Order> struct measure_g2_inu {

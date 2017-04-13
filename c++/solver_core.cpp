@@ -298,12 +298,18 @@ namespace cthyb {
               return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") :
                                   (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
             }
+	    auto channel_repr(g2_channel channel) {
+	      if(channel == PP) return std::string("pp");
+	      else if ( channel == PH ) return std::string("ph");
+	      else if ( channel == AllFermionic ) return std::string("AllFermionic");
+	      else return std::string("unknown");
+	    }
             auto operator()(imtime, block_order bo) { return std::string("G^2 measure, ImTime") + block_quadruple(bo); }
             auto operator()(imfreq, g2_channel channel, block_order bo) {
-              return std::string("G^2 measure, Matsubara, ") + (channel == PP ? "pp" : "ph") + block_quadruple(bo);
+              return std::string("G^2 measure, Matsubara, ") + channel_repr(channel) + block_quadruple(bo);
             }
             auto operator()(legendre, g2_channel channel, block_order bo) {
-              return std::string("G^2 measure, Legendre, ") + (channel == PP ? "pp" : "ph") + block_quadruple(bo);
+              return std::string("G^2 measure, Legendre, ") + channel_repr(channel) + block_quadruple(bo);
             }
           } make_measure_name {bn1, bn2};
 

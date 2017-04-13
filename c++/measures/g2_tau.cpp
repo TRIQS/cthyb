@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include "./g2_tau.hpp"
+#include <cmath>
 
 namespace cthyb {
 
@@ -43,36 +44,27 @@ namespace cthyb {
     auto const &det_B = data.dets[B];
     if (det_A.size() == 0 || det_B.size() == 0) return;
 
-    foreach (data.dets[A], [this, s](std::pair<time_pt, int> const &i, std::pair<time_pt, int> const &j, det_scalar_t M_ij) {
-      foreach (data.dets[B], [this, s, &i, &j, &M_ij](std::pair<time_pt, int> const &k, std::pair<time_pt, int> const &l, det_scalar_t M_kl) {
+    using idx_t = std::pair<time_pt, int>;
 
-        // can we do without using closest_mesh_pt()?
-        auto sign = [](double tau) { return (tau > 0. ? 1. : -1.); };
+    foreach (data.dets[A], [&](idx_t const &j, idx_t const &i, det_scalar_t const M_ij) {
+      foreach (data.dets[B], [&](idx_t const &l, idx_t const &k, det_scalar_t const M_kl) {
 
-        // Direct term
-        {
+        auto add = [&](idx_t const &i, idx_t const &j, idx_t const &k, idx_t const &l, double sign) {
+
           double t1 = double(i.first - l.first);
           double t2 = double(j.first - l.first);
           double t3 = double(k.first - l.first);
 
           // implicit beta-periodicity, but fix the sign properly
-          double tau_sign = sign(t1) * sign(t2) * sign(t3);
+          int sign_flips = int(i.first < l.first) + int(j.first < l.first) + int(k.first < l.first);
+          double factor  = (sign_flips % 2 ? -sign : sign);
 
-          this->g2[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += tau_sign * s * M_ij * M_kl;
-        }
-        // TODO: ADD SECOND TERM IN THE G2 SAMPLING (M_il, M_kj)
+          this->g2[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += factor * M_ij * M_kl;
+        };
 
-        // Exchange term (with extra factor -1)
-        {
-          double t1 = double(i.first - j.first);
-          double t2 = double(l.first - j.first);
-          double t3 = double(k.first - j.first);
 
-          // implicit beta-periodicity, but fix the sign properly
-          double tau_sign = sign(t1) * sign(t2) * sign(t3);
-
-          this->g2[closest_mesh_pt(t1, t2, t3)](i.second, l.second, k.second, j.second) += -tau_sign * s * M_ij * M_kl;
-        }
+        add(i, j, k, l, s);
+        if (A == B) add(i, l, k, j, -s);
 
       })
         ;
@@ -83,11 +75,7 @@ namespace cthyb {
   void measure_g2_tau::collect_results(triqs::mpi::communicator const &c) {
 
     z = mpi_all_reduce(z, c);
-
-    // Fixme! Account for bins at the boundaries
-
     g2 = mpi_all_reduce(g2, c);
-    // g2 = g2 / (-real(z) * data.config.beta() * g2.mesh().delta());
 
     // Fixme: use product reduction on delta()
     double dtau0 = std::get<0>(g2.mesh().components()).delta();
@@ -95,6 +83,52 @@ namespace cthyb {
     double dtau2 = std::get<2>(g2.mesh().components()).delta();
     double dtau3 = dtau0 * dtau1 * dtau2;
 
-    g2 = g2 / (-real(z) * data.config.beta() * dtau3); // Q: tau mesh delta tau?
-  }
+    g2 = g2 / (real(z) * data.config.beta() * dtau3); // Q: tau mesh delta tau?
+
+    // Account for edge bins beeing smaller
+    auto _ = var_t{};
+    int n  = std::get<0>(g2.mesh().components()).size() - 1;
+
+    // There are 6 sides of the cube
+    
+    g2[0][_][_] *= 2.0;
+    g2[_][0][_] *= 2.0;
+    g2[_][_][0] *= 2.0;
+
+    g2[n][_][_] *= 2.0;
+    g2[_][n][_] *= 2.0;
+    g2[_][_][n] *= 2.0;
+
+    /*
+    // There are 3*4 = 12 edges of the cube
+
+    g2[0][0][_] *= 2.0;
+    g2[_][0][0] *= 2.0;
+    g2[0][_][0] *= 2.0;
+
+    g2[n][n][_] *= 2.0;
+    g2[_][n][n] *= 2.0;
+    g2[n][_][n] *= 2.0;
+
+    g2[n][0][_] *= 2.0;
+    g2[_][n][0] *= 2.0;
+    g2[n][_][0] *= 2.0;
+
+    g2[0][n][_] *= 2.0;
+    g2[_][0][n] *= 2.0;
+    g2[0][_][n] *= 2.0;
+
+    // there are 8 corners of the cube
+
+    g2[0][0][0] *= 2.0; // 1
+    g2[n][0][0] *= 2.0; // 2
+    g2[0][n][0] *= 2.0; // 3
+    g2[0][0][n] *= 2.0; // 4
+    g2[n][n][0] *= 2.0; // 5
+    g2[n][0][n] *= 2.0; // 6
+    g2[0][n][n] *= 2.0; // 7
+    g2[n][n][n] *= 2.0; // 8
+    */
+    
+  }  
 }

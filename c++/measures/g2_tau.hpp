@@ -29,20 +29,16 @@ namespace cthyb {
   // Measure imaginary time Green's function (one block)
   struct measure_g2_tau {
 
-    using g2_view_type = gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>;
+    using g2_tau_view_type = gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>;
 
     qmc_data const &data;
-    g2_view_type g2;
-    const int A;           // Index of block A within gf_struct
-    const int B;           // Index of block B within gf_struct
-    const bool diag_block; // A == B
-    mc_weight_t z;
-    int64_t num;
+    g2_tau_view_type g2_tau;
+    const int A, B; // Block indices A and B within gf_struct
     mc_weight_t average_sign;
 
-    measure_g2_tau(int A, int B, g2_view_type g2, qmc_data const &data);
+    measure_g2_tau(int A, int B, g2_tau_view_type g2_tau, qmc_data const &data);
 
-    void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void accumulate(mc_weight_t sign);
+    void collect_results(triqs::mpi::communicator const &comm);
   };
 }

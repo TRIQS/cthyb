@@ -7,6 +7,8 @@ This continuous-time hybridization-expansion solver has been written by P.
 Seth, I. Krivenko, M. Ferrero and O. Parcollet. It is based on a hybridization
 expansion of the partition function as described in references [#ctqmc1]_,
 [#ctqmc2]_ with implementation improvements suggested in [#ctqmc3]_.
+The implementation of the two-particle Green's function measurements is
+based on ideas and uses notation proposed by L. Boehnke in [#legendre]_, [#lewin_thesis]_.
 
 Citation
 ========
@@ -24,6 +26,8 @@ Papers discussing the algorithm:
 .. [#ctqmc1] `P. Werner, A. Comanac, L. de' Medici, M. Troyer, and A. J. Millis, Phys. Rev. Lett. 97, 076405 (2006) <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_ (:download:`bibtex file <basicnotions/ctqmc1.bib>`)
 .. [#ctqmc2] `P. Werner and A. J. Millis, Phys. Rev. B 74, 155107 (2006) <http://link.aps.org/doi/10.1103/PhysRevB.74.155107>`_ (:download:`bibtex file <basicnotions/ctqmc2.bib>`)
 .. [#ctqmc3] `E. Gull, Ph.D. thesis, ETH Zurich, Switzerland (2008) <http://e-collection.library.ethz.ch/view/eth:31103>`_ (:download:`bibtex file <basicnotions/ctqmc3.bib>`)
+.. [#legendre] `L. Boehnke et al., Phys. Rev. B 84, 075145 (2011) <http://link.aps.org/doi/10.1103/PhysRevB.84.075145>`_ (:download:`bibtex file <basicnotions/legendre.bib>`)
+.. [#lewin_thesis] `L. Boehnke, PhD thesis <http://ediss.sub.uni-hamburg.de/volltexte/2015/7325/pdf/Dissertation.pdf>`_ (:download:`bibtex file <basicnotions/lewin_thesis.bib>`)
 
 If you find the application useful, giving proper reference and citation is
 indeed a simple way to help convincing funding sources that such projects are

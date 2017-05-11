@@ -80,6 +80,9 @@ parameter (all possible pairs are selected by default):
 
 ``measure_g2_blocks = set([("A1","B1"), ("A2","B2"), ...])``
 
+See the `PhD thesis of L. Boehnke <http://ediss.sub.uni-hamburg.de/volltexte/2015/7325/pdf/Dissertation.pdf>`_
+for an in-depth discussion of these measurements.
+
 One bosonic and two fermionic Matsubara frequencies
 ***************************************************
 

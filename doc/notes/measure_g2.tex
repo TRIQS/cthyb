@@ -127,7 +127,8 @@ of $G^{(2)}$ accumulation. On the other hand, the $ABBA$ notation would be more
 convenient for a calculation of the transversal magnetic susceptibility $\langle S_+(\t)S_-(0) \rangle$.
 
 In order to minimize memory consumption, the accumulated Green's function will be stored
-in a \texttt{block2} container with indices $A,B$. Interpretation of this pair of indices
+in a \texttt{block2\_gf} container with indices $A,B$. Interpretation of this
+pair of indices
 as either $AABB$ or $ABBA$ will be controlled via a switchable option. There will also be
 an option to measure a subset of all possible $AB$ pairs.
 
@@ -144,13 +145,13 @@ It will be possible to switch between the \textit{particle-hole} and \textit{par
 notation for the Fourier transform.
 
 \begin{equation}
-	G^{(2)ph}_{\alpha\beta\gamma\delta}(\nu,\nu';\w) =
+	G^{(2)ph}_{\alpha\beta\gamma\delta}(\w;\nu,\nu') =
 	\frac{1}{\beta}\int_0^\beta d\t_1d\t_2d\t_3d\t_4\
 	e^{-i\nu\t_1} e^{i(\nu+\w)\t_2} e^{-i(\nu'+\w)\t_3} e^{i\nu'\tau_4}
 	G^{(2)}_{\alpha\beta\gamma\delta}(\t_1,\t_2,\t_3,\t_4).
 \end{equation}
 \begin{equation}
-	G^{(2)pp}_{\alpha\beta\gamma\delta}(\nu,\nu';\w) =
+	G^{(2)pp}_{\alpha\beta\gamma\delta}(\w;\nu,\nu') =
 	\frac{1}{\beta}\int_0^\beta d\t_1d\t_2d\t_3d\t_4\
 	e^{-i\nu\t_1} e^{i(\w-\nu')\t_2} e^{-i(\w-\nu)\t_3} e^{i\nu'\tau_4}
 	G^{(2)}_{\alpha\beta\gamma\delta}(\t_1,\t_2,\t_3,\t_4).
@@ -180,7 +181,7 @@ of $AB$-orderings and channels.
 \begin{itemize}
 	\item \textbf{AABB-ph}
 	\begin{multline}
-		G^{(2),AABB,ph}_{abcd}(\nu,\nu';\w) =\\= \frac{1}{\beta}\left\langle
+		G^{(2),AABB,ph}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
 			\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
 				\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
 				e^{-i\nu\t_i'+i(\nu+\w)\t_j}
@@ -202,7 +203,7 @@ of $AB$-orderings and channels.
 
 	\item \textbf{ABBA-ph}
 	\begin{multline}
-		G^{(2),ABBA,ph}_{abcd}(\nu,\nu';\w) =\\= \frac{1}{\beta}\left\langle
+		G^{(2),ABBA,ph}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
 			\delta_{AB}
 			\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
 				\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
@@ -225,7 +226,7 @@ of $AB$-orderings and channels.
 
 	\item \textbf{AABB-pp}
 	\begin{multline}
-	G^{(2),AABB,pp}_{abcd}(\nu,\nu';\w) =\\= \frac{1}{\beta}\left\langle
+	G^{(2),AABB,pp}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
 		\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
 			\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
 			e^{-i\nu\t_i'+i(\w-\nu')\t_j}
@@ -247,7 +248,7 @@ of $AB$-orderings and channels.
 
 	\item \textbf{ABBA-pp}
 	\begin{multline}
-	G^{(2),ABBA,pp}_{abcd}(\nu,\nu';\w) =\\= \frac{1}{\beta}\left\langle
+	G^{(2),ABBA,pp}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
 		\delta_{AB}
 		\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
 			\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
@@ -282,9 +283,10 @@ number of required coefficients. Matrix inversion of quantities in this basis
 is also more stable.
 
 \begin{equation}\label{legendre_transform}
-	G^{(2)}_{\alpha\beta\gamma\delta}(\ell,\ell';\w_n) \equiv \sum_{n,n'\in\mathbb{Z}}
+	G^{(2)}_{\alpha\beta\gamma\delta}(\w_m;\ell,\ell') \equiv
+	\sum_{n,n'\in\mathbb{Z}}
 	\bar T_{2n+m+1,\ell}
-	G^{(2)}_{\alpha\beta\gamma\delta}(\nu_n,\nu_{n'};\w_m)
+	G^{(2)}_{\alpha\beta\gamma\delta}(\w_m;\nu_n,\nu_{n'})
 	\bar T^*_{2n'+m+1,\ell'},
 \end{equation}
 \begin{equation}
@@ -327,7 +329,7 @@ Accumulation formulas in the mixed Matsubara/Legendre basis are given below.
 \begin{itemize}
 	\item \textbf{AABB-ph}
 	\begin{multline}
-		G^{(2)AABB}_{abcd}(\ell,\ell';\w) =
+		G^{(2)AABB}_{abcd}(\w;\ell,\ell') =
 		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
 		\sum_{ij=1}^{K_A}\sum_{kl=1}^{K_B}
 		(\mathbf{M}^A_{ij} \mathbf{M}^B_{kl} - \delta_{AB}\mathbf{M}^A_{il} \mathbf{M}^A_{kj})
@@ -339,7 +341,7 @@ Accumulation formulas in the mixed Matsubara/Legendre basis are given below.
 	\end{multline}
 	\item \textbf{ABBA-ph}
 	\begin{multline}
-		G^{(2)ABBA}_{abcd}(\ell,\ell';\w) =
+		G^{(2)ABBA}_{abcd}(\w;\ell,\ell') =
 		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
 		\sum_{il=1}^{K_A}\sum_{kj=1}^{K_B}
 		(\delta_{AB}\mathbf{M}^A_{ij} \mathbf{M}^A_{kl} - \mathbf{M}^A_{il} \mathbf{M}^B_{kj})
@@ -351,7 +353,7 @@ Accumulation formulas in the mixed Matsubara/Legendre basis are given below.
 	\end{multline}
 	\item \textbf{AABB-pp}
 	\begin{multline}
-		G^{(2)AABB}_{abcd}(\ell,\ell';\w) =
+		G^{(2)AABB}_{abcd}(\w;\ell,\ell') =
 		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
 		\sum_{ij=1}^{K_A}\sum_{kl=1}^{K_B}
 		(\mathbf{M}^A_{ij} \mathbf{M}^B_{kl} - \delta_{AB}\mathbf{M}^A_{il} \mathbf{M}^A_{kj})
@@ -363,7 +365,7 @@ Accumulation formulas in the mixed Matsubara/Legendre basis are given below.
 	\end{multline}
 	\item \textbf{ABBA-pp}
 	\begin{multline}
-		G^{(2)ABBA}_{abcd}(\ell,\ell';\w) =
+		G^{(2)ABBA}_{abcd}(\w;\ell,\ell') =
 		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
 		\sum_{il=1}^{K_A}\sum_{kj=1}^{K_B}
 		(\delta_{AB}\mathbf{M}^A_{ij} \mathbf{M}^A_{kl} - \mathbf{M}^A_{il} \mathbf{M}^B_{kj})

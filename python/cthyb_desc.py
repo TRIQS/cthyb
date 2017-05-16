@@ -24,6 +24,7 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/set.hpp>
 #include <triqs/python_tools/converters/vector.hpp>
+#include <triqs/python_tools/converters/optional.hpp>
 #include <triqs/python_tools/converters/variant.hpp>
 #include <triqs/python_tools/converters/tuple.hpp>
 #include <triqs/python_tools/converters/operators_real_complex.hpp>
@@ -138,9 +139,14 @@ c.add_property(name = "G0_iw",
                getter = cfunction("block_gf_view<imfreq> G0_iw ()"),
                doc = """:math:`G_0(i\\omega)` in imaginary frequencies. """)
 
-c.add_property(name = "G_tau",
-               getter = cfunction("block_gf_view<imtime> G_tau ()"),
-               doc = """Accumulated :math:`G(\\tau)` in imaginary time. """)
+#c.add_property(name = "G_tau",
+#               getter = cfunction("block_gf_view<imtime> G_tau ()"),
+#               doc = """Accumulated :math:`G(\\tau)` in imaginary time. """)
+
+c.add_member(c_name = "g_tau",
+             c_type = "std::optional<g_tau_t>",
+             read_only= True,
+             doc = """Accumulated :math:`G(\\tau)` in imaginary time.""")
 
 c.add_property(name = "G_l",
                getter = cfunction("block_gf_view<legendre> G_l ()"),

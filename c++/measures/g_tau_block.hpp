@@ -27,7 +27,7 @@ namespace cthyb {
   using namespace triqs::gfs;
 
   // Measure imaginary time Green's function (one block)
-  struct measure_g {
+  struct measure_g_tau_block {
 
     qmc_data const &data;
     gf_view<imtime, g_target_t> g_tau;
@@ -36,7 +36,7 @@ namespace cthyb {
     int64_t num;
     mc_weight_t average_sign;
 
-    measure_g(int a_level, gf_view<imtime, g_target_t> g_tau, qmc_data const &data) : data(data), g_tau(g_tau), a_level(a_level) {
+    measure_g_tau_block(int a_level, gf_view<imtime, g_target_t> g_tau, qmc_data const &data) : data(data), g_tau(g_tau), a_level(a_level) {
       g_tau() = 0.0;
       z       = 0;
       num     = 0;

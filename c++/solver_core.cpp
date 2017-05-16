@@ -39,7 +39,8 @@
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
 #include "./measures/g2.hpp"
-#include "./measures/g2_tau.hpp"
+#include "./measures/g4_tau.hpp"
+#include "./measures/util.hpp"
 
 namespace cthyb {
 
@@ -74,7 +75,7 @@ namespace cthyb {
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
     //_G2_tau = make_block2_gf(g2_tau_mesh, gf_struct);
-    this->g4_tau = make_block2_gf(g2_tau_mesh, gf_struct);
+    //this->g4_tau = make_block2_gf(g2_tau_mesh, gf_struct);
     _G2_inu      = make_block2_gf(g2_inu_mesh, gf_struct);
 
     _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
@@ -262,120 +263,38 @@ namespace cthyb {
     // Two-particle correlators
     // --------------------------------------------------------------------------
 
-    // --------------------------------------------------------------------------
-    // Helper lambdas
-
-    class make_measure_name_t {
-      public:
-      make_measure_name_t(const std::string &bn1, const std::string &bn2) : bn1(bn1), bn2(bn2) {}
-
-      std::string bn1, bn2;
-      auto block_quadruple(block_order bo) const {
-        return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") : (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
-      }
-      auto channel_repr(g2_channel channel) {
-        if (channel == PP)
-          return std::string("pp");
-        else if (channel == PH)
-          return std::string("ph");
-        else if (channel == AllFermionic)
-          return std::string("AllFermionic");
-        else
-          return std::string("unknown");
-      }
-      auto operator()(imtime, block_order bo) { return std::string("G^2 measure, ImTime") + block_quadruple(bo); }
-      auto operator()(imfreq, g2_channel channel, block_order bo) {
-        return std::string("G^2 measure, Matsubara, ") + channel_repr(channel) + block_quadruple(bo);
-      }
-      auto operator()(legendre, g2_channel channel, block_order bo) {
-        return std::string("G^2 measure, Legendre, ") + channel_repr(channel) + block_quadruple(bo);
-      }
-    };
-
-    class g4_measure_t {
-      public:
-      using target_shape_t = mini_vector<int, 4>;
-      struct block_t {
-	int idx;
-	std::string name;
-      };
-      block_t b1, b2;
-      target_shape_t target_shape;
-      g4_measure_t(block_t b1, block_t b2, target_shape_t target_shape)
-	: b1(b1), b2(b2), target_shape(target_shape) {}
-    };
-
-    class g4_measures_t {
-      std::vector<g4_measure_t> measures;
-
-      public:
-      const std::vector<g4_measure_t> &operator()() { return measures; }
-
-      g4_measures_t(const g_tau_t &_Delta_tau, const gf_struct_t &gf_struct, const solve_parameters_t &params) {
-
-        auto g2_blocks_to_measure = params.measure_g2_blocks;
-
-        // Measure all blocks
-        if (g2_blocks_to_measure.empty()) {
-          for (auto const &bn1 : gf_struct) {
-            for (auto const &bn2 : gf_struct) { g2_blocks_to_measure.emplace(bn1.first, bn2.first); }
-          }
-        } else { // Check the blocks we've been asked to measure
-          for (auto const &bn : g2_blocks_to_measure) {
-            if (!gf_struct.count(bn.first)) TRIQS_RUNTIME_ERROR << "Invalid left block name " << bn.first << " for G^2 measurement";
-            if (!gf_struct.count(bn.second)) TRIQS_RUNTIME_ERROR << "Invalid right block name " << bn.second << " for G^2 measurement";
-          }
-        }
-
-        auto two_particle_gf_target_shape = [&](int b1, int b2) {
-          int s1 = _Delta_tau[b1].target_shape()[0];
-          int s3 = _Delta_tau[b2].target_shape()[0];
-          int s2 = params.measure_g2_block_order == AABB ? s1 : s3;
-          int s4 = params.measure_g2_block_order == AABB ? s3 : s1;
-          return mini_vector<int, 4>{s1, s2, s3, s4};
-        };
-
-        for (auto const &block_pair : g2_blocks_to_measure) {
-
-          auto const &bn1 = std::get<0>(block_pair);
-          auto const &bn2 = std::get<1>(block_pair);
-
-          std::map<std::string, int> block_name_to_index;
-          auto block_names = _Delta_tau.block_names();
-          for (auto block_idx : range(block_names.size())) {
-            std::string block_name          = block_names[block_idx];
-            block_name_to_index[block_name] = block_idx;
-          }
-
-          auto b1           = block_name_to_index[bn1];
-          auto b2           = block_name_to_index[bn2];
-	  
-          auto target_shape = two_particle_gf_target_shape(b1, b2);
-
-	  g4_measure_t measure{{b1, bn1}, {b2, bn2}, target_shape};
-          measures.push_back(measure);
-        }
-      }
-    };
-
-    g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
-
-    // --------------------------------------------------------------------------
+    measures::g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
 
     // --------------------------------------------------------------------------
     // Imaginary-time binning
 
     if (params.measure_g2_tau) {
+
+      /*
       for (const auto &m : g4_measures()) {
-        make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
+	
+	measures::make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
 
         // Imaginary time measurements
         int n_tau   = params.measure_g2_n_tau;
         auto &block = (*g4_tau)(m.b1.idx, m.b2.idx);
+
         block       = gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>{
 	  {{beta, Fermion, n_tau}, {beta, Fermion, n_tau}, {beta, Fermion, n_tau}}, m.target_shape};
-        qmc.add_measure(measure_g2_tau(m.b1.idx, m.b2.idx, block, data), make_measure_name(imtime(), AABB));
+
+	qmc.add_measure(measure_g2_tau_block(m.b1.idx, m.b2.idx, block, data), make_measure_name(imtime(), AABB));
+	
       }
+      */
+      /*
+      int g4_n_tau = params.measure_g2_n_tau;
+      gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, g4_n_tau};
+      gf_mesh<cartesian_product<imtime, imtime, imtime>> g4_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
+      this->g4_tau = make_block2_gf(g4_tau_mesh, gf_struct);
+      qmc.add_measure(measure_g4_tau(*g4_tau, data, g4_measures), "G4 tau measurement");
+      */
+      qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures, params.measure_g2_n_tau, gf_struct), "G4 tau measurement");
+      
     }
     // --------------------------------------------------------------------------
 

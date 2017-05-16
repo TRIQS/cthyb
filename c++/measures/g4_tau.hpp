@@ -19,24 +19,26 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../qmc_data.hpp"
+
 #include <triqs/gfs.hpp>
+
+#include "../qmc_data.hpp"
+#include "util.hpp"
 
 namespace cthyb {
 
   using namespace triqs::gfs;
+  using namespace cthyb::measures;
 
-  // Measure imaginary time Green's function (one block)
-  struct measure_g2_tau {
-
-    using g2_tau_view_type = gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>;
+  // Measure imaginary time Green's function (all blocks)
+  struct measure_g4_tau {
 
     qmc_data const &data;
-    g2_tau_view_type g2_tau;
-    const int A, B; // Block indices A and B within gf_struct
+    g4_tau_t::view_type g4_tau;
     mc_weight_t average_sign;
+    g4_measures_t g4_measures;
 
-    measure_g2_tau(int A, int B, g2_tau_view_type g2_tau, qmc_data const &data);
+    measure_g4_tau(std::optional<g4_tau_t> & g4_tau_opt, qmc_data const &data, g4_measures_t const & g4_measures, int n_tau, gf_struct_t const & gf_struct);
 
     void accumulate(mc_weight_t sign);
     void collect_results(triqs::mpi::communicator const &comm);

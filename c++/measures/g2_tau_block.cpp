@@ -19,18 +19,18 @@
  *
  ******************************************************************************/
 
-#include "./g2_tau.hpp"
+#include "./g2_tau_block.hpp"
 
 namespace cthyb {
 
   using namespace triqs::gfs;
 
-  measure_g2_tau::measure_g2_tau(int A, int B, g2_tau_view_type g2_tau, qmc_data const &data)
+  measure_g2_tau_block::measure_g2_tau_block(int A, int B, g2_tau_view_type g2_tau, qmc_data const &data)
      : data(data), g2_tau(g2_tau), A(A), B(B), average_sign(0.0) {
     g2_tau() = 0.0;
   }
 
-  void measure_g2_tau::accumulate(mc_weight_t sign) {
+  void measure_g2_tau_block::accumulate(mc_weight_t sign) {
 
     sign *= data.atomic_reweighting;
     average_sign += sign;
@@ -61,7 +61,7 @@ namespace cthyb {
       ;
   }
 
-  void measure_g2_tau::collect_results(triqs::mpi::communicator const &comm) {
+  void measure_g2_tau_block::collect_results(triqs::mpi::communicator const &comm) {
 
     average_sign = mpi_all_reduce(average_sign, comm);
     g2_tau       = mpi_all_reduce(g2_tau, comm);

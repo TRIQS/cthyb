@@ -33,8 +33,8 @@
 #include "./moves/double_remove.hpp"
 #include "./moves/shift.hpp"
 #include "./moves/global.hpp"
-#include "./measures/g.hpp"
-#include "./measures/g_legendre.hpp"
+#include "./measures/g_tau.hpp"
+#include "./measures/g_l.hpp"
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
@@ -50,16 +50,21 @@ namespace cthyb {
   };
 
   solver_core::solver_core(double beta_, std::map<std::string, indices_type> const &gf_struct_, int n_iw, int n_tau, int n_l)
-     : beta(beta_), gf_struct(gf_struct_) {
+    : beta(beta_), gf_struct(gf_struct_), n_iw(n_iw), n_tau(n_tau), n_l(n_l) {
 
     if (n_tau < 2 * n_iw)
       TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau
                           << ".";
 
     // Allocate single particle greens functions
+
+    // move inside of measures!
+    this->g_tau = make_block_gf(g_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
+    //this->g_l = make_block_gf(g_l_t::g_t::mesh_t{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct); // FIXME: cast is ugly
+
     _G0_iw       = make_block_gf(gf_mesh<imfreq>{beta, Fermion, n_iw}, gf_struct);
-    _G_tau       = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
-    _G_l         = make_block_gf(gf_mesh<legendre>{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct); // FIXME: cast is ugly
+    //G_tau       = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
+    //_G_l         = make_block_gf(gf_mesh<legendre>{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct); // FIXME: cast is ugly
     _Delta_tau   = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
     _G_tau_accum = make_block_gf<delta_target_t>(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
 
@@ -400,24 +405,24 @@ namespace cthyb {
   }
 
   // Single-particle correlators
-
+    
   if (params.measure_g_tau) {
-    auto &g_names = _G_tau.block_names();
-    for (size_t block = 0; block < _G_tau.size(); ++block) {
-      qmc.add_measure(measure_g(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
+    /*
+    auto &g_names = g_tau->block_names();
+    for (size_t block = 0; block < g_tau->size(); ++block) {
+      qmc.add_measure(measure_g_tau_block(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
     }
+    */
+    qmc.add_measure(measure_g_tau(_G_tau_accum, data), "G_tau measure");
   }
-  if (params.measure_g_l) {
-    auto &g_names = _G_l.block_names();
-    for (size_t block = 0; block < _G_l.size(); ++block) {
-      qmc.add_measure(measure_g_legendre(block, _G_l[block], data), "G_l measure (" + g_names[block] + ")");
-    }
-  }
+
+  if (params.measure_g_l)
+    qmc.add_measure(measure_g_l(g_l, data, n_l, gf_struct), "G_l measure");
 
   // Other measurements
   if (params.measure_pert_order) {
-    auto &g_names = _G_tau.block_names();
-    for (size_t block = 0; block < _G_tau.size(); ++block) {
+    auto &g_names = _Delta_tau.block_names();
+    for (size_t block = 0; block < _Delta_tau.size(); ++block) {
       auto const &block_name = g_names[block];
       qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
     }
@@ -442,6 +447,6 @@ namespace cthyb {
   if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
 
   // Copy local (real or complex) G_tau back to complex G_tau
-  if (params.measure_g_tau) _G_tau = _G_tau_accum;
+  if (params.measure_g_tau) *g_tau = _G_tau_accum;
 }
 }

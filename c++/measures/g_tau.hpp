@@ -33,7 +33,11 @@ namespace cthyb {
     qmc_data const &data;
     mc_weight_t average_sign;
 
-    measure_g_tau(g_tau_g_target_t &g_tau, qmc_data const &data) : g_tau(g_tau), data(data), average_sign(0) { g_tau() = 0.0; }
+    measure_g_tau(std::optional<g_tau_g_target_t> &g_tau_opt, qmc_data const &data, int n_tau, gf_struct_t gf_struct) : data(data), average_sign(0) {
+      g_tau_opt = make_block_gf<g_target_t>(gf_mesh<imtime>{data.config.beta(), Fermion, n_tau}, gf_struct);
+      g_tau.rebind(*g_tau_opt);
+      g_tau() = 0.0;
+    }
     // --------------------
 
     void accumulate(mc_weight_t s) {
@@ -57,8 +61,8 @@ namespace cthyb {
       g_tau        = mpi_all_reduce(g_tau, c);
       average_sign = mpi_all_reduce(average_sign, c);
 
-      for (auto & g_block : g_tau ) {
-	double beta = g_block.mesh().domain().beta;
+      for (auto &g_block : g_tau) {
+        double beta = g_block.mesh().domain().beta;
         g_block /= -real(average_sign) * beta * g_block.mesh().delta();
 
         // Multiply first and last bins by 2 to account for full bins
@@ -69,7 +73,6 @@ namespace cthyb {
         // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
         g_block.singularity()(1) = 1.0;
       }
-
     }
   };
   // ---------------------------------------------

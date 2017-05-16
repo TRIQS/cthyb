@@ -41,22 +41,12 @@ namespace cthyb {
     many_body_op_t _h_loc;                         // The local Hamiltonian = h_int + h0
     int n_iw, n_tau, n_l;
 
-    
     // Single-particle Green's function containers
-
-  public:
-    //g_tau_t G_tau; // Imaginary-time Green's function
-  private:
-    //g_l_t _G_l; // Legendre Green's function
-
     g_iw_t _G0_iw; // Non-interacting Matsubara Green's function
     g_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
-    // Intermediate object to accumulate g(tau), either real or complex
-    //block_gf<imtime, g_target_t> _G_tau_accum;
-    g_tau_g_target_t _G_tau_accum;
-    
-    g4_tau_t _G2_tau; // Two-particle Green's function (three fermionic imaginary times)
+    // Two-particle Green's functions
+    //g4_tau_t _G2_tau; // Two-particle Green's function (three fermionic imaginary times)
     g4_iw_t _G2_inu; // Two-particle Green's function (three fermionic matsubaras)
 
     g4_iw_t _G2_iw_inu_inup_pp; // Two-particle Green's function, fermionic matsubaras, pp-channel
@@ -105,7 +95,7 @@ namespace cthyb {
     //block_gf_view<legendre> G_l() { return _G_l; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)`
-    block2_gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> G2_tau() { return _G2_tau; }
+    //block2_gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> G2_tau() { return _G2_tau; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')`
     block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_inu() { return _G2_inu; }

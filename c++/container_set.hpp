@@ -31,18 +31,21 @@ namespace cthyb {
   struct container_set_t {
 
     /// Imaginary-time Green's function
-    g_tau_opt_t g_tau;
-    g_tau_view_t G_tau() { return *g_tau; }
+    std::optional<g_tau_t> g_tau;
+    g_tau_t::view_type G_tau() { return *g_tau; }
 
+    // Intermediate object to accumulate g(tau), either real or complex
+    std::optional<g_tau_g_target_t> g_tau_accum;
+    
     /// Legendre Green's function
-    g_l_opt_t g_l;
-    g_l_view_t G_l() { return *g_l; }
+    std::optional<g_l_t> g_l;
+    g_l_t::view_type G_l() { return *g_l; }
 
-    /*
     /// Two-particle Green's function (three fermionic imaginary times)
     std::optional<g4_tau_t> g4_tau;
-    g4_tau_view_t G2_tau() { return *g4_tau; }
+    g4_tau_t::view_type G2_tau() { return *g4_tau; }
     
+    /*
     // Two-particle Green's function (three fermionic matsubaras)
     std::optional<g4_iw_t> g4_iw;
     g4_iw_view_t G2_inu() { return *g4_iw;}

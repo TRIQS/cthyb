@@ -50,23 +50,15 @@ namespace cthyb {
   };
 
   solver_core::solver_core(double beta_, std::map<std::string, indices_type> const &gf_struct_, int n_iw, int n_tau, int n_l)
-    : beta(beta_), gf_struct(gf_struct_), n_iw(n_iw), n_tau(n_tau), n_l(n_l) {
+     : beta(beta_), gf_struct(gf_struct_), n_iw(n_iw), n_tau(n_tau), n_l(n_l) {
 
     if (n_tau < 2 * n_iw)
       TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau
                           << ".";
 
     // Allocate single particle greens functions
-
-    // move inside of measures!
-    this->g_tau = make_block_gf(g_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
-    //this->g_l = make_block_gf(g_l_t::g_t::mesh_t{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct); // FIXME: cast is ugly
-
-    _G0_iw       = make_block_gf(gf_mesh<imfreq>{beta, Fermion, n_iw}, gf_struct);
-    //G_tau       = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
-    //_G_l         = make_block_gf(gf_mesh<legendre>{beta, Fermion, static_cast<size_t>(n_l)}, gf_struct); // FIXME: cast is ugly
-    _Delta_tau   = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
-    _G_tau_accum = make_block_gf<delta_target_t>(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
+    _G0_iw     = make_block_gf(gf_mesh<imfreq>{beta, Fermion, n_iw}, gf_struct);
+    _Delta_tau = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
 
     // Allocate (empty) two particle greens functions
 
@@ -81,8 +73,9 @@ namespace cthyb {
     gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
-    _G2_tau = make_block2_gf(g2_tau_mesh, gf_struct);
-    _G2_inu = make_block2_gf(g2_inu_mesh, gf_struct);
+    //_G2_tau = make_block2_gf(g2_tau_mesh, gf_struct);
+    this->g4_tau = make_block2_gf(g2_tau_mesh, gf_struct);
+    _G2_inu      = make_block2_gf(g2_inu_mesh, gf_struct);
 
     _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
     _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
@@ -265,7 +258,126 @@ namespace cthyb {
     // Measurements
     // --------------------------------------------------------------------------
 
+    // --------------------------------------------------------------------------
     // Two-particle correlators
+    // --------------------------------------------------------------------------
+
+    // --------------------------------------------------------------------------
+    // Helper lambdas
+
+    class make_measure_name_t {
+      public:
+      make_measure_name_t(const std::string &bn1, const std::string &bn2) : bn1(bn1), bn2(bn2) {}
+
+      std::string bn1, bn2;
+      auto block_quadruple(block_order bo) const {
+        return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") : (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
+      }
+      auto channel_repr(g2_channel channel) {
+        if (channel == PP)
+          return std::string("pp");
+        else if (channel == PH)
+          return std::string("ph");
+        else if (channel == AllFermionic)
+          return std::string("AllFermionic");
+        else
+          return std::string("unknown");
+      }
+      auto operator()(imtime, block_order bo) { return std::string("G^2 measure, ImTime") + block_quadruple(bo); }
+      auto operator()(imfreq, g2_channel channel, block_order bo) {
+        return std::string("G^2 measure, Matsubara, ") + channel_repr(channel) + block_quadruple(bo);
+      }
+      auto operator()(legendre, g2_channel channel, block_order bo) {
+        return std::string("G^2 measure, Legendre, ") + channel_repr(channel) + block_quadruple(bo);
+      }
+    };
+
+    class g4_measure_t {
+      public:
+      using target_shape_t = mini_vector<int, 4>;
+      struct block_t {
+	int idx;
+	std::string name;
+      };
+      block_t b1, b2;
+      target_shape_t target_shape;
+      g4_measure_t(block_t b1, block_t b2, target_shape_t target_shape)
+	: b1(b1), b2(b2), target_shape(target_shape) {}
+    };
+
+    class g4_measures_t {
+      std::vector<g4_measure_t> measures;
+
+      public:
+      const std::vector<g4_measure_t> &operator()() { return measures; }
+
+      g4_measures_t(const g_tau_t &_Delta_tau, const gf_struct_t &gf_struct, const solve_parameters_t &params) {
+
+        auto g2_blocks_to_measure = params.measure_g2_blocks;
+
+        // Measure all blocks
+        if (g2_blocks_to_measure.empty()) {
+          for (auto const &bn1 : gf_struct) {
+            for (auto const &bn2 : gf_struct) { g2_blocks_to_measure.emplace(bn1.first, bn2.first); }
+          }
+        } else { // Check the blocks we've been asked to measure
+          for (auto const &bn : g2_blocks_to_measure) {
+            if (!gf_struct.count(bn.first)) TRIQS_RUNTIME_ERROR << "Invalid left block name " << bn.first << " for G^2 measurement";
+            if (!gf_struct.count(bn.second)) TRIQS_RUNTIME_ERROR << "Invalid right block name " << bn.second << " for G^2 measurement";
+          }
+        }
+
+        auto two_particle_gf_target_shape = [&](int b1, int b2) {
+          int s1 = _Delta_tau[b1].target_shape()[0];
+          int s3 = _Delta_tau[b2].target_shape()[0];
+          int s2 = params.measure_g2_block_order == AABB ? s1 : s3;
+          int s4 = params.measure_g2_block_order == AABB ? s3 : s1;
+          return mini_vector<int, 4>{s1, s2, s3, s4};
+        };
+
+        for (auto const &block_pair : g2_blocks_to_measure) {
+
+          auto const &bn1 = std::get<0>(block_pair);
+          auto const &bn2 = std::get<1>(block_pair);
+
+          std::map<std::string, int> block_name_to_index;
+          auto block_names = _Delta_tau.block_names();
+          for (auto block_idx : range(block_names.size())) {
+            std::string block_name          = block_names[block_idx];
+            block_name_to_index[block_name] = block_idx;
+          }
+
+          auto b1           = block_name_to_index[bn1];
+          auto b2           = block_name_to_index[bn2];
+	  
+          auto target_shape = two_particle_gf_target_shape(b1, b2);
+
+	  g4_measure_t measure{{b1, bn1}, {b2, bn2}, target_shape};
+          measures.push_back(measure);
+        }
+      }
+    };
+
+    g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
+
+    // --------------------------------------------------------------------------
+
+    // --------------------------------------------------------------------------
+    // Imaginary-time binning
+
+    if (params.measure_g2_tau) {
+      for (const auto &m : g4_measures()) {
+        make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
+
+        // Imaginary time measurements
+        int n_tau   = params.measure_g2_n_tau;
+        auto &block = (*g4_tau)(m.b1.idx, m.b2.idx);
+        block       = gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>{
+	  {{beta, Fermion, n_tau}, {beta, Fermion, n_tau}, {beta, Fermion, n_tau}}, m.target_shape};
+        qmc.add_measure(measure_g2_tau(m.b1.idx, m.b2.idx, block, data), make_measure_name(imtime(), AABB));
+      }
+    }
+    // --------------------------------------------------------------------------
 
     if (params.measure_g2_inu || params.measure_g2_legendre || params.measure_g2_tau) {
       auto g2_blocks_to_measure = params.measure_g2_blocks;
@@ -300,15 +412,18 @@ namespace cthyb {
           struct {
             std::string bn1, bn2;
             auto block_quadruple(block_order bo) const {
-              return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") :
-                                  (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
+              return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") : (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
             }
-	    auto channel_repr(g2_channel channel) {
-	      if(channel == PP) return std::string("pp");
-	      else if ( channel == PH ) return std::string("ph");
-	      else if ( channel == AllFermionic ) return std::string("AllFermionic");
-	      else return std::string("unknown");
-	    }
+            auto channel_repr(g2_channel channel) {
+              if (channel == PP)
+                return std::string("pp");
+              else if (channel == PH)
+                return std::string("ph");
+              else if (channel == AllFermionic)
+                return std::string("AllFermionic");
+              else
+                return std::string("unknown");
+            }
             auto operator()(imtime, block_order bo) { return std::string("G^2 measure, ImTime") + block_quadruple(bo); }
             auto operator()(imfreq, g2_channel channel, block_order bo) {
               return std::string("G^2 measure, Matsubara, ") + channel_repr(channel) + block_quadruple(bo);
@@ -316,16 +431,19 @@ namespace cthyb {
             auto operator()(legendre, g2_channel channel, block_order bo) {
               return std::string("G^2 measure, Legendre, ") + channel_repr(channel) + block_quadruple(bo);
             }
-          } make_measure_name {bn1, bn2};
+          } make_measure_name{bn1, bn2};
 
+          /*
           // Imaginary time measurements
           if (params.measure_g2_tau) {
             int n_tau   = params.measure_g2_n_tau;
-            auto &block = _G2_tau(b1, b2);
+            //auto &block = _G2_tau(b1, b2);
+	    auto &block = (*g4_tau)(b1, b2);
 	    block = gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>{
 	      {{beta, Fermion, n_tau}, {beta, Fermion, n_tau}, {beta, Fermion, n_tau}}, {s1, s2, s3, s4}};
             qmc.add_measure(measure_g2_tau(b1, b2, block, data), make_measure_name(imtime(), AABB));
           }
+	  */
 
           int n_iw = params.measure_g2_n_iw;
 
@@ -338,7 +456,7 @@ namespace cthyb {
 
             if (params.measure_g2_inu_fermionic) {
               auto &block = _G2_inu(b1, b2);
-              block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+              block       = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Fermion, n_inu}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
                 qmc.add_measure(measure_g2_inu<AllFermionic, AABB>(b1, b2, block, data, buf_size1, buf_size2),
@@ -350,26 +468,22 @@ namespace cthyb {
 
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_inu_inup_pp(b1, b2);
-              block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+              block       = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(imfreq(), PP, AABB));
+                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PP, AABB));
               else
-                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(imfreq(), PP, ABBA));
+                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PP, ABBA));
             }
 
             if (params.measure_g2_ph) {
               auto &block = _G2_iw_inu_inup_ph(b1, b2);
-              block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+              block       = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(imfreq(), PH, AABB));
+                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PH, AABB));
               else
-                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(imfreq(), PH, ABBA));
+                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PH, ABBA));
             }
           }
 
@@ -378,75 +492,65 @@ namespace cthyb {
             size_t n_l = params.measure_g2_n_l;
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_l_lp_pp(b1, b2);
-              block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
+              block       = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(legendre(), PP, AABB));
+                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PP, AABB));
               else
-                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(legendre(), PP, ABBA));
+                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PP, ABBA));
             }
 
             if (params.measure_g2_ph) {
               auto &block = _G2_iw_l_lp_ph(b1, b2);
-              block = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
+              block       = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
                  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
               if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(legendre(), PH, AABB));
+                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PH, AABB));
               else
-                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(legendre(), PH, ABBA));
+                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PH, ABBA));
             }
+          }
         }
       }
     }
-  }
 
-  // Single-particle correlators
-    
-  if (params.measure_g_tau) {
-    /*
-    auto &g_names = g_tau->block_names();
-    for (size_t block = 0; block < g_tau->size(); ++block) {
-      qmc.add_measure(measure_g_tau_block(block, _G_tau_accum[block], data), "G measure (" + g_names[block] + ")");
+    // Single-particle correlators
+
+    if (params.measure_g_tau) {
+      this->g_tau = make_block_gf(g_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
+      qmc.add_measure(measure_g_tau(g_tau_accum, data, n_tau, gf_struct), "G_tau measure");
     }
-    */
-    qmc.add_measure(measure_g_tau(_G_tau_accum, data), "G_tau measure");
-  }
 
-  if (params.measure_g_l)
-    qmc.add_measure(measure_g_l(g_l, data, n_l, gf_struct), "G_l measure");
+    if (params.measure_g_l) qmc.add_measure(measure_g_l(g_l, data, n_l, gf_struct), "G_l measure");
 
-  // Other measurements
-  if (params.measure_pert_order) {
-    auto &g_names = _Delta_tau.block_names();
-    for (size_t block = 0; block < _Delta_tau.size(); ++block) {
-      auto const &block_name = g_names[block];
-      qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
+    // Other measurements
+    if (params.measure_pert_order) {
+      auto &g_names = _Delta_tau.block_names();
+      for (size_t block = 0; block < _Delta_tau.size(); ++block) {
+        auto const &block_name = g_names[block];
+        qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
+      }
+      qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
     }
-    qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
+    if (params.measure_density_matrix) {
+      if (!params.use_norm_as_weight)
+        TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
+                               "use_norm_as_weight to True, i.e. to reweight the QMC";
+      qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
+    }
+
+    qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
+
+    // --------------------------------------------------------------------------
+
+    // Run! The empty (starting) configuration has sign = 1
+    _solve_status =
+       qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
+    qmc.collect_results(_comm);
+
+    if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
+
+    // Copy local (real or complex) G_tau back to complex G_tau
+    if (g_tau && g_tau_accum) *g_tau = *g_tau_accum;
   }
-  if (params.measure_density_matrix) {
-    if (!params.use_norm_as_weight)
-      TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
-                             "use_norm_as_weight to True, i.e. to reweight the QMC";
-    qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
-  }
-
-  qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
-
-  // --------------------------------------------------------------------------
-
-  // Run! The empty (starting) configuration has sign = 1
-  _solve_status =
-     qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
-  qmc.collect_results(_comm);
-
-  if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
-
-  // Copy local (real or complex) G_tau back to complex G_tau
-  if (params.measure_g_tau) *g_tau = _G_tau_accum;
-}
 }

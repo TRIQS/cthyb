@@ -98,13 +98,13 @@ namespace cthyb {
     //block2_gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> G2_tau() { return _G2_tau; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')`
-    block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_inu() { return _G2_inu; }
+    //block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_inu() { return _G2_inu; }
     
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
-    block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
+    //block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
-    block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_ph() { return _G2_iw_inu_inup_ph; }
+    //block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_ph() { return _G2_iw_inu_inup_ph; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
     block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_pp() { return _G2_iw_l_lp_pp; }

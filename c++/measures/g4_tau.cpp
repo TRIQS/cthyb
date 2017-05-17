@@ -27,14 +27,16 @@ namespace cthyb {
 
   using namespace triqs::gfs;
 
-  measure_g4_tau::measure_g4_tau(std::optional<g4_tau_t> &g4_tau_opt, qmc_data const &data, g4_measures_t const &g4_measures, int n_tau, const gf_struct_t & gf_struct)
+  measure_g4_tau::measure_g4_tau(std::optional<g4_tau_t> &g4_tau_opt, qmc_data const &data, g4_measures_t const &g4_measures)
      : data(data), g4_measures(g4_measures), average_sign(0) {
 
     double beta = data.config.beta();
+    int n_tau = g4_measures.params.measure_g2_n_tau;
+    
     gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, n_tau};
     gf_mesh<cartesian_product<imtime, imtime, imtime>> g4_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
 
-    g4_tau_opt = make_block2_gf(g4_tau_mesh, gf_struct);
+    g4_tau_opt = make_block2_gf(g4_tau_mesh, g4_measures.gf_struct);
 
     g4_tau.rebind(*g4_tau_opt);
     g4_tau() = 0.0;

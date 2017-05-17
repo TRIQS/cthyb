@@ -76,11 +76,15 @@ namespace cthyb {
     class g4_measures_t {
       
       std::vector<g4_measure_t> measures;
-
+      
       public:
+      
+      const gf_struct_t gf_struct;
+      const solve_parameters_t params;
+
       const std::vector<g4_measure_t> &operator()() { return measures; }
       
-      g4_measures_t(const g_tau_t &_Delta_tau, const gf_struct_t &gf_struct, const solve_parameters_t &params) {
+      g4_measures_t(const g_tau_t &_Delta_tau, const gf_struct_t &gf_struct, const solve_parameters_t &params) : gf_struct(gf_struct), params(params) {
 
         auto g2_blocks_to_measure = params.measure_g2_blocks;
 

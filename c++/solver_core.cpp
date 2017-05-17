@@ -39,6 +39,7 @@
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
 #include "./measures/g2.hpp"
+#include "./measures/g4_iw.hpp"
 #include "./measures/g4_tau.hpp"
 #include "./measures/util.hpp"
 
@@ -64,20 +65,10 @@ namespace cthyb {
     // Allocate (empty) two particle greens functions
 
     // near empty meshes (one mesh point)
-    gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, 1};
-    gf_mesh<imfreq> fermi_iw_mesh{beta, Fermion, 1};
     gf_mesh<imfreq> bose_iw_mesh{beta, Boson, 1};
     gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, 1};
 
-    gf_mesh<cartesian_product<imtime, imtime, imtime>> g2_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
-    gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_inu_mesh{fermi_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
-    gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
-
-    _G2_inu = make_block2_gf(g2_inu_mesh, gf_struct);
-
-    _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
-    _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
 
     _G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
     _G2_iw_l_lp_ph = make_block2_gf(g2_leg_mesh, gf_struct);
@@ -266,33 +257,26 @@ namespace cthyb {
     // --------------------------------------------------------------------------
     // Imaginary-time binning
 
-    if (params.measure_g2_tau) qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures, params.measure_g2_n_tau, gf_struct), "G4 tau measurement");
+    if (params.measure_g2_tau)
+      qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures), "G4 tau measurement");
 
     // --------------------------------------------------------------------------
     // NFFT Matsubara frequency measures
+    {
+    int n_iw = params.measure_g2_n_iw;
+    int n_inu = params.measure_g2_n_inu;
 
-    if (params.measure_g2_inu && params.measure_g2_inu_fermionic) {
+    auto block_order = params.measure_g2_block_order;
 
-      int n_inu = params.measure_g2_n_inu;
+    if (params.measure_g2_inu_fermionic)
+      qmc.add_measure(measure_g4_iw<AllFermionic>(g4_iw, data, g4_measures), "g4_iw fermionic measurement");
 
-      for (auto const &m : g4_measures() ) {
-	
-	int buf_size1 = params.nfft_buf_sizes.count(m.b1.name) ? params.nfft_buf_sizes.count(m.b1.name) : 100;
-	int buf_size2 = params.nfft_buf_sizes.count(m.b2.name) ? params.nfft_buf_sizes.count(m.b2.name) : 100;
+    if (params.measure_g2_ph)
+      qmc.add_measure(measure_g4_iw<PH>(g4_iw_ph, data, g4_measures), "g4_iw particle-hole measurement");
 
-	gf_mesh<imfreq> fermi_tau_mesh{beta, Fermion, n_inu};
-
-        auto &block = _G2_inu(m.b1.idx, m.b2.idx);
-
-        block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
-	  {fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh}, m.target_shape};
-
-	make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
-	
-	auto block_order = params.measure_g2_block_order;
-	qmc.add_measure(measure_g2_inu<AllFermionic>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, block_order, gf_struct),
-			make_measure_name(imfreq(), AllFermionic, AABB));
-      }
+    if (params.measure_g2_pp)
+      qmc.add_measure(measure_g4_iw<PP>(g4_iw_pp, data, g4_measures), "g4_iw particle-particle measurement");
+    
     }
 
     // --------------------------------------------------------------------------

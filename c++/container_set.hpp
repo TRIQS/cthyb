@@ -44,13 +44,19 @@ namespace cthyb {
     /// Two-particle Green's function (three fermionic imaginary times)
     std::optional<g4_tau_t> g4_tau;
     g4_tau_t::view_type G2_tau() { return *g4_tau; }
-    
-    /*
+
     // Two-particle Green's function (three fermionic matsubaras)
     std::optional<g4_iw_t> g4_iw;
-    g4_iw_view_t G2_inu() { return *g4_iw;}
-    */
+    g4_iw_t::view_type G2_inu() { return *g4_iw;}
 
+    // Two-particle Green's function (three fermionic matsubaras)
+    std::optional<g4_iw_t> g4_iw_ph;
+    g4_iw_t::view_type G2_iw_inu_inup_ph() { return *g4_iw_ph;}
+
+    // Two-particle Green's function (three fermionic matsubaras)
+    std::optional<g4_iw_t> g4_iw_pp;
+    g4_iw_t::view_type G2_iw_inu_inup_pp() { return *g4_iw_pp;}
+    
     /*
     /// Write containers to hdf5 file
     friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, container_set_t const &c) {

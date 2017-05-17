@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
     moves/double_remove.cpp
     measures/density_matrix.cpp
     measures/g4_tau.cpp
+    measures/g4_iw.cpp
     measures/g2_inu.cpp
     measures/g2_legendre.cpp)
 

@@ -74,9 +74,7 @@ namespace cthyb {
     gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> g2_iw_mesh{bose_iw_mesh, fermi_iw_mesh, fermi_iw_mesh};
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
-    //_G2_tau = make_block2_gf(g2_tau_mesh, gf_struct);
-    //this->g4_tau = make_block2_gf(g2_tau_mesh, gf_struct);
-    _G2_inu      = make_block2_gf(g2_inu_mesh, gf_struct);
+    _G2_inu = make_block2_gf(g2_inu_mesh, gf_struct);
 
     _G2_iw_inu_inup_pp = make_block2_gf(g2_iw_mesh, gf_struct);
     _G2_iw_inu_inup_ph = make_block2_gf(g2_iw_mesh, gf_struct);
@@ -268,35 +266,38 @@ namespace cthyb {
     // --------------------------------------------------------------------------
     // Imaginary-time binning
 
-    if (params.measure_g2_tau) {
+    if (params.measure_g2_tau) qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures, params.measure_g2_n_tau, gf_struct), "G4 tau measurement");
 
-      /*
-      for (const auto &m : g4_measures()) {
-	
-	measures::make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
-
-        // Imaginary time measurements
-        int n_tau   = params.measure_g2_n_tau;
-        auto &block = (*g4_tau)(m.b1.idx, m.b2.idx);
-
-        block       = gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>{
-	  {{beta, Fermion, n_tau}, {beta, Fermion, n_tau}, {beta, Fermion, n_tau}}, m.target_shape};
-
-	qmc.add_measure(measure_g2_tau_block(m.b1.idx, m.b2.idx, block, data), make_measure_name(imtime(), AABB));
-	
-      }
-      */
-      /*
-      int g4_n_tau = params.measure_g2_n_tau;
-      gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, g4_n_tau};
-      gf_mesh<cartesian_product<imtime, imtime, imtime>> g4_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
-      this->g4_tau = make_block2_gf(g4_tau_mesh, gf_struct);
-      qmc.add_measure(measure_g4_tau(*g4_tau, data, g4_measures), "G4 tau measurement");
-      */
-      qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures, params.measure_g2_n_tau, gf_struct), "G4 tau measurement");
-      
-    }
     // --------------------------------------------------------------------------
+    // NFFT Matsubara frequency measures
+
+    if (params.measure_g2_inu && params.measure_g2_inu_fermionic) {
+
+      int n_inu = params.measure_g2_n_inu;
+
+      for (auto const &m : g4_measures() ) {
+	
+	int buf_size1 = params.nfft_buf_sizes.count(m.b1.name) ? params.nfft_buf_sizes.count(m.b1.name) : 100;
+	int buf_size2 = params.nfft_buf_sizes.count(m.b2.name) ? params.nfft_buf_sizes.count(m.b2.name) : 100;
+
+	gf_mesh<imfreq> fermi_tau_mesh{beta, Fermion, n_inu};
+
+        auto &block = _G2_inu(m.b1.idx, m.b2.idx);
+
+        block = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+	  {fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh}, m.target_shape};
+
+	make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
+	
+	auto block_order = params.measure_g2_block_order;
+	qmc.add_measure(measure_g2_inu<AllFermionic>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, block_order, gf_struct),
+			make_measure_name(imfreq(), AllFermionic, AABB));
+      }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /*
 
     if (params.measure_g2_inu || params.measure_g2_legendre || params.measure_g2_tau) {
       auto g2_blocks_to_measure = params.measure_g2_blocks;
@@ -352,18 +353,6 @@ namespace cthyb {
             }
           } make_measure_name{bn1, bn2};
 
-          /*
-          // Imaginary time measurements
-          if (params.measure_g2_tau) {
-            int n_tau   = params.measure_g2_n_tau;
-            //auto &block = _G2_tau(b1, b2);
-	    auto &block = (*g4_tau)(b1, b2);
-	    block = gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>>{
-	      {{beta, Fermion, n_tau}, {beta, Fermion, n_tau}, {beta, Fermion, n_tau}}, {s1, s2, s3, s4}};
-            qmc.add_measure(measure_g2_tau(b1, b2, block, data), make_measure_name(imtime(), AABB));
-          }
-	  */
-
           int n_iw = params.measure_g2_n_iw;
 
           int buf_size1 = params.nfft_buf_sizes.count(bn1) ? params.nfft_buf_sizes.count(bn1) : 100;
@@ -372,18 +361,6 @@ namespace cthyb {
           // Matsubara measurements
           if (params.measure_g2_inu) {
             int n_inu = params.measure_g2_n_inu;
-
-            if (params.measure_g2_inu_fermionic) {
-              auto &block = _G2_inu(b1, b2);
-              block       = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
-                 {{beta, Fermion, n_inu}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
-              if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<AllFermionic, AABB>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(imfreq(), AllFermionic, AABB));
-              else
-                qmc.add_measure(measure_g2_inu<AllFermionic, ABBA>(b1, b2, block, data, buf_size1, buf_size2),
-                                make_measure_name(imfreq(), AllFermionic, ABBA));
-            }
 
             if (params.measure_g2_pp) {
               auto &block = _G2_iw_inu_inup_pp(b1, b2);
@@ -433,6 +410,9 @@ namespace cthyb {
       }
     }
 
+    */
+
+    // --------------------------------------------------------------------------
     // Single-particle correlators
 
     if (params.measure_g_tau) {

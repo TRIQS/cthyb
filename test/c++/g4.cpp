@@ -80,8 +80,10 @@ TEST(CtHyb, g4_measurments) {
 
   p.measure_g2_tau=true;
   p.measure_g2_n_tau=20;
-  //p.measure_g2_n_iwn=16;
+
+  p.measure_g2_inu=true;  
   p.measure_g2_inu_fermionic=true;  
+  p.measure_g2_n_inu=6;
     
   // Solve!
   solver.solve(p);
@@ -95,7 +97,7 @@ TEST(CtHyb, g4_measurments) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
     h5_write(G_file, "G_tau", solver.G_tau());
     h5_write(G_file, "G2_tau", solver.G2_tau());
-    //h5_write(G_file, "G2_inu", solver.G2_inu());
+    h5_write(G_file, "G2_inu", solver.G2_inu());
   }
 
   if (rank == 0) {
@@ -111,17 +113,13 @@ TEST(CtHyb, g4_measurments) {
     for( auto bidx1 : range(g4_tau.size1()) )
       for( auto bidx2 : range(g4_tau.size2()) )
 	EXPECT_GF_NEAR(g4_tau(bidx1, bidx2), solver.G2_tau()(bidx1, bidx2));
+
+    g4_iw_t g4_iw;
+    h5_read(G_file, "G2_inu", g4_iw);
+    for( auto bidx1 : range(g4_iw.size1()) )
+      for( auto bidx2 : range(g4_iw.size2()) )
+	EXPECT_GF_NEAR(g4_iw(bidx1, bidx2), solver.G2_inu()(bidx1, bidx2));
     
-    /*
-    gf<imtime_poly_cube, tensor_valued<4>> g2_poly;
-    h5_read(G_file, "G2_poly_up_up", g2_poly);
-    EXPECT_GF_NEAR(g2_poly, solver.G2_poly()(0, 0));
-
-    gf<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> g2_poly_tau;
-    h5_read(G_file, "G2_poly_tau_up_up", g2_poly_tau);
-    EXPECT_GF_NEAR(g2_poly_tau, solver.G2_poly_tau()(0, 0));
-    */
-
   }
 }
 MAKE_MAIN;

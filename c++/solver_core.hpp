@@ -20,11 +20,11 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/mc_tools.hpp>
-#include <triqs/gfs/types.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/statistics/histograms.hpp>
 
+#include "types.hpp"
 #include "container_set.hpp"
 #include "solve_parameters.hpp"
 #include "atom_diag.hpp"

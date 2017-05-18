@@ -79,10 +79,10 @@ TEST(CtHyb, g4_measurments) {
   p.move_double     = false;
 
   p.measure_g4_tau=true;
-  p.measure_g4_n_tau=20;
+  p.measure_g4_n_tau=4;
 
   p.measure_g4_iw=true;  
-  p.measure_g4_n_fermionic=6;
+  p.measure_g4_n_fermionic=3;
 
   p.measure_g4_iw_ph=true;  
   p.measure_g4_iw_pp=true;  

@@ -31,7 +31,7 @@ namespace cthyb {
      : data(data), g4_measures(g4_measures), average_sign(0) {
 
     double beta = data.config.beta();
-    int n_tau = g4_measures.params.measure_g2_n_tau;
+    int n_tau = g4_measures.params.measure_g4_n_tau;
     
     gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, n_tau};
     gf_mesh<cartesian_product<imtime, imtime, imtime>> g4_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};

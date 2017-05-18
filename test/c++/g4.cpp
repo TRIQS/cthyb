@@ -78,18 +78,18 @@ TEST(CtHyb, g4_measurments) {
   p.n_warmup_cycles = 1000;
   p.move_double     = false;
 
-  p.measure_g2_tau=true;
-  p.measure_g2_n_tau=20;
+  p.measure_g4_tau=true;
+  p.measure_g4_n_tau=20;
 
-  p.measure_g2_inu_fermionic=true;  
-  p.measure_g2_n_inu=6;
+  p.measure_g4_iw=true;  
+  p.measure_g4_n_fermionic=6;
 
-  p.measure_g2_ph=true;  
-  p.measure_g2_pp=true;  
-  p.measure_g2_n_iw=5;
+  p.measure_g4_iw_ph=true;  
+  p.measure_g4_iw_pp=true;  
+  p.measure_g4_n_bosonic=5;
 
-  p.measure_g2_legendre=true;
-  p.measure_g2_n_l=1;
+  p.measure_g4_l_pp=true;
+  p.measure_g4_n_l=1;
   
   // Solve!
   solver.solve(p);

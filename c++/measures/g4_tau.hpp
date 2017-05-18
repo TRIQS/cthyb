@@ -28,7 +28,6 @@
 namespace cthyb {
 
   using namespace triqs::gfs;
-  using namespace cthyb::measures;
 
   // Measure imaginary time Green's function (all blocks)
   struct measure_g4_tau {

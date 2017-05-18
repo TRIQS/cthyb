@@ -23,6 +23,7 @@
 #include <vector>
 #include <triqs/mpi/base.hpp>
 #include <triqs/statistics/histograms.hpp>
+
 #include "../nfft_array.hpp"
 #include "../qmc_data.hpp"
 
@@ -31,10 +32,9 @@
 namespace cthyb {
 
   using namespace triqs::arrays;
-  using namespace measures;
   
   // Measure the two-particle Green's function in Matsubara frequency
-  template <g2_channel Channel> struct measure_g4_iw {
+  template <g4_channel Channel> struct measure_g4_iw {
 
     using M_block_type = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
     using M_type = M_block_type::g_t;

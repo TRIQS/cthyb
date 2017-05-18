@@ -53,5 +53,7 @@ namespace cthyb {
 
   using imfreq_legendre_mesh_t = cartesian_product<imfreq, legendre, legendre>;
   using g4_wll_t = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
+
+  enum g4_channel { PP, PH, AllFermionic }; // g4 sampling channels
   
 } // namespace cthyb

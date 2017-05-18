@@ -51,31 +51,31 @@ namespace cthyb {
     /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)`
     g4_tau_t::view_type G2_tau() { return *g4_tau; }
 
-    // Two-particle Green's function (three fermionic matsubaras)
+    /// Two-particle Green's function (three fermionic matsubaras)
     std::optional<g4_iw_t> g4_iw;
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')`
     g4_iw_t::view_type G2_inu() { return *g4_iw;}
 
-    // Two-particle Green's function (three fermionic matsubaras)
+    /// Two-particle Green's function (three fermionic matsubaras)
     std::optional<g4_iw_t> g4_iw_pp;
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
     g4_iw_t::view_type G2_iw_inu_inup_pp() { return *g4_iw_pp;}
 
-    // Two-particle Green's function (three fermionic matsubaras)
+    /// Two-particle Green's function (three fermionic matsubaras)
     std::optional<g4_iw_t> g4_iw_ph;
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
     g4_iw_t::view_type G2_iw_inu_inup_ph() { return *g4_iw_ph;}
 
-    // Two-particle Green's function (one bosonic matsubara and two legendre)
+    /// Two-particle Green's function (one bosonic matsubara and two legendre)
     std::optional<g4_wll_t> g4_wll_pp;
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
     g4_wll_t::view_type G2_iw_l_lp_pp() { return *g4_wll_pp;}
 
-    // Two-particle Green's function (one bosonic matsubara and two legendre)
+    /// Two-particle Green's function (one bosonic matsubara and two legendre)
     std::optional<g4_wll_t> g4_wll_ph;
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.

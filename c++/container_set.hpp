@@ -56,6 +56,10 @@ namespace cthyb {
     // Two-particle Green's function (three fermionic matsubaras)
     std::optional<g4_iw_t> g4_iw_pp;
     g4_iw_t::view_type G2_iw_inu_inup_pp() { return *g4_iw_pp;}
+
+    // Two-particle Green's function (one bosonic matsubara and two legendre)
+    std::optional<g4_wll_t> g4_wll_pp;
+    g4_wll_t::view_type G2_iw_l_lp_pp() { return *g4_wll_pp;}
     
     /*
     /// Write containers to hdf5 file

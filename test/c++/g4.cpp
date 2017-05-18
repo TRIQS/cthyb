@@ -86,7 +86,10 @@ TEST(CtHyb, g4_measurments) {
 
   p.measure_g2_ph=true;  
   p.measure_g2_pp=true;  
-  p.measure_g2_n_iw=1;
+  p.measure_g2_n_iw=5;
+
+  p.measure_g2_legendre=true;
+  p.measure_g2_n_l=1;
   
   // Solve!
   solver.solve(p);
@@ -103,6 +106,7 @@ TEST(CtHyb, g4_measurments) {
     h5_write(G_file, "G2_inu", solver.G2_inu());
     h5_write(G_file, "G2_iw_inu_inup_ph", solver.G2_iw_inu_inup_ph());
     h5_write(G_file, "G2_iw_inu_inup_pp", solver.G2_iw_inu_inup_pp());
+    h5_write(G_file, "G2_iw_l_lp_pp", solver.G2_iw_l_lp_pp());
   }
 
   if (rank == 0) {
@@ -126,7 +130,7 @@ TEST(CtHyb, g4_measurments) {
       for( auto bidx2 : range(g4_iw.size2()) )
 	EXPECT_GF_NEAR(g4_iw(bidx1, bidx2), solver.G2_inu()(bidx1, bidx2));
     }
-
+    
     {
     g4_iw_t g4_iw;
     h5_read(G_file, "G2_iw_inu_inup_ph", g4_iw);
@@ -141,6 +145,14 @@ TEST(CtHyb, g4_measurments) {
     for( auto bidx1 : range(g4_iw.size1()) )
       for( auto bidx2 : range(g4_iw.size2()) )
 	EXPECT_GF_NEAR(g4_iw(bidx1, bidx2), solver.G2_iw_inu_inup_pp()(bidx1, bidx2));
+    }
+
+    {
+    g4_wll_t g4_wll;
+    h5_read(G_file, "G2_iw_l_lp_pp", g4_wll);
+    for( auto bidx1 : range(g4_wll.size1()) )
+      for( auto bidx2 : range(g4_wll.size2()) )
+	EXPECT_GF_NEAR(g4_wll(bidx1, bidx2), solver.G2_iw_l_lp_pp()(bidx1, bidx2));
     }
     
   }

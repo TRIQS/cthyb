@@ -61,6 +61,10 @@ namespace experimental {
             all_fermion     = false;
             index_shifts[r] = 1; // For bosons we discard the most negative frequency
             common_factor *= ((m.size() - 1) / 2) % 2 ? -1 : 1;
+	    if(m.size() < 5) {
+	      std::cerr << " ERROR: nfft_buf_t needs more bosonic frequencies.\n";
+	      exit(0);
+	    }
           }
         });
         mini_vector<int, Rank> buf_extents = fiw_mesh.size_of_components() + index_shifts;
@@ -187,6 +191,7 @@ namespace experimental {
 
       // Perform NFFT transform and accumulate inside fiw_arr
       void do_nfft() {
+
 // NFFT Library precomputation and checks
 #ifdef NFFT_OLD_API
         if (plan_ptr->nfft_flags & PRE_ONE_PSI) nfft_precompute_one_psi(plan_ptr.get());

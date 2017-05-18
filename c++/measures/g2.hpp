@@ -23,6 +23,9 @@
 #include <vector>
 #include <triqs/mpi/base.hpp>
 #include <triqs/statistics/histograms.hpp>
+
+#include <triqs/utility/legendre.hpp>
+
 #include "../nfft_array.hpp"
 #include "../qmc_data.hpp"
 
@@ -80,8 +83,21 @@ namespace cthyb {
     clef::placeholder<2> w3;
   };
 
+  // Generates values of \tilde P_l(x(\tau_1-\tau_2))
+  struct tilde_p_gen {
+    triqs::utility::legendre_generator l_gen;
+    double beta;
+    double f;
+    tilde_p_gen(double beta) : beta(beta) {}
+    void reset(time_pt const &tau1, time_pt const &tau2) {
+      l_gen.reset(2 * double(tau1 - tau2) / beta - 1);
+      f = tau1 > tau2 ? 1 : -1;
+    }
+    double next() { return f * l_gen.next(); }
+  };
+  
   // Measure one block of G^2(iomega,l,l')
-  template <g2_channel Channel, block_order Order> struct measure_g2_legendre {
+  template <g2_channel Channel> struct measure_g2_legendre {
 
     using g2_view_type = gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>;
 
@@ -89,16 +105,17 @@ namespace cthyb {
     g2_view_type g2;
     const int A;                 // Index of block A within gf_struct
     const int B;                 // Index of block B within gf_struct
-    const bool diag_block;       // A == B
     const size_t n_l;            // Number of Legendre coefficients
-    mc_weight_t z;
-    int64_t num;
+    block_order order;
+    mc_weight_t average_sign;
 
     // Object that performs NFFT transform
-    nfft_array_t<1, 6> nfft_abcd;
+    nfft_array_t<1, 6> nfft_buf;
 
-    measure_g2_legendre(int b1, int b2, g2_view_type g2, qmc_data const &data, int buf_size_A, int buf_size_B);
+    measure_g2_legendre(int b1, int b2, g2_view_type g2, qmc_data const &data, int buf_size_A, int buf_size_B, block_order & order);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
+
+    double setup_times(tilde_p_gen & p_l1_gen, tilde_p_gen & p_l2_gen, op_t const & i, op_t const & j, op_t const & k, op_t const & l);
   };
 }

@@ -38,9 +38,9 @@
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
-#include "./measures/g2.hpp"
-#include "./measures/g4_iw.hpp"
 #include "./measures/g4_tau.hpp"
+#include "./measures/g4_iw.hpp"
+#include "./measures/g4_l.hpp"
 #include "./measures/util.hpp"
 
 namespace cthyb {
@@ -290,34 +290,27 @@ namespace cthyb {
 
       if (params.measure_g2_pp) {
 
+	qmc.add_measure(measure_g4_l<PP>(g4_wll_pp, data, g4_measures), "g4_l_pp Legendre particle-particle measurement");
+
+	/*
     gf_mesh<imfreq> bose_iw_mesh{beta, Boson, n_iw};
     gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, n_l};
-
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
-    //_G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
     g4_wll_pp = make_block2_gf(g2_leg_mesh, gf_struct);
-	
+
+    qmc.add_measure(measure_g4_l<PP>(*g4_wll_pp, data, buf_size1, buf_size2, order, g4_measures), "g4_l_pp Legendre particle-particle measurement");
+	*/
+    /*
 	for( auto const & m : g4_measures() ) {
-
-	  std::cout << "--> adding legendre measurements: " << m.b1.name << ", " << m.b2.name << "\n";
-	  
-	  //auto &block = _G2_iw_l_lp_pp(m.b1.idx, m.b2.idx);
-	  auto &block = (*g4_wll_pp)(m.b1.idx, m.b2.idx);
-	  //block       = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
-	  //  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, m.target_shape};
-
+	  //std::cout << "--> adding legendre measurements: " << m.b1.name << ", " << m.b2.name << "\n";
+	  auto &block = (*g4_wll_pp)(m.b1.idx, m.b2.idx);	  
 	  make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
-
 	  qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, order), make_measure_name(legendre(), PP, order));
 	  
-	  /*
-	  if (params.measure_g2_block_order == AABB)
-	    qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, AABB), make_measure_name(legendre(), PP, AABB));
-	  else
-	    qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, ABBA), make_measure_name(legendre(), PP, ABBA));
-	  */
 	}
+    */
+
       }
     }
 

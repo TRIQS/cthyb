@@ -70,7 +70,7 @@ namespace cthyb {
 
     gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
 
-    _G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
+    //_G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
     _G2_iw_l_lp_ph = make_block2_gf(g2_leg_mesh, gf_struct);
   }
 
@@ -279,7 +279,50 @@ namespace cthyb {
     
     }
 
-    // --------------------------------------------------------------------------
+          // Legendre measurements
+    if (params.measure_g2_legendre) {
+      size_t n_l = params.measure_g2_n_l;
+      int n_iw = params.measure_g2_n_iw;
+
+      block_order order = params.measure_g2_block_order;
+
+      int buf_size1 = 10, buf_size2 = 10;
+
+      if (params.measure_g2_pp) {
+
+    gf_mesh<imfreq> bose_iw_mesh{beta, Boson, n_iw};
+    gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, n_l};
+
+    gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
+
+    //_G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
+    g4_wll_pp = make_block2_gf(g2_leg_mesh, gf_struct);
+	
+	for( auto const & m : g4_measures() ) {
+
+	  std::cout << "--> adding legendre measurements: " << m.b1.name << ", " << m.b2.name << "\n";
+	  
+	  //auto &block = _G2_iw_l_lp_pp(m.b1.idx, m.b2.idx);
+	  auto &block = (*g4_wll_pp)(m.b1.idx, m.b2.idx);
+	  //block       = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
+	  //  {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, m.target_shape};
+
+	  make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
+
+	  qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, order), make_measure_name(legendre(), PP, order));
+	  
+	  /*
+	  if (params.measure_g2_block_order == AABB)
+	    qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, AABB), make_measure_name(legendre(), PP, AABB));
+	  else
+	    qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, ABBA), make_measure_name(legendre(), PP, ABBA));
+	  */
+	}
+      }
+    }
+
+
+     // --------------------------------------------------------------------------
 
     /*
 

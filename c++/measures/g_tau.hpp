@@ -19,7 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
+
 #include <triqs/gfs.hpp>
+
 #include "./qmc_data.hpp"
 
 namespace cthyb {

@@ -19,14 +19,7 @@
  *
  ******************************************************************************/
 
-#include <triqs/gfs.hpp>
-#include <triqs/gfs/types.hpp>
-
 #include "./g4_l.hpp"
-
-#ifndef NDEBUG
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#endif
 
 namespace cthyb {
 

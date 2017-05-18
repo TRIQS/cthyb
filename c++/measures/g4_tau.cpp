@@ -19,8 +19,6 @@
  *
  ******************************************************************************/
 
-#include <triqs/gfs/types.hpp>
-
 #include "./g4_tau.hpp"
 
 namespace cthyb {

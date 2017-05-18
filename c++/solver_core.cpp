@@ -20,13 +20,14 @@
  ******************************************************************************/
 #include "./solver_core.hpp"
 #include "./qmc_data.hpp"
+
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_int_string.hpp>
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/types.hpp>
 #include <fstream>
 
+#include "./types.hpp"
 #include "./moves/insert.hpp"
 #include "./moves/remove.hpp"
 #include "./moves/double_insert.hpp"

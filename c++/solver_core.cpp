@@ -43,7 +43,7 @@
 #include "./measures/g4_l.hpp"
 #include "./measures/util.hpp"
 
-namespace cthyb {
+   namespace cthyb {
 
   struct index_visitor {
     std::vector<std::string> indices;
@@ -61,17 +61,6 @@ namespace cthyb {
     // Allocate single particle greens functions
     _G0_iw     = make_block_gf(gf_mesh<imfreq>{beta, Fermion, n_iw}, gf_struct);
     _Delta_tau = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
-
-    // Allocate (empty) two particle greens functions
-
-    // near empty meshes (one mesh point)
-    gf_mesh<imfreq> bose_iw_mesh{beta, Boson, 1};
-    gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, 1};
-
-    gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
-
-    //_G2_iw_l_lp_pp = make_block2_gf(g2_leg_mesh, gf_struct);
-    _G2_iw_l_lp_ph = make_block2_gf(g2_leg_mesh, gf_struct);
   }
 
   /// -------------------------------------------------------------------------------------------
@@ -250,187 +239,20 @@ namespace cthyb {
 
     // --------------------------------------------------------------------------
     // Two-particle correlators
-    // --------------------------------------------------------------------------
 
-    measures::g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
+    g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
 
-    // --------------------------------------------------------------------------
     // Imaginary-time binning
+    if (params.measure_g4_tau) qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures), "g4_tau imaginary-time measurement");
 
-    if (params.measure_g2_tau)
-      qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures), "G4 tau measurement");
-
-    // --------------------------------------------------------------------------
     // NFFT Matsubara frequency measures
-    {
-    int n_iw = params.measure_g2_n_iw;
-    int n_inu = params.measure_g2_n_inu;
+    if (params.measure_g4_iw) qmc.add_measure(measure_g4_iw<AllFermionic>(g4_iw, data, g4_measures), "g4_iw fermionic measurement");
+    if (params.measure_g4_iw_pp) qmc.add_measure(measure_g4_iw<PP>(g4_iw_pp, data, g4_measures), "g4_iw_pp particle-particle measurement");
+    if (params.measure_g4_iw_ph) qmc.add_measure(measure_g4_iw<PH>(g4_iw_ph, data, g4_measures), "g4_iw_ph particle-hole measurement");
 
-    auto block_order = params.measure_g2_block_order;
-
-    if (params.measure_g2_inu_fermionic)
-      qmc.add_measure(measure_g4_iw<AllFermionic>(g4_iw, data, g4_measures), "g4_iw fermionic measurement");
-
-    if (params.measure_g2_ph)
-      qmc.add_measure(measure_g4_iw<PH>(g4_iw_ph, data, g4_measures), "g4_iw particle-hole measurement");
-
-    if (params.measure_g2_pp)
-      qmc.add_measure(measure_g4_iw<PP>(g4_iw_pp, data, g4_measures), "g4_iw particle-particle measurement");
-    
-    }
-
-          // Legendre measurements
-    if (params.measure_g2_legendre) {
-      size_t n_l = params.measure_g2_n_l;
-      int n_iw = params.measure_g2_n_iw;
-
-      block_order order = params.measure_g2_block_order;
-
-      int buf_size1 = 10, buf_size2 = 10;
-
-      if (params.measure_g2_pp) {
-
-	qmc.add_measure(measure_g4_l<PP>(g4_wll_pp, data, g4_measures), "g4_l_pp Legendre particle-particle measurement");
-
-	/*
-    gf_mesh<imfreq> bose_iw_mesh{beta, Boson, n_iw};
-    gf_mesh<legendre> fermi_leg_mesh{beta, Fermion, n_l};
-    gf_mesh<cartesian_product<imfreq, legendre, legendre>> g2_leg_mesh{bose_iw_mesh, fermi_leg_mesh, fermi_leg_mesh};
-
-    g4_wll_pp = make_block2_gf(g2_leg_mesh, gf_struct);
-
-    qmc.add_measure(measure_g4_l<PP>(*g4_wll_pp, data, buf_size1, buf_size2, order, g4_measures), "g4_l_pp Legendre particle-particle measurement");
-	*/
-    /*
-	for( auto const & m : g4_measures() ) {
-	  //std::cout << "--> adding legendre measurements: " << m.b1.name << ", " << m.b2.name << "\n";
-	  auto &block = (*g4_wll_pp)(m.b1.idx, m.b2.idx);	  
-	  make_measure_name_t make_measure_name(m.b1.name, m.b2.name);
-	  qmc.add_measure(measure_g2_legendre<PP>(m.b1.idx, m.b2.idx, block, data, buf_size1, buf_size2, order), make_measure_name(legendre(), PP, order));
-	  
-	}
-    */
-
-      }
-    }
-
-
-     // --------------------------------------------------------------------------
-
-    /*
-
-    if (params.measure_g2_inu || params.measure_g2_legendre || params.measure_g2_tau) {
-      auto g2_blocks_to_measure = params.measure_g2_blocks;
-
-      // Measure all blocks
-      if (g2_blocks_to_measure.empty()) {
-        for (auto const &bn1 : gf_struct) {
-          for (auto const &bn2 : gf_struct) { g2_blocks_to_measure.emplace(bn1.first, bn2.first); }
-        }
-      } else { // Check the blocks we've been asked to measure
-        for (auto const &bn : g2_blocks_to_measure) {
-          if (!gf_struct.count(bn.first)) TRIQS_RUNTIME_ERROR << "Invalid left block name " << bn.first << " for G^2 measurement";
-          if (!gf_struct.count(bn.second)) TRIQS_RUNTIME_ERROR << "Invalid right block name " << bn.second << " for G^2 measurement";
-        }
-      }
-
-      if (!(params.measure_g2_pp || params.measure_g2_ph || params.measure_g2_inu_fermionic))
-        TRIQS_RUNTIME_ERROR << "You must switch on at least one of measure_g2_pp, measure_g2_ph, and measure_g2_inu_fermionic!";
-
-      auto const &delta_names = _Delta_tau.block_names();
-      for (int b1 = 0; b1 < delta_names.size(); ++b1) {
-        for (int b2 = 0; b2 < delta_names.size(); ++b2) {
-          auto const &bn1 = delta_names[b1];
-          auto const &bn2 = delta_names[b2];
-          if (!g2_blocks_to_measure.count({bn1, bn2})) continue;
-
-          int s1 = _Delta_tau[b1].target_shape()[0];
-          int s3 = _Delta_tau[b2].target_shape()[0];
-          int s2 = params.measure_g2_block_order == AABB ? s1 : s3;
-          int s4 = params.measure_g2_block_order == AABB ? s3 : s1;
-
-          struct {
-            std::string bn1, bn2;
-            auto block_quadruple(block_order bo) const {
-              return bo == AABB ? (" (" + bn1 + "," + bn1 + "," + bn2 + "," + bn2 + ")") : (" (" + bn1 + "," + bn2 + "," + bn2 + "," + bn1 + ")");
-            }
-            auto channel_repr(g2_channel channel) {
-              if (channel == PP)
-                return std::string("pp");
-              else if (channel == PH)
-                return std::string("ph");
-              else if (channel == AllFermionic)
-                return std::string("AllFermionic");
-              else
-                return std::string("unknown");
-            }
-            auto operator()(imtime, block_order bo) { return std::string("G^2 measure, ImTime") + block_quadruple(bo); }
-            auto operator()(imfreq, g2_channel channel, block_order bo) {
-              return std::string("G^2 measure, Matsubara, ") + channel_repr(channel) + block_quadruple(bo);
-            }
-            auto operator()(legendre, g2_channel channel, block_order bo) {
-              return std::string("G^2 measure, Legendre, ") + channel_repr(channel) + block_quadruple(bo);
-            }
-          } make_measure_name{bn1, bn2};
-
-          int n_iw = params.measure_g2_n_iw;
-
-          int buf_size1 = params.nfft_buf_sizes.count(bn1) ? params.nfft_buf_sizes.count(bn1) : 100;
-          int buf_size2 = params.nfft_buf_sizes.count(bn2) ? params.nfft_buf_sizes.count(bn2) : 100;
-
-          // Matsubara measurements
-          if (params.measure_g2_inu) {
-            int n_inu = params.measure_g2_n_inu;
-
-            if (params.measure_g2_pp) {
-              auto &block = _G2_iw_inu_inup_pp(b1, b2);
-              block       = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
-                 {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
-              if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PP, AABB));
-              else
-                qmc.add_measure(measure_g2_inu<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PP, ABBA));
-            }
-
-            if (params.measure_g2_ph) {
-              auto &block = _G2_iw_inu_inup_ph(b1, b2);
-              block       = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
-                 {{beta, Boson, n_iw}, {beta, Fermion, n_inu}, {beta, Fermion, n_inu}}, {s1, s2, s3, s4}};
-              if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_inu<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PH, AABB));
-              else
-                qmc.add_measure(measure_g2_inu<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(imfreq(), PH, ABBA));
-            }
-          }
-
-          // Legendre measurements
-          if (params.measure_g2_legendre) {
-            size_t n_l = params.measure_g2_n_l;
-            if (params.measure_g2_pp) {
-              auto &block = _G2_iw_l_lp_pp(b1, b2);
-              block       = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
-                 {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
-              if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PP, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PP, AABB));
-              else
-                qmc.add_measure(measure_g2_legendre<PP, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PP, ABBA));
-            }
-
-            if (params.measure_g2_ph) {
-              auto &block = _G2_iw_l_lp_ph(b1, b2);
-              block       = gf<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>>{
-                 {{beta, Boson, n_iw}, {beta, Fermion, n_l}, {beta, Fermion, n_l}}, {s1, s2, s3, s4}};
-              if (params.measure_g2_block_order == AABB)
-                qmc.add_measure(measure_g2_legendre<PH, AABB>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PH, AABB));
-              else
-                qmc.add_measure(measure_g2_legendre<PH, ABBA>(b1, b2, block, data, buf_size1, buf_size2), make_measure_name(legendre(), PH, ABBA));
-            }
-          }
-        }
-      }
-    }
-
-    */
+    // Legendre mixed basis measurements
+    if (params.measure_g4_l_pp) qmc.add_measure(measure_g4_l<PP>(g4_wll_pp, data, g4_measures), "g4_wll_pp Legendre particle-particle measurement");
+    if (params.measure_g4_l_ph) qmc.add_measure(measure_g4_l<PH>(g4_wll_ph, data, g4_measures), "g4_wll_ph Legendre particle-hole measurement");
 
     // --------------------------------------------------------------------------
     // Single-particle correlators

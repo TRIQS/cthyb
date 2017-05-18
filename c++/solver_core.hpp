@@ -45,16 +45,6 @@ namespace cthyb {
     g_iw_t _G0_iw; // Non-interacting Matsubara Green's function
     g_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
-    // Two-particle Green's functions
-    //g4_tau_t _G2_tau; // Two-particle Green's function (three fermionic imaginary times)
-    g4_iw_t _G2_inu; // Two-particle Green's function (three fermionic matsubaras)
-
-    g4_iw_t _G2_iw_inu_inup_pp; // Two-particle Green's function, fermionic matsubaras, pp-channel
-    g4_iw_t _G2_iw_inu_inup_ph; // Two-particle Green's function, fermionic matsubaras, ph-channel
-
-    g4_wll_t _G2_iw_l_lp_pp; // Two-particle Green's function, Legendre coefficients, pp-channel
-    g4_wll_t _G2_iw_l_lp_ph; // Two-particle Green's function, Legendre coefficients, ph-channel
-
     histogram _pert_order_total;               // Histogram of the total perturbation order
     histo_map_t _pert_order;                   // Histograms of the perturbation order for each block
     std::vector<matrix_t> _density_matrix;     // density matrix, when used in Norm mode
@@ -87,30 +77,6 @@ namespace cthyb {
 
     /// :math:`G_0(i\omega)` in imaginary frequencies.
     block_gf_view<imfreq> G0_iw() { return _G0_iw; }
-
-    /// Accumulated :math:`G(\tau)` in imaginary time.
-    //block_gf_view<imtime> G_tau() { return _G_tau; }
-
-    /// Accumulated :math:`G_l` in Legendre polynomials representation.
-    //block_gf_view<legendre> G_l() { return _G_l; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)`
-    //block2_gf_view<cartesian_product<imtime, imtime, imtime>, tensor_valued<4>> G2_tau() { return _G2_tau; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')`
-    //block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_inu() { return _G2_inu; }
-    
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
-    //block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_pp() { return _G2_iw_inu_inup_pp; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
-    //block2_gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> G2_iw_inu_inup_ph() { return _G2_iw_inu_inup_ph; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
-    //block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_pp() { return _G2_iw_l_lp_pp; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
-    block2_gf_view<cartesian_product<imfreq, legendre, legendre>, tensor_valued<4>> G2_iw_l_lp_ph() { return _G2_iw_l_lp_ph; }
 
     /// Atomic :math:`G(\tau)` in imaginary time.
     block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }

@@ -34,7 +34,6 @@
 namespace cthyb {
 
   using namespace triqs::arrays;
-  using namespace measures;
 
   // Generates values of \tilde P_l(x(\tau_1-\tau_2))
   struct tilde_p_gen {
@@ -50,7 +49,7 @@ namespace cthyb {
   };
   
   // Measure G^4(iomega,l,l')
-  template <g2_channel Channel> struct measure_g4_l {
+  template <g4_channel Channel> struct measure_g4_l {
 
     qmc_data const &data;
     g4_wll_t::view_type g4_wll;
@@ -66,6 +65,7 @@ namespace cthyb {
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
 
+    // internal methods 
     double setup_times(tilde_p_gen & p_l1_gen, tilde_p_gen & p_l2_gen, op_t const & i, op_t const & j, op_t const & k, op_t const & l);
   };
 }

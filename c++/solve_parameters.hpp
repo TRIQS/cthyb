@@ -66,42 +66,42 @@ namespace cthyb {
     /// Measure G_l (Legendre)?
     bool measure_g_l = false;
 
-    /// Measure G^2(tau,tau',tau'')
-    bool measure_g2_tau = false;
+    /// Measure G^4(tau,tau',tau'') with three fermionic times.
+    bool measure_g4_tau = false;
 
-    /// Measure G^2(iomega,inu,inu')
-    bool measure_g2_inu = false;
+    /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
+    bool measure_g4_iw = false;
 
-    /// Measure G^2(iomega,l,l')
-    bool measure_g2_legendre = false;
+    /// Measure G^4(iomega,inu,inu') within the particle-particle channel.
+    bool measure_g4_iw_pp = false;
 
-    /// Measure G^2 with three fermionic frequencies
-    bool measure_g2_inu_fermionic = false;
+    /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
+    bool measure_g4_iw_ph = false;
 
-    /// Measure G^2 within particle-particle channel.
-    bool measure_g2_pp = false;
+    /// Measure G^2(iomega,l,l') within the particle-particle channel.
+    bool measure_g4_l_pp = false;
 
-    /// Measure G^2 within particle-hole channel.
-    bool measure_g2_ph = false;
+    /// Measure G^2(iomega,l,l') within the particle-hole channel.
+    bool measure_g4_l_ph = false;
 
     /// Order of block indices in the definition of G^2.
-    block_order measure_g2_block_order = AABB;
+    block_order measure_g4_block_order = AABB;
 
     /// List of block index pairs of G^2 to measure.
     /// default: measure all blocks
-    std::set<std::pair<std::string, std::string>> measure_g2_blocks = (std::set<std::pair<std::string, std::string>>{});
+    std::set<std::pair<std::string, std::string>> measure_g4_blocks = (std::set<std::pair<std::string, std::string>>{});
 
-    /// Number of imaginary time slices for G^2 measurement.
-    int measure_g2_n_tau = 10;
+    /// Number of imaginary time slices for G^4 measurement.
+    int measure_g4_n_tau = 10;
 
-    /// Number of bosonic Matsubara frequencies for G^2 measurement.
-    int measure_g2_n_iw = 30;
+    /// Number of bosonic Matsubara frequencies for G^4 measurement.
+    int measure_g4_n_bosonic = 30;
 
-    /// Number of fermionic Matsubara frequencies for G^2 measurement.
-    int measure_g2_n_inu = 30;
+    /// Number of fermionic Matsubara frequencies for G^4 measurement.
+    int measure_g4_n_fermionic = 30;
 
-    /// Number of Legendre coefficients for G^2(iomega,l,l') measurement.
-    int measure_g2_n_l = 20;
+    /// Number of Legendre coefficients for G^4(iomega,l,l') measurement.
+    int measure_g4_n_l = 20;
 
     /// NFFT buffer sizes for different blocks
     /// default: 100 for every block

@@ -30,15 +30,15 @@
 
 namespace cthyb {
 
-  template <g2_channel Channel>
+  template <g4_channel Channel>
   measure_g4_l<Channel>::measure_g4_l(std::optional<g4_wll_t> &g4_wll_opt, qmc_data const &data, g4_measures_t &g4_measures)
      : data(data), g4_measures(g4_measures), average_sign(0) {
 
     const double beta = data.config.beta();
 
-    order             = g4_measures.params.measure_g2_block_order;
-    size_t n_l        = g4_measures.params.measure_g2_n_l;
-    int n_bosonic     = g4_measures.params.measure_g2_n_iw;
+    order             = g4_measures.params.measure_g4_block_order;
+    size_t n_l        = g4_measures.params.measure_g4_n_l;
+    int n_bosonic     = g4_measures.params.measure_g4_n_bosonic;
     int nfft_buf_size = 10; // make external parameter?
 
     // Allocate the two-particle Green's function
@@ -67,7 +67,7 @@ namespace cthyb {
     }
   }
 
-  template <g2_channel Channel> void measure_g4_l<Channel>::accumulate(mc_weight_t s) {
+  template <g4_channel Channel> void measure_g4_l<Channel>::accumulate(mc_weight_t s) {
 
     s *= data.atomic_reweighting;
     average_sign += s;
@@ -134,7 +134,7 @@ namespace cthyb {
     return dtau;
   }
 
-  template <g2_channel Channel> void measure_g4_l<Channel>::collect_results(triqs::mpi::communicator const &c) {
+  template <g4_channel Channel> void measure_g4_l<Channel>::collect_results(triqs::mpi::communicator const &c) {
 
     for (auto const &m : g4_measures()) { nfft_buf(m.b1.idx, m.b2.idx).flush(); }
 

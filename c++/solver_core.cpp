@@ -27,7 +27,6 @@
 #include <triqs/gfs.hpp>
 #include <fstream>
 
-#include "./types.hpp"
 #include "./moves/insert.hpp"
 #include "./moves/remove.hpp"
 #include "./moves/double_insert.hpp"

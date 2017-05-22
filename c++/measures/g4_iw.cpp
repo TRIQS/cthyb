@@ -29,10 +29,9 @@ namespace cthyb {
 
     const double beta = data.config.beta();
 
-    order = g4_measures.params.measure_g4_block_order;
-    int n_bosonic = g4_measures.params.measure_g4_n_bosonic;
+    order           = g4_measures.params.measure_g4_block_order;
+    int n_bosonic   = g4_measures.params.measure_g4_n_bosonic;
     int n_fermionic = g4_measures.params.measure_g4_n_fermionic;
-    int buf_size = 100; // g4_measures.params.XXXXX; // ??
 
     // Allocate the two-particle Green's function
     {
@@ -52,7 +51,7 @@ namespace cthyb {
     }
 
     // Allocate temporary NFFT two-frequency matrix M
-    {                        
+    {
       int resize_factor = 3; // How much bigger should the large mesh bee???
       int nfreq         = resize_factor * std::max(n_fermionic, n_bosonic - 1 + n_fermionic);
       gf_mesh<imfreq> iw_mesh_large{beta, Fermion, nfreq};
@@ -63,16 +62,17 @@ namespace cthyb {
     }
 
     // Initialize the nfft_buffers mirroring the matrix M
-    { 
+    {
       M_nfft.resize(M.size());
 
       for (auto bidx : range(M.size())) {
-        // the setting up of buf_sizes is a bit ugly... FIXME
-        // use M(bidx).target_shape() directly (yielding a mini_vector<unsigned long, 2>)
-        auto target_shape = M(bidx).target_shape();
-        array<int, 2> buf_sizes{target_shape[0], target_shape[1]};
+        std::string bname = M.block_names()[bidx];
+
+        int buf_size = 10; // default
+        if (g4_measures.params.nfft_buf_sizes.count(bname)) { buf_size = g4_measures.params.nfft_buf_sizes.at(bname); }
+        array<int, 2> buf_sizes{M(bidx).target_shape()};
         buf_sizes() = buf_size;
-	
+
         M_nfft(bidx) = nfft_array_t<2, 2>(M(bidx).mesh(), M(bidx).data(), buf_sizes);
       }
     }
@@ -105,18 +105,33 @@ namespace cthyb {
     }
   }
 
-  template <> void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
+  // Frequency placeholders
+  clef::placeholder<0> iw_;
+  clef::placeholder<1> inu_;
+  clef::placeholder<2> inup_;
+
+  clef::placeholder<0> w1;
+  clef::placeholder<1> w2;
+  clef::placeholder<2> w3;
+
+  // Index placeholders
+  clef::placeholder<3> a_;
+  clef::placeholder<4> b_;
+  clef::placeholder<5> c_;
+  clef::placeholder<6> d_;
+
+  template <> inline void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
     g4(iw_, inu_, inup_)(a_, b_, c_, d_) << g4(iw_, inu_, inup_)(a_, b_, c_, d_)
           + s * M_ab(-inu_, inu_ + iw_)(a_, b_) * M_cd(-inup_ - iw_, inup_)(c_, d_);
   }
 
-  template <> void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
+  template <> inline void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
     g4(iw_, inu_, inup_)(a_, b_, c_, d_) << g4(iw_, inu_, inup_)(a_, b_, c_, d_)
           + s * M_ab(-inu_, iw_ - inup_)(a_, b_) * M_cd(-iw_ + inu_, inup_)(c_, d_);
   }
 
   template <>
-  void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
+  inline void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
     g4(w1, w2, w3)(a_, b_, c_, d_) << g4(w1, w2, w3)(a_, b_, c_, d_) + s * M_ab(w2, w1)(b_, a_) * M_cd(w1 + w3 - w2, w3)(d_, c_);
   }
 

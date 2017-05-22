@@ -55,20 +55,6 @@ namespace cthyb {
     inline void accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const & M_ab, M_type const & M_cd);
     inline void accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const & M_ad, M_type const & M_cb);
 
-    // Frequency placeholders
-    clef::placeholder<0> iw_;
-    clef::placeholder<1> inu_;
-    clef::placeholder<2> inup_;
-
-    // Index placeholders
-    clef::placeholder<3> a_;
-    clef::placeholder<4> b_;
-    clef::placeholder<5> c_;
-    clef::placeholder<6> d_;
-
-    clef::placeholder<0> w1;
-    clef::placeholder<1> w2;
-    clef::placeholder<2> w3;
   };
 
 }

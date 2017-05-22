@@ -103,6 +103,9 @@ namespace cthyb {
     /// Number of Legendre coefficients for G^4(iomega,l,l') measurement.
     int measure_g4_n_l = 20;
 
+    /// NFFT buffer size for G^4(iomega,l,l') measurement.
+    int measure_g4_l_nfft_buf_size = 100;
+
     /// NFFT buffer sizes for different blocks
     /// default: 100 for every block
     std::map<std::string, int> nfft_buf_sizes = (std::map<std::string, int>{});

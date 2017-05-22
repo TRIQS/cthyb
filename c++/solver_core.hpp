@@ -62,10 +62,6 @@ namespace cthyb {
        void
        solve(solve_parameters_t const &p);
 
-    /// Return reference to the container_set
-    container_set_t & container_set() { return static_cast<container_set_t &>(*this); }
-    container_set_t const & container_set() const { return static_cast<container_set_t const &>(*this); }
-
     /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
     many_body_op_t const &h_loc() const { return _h_loc; }
 

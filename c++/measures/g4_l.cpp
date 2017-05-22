@@ -32,7 +32,7 @@ namespace cthyb {
     order             = g4_measures.params.measure_g4_block_order;
     size_t n_l        = g4_measures.params.measure_g4_n_l;
     int n_bosonic     = g4_measures.params.measure_g4_n_bosonic;
-    int nfft_buf_size = 10; // make external parameter?
+    int nfft_buf_size = g4_measures.params.measure_g4_l_nfft_buf_size; 
 
     // Allocate the two-particle Green's function
     {

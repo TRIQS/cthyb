@@ -24,6 +24,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/utility/variant_int_string.hpp>
+#include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
 
 #include "config.hpp"
 
@@ -40,9 +41,10 @@ namespace cthyb {
   using triqs::utility::time_pt;
   using op_t         = std::pair<time_pt, int>;
   using histo_map_t  = std::map<std::string, histogram>;
-  using indices_type = triqs::operators::indices_t;
-  using gf_struct_t  = std::map<std::string, indices_type>;
 
+  using indices_type = triqs::operators::indices_t;
+  using gf_struct_t = triqs::hilbert_space::gf_struct_t;
+  
   // One-particle Green's function types
   using g_tau_t          = block_gf<imtime>;
   using g_tau_g_target_t = block_gf<imtime, g_target_t>;

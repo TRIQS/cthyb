@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include "./g4_iw.hpp"
+#include "./timer.hpp"
 
 namespace cthyb {
 
@@ -84,8 +85,9 @@ namespace cthyb {
     average_sign += s;
 
     auto nfft_fill = [this](det_type const &det, nfft_array_t<2, 2> &nfft_matrix) {
-      foreach (det, [&nfft_matrix](op_t const &x, op_t const &y, det_scalar_t M) {
-        nfft_matrix.push_back({double(x.first), double(y.first)}, {x.second, y.second}, M);
+      const double beta = this->data.config.beta();
+      foreach (det, [&nfft_matrix, beta](op_t const &x, op_t const &y, det_scalar_t M) {
+        nfft_matrix.push_back({beta - double(x.first), double(y.first)}, {x.second, y.second}, M);
       })
         ;
     };
@@ -101,65 +103,89 @@ namespace cthyb {
       auto g4_iw_block = g4_iw(m.b1.idx, m.b2.idx);
       bool diag_block  = (m.b1.idx == m.b2.idx);
       if (order == AABB || diag_block) accumulate_impl_AABB(g4_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-      if (order == ABBA || diag_block) accumulate_impl_AABB(g4_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == ABBA || diag_block) accumulate_impl_ABBA(g4_iw_block, s, M(m.b1.idx), M(m.b2.idx));
     }
   }
 
-  // Frequency placeholders
-  clef::placeholder<0> iw_;
-  clef::placeholder<1> inu_;
-  clef::placeholder<2> inup_;
-
-  clef::placeholder<0> w1;
-  clef::placeholder<1> w2;
-  clef::placeholder<2> w3;
-
   // Index placeholders
-  clef::placeholder<3> a_;
-  clef::placeholder<4> b_;
-  clef::placeholder<5> c_;
-  clef::placeholder<6> d_;
+  clef::placeholder<0> i;
+  clef::placeholder<1> j;
+  clef::placeholder<2> k;
+  clef::placeholder<3> l;
 
-  template <> inline void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
-    g4(iw_, inu_, inup_)(a_, b_, c_, d_) << g4(iw_, inu_, inup_)(a_, b_, c_, d_)
-          + s * M_ab(-inu_, inu_ + iw_)(a_, b_) * M_cd(-inup_ - iw_, inup_)(c_, d_);
+  // Frequency placeholders
+  clef::placeholder<4> w;
+  clef::placeholder<5> n1;
+  clef::placeholder<6> n2;
+  clef::placeholder<7> n3;
+
+  // -- Particle-hole
+
+  template <> inline void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) + s * M_ij(-n1, n1 + w)(i, j) * M_kl(-n2 - w, n2)(k, l);
   }
 
-  template <> inline void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
-    g4(iw_, inu_, inup_)(a_, b_, c_, d_) << g4(iw_, inu_, inup_)(a_, b_, c_, d_)
-          + s * M_ab(-inu_, iw_ - inup_)(a_, b_) * M_cd(-iw_ + inu_, inup_)(c_, d_);
+  template <> inline void measure_g4_iw<PH>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) - s * M_il(-n1, n2)(i, l) * M_kj(-n2 - w, n1 + w)(k, j);
+  }
+
+  // -- Particle-particle
+
+  template <> inline void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) + s * M_ij(-n2, w - n2)(i, j) * M_kl(-w + n1, n2)(k, l);
+  }
+
+  template <> inline void measure_g4_iw<PP>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) - s * M_il(-n1, n2)(i, l) * M_kj(-w + n2, w - n2)(k, j);
+  }
+
+  // -- Fermionic
+
+  template <>
+  inline void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+
+      int size_ij = M_ij.target_shape()[0];
+      int size_kl = M_kl.target_shape()[0];
+
+      for (auto const &n1 : std::get<0>(g4.mesh()))
+        for (auto const &n2 : std::get<1>(g4.mesh()))
+          for (auto const &n3 : std::get<2>(g4.mesh())) {
+            auto mesh = std::get<0>(g4.mesh());
+            typename decltype(mesh)::mesh_point_t n4{mesh, n1.index() + n3.index() - n2.index()};
+            for (int i : range(size_ij))
+              for (int j : range(size_ij))
+                for (int k : range(size_kl))
+                  for (int l : range(size_kl)) g4[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
+          }
+
+      //g4(n1, n2, n3)(i, j, k, l) << g4(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
   }
 
   template <>
-  inline void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd) {
-    g4(w1, w2, w3)(a_, b_, c_, d_) << g4(w1, w2, w3)(a_, b_, c_, d_) + s * M_ab(w2, w1)(b_, a_) * M_cd(w1 + w3 - w2, w3)(d_, c_);
+  inline void measure_g4_iw<AllFermionic>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+
+    int size_il = M_il.target_shape()[0];
+    int size_kj = M_kj.target_shape()[0];
+
+    for (auto const &n1 : std::get<0>(g4.mesh()))
+      for (auto const &n2 : std::get<1>(g4.mesh()))
+        for (auto const &n3 : std::get<2>(g4.mesh())) {
+          auto mesh = std::get<0>(g4.mesh());
+          typename decltype(mesh)::mesh_point_t n4{mesh, n1.index() + n3.index() - n2.index()};
+          for (int i : range(size_il))
+            for (int j : range(size_kj))
+              for (int k : range(size_kj))
+                for (int l : range(size_il)) g4[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
+        }
+
+    //g4(n1, n2, n3)(i, j, k, l) << g4(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
   }
 
-  // -------------------------
+  // --
 
-  template <> inline void measure_g4_iw<PH>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ad, M_type const &M_cb) {
-
-    g4(iw_, inu_, inup_)(a_, b_, c_, d_) << g4(iw_, inu_, inup_)(a_, b_, c_, d_)
-          - s * M_ad(-inu_, inup_)(a_, d_) * M_cb(-inup_ - iw_, inu_ + iw_)(c_, b_);
-  }
-
-  template <> inline void measure_g4_iw<PP>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ad, M_type const &M_cb) {
-
-    g4(iw_, inu_, inup_)(a_, b_, c_, d_) << g4(iw_, inu_, inup_)(a_, b_, c_, d_)
-          - s * M_ad(-inu_, inup_)(a_, d_) * M_cb(-iw_ + inu_, iw_ - inup_)(c_, b_);
-  }
-
-  template <>
-  inline void measure_g4_iw<AllFermionic>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ad, M_type const &M_cb) {
-
-    g4(w1, w2, w3)(a_, b_, c_, d_) << g4(w1, w2, w3)(a_, b_, c_, d_) - s * M_ad(w1 + w3 - w2, w1)(d_, a_) * M_cb(w2, w3)(b_, c_);
-  }
-
-  template <g4_channel Channel> void measure_g4_iw<Channel>::collect_results(triqs::mpi::communicator const &c) {
-    average_sign = mpi_all_reduce(average_sign, c);
-
-    g4_iw = mpi_all_reduce(g4_iw, c);
-
+  template <g4_channel Channel> void measure_g4_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
+    average_sign = mpi_all_reduce(average_sign, com);
+    g4_iw        = mpi_all_reduce(g4_iw, com);
     for (auto const &g4_iw_block : g4_iw) g4_iw_block /= real(average_sign) * data.config.beta();
   }
 

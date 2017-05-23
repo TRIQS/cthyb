@@ -7,8 +7,10 @@ This continuous-time hybridization-expansion solver has been written by P.
 Seth, I. Krivenko, M. Ferrero and O. Parcollet. It is based on a hybridization
 expansion of the partition function as described in references [#ctqmc1]_,
 [#ctqmc2]_ with implementation improvements suggested in [#ctqmc3]_.
-The implementation of the two-particle Green's function measurements is
-based on ideas and uses notation proposed by L. Boehnke in [#legendre]_, [#lewin_thesis]_.
+
+The implementation of the two-particle Green's function measurements
+contains significant contributions from L. Boehnke ([#legendre]_, [#lewin_thesis]_)
+and H. U.R. Strand.
 
 Citation
 ========

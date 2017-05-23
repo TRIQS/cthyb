@@ -60,7 +60,10 @@ TEST(CtHyb, g4_measurments) {
   auto H = U * n_up * n_down;
 
   // Construct CTQMC solver
-  solver_core solver(beta, gf_struct, 1025, 2500);
+  int n_iw  = 1025;
+  int n_tau = 2500;
+  int n_l   = 10;
+  solver_core solver(beta, gf_struct, n_iw, n_tau, n_l);
 
   // Set G0
   triqs::clef::placeholder<0> om_;
@@ -78,83 +81,68 @@ TEST(CtHyb, g4_measurments) {
   p.n_warmup_cycles = 1000;
   p.move_double     = false;
 
-  p.measure_g4_tau=true;
-  p.measure_g4_n_tau=4;
+  p.measure_g4_tau   = true;
+  p.measure_g4_n_tau = 3;
 
-  p.measure_g4_iw=true;  
-  p.measure_g4_n_fermionic=3;
+  p.measure_g4_iw          = true;
+  p.measure_g4_n_fermionic = 3;
 
-  p.measure_g4_iw_ph=true;  
-  p.measure_g4_iw_pp=true;  
-  p.measure_g4_n_bosonic=5;
+  p.measure_g4_iw_ph     = true;
+  p.measure_g4_iw_pp     = true;
+  p.measure_g4_n_bosonic = 5;
 
-  p.measure_g4_l_pp=true;
-  p.measure_g4_n_l=1;
-  
+  p.measure_g4_l_pp = true;
+  p.measure_g4_n_l  = 3;
+
   // Solve!
   solver.solve(p);
 
   std::cout << "--> solver done, now writing and reading the results.\n";
-  
+
   // Save the results
   std::string filename = "g4";
 
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
-    h5_write(G_file, "G_tau", solver.G_tau());
-    h5_write(G_file, "G2_tau", solver.G2_tau());
-    h5_write(G_file, "G2_inu", solver.G2_inu());
-    h5_write(G_file, "G2_iw_inu_inup_ph", solver.G2_iw_inu_inup_ph());
-    h5_write(G_file, "G2_iw_inu_inup_pp", solver.G2_iw_inu_inup_pp());
-    h5_write(G_file, "G2_iw_l_lp_pp", solver.G2_iw_l_lp_pp());
+    h5_write(G_file, "G2_tau", solver.G2_tau()(0, 1));
+    h5_write(G_file, "G2_inu", solver.G2_inu()(0, 1));
+    h5_write(G_file, "G2_iw_inu_inup_ph", solver.G2_iw_inu_inup_ph()(0, 1));
+    h5_write(G_file, "G2_iw_inu_inup_pp", solver.G2_iw_inu_inup_pp()(0, 1));
+    h5_write(G_file, "G2_iw_l_lp_pp", solver.G2_iw_l_lp_pp()(0, 1));
   }
 
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".ref.h5", 'r');
 
-    g_tau_t g_tau;
-    h5_read(G_file, "G_tau", g_tau);
-    for( auto block_idx : range(g_tau.size()) )
-      EXPECT_GF_NEAR(g_tau[block_idx], solver.G_tau()[block_idx]);
-
-    g4_tau_t g4_tau;
-    h5_read(G_file, "G2_tau", g4_tau);
-    for( auto bidx1 : range(g4_tau.size1()) )
-      for( auto bidx2 : range(g4_tau.size2()) )
-	EXPECT_GF_NEAR(g4_tau(bidx1, bidx2), solver.G2_tau()(bidx1, bidx2));
-
     {
-    g4_iw_t g4_iw;
-    h5_read(G_file, "G2_inu", g4_iw);
-    for( auto bidx1 : range(g4_iw.size1()) )
-      for( auto bidx2 : range(g4_iw.size2()) )
-	EXPECT_GF_NEAR(g4_iw(bidx1, bidx2), solver.G2_inu()(bidx1, bidx2));
-    }
-    
-    {
-    g4_iw_t g4_iw;
-    h5_read(G_file, "G2_iw_inu_inup_ph", g4_iw);
-    for( auto bidx1 : range(g4_iw.size1()) )
-      for( auto bidx2 : range(g4_iw.size2()) )
-	EXPECT_GF_NEAR(g4_iw(bidx1, bidx2), solver.G2_iw_inu_inup_ph()(bidx1, bidx2));
+      g4_tau_t::g_t g4_tau;
+      h5_read(G_file, "G2_tau", g4_tau);
+      EXPECT_GF_NEAR(g4_tau, solver.G2_tau()(0, 1));
     }
 
     {
-    g4_iw_t g4_iw;
-    h5_read(G_file, "G2_iw_inu_inup_pp", g4_iw);
-    for( auto bidx1 : range(g4_iw.size1()) )
-      for( auto bidx2 : range(g4_iw.size2()) )
-	EXPECT_GF_NEAR(g4_iw(bidx1, bidx2), solver.G2_iw_inu_inup_pp()(bidx1, bidx2));
+      g4_iw_t::g_t g4_iw;
+      h5_read(G_file, "G2_inu", g4_iw);
+      EXPECT_GF_NEAR(g4_iw, solver.G2_inu()(0, 1));
     }
 
     {
-    g4_wll_t g4_wll;
-    h5_read(G_file, "G2_iw_l_lp_pp", g4_wll);
-    for( auto bidx1 : range(g4_wll.size1()) )
-      for( auto bidx2 : range(g4_wll.size2()) )
-	EXPECT_GF_NEAR(g4_wll(bidx1, bidx2), solver.G2_iw_l_lp_pp()(bidx1, bidx2));
+      g4_iw_t::g_t g4_iw;
+      h5_read(G_file, "G2_iw_inu_inup_ph", g4_iw);
+      EXPECT_GF_NEAR(g4_iw, solver.G2_iw_inu_inup_ph()(0, 1));
     }
-    
+
+    {
+      g4_iw_t::g_t g4_iw;
+      h5_read(G_file, "G2_iw_inu_inup_pp", g4_iw);
+      EXPECT_GF_NEAR(g4_iw, solver.G2_iw_inu_inup_pp()(0, 1));
+    }
+
+    {
+      g4_wll_t::g_t g4_wll;
+      h5_read(G_file, "G2_iw_l_lp_pp", g4_wll);
+      EXPECT_GF_NEAR(g4_wll, solver.G2_iw_l_lp_pp()(0, 1));
+    }
   }
 }
 MAKE_MAIN;

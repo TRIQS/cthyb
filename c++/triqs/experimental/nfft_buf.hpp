@@ -31,7 +31,7 @@
 #include <nfft3.h>
 
 namespace triqs {
-namespace experimental {
+  namespace experimental {
 
     using namespace triqs::arrays;
     using namespace triqs::gfs;
@@ -61,10 +61,10 @@ namespace experimental {
             all_fermion     = false;
             index_shifts[r] = 1; // For bosons we discard the most negative frequency
             common_factor *= ((m.size() - 1) / 2) % 2 ? -1 : 1;
-	    if(m.size() < 5) {
-	      std::cerr << " ERROR: nfft_buf_t needs more bosonic frequencies.\n";
-	      exit(0);
-	    }
+            if (m.size() < 5) {
+              std::cerr << " ERROR: nfft_buf_t needs more bosonic frequencies.\n";
+              exit(0);
+            }
           }
         });
         mini_vector<int, Rank> buf_extents = fiw_mesh.size_of_components() + index_shifts;
@@ -88,8 +88,7 @@ namespace experimental {
       /// Rebind nfft buffer to new accumulation container of same shape
       void rebind(array_view<dcomplex, Rank> new_fiw_arr) {
         flush();
-        assert(get_shape(new_fiw_arr) == get_shape(fiw_arr) ||
-               get_shape(fiw_arr) == get_shape(array_view<dcomplex, Rank>{}));
+        assert(get_shape(new_fiw_arr) == get_shape(fiw_arr) || get_shape(fiw_arr) == get_shape(array_view<dcomplex, Rank>{}));
         fiw_arr.rebind(new_fiw_arr);
       }
 
@@ -130,7 +129,7 @@ namespace experimental {
 
         assert(plan_ptr);
 
-        if(is_empty()) return;
+        if (is_empty()) return;
 
         // Trivial initialization of the remaining points
         for (int i = buf_counter; i < buf_size; ++i) {
@@ -148,7 +147,6 @@ namespace experimental {
       bool is_full() const { return buf_counter >= buf_size; }
 
       private:
-
       // Imaginary frequency (multi-)mesh
       freq_mesh_t fiw_mesh;
 
@@ -192,32 +190,46 @@ namespace experimental {
       // Perform NFFT transform and accumulate inside fiw_arr
       void do_nfft() {
 
+        // nfft_adjoint() uses a window function (Kaiser-Bessel by default)
+        // that cannot be constructed for plan_ptr->N_total < 12.
+        // In the small N_total case one has to call nfft_adjoint_direct() instead,
+        // which is also faster for the smaller N_total.
+        //
+        // C.f. https://github.com/NFFT/nfft/issues/34
+        if (plan_ptr->N_total < 12) {
+
+          // Execute transform
+          nfft_adjoint_direct(plan_ptr.get());
+
+        } else {
+
 // NFFT Library precomputation and checks
 #ifdef NFFT_OLD_API
-        if (plan_ptr->nfft_flags & PRE_ONE_PSI) nfft_precompute_one_psi(plan_ptr.get());
+          if (plan_ptr->nfft_flags & PRE_ONE_PSI) nfft_precompute_one_psi(plan_ptr.get());
 #else
-        if (plan_ptr->flags & PRE_ONE_PSI) nfft_precompute_one_psi(plan_ptr.get());
+          if (plan_ptr->flags & PRE_ONE_PSI) nfft_precompute_one_psi(plan_ptr.get());
 #endif
-        if (do_checks) { // Check validity of NFFT parameters
-          const char *error_str = nfft_check(plan_ptr.get());
-          if (error_str != 0) TRIQS_RUNTIME_ERROR << "Error in NFFT module: " << error_str << "\n";
-        }
+          if (do_checks) { // Check validity of NFFT parameters
+            const char *error_str = nfft_check(plan_ptr.get());
+            if (error_str != 0) TRIQS_RUNTIME_ERROR << "Error in NFFT module: " << error_str << "\n";
+          }
 
-        // Execute transform
-        nfft_adjoint(plan_ptr.get());
+          // Execute transform
+          nfft_adjoint(plan_ptr.get());
+        }
 
         // Accumulate results in fiw_arr. Care to normalize results afterwards
         if (all_fermion) {
           int count = 0;
           for (auto it = fiw_arr.begin(); it != fiw_arr.end(); ++it, ++count) {
             int factor = (sum(it.indices()) % 2 ? -1 : 1);
-            *it        += fk_arr()[count] * factor * common_factor;
+            *it += fk_arr()[count] * factor * common_factor;
           }
         } else {
           for (auto it = fiw_arr.begin(); it != fiw_arr.end(); ++it) {
-            int count = nfft_indexmap[it.indices() + index_shifts];
+            int count  = nfft_indexmap[it.indices() + index_shifts];
             int factor = (sum(it.indices()) % 2 ? -1 : 1);
-            *it        += fk_arr()[count] * factor * common_factor;
+            *it += fk_arr()[count] * factor * common_factor;
           }
         }
       }

@@ -25,6 +25,7 @@
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/utility/variant_int_string.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
+#include <triqs/statistics/histograms.hpp>
 
 #include "config.hpp"
 
@@ -62,6 +63,7 @@ namespace cthyb {
   using g4_wll_t               = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
   enum g4_channel { PP, PH, AllFermionic }; // g4 sampling channels
+  enum block_order { AABB, ABBA }; // order of hybridization blocks g2
 
 } // namespace cthyb
 
@@ -95,7 +97,7 @@ namespace triqs {
       return make_block_gf<matrix_valued, Var_t>(m, gf_struct);
     }
 
-    template <typename Var_t> block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct) {
+    template <typename Var_t> block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct, cthyb::block_order order = cthyb::AABB) {
 
       std::vector<std::vector<gf<Var_t, tensor_valued<4>>>> gf_vecvec;
       std::vector<std::string> block_names;
@@ -112,8 +114,16 @@ namespace triqs {
           int bl2_size = bl2.second.size();
           std::vector<std::string> indices2;
           for (auto const &var : bl2.second) apply_visitor([&indices2](auto &&arg) { indices2.push_back(std::to_string(arg)); }, var);
-          gf_vec.emplace_back(m, make_shape(bl1_size, bl1_size, bl2_size, bl2_size),
-                              std::vector<std::vector<std::string>>{indices1, indices1, indices2, indices2});
+	  // Assuming AABB ordering of the blocks!!
+	  auto I = std::vector<std::vector<std::string>>{indices1, indices1, indices2, indices2};
+	  if(order == cthyb::AABB) {
+	    auto shape = make_shape(bl1_size, bl1_size, bl2_size, bl2_size);
+	    gf_vec.emplace_back(m, shape, I);
+	  } else {
+	    assert( order == cthyb::ABBA );
+	    auto shape = make_shape(bl1_size, bl2_size, bl2_size, bl1_size);
+	    gf_vec.emplace_back(m, shape, I);	    
+	  }
         }
         gf_vecvec.emplace_back(std::move(gf_vec));
       }

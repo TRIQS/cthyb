@@ -29,12 +29,14 @@ namespace cthyb {
      : data(data), g4_measures(g4_measures), average_sign(0) {
 
     double beta = data.config.beta();
+
+    order     = g4_measures.params.measure_g4_block_order;
     int n_tau = g4_measures.params.measure_g4_n_tau;
-    
+
     gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, n_tau};
     gf_mesh<cartesian_product<imtime, imtime, imtime>> g4_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
 
-    g4_tau_opt = make_block2_gf(g4_tau_mesh, g4_measures.gf_struct);
+    g4_tau_opt = make_block2_gf(g4_tau_mesh, g4_measures.gf_struct, order);
 
     g4_tau.rebind(*g4_tau_opt);
     g4_tau() = 0.0;
@@ -49,7 +51,8 @@ namespace cthyb {
     for (auto &m : g4_measures()) {
 
       auto g4_tau_block = g4_tau(m.b1.idx, m.b2.idx);
-      
+      bool diag_block   = (m.b1.idx == m.b2.idx);
+
       foreach (data.dets[m.b1.idx], [&](auto const &i, auto const &j, auto const M_ij) {
         foreach (data.dets[m.b2.idx], [&](auto const &k, auto const &l, auto const M_kl) {
 
@@ -67,8 +70,8 @@ namespace cthyb {
             g4_tau_block[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += pre_factor * M_ij * M_kl;
           };
 
-          compute_M2_product(i, j, k, l, sign);
-          if (m.b1.idx == m.b2.idx) compute_M2_product(i, l, k, j, -sign);
+          if (order == AABB || diag_block) compute_M2_product(i, j, k, l, +sign);
+          if (order == ABBA || diag_block) compute_M2_product(i, l, k, j, -sign);
 
         })
           ;
@@ -90,7 +93,7 @@ namespace cthyb {
       double dtau_vol = dtau0 * dtau1 * dtau2;
 
       // Rescale sampled Green's function
-      double beta = data.config.beta();
+      double beta  = data.config.beta();
       g4_tau_block = g4_tau_block / (real(average_sign) * beta * dtau_vol);
 
       // Account for

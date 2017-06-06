@@ -35,9 +35,10 @@ namespace cthyb {
     qmc_data const &data;
     g4_tau_t::view_type g4_tau;
     mc_weight_t average_sign;
+    block_order order;
     g4_measures_t g4_measures;
 
-    measure_g4_tau(std::optional<g4_tau_t> & g4_tau_opt, qmc_data const &data, g4_measures_t const & g4_measures);
+    measure_g4_tau(std::optional<g4_tau_t> &g4_tau_opt, qmc_data const &data, g4_measures_t const &g4_measures);
 
     void accumulate(mc_weight_t sign);
     void collect_results(triqs::mpi::communicator const &comm);

@@ -42,9 +42,9 @@ namespace cthyb {
       gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> mesh_bff{mesh_b, mesh_f, mesh_f};
 
       if (Channel == AllFermionic)
-        g4_iw_opt = make_block2_gf(mesh_fff, g4_measures.gf_struct);
+        g4_iw_opt = make_block2_gf(mesh_fff, g4_measures.gf_struct, order);
       else
-        g4_iw_opt = make_block2_gf(mesh_bff, g4_measures.gf_struct);
+        g4_iw_opt = make_block2_gf(mesh_bff, g4_measures.gf_struct, order);
 
       g4_iw.rebind(*g4_iw_opt);
       g4_iw() = 0;

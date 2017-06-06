@@ -1,12 +1,12 @@
 #pragma once
+
 #include "./config.hpp"
+#include "./types.hpp"
 
 namespace cthyb {
 
   using namespace triqs::operators;
   using indices_map_t = std::map<triqs::operators::indices_t, triqs::operators::indices_t>;
-
-  enum block_order { AABB, ABBA };
 
   // All the arguments of the solve function
   struct solve_parameters_t {

@@ -50,8 +50,8 @@ namespace cthyb {
 
       auto g4_tau_block = g4_tau(m.b1.idx, m.b2.idx);
       
-      foreach (data.dets[m.b1.idx], [&](auto const &j, auto const &i, auto const M_ij) {
-        foreach (data.dets[m.b2.idx], [&](auto const &l, auto const &k, auto const M_kl) {
+      foreach (data.dets[m.b1.idx], [&](auto const &i, auto const &j, auto const M_ij) {
+        foreach (data.dets[m.b2.idx], [&](auto const &k, auto const &l, auto const M_kl) {
 
           // lambda for computing a single product term of M_ij and M_kl
           auto compute_M2_product = [&](auto const &i, auto const &j, auto const &k, auto const &l, double sign) {

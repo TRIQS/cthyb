@@ -40,7 +40,7 @@ namespace cthyb {
       gf_mesh<legendre> mesh_l{beta, Fermion, n_l};
       gf_mesh<cartesian_product<imfreq, legendre, legendre>> mesh_wll{mesh_w, mesh_l, mesh_l};
 
-      g4_wll_opt = make_block2_gf(mesh_wll, g4_measures.gf_struct);
+      g4_wll_opt = make_block2_gf(mesh_wll, g4_measures.gf_struct, order);
       g4_wll.rebind(*g4_wll_opt);
       g4_wll() = 0;
     }

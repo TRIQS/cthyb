@@ -18,54 +18,6 @@ from pytriqs.utility import mpi
 from pytriqs.applications.impurity_solvers.pomerol2triqs import PomerolED
 
 # ----------------------------------------------------------------------
-def plot_singe_particle_gf(d):
-    
-    import matplotlib.pyplot as plt
-    from pytriqs.plot.mpl_interface import oplot
-    
-    plt.figure(figsize=(10, 3)) 
-    subp = [1, 3, 1]
-    plt.subplot(*subp); subp[-1] += 1
-    oplot(d.G_iw)
-    plt.legend(loc='best', fontsize=7)
-    plt.subplot(*subp); subp[-1] += 1
-    oplot(d.G_tau)
-    plt.legend(loc='best', fontsize=7)
-    plt.subplot(*subp); subp[-1] += 1
-    oplot(d.G_w)
-    plt.legend(loc='best', fontsize=7)
-    plt.tight_layout()
-    plt.savefig('figure_g_pomerol.svg', dpi=80)
-    plt.show()
-
-# ----------------------------------------------------------------------
-def plot_two_particle_gf(d):
-
-    plt.figure(figsize=(7,3))
-    #plt.pcolormesh(t, t, g3_tau.data[:, :, 0, 0, 0, 0].real)
-    subp = [1, 2, 1]
-    shift = 4
-    plt.subplot(*subp); subp[-1] += 1
-    plt.title(r"Re[$G(i\Omega_%i, i\nu, i\nu')$]" % shift)
-    plt.pcolormesh(d.G2[up, up].data[3+shift, :, :, 0, 0, 0, 0].real)
-    plt.axis('equal')
-    plt.colorbar()
-    plt.xlabel(r'$\nu$')
-    plt.ylabel(r"$\nu'$")
-
-    plt.subplot(*subp); subp[-1] += 1
-    plt.title(r"Im[$G(i\Omega_%i, i\nu, i\nu')$]" % shift)
-    plt.pcolormesh(d.G2[up, up].data[3+shift, :, :, 0, 0, 0, 0].imag)
-    plt.axis('equal')
-    plt.colorbar()
-    plt.xlabel(r'$\nu$')
-    plt.ylabel(r"$\nu'$")
-
-    plt.tight_layout()
-    plt.savefig('figure_g2_pomerol.svg', dpi=80)
-    plt.show()
-    
-# ----------------------------------------------------------------------
 def make_calc():
     
     # ------------------------------------------------------------------
@@ -142,14 +94,20 @@ def make_calc():
     d.G_w = G_w['up']
 
     # -- Particle-particle two-particle Matsubara frequency Green's function
-    G2_iw = ed.G2_iw_inu_inup(
-        channel='AllFermionic', block_order='AABB',
+    opt = dict(
+        block_order='AABB',
         beta=beta, gf_struct=gf_struct,
-        #blocks=set([("up", "up"), ("up", "dn"), ("dn", "up")]),
         blocks=set([("up", "dn")]),
         n_iw=niw, n_inu=niw)
-
+    
+    G2_iw = ed.G2_iw_inu_inup(channel='AllFermionic', **opt)
     d.G2_iw = G2_iw['up', 'dn']
+
+    G2_iw_pp = ed.G2_iw_inu_inup(channel='PP', **opt)
+    d.G2_iw_pp = G2_iw_pp['up', 'dn']
+
+    G2_iw_ph = ed.G2_iw_inu_inup(channel='PH', **opt)
+    d.G2_iw_ph = G2_iw_ph['up', 'dn']
     
     # ------------------------------------------------------------------
     # -- Store to hdf5

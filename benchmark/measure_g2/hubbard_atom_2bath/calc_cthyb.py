@@ -84,11 +84,14 @@ if __name__ == '__main__':
         # -- measurements
         length_cycle=1000,
         n_warmup_cycles=int(1e3),
-        n_cycles=int(1e5),
+        n_cycles=int(4e3),
         # -- g2 measurements
         measure_g4_tau=True,
         measure_g4_iw=True,
+        measure_g4_iw_pp=True,
+        measure_g4_iw_ph=True,
         measure_g4_n_tau=40,
+        measure_g4_n_bosonic=15,
         measure_g4_n_fermionic=15,
         nfft_buf_sizes=dict(up=64, do=64),
         )
@@ -117,6 +120,8 @@ if __name__ == '__main__':
     d.runtime = runtime
     d.G2_tau = solv.g4_tau[('up', 'do')]
     d.G2_iw = solv.g4_iw[('up', 'do')]
+    d.G2_iw_pp = solv.g4_iw_pp[('up', 'do')]
+    d.G2_iw_ph = solv.g4_iw_ph[('up', 'do')]
 
     d.mpi_size = mpi.size
 

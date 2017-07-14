@@ -27,6 +27,8 @@ from pytriqs.applications.susceptibility.fourier import chi3_iw_from_tau
 from pytriqs.applications.susceptibility.fourier import chi2_iw_from_tau
 from pytriqs.applications.susceptibility.fourier import g_iw_from_tau
 
+# ----------------------------------------------------------------------
+
 from pyed.TriqsExactDiagonalization import TriqsExactDiagonalization
 
 # ----------------------------------------------------------------------
@@ -130,7 +132,7 @@ def make_calc(U=10):
 
     d.G02_iw.data[:] = d.G02_iw.data[:, ::-1, ...].conj()
     d.G2_iw.data[:] = d.G2_iw.data[:, ::-1, ...].conj()
-    
+
     # ------------------------------------------------------------------
     # -- 3/2-particle Green's functions (equal times)
 

@@ -121,21 +121,30 @@ namespace cthyb {
   // -- Particle-hole
 
   template <> inline void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) + s * M_ij(-n1, n1 + w)(i, j) * M_kl(-n2 - w, n2)(k, l);
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+      //+ s * M_ij(-n1, n1 + w)(i, j) * M_kl(-n2 - w, n2)(k, l);
+      + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
   }
 
   template <> inline void measure_g4_iw<PH>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) - s * M_il(-n1, n2)(i, l) * M_kj(-n2 - w, n1 + w)(k, j);
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+      //- s * M_il(-n1, n2)(i, l) * M_kj(-n2 - w, n1 + w)(k, j);
+      - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
   }
 
   // -- Particle-particle
 
   template <> inline void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) + s * M_ij(-n2, w - n2)(i, j) * M_kl(-w + n1, n2)(k, l);
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+      //+ s * M_ij(-n2, w - n2)(i, j) * M_kl(-w + n1, n2)(k, l); // BUG! first freq?
+      //+ s * M_ij(-n1, w - n2)(i, j) * M_kl(-w + n1, n2)(k, l); // FIX?! CHECK!
+      + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
   }
 
   template <> inline void measure_g4_iw<PP>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) - s * M_il(-n1, n2)(i, l) * M_kj(-w + n2, w - n2)(k, j);
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+      //- s * M_il(-n1, n2)(i, l) * M_kj(-w + n2, w - n2)(k, j); //BUG! -w+n2 vs -w-n1?
+      - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
   }
 
   // -- Fermionic

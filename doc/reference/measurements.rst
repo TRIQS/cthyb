@@ -61,11 +61,7 @@ We define :math:`G^{(2)}` in the imaginary time as
 
     G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4) =
     \langle\mathcal{T}_\tau c^\dagger_\alpha(\tau_1) c_\beta(\tau_2) c^\dagger_\gamma(\tau_3) c_\delta(\tau_4)\rangle.
-
-.. NOTE::
-
-    Are we actually going to measure this one?
-
+    
 Depending on the value of the ``measure_g2_block_order`` parameter the combined block/inner indices
 :math:`\alpha,\beta,\gamma,\delta` are interpreted differently.
 
@@ -83,45 +79,73 @@ parameter (all possible pairs are selected by default):
 See the `PhD thesis of L. Boehnke <http://ediss.sub.uni-hamburg.de/volltexte/2015/7325/pdf/Dissertation.pdf>`_
 for an in-depth discussion of these measurements.
 
-One bosonic and two fermionic Matsubara frequencies
-***************************************************
+Imaginary time binning
+**********************
 
-This measurement is activated by setting ``measure_g2_inu = True``.
-It includes two sub-measurements, one in the particle-hole channel, and one in the particle-particle channel.
+The simplest measure is to bin :math:`G^{(2)}` directly in three imaginary times, after using time-tranlsational invariance to fix :math:`\tau_4 = 0`.
 
-* Particle-hole channel, switched on by ``measure_g2_ph = True``.
+* The imaginary time binning is switched on by ``measure_g4_tau = True``.
+
+  .. math::
+
+     G^{(2)}_{\alpha\beta\gamma\delta}( \tau_1, \tau_2, \tau_3) \equiv
+     G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3, 0)
+
+  Accumulation result is available via the ``G2_tau`` solver attribute.
+
+The number of bins in each imaginary time dimension is set by ``measure_g4_n_tau``. 
+
+Matsubara frequency measurements
+********************************
+
+In Matsubara frequency space there are three different measurements:
+
+* Three Fermionic Matsubara frequency measurement, switched on by ``measure_g4_iw = True``.
+
+    .. math::
+
+        G^{(2)}_{\alpha\beta\gamma\delta}(\nu_1, \nu_2, \nu_3) =
+        \int_0^\beta d\tau_1 d\tau_2 d\tau_3 \,
+        e^{-i\nu_1 \tau_1 + i\nu_2 \tau_2 - i\nu_3 \tau_3}
+        G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,0) \, .
+
+  Accumulation result is available via the ``G2_inu`` solver attribute.
+  
+* Particle-hole channel measurement,
+  with one Bosonic (:math:`\omega`) and two Fermionic (:math:`\nu, \nu'`) frequencies,
+  switched on by ``measure_g4_iw_ph = True``.
 
     .. math::
 
         G^{(2)ph}_{\alpha\beta\gamma\delta}(\omega;\nu,\nu') =
-        \frac{1}{\beta}\int_0^\beta d\tau_1d\tau_2d\tau_3d\tau_4\
-        e^{-i\nu\tau_1} e^{i(\nu+\omega)\tau_2} e^{-i(\nu'+\omega)\tau_3} e^{i\nu'\tau_4}
-        G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4).
+        \frac{1}{\beta}\int_0^\beta d\tau_1d\tau_2d\tau_3d\tau_4 \,
+        e^{-i\nu\tau_1 + i(\nu+\omega)\tau_2 - i(\nu'+\omega)\tau_3 + i\nu'\tau_4}
+        G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4) \, .
 
-    Accumulation result is available via ``G2_iw_inu_inup_ph`` solver attribute.
+  Accumulation result is available via ``G2_iw_inu_inup_ph`` solver attribute.
 
-* Particle-particle channel, switched on by ``measure_g2_pp = True``.
+* Particle-particle channel measurement,
+  with one Bosonic (:math:`\Omega`) and two Fermionic (:math:`\nu, \nu'`) frequencies,
+  switched on by ``measure_g4_iw_pp = True``.
 
     .. math::
 
         G^{(2)pp}_{\alpha\beta\gamma\delta}(\omega;\nu,\nu') =
         \frac{1}{\beta}\int_0^\beta d\tau_1d\tau_2d\tau_3d\tau_4\
-        e^{-i\nu\tau_1} e^{i(\omega-\nu')\tau_2} e^{-i(\omega-\nu)\tau_3} e^{i\nu'\tau_4}
+        e^{-i\nu\tau_1 + i(\omega-\nu')\tau_2 - i(\omega-\nu)\tau_3 + i\nu'\tau_4}
         G^{(2)}_{\alpha\beta\gamma\delta}(\tau_1,\tau_2,\tau_3,\tau_4).
 
-    Accumulation result is available via ``G2_iw_inu_inup_pp`` solver attribute.
+  Accumulation result is available via ``G2_iw_inu_inup_pp`` solver attribute.
 
-Both sub-measurements can be enabled at the same time.
-Numbers of bosonic and fermionic Matsubara frequencies are set by ``measure_g2_n_iw``
-and ``measure_g2_n_inu`` parameters respectively.
+The number of Bosonic and Fermionic Matsubara frequencies are set by the ``measure_g4_n_iw``
+and ``measure_g4_n_inu`` parameters respectively.
 
-One bosonic Matsubara frequency and two Legendre coefficients
-*************************************************************
+All frequency measurements use non-equidistant fast fourier transform (NFFT) to speed up the sampling procedure. Depending on the impurity model the NFFT buffer can be adjusted for maximum performance by setting ``nfft_buf_sizes``.
 
-This measurement is activated by setting ``measure_g2_legendre = True``.
-As in the previous paragraph, it includes two sub-measurements.
+Mixed Matsubara Frequency and Legendre measurements
+***************************************************
 
-* Particle-hole channel, switched on by ``measure_g2_ph = True``.
+* Particle-hole channel, switched on by ``measure_g4_l_ph = True``.
 
     .. math::
 
@@ -133,7 +157,7 @@ As in the previous paragraph, it includes two sub-measurements.
     Accumulation result is available via ``G2_iw_l_lp_ph`` solver attribute.
 
 
-* Particle-particle channel, switched on by ``measure_g2_pp = True``.
+* Particle-particle channel, switched on by ``measure_g4_l_pp = True``.
 
     .. math::
 
@@ -144,18 +168,18 @@ As in the previous paragraph, it includes two sub-measurements.
 
     Accumulation result is available via ``G2_iw_l_lp_pp`` solver attribute.
 
-Here we have introduced transformation matrices from the Matsubara frequency domain to the
-Legendre polynomial basis:
+Numbers of bosonic Matsubara frequencies and Legendre coefficients are set by the ``measure_g4_n_iw``
+and ``measure_g4_n_l`` parameters respectively.
+
+The one Bosonic Matsubara frequency is treated using non-equidistant fast fourier tranform (NFFT) and the NFFT buffer size is set by ``measure_g4_l_nfft_buf_size``.
+    
+The transformation matrices :math:`\bar{T}_{o, \ell}` introduced above transforms from the Matsubara frequency domain to the Legendre polynomial basis:
 
 .. math::
 
     \bar T_{o,\ell} \equiv \frac{\sqrt{2\ell+1}}{\beta}
     \int_0^\beta d\tau e^{io\pi\frac{\tau}{\beta}} P_\ell[x(\tau)] =
     \sqrt{2\ell+1}i^o i^\ell j_\ell\left(\frac{o\pi}{2}\right).
-
-Both sub-measurements can be enabled at the same time.
-Numbers of bosonic Matsubara frequencies and Legendre coefficients are set by ``measure_g2_n_iw``
-and ``measure_g2_n_l`` parameters respectively.
 
 
 Impurity density matrix

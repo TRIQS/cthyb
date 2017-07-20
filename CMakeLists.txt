@@ -57,12 +57,14 @@ include_directories(${CMAKE_BINARY_DIR}/c++ c++)
 # Compile C++ code
 add_subdirectory(c++)
 
+# Tests
+ if (${Tests})
+   add_subdirectory(test)
+ endif()
+
 # Python interface
 if (${TRIQS_WITH_PYTHON_SUPPORT})
  add_subdirectory(python)
- if (${Tests})
- add_subdirectory(test)
- endif()
  option(BUILD_DOC "Build documentation" OFF)
  if(${BUILD_DOC})
    if(NOT ${TRIQS_WITH_DOCUMENTATION})

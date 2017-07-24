@@ -1,7 +1,8 @@
 #!/bin/env pytriqs
 
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
+from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -15,7 +16,7 @@ for i in arch:
     G_tau = subarch['G_tau']
     V = subarch['V']
     e = subarch['e']
-    beta = G_tau.beta
+    beta = G_tau.mesh.beta
     n_tau = len(G_tau.mesh)
 
     for m, b in enumerate(G_tau.indices):

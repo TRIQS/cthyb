@@ -4,7 +4,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.operators import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 mpi.report("Welcome to nonint (non-interacting many-band systems) test.")
 mpi.report("This test is aimed to reveal excessive state truncation issues.")

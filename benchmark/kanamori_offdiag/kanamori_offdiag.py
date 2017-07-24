@@ -6,7 +6,7 @@ from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import numpy as np
 
 # Input parameters

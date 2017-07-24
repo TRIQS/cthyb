@@ -1,7 +1,8 @@
 #!/bin/env pytriqs
 
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
+from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import *
 from matplotlib.backends.backend_pdf import PdfPages
 from itertools import product
@@ -9,8 +10,8 @@ from itertools import product
 def setup_fig():
     axes = plt.gca()
     axes.set_ylabel('$G(\\tau)$')
-    axes.set_ylim(-1.0,.0)
-    axes.legend(loc='lower center',prop={'size':10})
+    axes.set_ylim(-1.0,.1)
+    axes.legend(loc='lower center',prop={'size':8}, ncol=2)
 
 spin_names = ("up","dn")
 num_orbitals = 2

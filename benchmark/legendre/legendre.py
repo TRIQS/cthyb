@@ -4,7 +4,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 spin_names = ("up","dn")
 def mkind(spin): return (spin,0)

@@ -12,7 +12,7 @@ spin_names = ("up","dn")
 def setup_fig():
     axes = plt.gca()
     axes.set_ylabel('$G(\\tau)$')
-    axes.legend(loc='lower center',prop={'size':10})
+    axes.legend(loc='best',prop={'size':8})
 
 pp = PdfPages('G.pdf')
 ed_arch = HDFArchive('spinless.ed.h5','r')

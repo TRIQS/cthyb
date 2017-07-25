@@ -31,6 +31,7 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/tuple.hpp>
 #include <triqs/python_tools/converters/operators_real_complex.hpp>
 #include <triqs/python_tools/converters/fundamental_operator_set.hpp>
+using namespace triqs::gfs;
 using triqs::operators::many_body_operator;
 using namespace cthyb;
 #include "./cthyb_converters.hxx"
@@ -42,6 +43,9 @@ c = class_(
         c_type = "solver_core",   # name of the C++ class
         doc = r"Core class of the cthyb solver",   # doc of the C++ class
 )
+
+c.add_constructor("""(double beta, std::map<std::string,indices_type> gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50)""",
+                  doc = """ """)
 
 c.add_member(c_name = "G_tau",
              c_type = "std::optional<G_tau_t>",

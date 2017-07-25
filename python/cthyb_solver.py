@@ -63,6 +63,22 @@ class Solver(SolverCore):
                     Index of ``iw`` to fit until.
         """
 
+        # -- Deprecation checks for measure parameters
+        
+        depr_params = dict(
+            measure_g_tau='measure_G_tau',
+            measure_g_l='measure_G_l',
+            )
+        
+        for key in depr_params.keys():
+            if key in params_kw.keys():
+                print 'WARNING: cthyb.solve parameter %s is deprecated use %s.' % \
+                    (key, depr_params[key])
+                val = params_kw.pop(key)
+                params_kw[depr_params[key]] = val
+
+        # -- Tail post proc flags
+                
         perform_post_proc = params_kw.pop("perform_post_proc", True)
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
         if perform_post_proc and perform_tail_fit:
@@ -96,7 +112,7 @@ class Solver(SolverCore):
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
-        if perform_post_proc and (self.last_solve_parameters["measure_g_tau"] == True):
+        if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
             # Fourier transform G_tau to obtain G_iw
             for name, g in self.G_tau: self.G_iw[name] << Fourier(g)
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail

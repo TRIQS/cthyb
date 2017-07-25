@@ -41,7 +41,7 @@ gf_struct = set_operator_structure(spin_names,cubic_names,False)
 H = h_int_slater(spin_names,cubic_names,U_mat,False)
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000, n_l=50)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)

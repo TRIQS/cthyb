@@ -133,19 +133,21 @@ TEST(CtHyb, KanamoriOffDiag) {
   filename += "_qn";
 #endif
 
+  auto & G_tau = *solver.G_tau;
+  
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
-    h5_write(G_file, "G_up", solver.G_tau->operator[](0));
-    h5_write(G_file, "G_down", solver.G_tau->operator[](1));
+    h5_write(G_file, "G_up", G_tau[0]);
+    h5_write(G_file, "G_down", G_tau[1]);
   }
 
   gf<imtime> g;
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".ref.h5", 'r');
     h5_read(G_file, "G_up", g);
-    EXPECT_GF_NEAR(g, solver.G_tau->operator[](0));
+    EXPECT_GF_NEAR(g, G_tau[0]);
     h5_read(G_file, "G_down", g);
-    EXPECT_GF_NEAR(g, solver.G_tau->operator[](1));
+    EXPECT_GF_NEAR(g, G_tau[1]);
   }
 }
 MAKE_MAIN;

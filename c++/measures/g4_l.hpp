@@ -23,10 +23,10 @@
 #include <vector>
 #include <triqs/mpi/base.hpp>
 #include <triqs/statistics/histograms.hpp>
+#include <triqs/experimental/nfft_array.hpp>
 
 #include <triqs/utility/legendre.hpp>
 
-#include "../nfft_array.hpp"
 #include "../qmc_data.hpp"
 
 #include "util.hpp"
@@ -34,6 +34,7 @@
 namespace cthyb {
 
   using namespace triqs::arrays;
+  using namespace triqs::experimental;
 
   // Generates values of \tilde P_l(x(\tau_1-\tau_2))
   struct tilde_p_gen {

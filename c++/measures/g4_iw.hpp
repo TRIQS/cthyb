@@ -23,8 +23,8 @@
 #include <vector>
 #include <triqs/mpi/base.hpp>
 #include <triqs/statistics/histograms.hpp>
+#include <triqs/experimental/nfft_array.hpp>
 
-#include "../nfft_array.hpp"
 #include "../qmc_data.hpp"
 
 #include "util.hpp"
@@ -32,6 +32,7 @@
 namespace cthyb {
 
   using namespace triqs::arrays;
+  using namespace triqs::experimental;
   
   // Measure the two-particle Green's function in Matsubara frequency
   template <g4_channel Channel> struct measure_g4_iw {

@@ -9,8 +9,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 def setup_fig():
     axes = plt.gca()
     axes.set_ylabel('$G(\\tau)$')
-    axes.set_ylim(-1.0,.0)
-    axes.legend(loc='lower center',prop={'size':10})
+    axes.set_ylim(-1.0,.1)
+    axes.legend(loc='best',prop={'size':8},ncol=2)
 
 spin_names = ("up","dn")
 num_orbitals = 2

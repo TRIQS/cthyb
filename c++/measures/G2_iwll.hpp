@@ -49,12 +49,12 @@ namespace cthyb {
     double next() { return f * l_gen.next(); }
   };
   
-  // Measure G^4(iomega,l,l')
-  template <g4_channel Channel> struct measure_g4_l {
+  // Measure G^2(i\omega,l,l')
+  template <G2_channel Channel> struct measure_G2_iwll {
 
     qmc_data const &data;
-    g4_wll_t::view_type g4_wll;
-    g4_measures_t g4_measures;
+    G2_iwll_t::view_type G2_iwll;
+    G2_measures_t G2_measures;
     block_order order;
 
     mc_weight_t average_sign;
@@ -62,7 +62,7 @@ namespace cthyb {
     // Object that performs NFFT transform
     array<nfft_array_t<1, 6>, 2> nfft_buf;
 
-    measure_g4_l(std::optional<g4_wll_t> & g4_wll_opt, qmc_data const &data, g4_measures_t & g4_measures);
+    measure_G2_iwll(std::optional<G2_iwll_t> & G2_iwll_opt, qmc_data const &data, G2_measures_t & G2_measures);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
 

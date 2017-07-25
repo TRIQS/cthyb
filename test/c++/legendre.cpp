@@ -51,8 +51,8 @@ TEST(CtHyb, Legendre) {
   p.max_time         = -1;
   p.length_cycle     = 50;
   p.n_warmup_cycles  = 50;
-  p.measure_g_tau    = false;
-  p.measure_g_l      = true;
+  p.measure_G_tau    = false;
+  p.measure_G_l      = true;
   p.quantum_numbers  = qn;
   p.partition_method = "quantum_numbers";
   p.move_double      = false;

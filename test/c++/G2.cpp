@@ -33,7 +33,7 @@ using triqs::operators::n;
 using namespace triqs::gfs;
 using indices_type = triqs::operators::indices_t;
 
-TEST(CtHyb, g4_measurments) {
+TEST(CtHyb, G2_measurments) {
 
   std::cout << "Welcome to the CTHYB solver\n";
 
@@ -81,18 +81,18 @@ TEST(CtHyb, g4_measurments) {
   p.n_warmup_cycles = 1000;
   p.move_double     = false;
 
-  p.measure_g4_tau   = true;
-  p.measure_g4_n_tau = 3;
+  p.measure_G2_tau   = true;
+  p.measure_G2_n_tau = 3;
 
-  p.measure_g4_iw          = true;
-  p.measure_g4_n_fermionic = 3;
+  p.measure_G2_iw          = true;
+  p.measure_G2_n_fermionic = 3;
 
-  p.measure_g4_iw_ph     = true;
-  p.measure_g4_iw_pp     = true;
-  p.measure_g4_n_bosonic = 5;
+  p.measure_G2_iw_ph     = true;
+  p.measure_G2_iw_pp     = true;
+  p.measure_G2_n_bosonic = 5;
 
-  p.measure_g4_l_pp = true;
-  p.measure_g4_n_l  = 3;
+  p.measure_G2_iwll_pp = true;
+  p.measure_G2_n_l  = 3;
 
   // Solve!
   solver.solve(p);
@@ -100,48 +100,48 @@ TEST(CtHyb, g4_measurments) {
   std::cout << "--> solver done, now writing and reading the results.\n";
 
   // Save the results
-  std::string filename = "g4";
+  std::string filename = "G2";
 
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
-    h5_write(G_file, "G2_tau", solver.G2_tau()(0, 1));
-    h5_write(G_file, "G2_inu", solver.G2_inu()(0, 1));
-    h5_write(G_file, "G2_iw_inu_inup_ph", solver.G2_iw_inu_inup_ph()(0, 1));
-    h5_write(G_file, "G2_iw_inu_inup_pp", solver.G2_iw_inu_inup_pp()(0, 1));
-    h5_write(G_file, "G2_iw_l_lp_pp", solver.G2_iw_l_lp_pp()(0, 1));
+    h5_write(G_file, "G2_tau", (*solver.G2_tau)(0, 1));
+    h5_write(G_file, "G2_iw", (*solver.G2_iw)(0, 1));
+    h5_write(G_file, "G2_iw_ph", (*solver.G2_iw_ph)(0, 1));
+    h5_write(G_file, "G2_iw_pp", (*solver.G2_iw_pp)(0, 1));
+    h5_write(G_file, "G2_iwll_pp", (*solver.G2_iwll_pp)(0, 1));
   }
 
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".ref.h5", 'r');
 
     {
-      g4_tau_t::g_t g4_tau;
-      h5_read(G_file, "G2_tau", g4_tau);
-      EXPECT_GF_NEAR(g4_tau, solver.G2_tau()(0, 1));
+      G2_tau_t::g_t G2_tau;
+      h5_read(G_file, "G2_tau", G2_tau);
+      EXPECT_GF_NEAR(G2_tau, (*solver.G2_tau)(0, 1));
     }
 
     {
-      g4_iw_t::g_t g4_iw;
-      h5_read(G_file, "G2_inu", g4_iw);
-      EXPECT_GF_NEAR(g4_iw, solver.G2_inu()(0, 1));
+      G2_iw_t::g_t G2_iw;
+      h5_read(G_file, "G2_iw", G2_iw);
+      EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw)(0, 1));
     }
 
     {
-      g4_iw_t::g_t g4_iw;
-      h5_read(G_file, "G2_iw_inu_inup_ph", g4_iw);
-      EXPECT_GF_NEAR(g4_iw, solver.G2_iw_inu_inup_ph()(0, 1));
+      G2_iw_t::g_t G2_iw;
+      h5_read(G_file, "G2_iw_ph", G2_iw);
+      EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw_ph)(0, 1));
     }
 
     {
-      g4_iw_t::g_t g4_iw;
-      h5_read(G_file, "G2_iw_inu_inup_pp", g4_iw);
-      EXPECT_GF_NEAR(g4_iw, solver.G2_iw_inu_inup_pp()(0, 1));
+      G2_iw_t::g_t G2_iw;
+      h5_read(G_file, "G2_iw_pp", G2_iw);
+      EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw_pp)(0, 1));
     }
 
     {
-      g4_wll_t::g_t g4_wll;
-      h5_read(G_file, "G2_iw_l_lp_pp", g4_wll);
-      EXPECT_GF_NEAR(g4_wll, solver.G2_iw_l_lp_pp()(0, 1));
+      G2_iwll_t::g_t G2_iwll_pp;
+      h5_read(G_file, "G2_iwll_pp", G2_iwll_pp);
+      EXPECT_GF_NEAR(G2_iwll_pp, (*solver.G2_iwll_pp)(0, 1));
     }
   }
 }

@@ -19,38 +19,38 @@
  *
  ******************************************************************************/
 
-#include "./g4_tau.hpp"
+#include "./G2_tau.hpp"
 
 namespace cthyb {
 
   using namespace triqs::gfs;
 
-  measure_g4_tau::measure_g4_tau(std::optional<g4_tau_t> &g4_tau_opt, qmc_data const &data, g4_measures_t const &g4_measures)
-     : data(data), g4_measures(g4_measures), average_sign(0) {
+  measure_G2_tau::measure_G2_tau(std::optional<G2_tau_t> &G2_tau_opt, qmc_data const &data, G2_measures_t const &G2_measures)
+     : data(data), G2_measures(G2_measures), average_sign(0) {
 
     double beta = data.config.beta();
 
-    order     = g4_measures.params.measure_g4_block_order;
-    int n_tau = g4_measures.params.measure_g4_n_tau;
+    order     = G2_measures.params.measure_G2_block_order;
+    int n_tau = G2_measures.params.measure_G2_n_tau;
 
     gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, n_tau};
-    gf_mesh<cartesian_product<imtime, imtime, imtime>> g4_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
+    gf_mesh<cartesian_product<imtime, imtime, imtime>> G2_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
 
-    g4_tau_opt = make_block2_gf(g4_tau_mesh, g4_measures.gf_struct, order);
+    G2_tau_opt = make_block2_gf(G2_tau_mesh, G2_measures.gf_struct, order);
 
-    g4_tau.rebind(*g4_tau_opt);
-    g4_tau() = 0.0;
+    G2_tau.rebind(*G2_tau_opt);
+    G2_tau() = 0.0;
   }
 
-  void measure_g4_tau::accumulate(mc_weight_t sign) {
+  void measure_G2_tau::accumulate(mc_weight_t sign) {
 
     sign *= data.atomic_reweighting;
     average_sign += sign;
 
     // loop only over block-combinations that should be measured
-    for (auto &m : g4_measures()) {
+    for (auto &m : G2_measures()) {
 
-      auto g4_tau_block = g4_tau(m.b1.idx, m.b2.idx);
+      auto G2_tau_block = G2_tau(m.b1.idx, m.b2.idx);
       bool diag_block   = (m.b1.idx == m.b2.idx);
 
       foreach (data.dets[m.b1.idx], [&](auto const &i, auto const &j, auto const M_ij) {
@@ -67,7 +67,7 @@ namespace cthyb {
             int sign_flips    = int(i.first < l.first) + int(j.first < l.first) + int(k.first < l.first);
             double pre_factor = (sign_flips % 2 ? -sign : sign);
 
-            g4_tau_block[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += pre_factor * M_ij * M_kl;
+            G2_tau_block[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += pre_factor * M_ij * M_kl;
           };
 
           if (order == AABB || diag_block) compute_M2_product(i, j, k, l, +sign);
@@ -80,21 +80,21 @@ namespace cthyb {
     }
   }
 
-  void measure_g4_tau::collect_results(triqs::mpi::communicator const &comm) {
+  void measure_G2_tau::collect_results(triqs::mpi::communicator const &comm) {
 
     average_sign = mpi_all_reduce(average_sign, comm);
-    g4_tau       = mpi_all_reduce(g4_tau, comm);
+    G2_tau       = mpi_all_reduce(G2_tau, comm);
 
-    for (auto &g4_tau_block : g4_tau) {
+    for (auto &G2_tau_block : G2_tau) {
       // Bin volume in imaginary time space
-      double dtau0    = std::get<0>(g4_tau_block.mesh()).delta();
-      double dtau1    = std::get<1>(g4_tau_block.mesh()).delta();
-      double dtau2    = std::get<2>(g4_tau_block.mesh()).delta();
+      double dtau0    = std::get<0>(G2_tau_block.mesh()).delta();
+      double dtau1    = std::get<1>(G2_tau_block.mesh()).delta();
+      double dtau2    = std::get<2>(G2_tau_block.mesh()).delta();
       double dtau_vol = dtau0 * dtau1 * dtau2;
 
       // Rescale sampled Green's function
       double beta  = data.config.beta();
-      g4_tau_block = g4_tau_block / (real(average_sign) * beta * dtau_vol);
+      G2_tau_block = G2_tau_block / (real(average_sign) * beta * dtau_vol);
 
       // Account for
       // the 1/2 smaller volume of the side bins,
@@ -102,15 +102,16 @@ namespace cthyb {
       // the 1/8 smaller volume of the corner bins.
 
       auto _ = var_t{};
-      int n  = std::get<0>(g4_tau_block.mesh().components()).size() - 1;
+      int n  = std::get<0>(G2_tau_block.mesh().components()).size() - 1;
 
-      g4_tau_block[0][_][_] *= 2.0;
-      g4_tau_block[_][0][_] *= 2.0;
-      g4_tau_block[_][_][0] *= 2.0;
+      G2_tau_block[0][_][_] *= 2.0;
+      G2_tau_block[_][0][_] *= 2.0;
+      G2_tau_block[_][_][0] *= 2.0;
 
-      g4_tau_block[n][_][_] *= 2.0;
-      g4_tau_block[_][n][_] *= 2.0;
-      g4_tau_block[_][_][n] *= 2.0;
+      G2_tau_block[n][_][_] *= 2.0;
+      G2_tau_block[_][n][_] *= 2.0;
+      G2_tau_block[_][_][n] *= 2.0;
     }
   }
-}
+
+} // namespace cthyb

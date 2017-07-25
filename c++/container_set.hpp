@@ -21,8 +21,7 @@
 
 #pragma once
 
-//#include <triqs/utility/optional_compat.hpp>
-#include <optional>
+#include <triqs/utility/optional_compat.hpp>
 
 #include "types.hpp"
 
@@ -32,53 +31,35 @@ namespace cthyb {
   struct container_set_t {
 
     // -- Single particle Green's functions
-    
-    /// Intermediate Green's function to accumulate g(tau), either real or complex
-    std::optional<G_tau_G_target_t> G_tau_accum;
 
     /// Single-particle Green's function :math:`G(\tau)` in imaginary time.
     std::optional<G_tau_t> G_tau;
 
+    /// Intermediate Green's function to accumulate g(tau), either real or complex
+    std::optional<G_tau_G_target_t> G_tau_accum;
+
     /// Single-particle Green's function :math:`G_l` in Legendre polynomial representation.
     std::optional<G_l_t> G_l;
 
-    // Two-particle Green's functions
-    std::optional<g4_tau_t> g4_tau;    // three fermionic imaginary times
-    std::optional<g4_iw_t> g4_iw;      // three fermionic matsubaras
-    std::optional<g4_iw_t> g4_iw_pp;   // one Bosonic and two Fermionic freqs, particle-particle channel
-    std::optional<g4_iw_t> g4_iw_ph;   // one Bosonic and two Fermionic freqs, particle-hole channel
-    std::optional<g4_wll_t> g4_wll_pp; // one Bosonic freq and two legendre poly, particle-particle channel
-    std::optional<g4_wll_t> g4_wll_ph; // one Bosonic freq and two legendre poly, particle-hole channel
+    // -- Two-particle Green's functions
 
-    // -- Getter functions
+    /// Two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` (three Fermionic imaginary times)
+    std::optional<G2_tau_t> G2_tau;
 
-    // Single particle Green's functions
-    
-    /// Accumulated :math:`G(\tau)` in imaginary time.
-    //g_tau_t::view_type G_tau() { return *g_tau; }
+    /// Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
+    std::optional<G2_iw_t> G2_iw;
 
-    /// Accumulated :math:`G_l` in Legendre polynomial representation.
-    //g_l_t::view_type G_l() { return *g_l; }
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel (one bosonic matsubara and two fermionic)
+    std::optional<G2_iw_t> G2_iw_pp;
 
-    // Two-particle Green's functions
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel (one bosonic matsubara and two fermionic)
+    std::optional<G2_iw_t> G2_iw_ph;
 
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` (three Fermionic imaginary times)
-    g4_tau_t::view_type G2_tau() { return *g4_tau; }
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel (one bosonic matsubara and two legendre)
+    std::optional<G2_iwll_t> G2_iwll_pp;
 
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
-    g4_iw_t::view_type G2_inu() { return *g4_iw; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
-    g4_iw_t::view_type G2_iw_inu_inup_pp() { return *g4_iw_pp; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
-    g4_iw_t::view_type G2_iw_inu_inup_ph() { return *g4_iw_ph; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
-    g4_wll_t::view_type G2_iw_l_lp_pp() { return *g4_wll_pp; }
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
-    g4_wll_t::view_type G2_iw_l_lp_ph() { return *g4_wll_ph; }
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel (one bosonic matsubara and two legendre)
+    std::optional<G2_iwll_t> G2_iwll_ph;
 
   }; // struct container_set_t
 

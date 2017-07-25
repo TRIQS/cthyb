@@ -19,20 +19,20 @@
  *
  ******************************************************************************/
 
-#include "./g4_l.hpp"
+#include "./G2_iwll.hpp"
 
 namespace cthyb {
 
-  template <g4_channel Channel>
-  measure_g4_l<Channel>::measure_g4_l(std::optional<g4_wll_t> &g4_wll_opt, qmc_data const &data, g4_measures_t &g4_measures)
-     : data(data), g4_measures(g4_measures), average_sign(0) {
+  template <G2_channel Channel>
+  measure_G2_iwll<Channel>::measure_G2_iwll(std::optional<G2_iwll_t> &G2_iwll_opt, qmc_data const &data, G2_measures_t &G2_measures)
+     : data(data), G2_measures(G2_measures), average_sign(0) {
 
     const double beta = data.config.beta();
 
-    order             = g4_measures.params.measure_g4_block_order;
-    size_t n_l        = g4_measures.params.measure_g4_n_l;
-    int n_bosonic     = g4_measures.params.measure_g4_n_bosonic;
-    int nfft_buf_size = g4_measures.params.measure_g4_l_nfft_buf_size; 
+    order             = G2_measures.params.measure_G2_block_order;
+    size_t n_l        = G2_measures.params.measure_G2_n_l;
+    int n_bosonic     = G2_measures.params.measure_G2_n_bosonic;
+    int nfft_buf_size = G2_measures.params.measure_G2_iwll_nfft_buf_size; 
 
     // Allocate the two-particle Green's function
     {
@@ -40,35 +40,35 @@ namespace cthyb {
       gf_mesh<legendre> mesh_l{beta, Fermion, n_l};
       gf_mesh<cartesian_product<imfreq, legendre, legendre>> mesh_wll{mesh_w, mesh_l, mesh_l};
 
-      g4_wll_opt = make_block2_gf(mesh_wll, g4_measures.gf_struct, order);
-      g4_wll.rebind(*g4_wll_opt);
-      g4_wll() = 0;
+      G2_iwll_opt = make_block2_gf(mesh_wll, G2_measures.gf_struct, order);
+      G2_iwll.rebind(*G2_iwll_opt);
+      G2_iwll() = 0;
     }
 
     // Allocate the nfft buffers
     {
-      nfft_buf.resize(mini_vector<int, 2>{g4_wll.size1(), g4_wll.size2()});
+      nfft_buf.resize(mini_vector<int, 2>{G2_iwll.size1(), G2_iwll.size2()});
 
-      gf_mesh<imfreq> mesh_w = std::get<0>(g4_wll(0, 0).mesh().components());
+      gf_mesh<imfreq> mesh_w = std::get<0>(G2_iwll(0, 0).mesh().components());
 
-      for (auto const &m : g4_measures()) {
+      for (auto const &m : G2_measures()) {
         auto s = m.target_shape;
         array<int, 6> buf_sizes(n_l, n_l, s[0], s[1], s[2], s[3]);
         buf_sizes() = nfft_buf_size;
-        nfft_buf(m.b1.idx, m.b2.idx) = nfft_array_t<1, 6>{mesh_w, g4_wll(m.b1.idx, m.b2.idx).data(), buf_sizes};
+        nfft_buf(m.b1.idx, m.b2.idx) = nfft_array_t<1, 6>{mesh_w, G2_iwll(m.b1.idx, m.b2.idx).data(), buf_sizes};
       }
     }
   }
 
-  template <g4_channel Channel> void measure_g4_l<Channel>::accumulate(mc_weight_t s) {
+  template <G2_channel Channel> void measure_G2_iwll<Channel>::accumulate(mc_weight_t s) {
 
     s *= data.atomic_reweighting;
     average_sign += s;
 
     double beta = data.config.beta();
-    int n_l     = std::get<1>(g4_wll(0, 0).mesh().components()).size();
+    int n_l     = std::get<1>(G2_iwll(0, 0).mesh().components()).size();
 
-    for (auto const &m : g4_measures()) {
+    for (auto const &m : G2_measures()) {
 
       if (data.dets[m.b1.idx].size() == 0 || data.dets[m.b2.idx].size() == 0) continue;
 
@@ -112,7 +112,7 @@ namespace cthyb {
   }
 
   template <>
-  double measure_g4_l<PH>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
+  double measure_G2_iwll<PH>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
     p_l1_gen.reset(i.first, j.first);
     p_l2_gen.reset(k.first, l.first);
     double dtau = 0.5 * double(i.first + j.first - k.first - l.first);
@@ -120,34 +120,34 @@ namespace cthyb {
   }
 
   template <>
-  double measure_g4_l<PP>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
+  double measure_G2_iwll<PP>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
     p_l1_gen.reset(i.first, k.first);
     p_l2_gen.reset(j.first, l.first);
     double dtau = 0.5 * double(i.first + mult_by_int(j.first, 3) - mult_by_int(k.first, 3) - l.first);
     return dtau;
   }
 
-  template <g4_channel Channel> void measure_g4_l<Channel>::collect_results(triqs::mpi::communicator const &c) {
+  template <G2_channel Channel> void measure_G2_iwll<Channel>::collect_results(triqs::mpi::communicator const &c) {
 
-    for (auto const &m : g4_measures()) { nfft_buf(m.b1.idx, m.b2.idx).flush(); }
+    for (auto const &m : G2_measures()) { nfft_buf(m.b1.idx, m.b2.idx).flush(); }
 
-    g4_wll = mpi_all_reduce(g4_wll, c);
+    G2_iwll = mpi_all_reduce(G2_iwll, c);
 
     average_sign = mpi_all_reduce(average_sign, c);
 
-    for (auto &g4_wll_block : g4_wll) {
+    for (auto &G2_iwll_block : G2_iwll) {
 
-      for (auto l : std::get<1>(g4_wll_block.mesh().components())) {
+      for (auto l : std::get<1>(G2_iwll_block.mesh().components())) {
         auto _   = var_t{};
         double s = std::sqrt(2 * l + 1);
-        g4_wll_block[_][l][_] *= s;
-        g4_wll_block[_][_][l] *= s * (l % 2 ? 1 : -1);
+        G2_iwll_block[_][l][_] *= s;
+        G2_iwll_block[_][_][l] *= s * (l % 2 ? 1 : -1);
       }
 
-      g4_wll_block /= (real(average_sign) * data.config.beta());
+      G2_iwll_block /= (real(average_sign) * data.config.beta());
     }
   }
 
-  template class measure_g4_l<PP>;
-  template class measure_g4_l<PH>;
+  template class measure_G2_iwll<PP>;
+  template class measure_G2_iwll<PH>;
 }

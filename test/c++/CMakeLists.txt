@@ -48,5 +48,5 @@ add_test_defs(kanamori_offdiag)
 add_test_defs(kanamori_offdiag "qn" "QN")
 
 add_test_defs(legendre)
-add_test_defs(g4)
+add_test_defs(G2)
 add_test_defs(atomic_gf)

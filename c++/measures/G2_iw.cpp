@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2016, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2016, P. Seth, I. Krivenko, H. U.R. Strand, M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,19 +19,19 @@
  *
  ******************************************************************************/
 
-#include "./g4_iw.hpp"
+#include "./G2_iw.hpp"
 
 namespace cthyb {
 
-  template <g4_channel Channel>
-  measure_g4_iw<Channel>::measure_g4_iw(std::optional<g4_iw_t> &g4_iw_opt, qmc_data const &data, g4_measures_t const &g4_measures)
-     : data(data), average_sign(0), g4_measures(g4_measures) {
+  template <G2_channel Channel>
+  measure_G2_iw<Channel>::measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures)
+     : data(data), average_sign(0), G2_measures(G2_measures) {
 
     const double beta = data.config.beta();
 
-    order           = g4_measures.params.measure_g4_block_order;
-    int n_bosonic   = g4_measures.params.measure_g4_n_bosonic;
-    int n_fermionic = g4_measures.params.measure_g4_n_fermionic;
+    order           = G2_measures.params.measure_G2_block_order;
+    int n_bosonic   = G2_measures.params.measure_G2_n_bosonic;
+    int n_fermionic = G2_measures.params.measure_G2_n_fermionic;
 
     // Allocate the two-particle Green's function
     {
@@ -42,12 +42,12 @@ namespace cthyb {
       gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> mesh_bff{mesh_b, mesh_f, mesh_f};
 
       if (Channel == AllFermionic)
-        g4_iw_opt = make_block2_gf(mesh_fff, g4_measures.gf_struct, order);
+        G2_iw_opt = make_block2_gf(mesh_fff, G2_measures.gf_struct, order);
       else
-        g4_iw_opt = make_block2_gf(mesh_bff, g4_measures.gf_struct, order);
+        G2_iw_opt = make_block2_gf(mesh_bff, G2_measures.gf_struct, order);
 
-      g4_iw.rebind(*g4_iw_opt);
-      g4_iw() = 0;
+      G2_iw.rebind(*G2_iw_opt);
+      G2_iw() = 0;
     }
 
     // Allocate temporary NFFT two-frequency matrix M
@@ -58,7 +58,7 @@ namespace cthyb {
       gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh{iw_mesh_large, iw_mesh_large};
 
       // Initialize intermediate scattering matrix
-      M = make_block_gf(M_mesh, g4_measures.gf_struct);
+      M = make_block_gf(M_mesh, G2_measures.gf_struct);
     }
 
     // Initialize the nfft_buffers mirroring the matrix M
@@ -69,7 +69,7 @@ namespace cthyb {
         std::string bname = M.block_names()[bidx];
 
         int buf_size = 10; // default
-        if (g4_measures.params.nfft_buf_sizes.count(bname)) { buf_size = g4_measures.params.nfft_buf_sizes.at(bname); }
+        if (G2_measures.params.nfft_buf_sizes.count(bname)) { buf_size = G2_measures.params.nfft_buf_sizes.at(bname); }
         array<int, 2> buf_sizes{M(bidx).target_shape()};
         buf_sizes() = buf_size;
 
@@ -78,7 +78,7 @@ namespace cthyb {
     }
   }
 
-  template <g4_channel Channel> void measure_g4_iw<Channel>::accumulate(mc_weight_t s) {
+  template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate(mc_weight_t s) {
 
     s *= data.atomic_reweighting;
     average_sign += s;
@@ -98,11 +98,11 @@ namespace cthyb {
       M_nfft(bidx).flush();
     }
 
-    for (auto &m : g4_measures()) {
-      auto g4_iw_block = g4_iw(m.b1.idx, m.b2.idx);
+    for (auto &m : G2_measures()) {
+      auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
       bool diag_block  = (m.b1.idx == m.b2.idx);
-      if (order == AABB || diag_block) accumulate_impl_AABB(g4_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-      if (order == ABBA || diag_block) accumulate_impl_ABBA(g4_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == AABB || diag_block) accumulate_impl_AABB(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == ABBA || diag_block) accumulate_impl_ABBA(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
     }
   }
 
@@ -120,80 +120,80 @@ namespace cthyb {
 
   // -- Particle-hole
 
-  template <> inline void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+  template <> inline void measure_G2_iw<PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+    G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) //
       + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
   }
 
-  template <> inline void measure_g4_iw<PH>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+  template <> inline void measure_G2_iw<PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+    G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) //
       - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
   }
 
   // -- Particle-particle
 
-  template <> inline void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+  template <> inline void measure_G2_iw<PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+    G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) //
       + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
   }
 
-  template <> inline void measure_g4_iw<PP>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
+  template <> inline void measure_G2_iw<PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+    G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) //
       - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
   }
 
   // -- Fermionic
 
   template <>
-  inline void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  inline void measure_G2_iw<AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
 
       int size_ij = M_ij.target_shape()[0];
       int size_kl = M_kl.target_shape()[0];
 
-      for (auto const &n1 : std::get<0>(g4.mesh()))
-        for (auto const &n2 : std::get<1>(g4.mesh()))
-          for (auto const &n3 : std::get<2>(g4.mesh())) {
-            auto mesh = std::get<0>(g4.mesh());
+      for (auto const &n1 : std::get<0>(G2.mesh()))
+        for (auto const &n2 : std::get<1>(G2.mesh()))
+          for (auto const &n3 : std::get<2>(G2.mesh())) {
+            auto mesh = std::get<0>(G2.mesh());
             typename decltype(mesh)::mesh_point_t n4{mesh, n1.index() + n3.index() - n2.index()};
             for (int i : range(size_ij))
               for (int j : range(size_ij))
                 for (int k : range(size_kl))
-                  for (int l : range(size_kl)) g4[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
+                  for (int l : range(size_kl)) G2[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
           }
 
-      //g4(n1, n2, n3)(i, j, k, l) << g4(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
+      //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
   }
 
   template <>
-  inline void measure_g4_iw<AllFermionic>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+  inline void measure_G2_iw<AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
 
     int size_il = M_il.target_shape()[0];
     int size_kj = M_kj.target_shape()[0];
 
-    for (auto const &n1 : std::get<0>(g4.mesh()))
-      for (auto const &n2 : std::get<1>(g4.mesh()))
-        for (auto const &n3 : std::get<2>(g4.mesh())) {
-          auto mesh = std::get<0>(g4.mesh());
+    for (auto const &n1 : std::get<0>(G2.mesh()))
+      for (auto const &n2 : std::get<1>(G2.mesh()))
+        for (auto const &n3 : std::get<2>(G2.mesh())) {
+          auto mesh = std::get<0>(G2.mesh());
           typename decltype(mesh)::mesh_point_t n4{mesh, n1.index() + n3.index() - n2.index()};
           for (int i : range(size_il))
             for (int j : range(size_kj))
               for (int k : range(size_kj))
-                for (int l : range(size_il)) g4[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
+                for (int l : range(size_il)) G2[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
         }
 
-    //g4(n1, n2, n3)(i, j, k, l) << g4(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
+    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
   }
 
   // --
 
-  template <g4_channel Channel> void measure_g4_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
+  template <G2_channel Channel> void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);
-    g4_iw        = mpi_all_reduce(g4_iw, com);
-    for (auto const &g4_iw_block : g4_iw) g4_iw_block /= real(average_sign) * data.config.beta();
+    G2_iw        = mpi_all_reduce(G2_iw, com);
+    for (auto const &G2_iw_block : G2_iw) G2_iw_block /= real(average_sign) * data.config.beta();
   }
 
-  template class measure_g4_iw<AllFermionic>;
-  template class measure_g4_iw<PP>;
-  template class measure_g4_iw<PH>;
+  template class measure_G2_iw<AllFermionic>;
+  template class measure_G2_iw<PP>;
+  template class measure_G2_iw<PH>;
 
 } // namespace cthyb

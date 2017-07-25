@@ -33,14 +33,14 @@
 #include "./moves/double_remove.hpp"
 #include "./moves/shift.hpp"
 #include "./moves/global.hpp"
-#include "./measures/g_tau.hpp"
-#include "./measures/g_l.hpp"
+#include "./measures/G_tau.hpp"
+#include "./measures/G_l.hpp"
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
-#include "./measures/g4_tau.hpp"
-#include "./measures/g4_iw.hpp"
-#include "./measures/g4_l.hpp"
+#include "./measures/G2_tau.hpp"
+#include "./measures/G2_iw.hpp"
+#include "./measures/G2_iwll.hpp"
 #include "./measures/util.hpp"
 
    namespace cthyb {
@@ -240,29 +240,29 @@
     // --------------------------------------------------------------------------
     // Two-particle correlators
 
-    g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
+    G2_measures_t G2_measures(_Delta_tau, gf_struct, params);
 
     // Imaginary-time binning
-    if (params.measure_g4_tau) qmc.add_measure(measure_g4_tau{g4_tau, data, g4_measures}, "g4_tau imaginary-time measurement");
+    if (params.measure_G2_tau) qmc.add_measure(measure_G2_tau{G2_tau, data, G2_measures}, "G2_tau imaginary-time measurement");
 
     // NFFT Matsubara frequency measures
-    if (params.measure_g4_iw) qmc.add_measure(measure_g4_iw<AllFermionic>{g4_iw, data, g4_measures}, "g4_iw fermionic measurement");
-    if (params.measure_g4_iw_pp) qmc.add_measure(measure_g4_iw<PP>{g4_iw_pp, data, g4_measures}, "g4_iw_pp particle-particle measurement");
-    if (params.measure_g4_iw_ph) qmc.add_measure(measure_g4_iw<PH>{g4_iw_ph, data, g4_measures}, "g4_iw_ph particle-hole measurement");
+    if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
+    if (params.measure_G2_iw_pp) qmc.add_measure(measure_G2_iw<PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
+    if (params.measure_G2_iw_ph) qmc.add_measure(measure_G2_iw<PH>{G2_iw_ph, data, G2_measures}, "G2_iw_ph particle-hole measurement");
 
     // Legendre mixed basis measurements
-    if (params.measure_g4_l_pp) qmc.add_measure(measure_g4_l<PP>{g4_wll_pp, data, g4_measures}, "g4_wll_pp Legendre particle-particle measurement");
-    if (params.measure_g4_l_ph) qmc.add_measure(measure_g4_l<PH>{g4_wll_ph, data, g4_measures}, "g4_wll_ph Legendre particle-hole measurement");
+    if (params.measure_G2_iwll_pp) qmc.add_measure(measure_G2_iwll<PP>{G2_iwll_pp, data, G2_measures}, "G2_iwll_pp Legendre particle-particle measurement");
+    if (params.measure_G2_iwll_ph) qmc.add_measure(measure_G2_iwll<PH>{G2_iwll_ph, data, G2_measures}, "G2_iwll_ph Legendre particle-hole measurement");
 
     // --------------------------------------------------------------------------
     // Single-particle correlators
 
-    if (params.measure_g_tau) {
+    if (params.measure_G_tau) {
       G_tau = make_block_gf(G_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
-      qmc.add_measure(measure_g_tau{G_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
+      qmc.add_measure(measure_G_tau{G_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
     }
 
-    if (params.measure_g_l) qmc.add_measure(measure_g_l{G_l, data, n_l, gf_struct}, "G_l measure");
+    if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");
 
     // Other measurements
     if (params.measure_pert_order) {

@@ -1,9 +1,9 @@
 # Generated automatically using the command :
-# c++2py.py ../c++/solver_core.hpp -I../../cthyb.build/c++ -I../c++ -p -mpytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
+# c++2py.py ../c++/solver_core.hpp -I../cbuild/c++ -I../c++ -p -m pytriqs.applications.impurity_solvers.cthyb -o cthyb --moduledoc "The cthyb solver"
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver")
+module = module_(full_name = "pytriqs.applications.impurity_solvers.cthyb", doc = "The cthyb solver", app_name = "pytriqs.applications.impurity_solvers.cthyb")
 
 # All the triqs C++/Python modules
 module.use_module('operators', 'triqs')
@@ -17,19 +17,20 @@ module.add_enum("block_order", ["AABB","ABBA"], "cthyb", "Order of block indices
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
+#include <triqs/python_tools/converters/optional.hpp>
 #include <triqs/python_tools/converters/gf.hpp>
 #include <triqs/python_tools/converters/block_gf.hpp>
 #include <triqs/python_tools/converters/block2_gf.hpp>
-#include <triqs/python_tools/converters/pair.hpp>
+#include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/set.hpp>
-#include <triqs/python_tools/converters/vector.hpp>
-#include <triqs/python_tools/converters/optional.hpp>
+#include <triqs/python_tools/converters/pair.hpp>
+#include <triqs/python_tools/converters/gf.hpp>
+#include <triqs/python_tools/converters/arrays.hpp>
 #include <triqs/python_tools/converters/variant.hpp>
 #include <triqs/python_tools/converters/tuple.hpp>
 #include <triqs/python_tools/converters/operators_real_complex.hpp>
 #include <triqs/python_tools/converters/fundamental_operator_set.hpp>
-using namespace triqs::gfs;
 using triqs::operators::many_body_operator;
 using namespace cthyb;
 #include "./cthyb_converters.hxx"
@@ -43,157 +44,128 @@ c = class_(
 )
 
 c.add_member(c_name = "G_tau",
-             c_type = "std::optional<g_tau_t>",
-             read_only= True,
-             doc = """Accumulated single-particle Green's function :math:`G(\tau)` in imaginary time.""")
+             c_type = "std::optional<G_tau_t>",
+             read_only= False,
+             doc = """Single-particle Green\'s function :math:`G(\\tau)` in imaginary time. """)
 
-c.add_member(c_name = "g_l",
-             c_type = "std::optional<g_l_t>",
-             read_only= True,
-             doc = """Legendre Green\'s function """)
+c.add_member(c_name = "G_tau_accum",
+             c_type = "std::optional<G_tau_G_target_t>",
+             read_only= False,
+             doc = """Intermediate Green\'s function to accumulate g(tau), either real or complex """)
 
-c.add_member(c_name = "g4_tau",
-             c_type = "std::optional<g4_tau_t>",
-             read_only= True,
-             doc = """Two-particle Green\'s function (three fermionic imaginary times) """)
+c.add_member(c_name = "G_l",
+             c_type = "std::optional<G_l_t>",
+             read_only= False,
+             doc = """Single-particle Green\'s function :math:`G_l` in Legendre polynomial representation. """)
 
-c.add_member(c_name = "g4_iw",
-             c_type = "std::optional<g4_iw_t>",
-             read_only= True,
-             doc = """Two-particle Green\'s function (three fermionic matsubaras) """)
+c.add_member(c_name = "G2_tau",
+             c_type = "std::optional<G2_tau_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` (three Fermionic imaginary times) """)
 
-c.add_member(c_name = "g4_iw_pp",
-             c_type = "std::optional<g4_iw_t>",
-             read_only= True,
-             doc = """Two-particle Green\'s function (three fermionic matsubaras) """)
+c.add_member(c_name = "G2_iw",
+             c_type = "std::optional<G2_iw_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies) """)
 
-c.add_member(c_name = "g4_iw_ph",
-             c_type = "std::optional<g4_iw_t>",
-             read_only= True,
-             doc = """Two-particle Green\'s function (three fermionic matsubaras) """)
+c.add_member(c_name = "G2_iw_pp",
+             c_type = "std::optional<G2_iw_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic) """)
 
-c.add_member(c_name = "g4_wll_pp",
-             c_type = "std::optional<g4_wll_t>",
-             read_only= True,
-             doc = """Two-particle Green\'s function (one bosonic matsubara and two legendre) """)
+c.add_member(c_name = "G2_iw_ph",
+             c_type = "std::optional<G2_iw_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic) """)
 
-c.add_member(c_name = "g4_wll_ph",
-             c_type = "std::optional<g4_wll_t>",
-             read_only= True,
-             doc = """Two-particle Green\'s function (one bosonic matsubara and two legendre) """)
+c.add_member(c_name = "G2_iwll_pp",
+             c_type = "std::optional<G2_iwll_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the pp-channel (one bosonic matsubara and two legendre) """)
 
-#c.add_property(name = "G_tau",
-#               getter = cfunction("block_gf_view<imtime> G_tau ()"),
-#               doc = """Accumulated :math:`G(\\tau)` in imaginary time. """)
+c.add_member(c_name = "G2_iwll_ph",
+             c_type = "std::optional<G2_iwll_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre) """)
 
-c.add_property(name = "G_l",
-               getter = cfunction("block_gf_view<legendre> G_l ()"),
-               doc = """Accumulated :math:`G_l` in Legendre polynomials representation. """)
-
-c.add_property(name = "G2_tau",
-               getter = cfunction("block2_gf_view<cartesian_product<imtime,imtime,imtime>,tensor_valued<4>> G2_tau ()"),
-               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` """)
-
-c.add_property(name = "G2_inu",
-               getter = cfunction("block2_gf_view<cartesian_product<imfreq,imfreq,imfreq>,tensor_valued<4>> G2_inu ()"),
-               doc = """Accumulated two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` """)
-
-c.add_property(name = "G2_iw_inu_inup_pp",
-               getter = cfunction("block2_gf_view<cartesian_product<imfreq,imfreq,imfreq>,tensor_valued<4>> G2_iw_inu_inup_pp ()"),
-               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel. """)
-
-c.add_property(name = "G2_iw_inu_inup_ph",
-               getter = cfunction("block2_gf_view<cartesian_product<imfreq,imfreq,imfreq>,tensor_valued<4>> G2_iw_inu_inup_ph ()"),
-               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel. """)
-
-c.add_property(name = "G2_iw_l_lp_pp",
-               getter = cfunction("block2_gf_view<cartesian_product<imfreq,legendre,legendre>,tensor_valued<4>> G2_iw_l_lp_pp ()"),
-               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,l,l\')` in the pp-channel. """)
-
-c.add_property(name = "G2_iw_l_lp_ph",
-               getter = cfunction("block2_gf_view<cartesian_product<imfreq,legendre,legendre>,tensor_valued<4>> G2_iw_l_lp_ph ()"),
-               doc = """Accumulated two-particle Green's function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel. """)
-
-c.add_constructor("""(double beta, std::map<std::string,indices_type> gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50)""",
-                  doc = """ """)
-
-solve_doc = """+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| Parameter Name         | Type                                           | Default                       | Documentation                                                                                           |
-+========================+================================================+===============================+=========================================================================================================+
-| h_int                  | Operator                                       |                               | Interacting part of the atomic Hamiltonian                                                              |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| n_cycles               | int                                            |                               | Number of QMC cycles                                                                                    |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| partition_method       | str                                            | "autopartition"               | Partition method                                                                                        |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| quantum_numbers        | list(Operator)                                 | []                            | Quantum numbers                                                                                         |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| length_cycle           | int                                            | 50                            | Length of a single QMC cycle                                                                            |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| n_warmup_cycles        | int                                            | 5000                          | Number of cycles for thermalization                                                                     |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| random_seed            | int                                            | 34788 + 928374 * MPI.rank     | Seed for random number generator                                                                        |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| random_name            | str                                            | ""                            | Name of random number generator                                                                         |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| max_time               | int                                            | -1 = infinite                 | Maximum runtime in seconds, use -1 to set infinite                                                      |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| verbosity              | int                                            | 3 on MPI rank 0, 0 otherwise. | Verbosity level                                                                                         |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| move_shift             | bool                                           | true                          | Add shifting an operator as a move?                                                                     |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| move_double            | bool                                           | false                         | Add double insertions as a move?                                                                        |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| use_trace_estimator    | bool                                           | false                         | Calculate the full trace or use an estimate?                                                            |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g_tau          | bool                                           | true                          | Measure G(tau)?                                                                                         |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g_l            | bool                                           | false                         | Measure G_l (Legendre)?                                                                                 |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_tau         | bool                                           | false                         | Measure G^4(tau,tau',tau'') with three fermionic times.                                                 |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_iw          | bool                                           | false                         | Measure G^4(inu,inu',inu'') with three fermionic frequencies.                                           |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_iw_pp       | bool                                           | false                         | Measure G^4(iomega,inu,inu') within the particle-particle channel.                                      |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_iw_ph       | bool                                           | false                         | Measure G^4(iomega,inu,inu') within the particle-hole channel.                                          |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_l_pp        | bool                                           | false                         | Measure G^2(iomega,l,l') within the particle-particle channel.                                          |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_l_ph        | bool                                           | false                         | Measure G^2(iomega,l,l') within the particle-hole channel.                                              |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_block_order | cthyb::block_order                             | AABB                          | Order of block indices in the definition of G^2.                                                        |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_blocks      | std::set<std::pair<std::string, std::string> > | measure all blocks            | List of block index pairs of G^2 to measure.                                                            |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_n_tau       | int                                            | 10                            | Number of imaginary time slices for G^4 measurement.                                                    |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_n_bosonic   | int                                            | 30                            | Number of bosonic Matsubara frequencies for G^4 measurement.                                            |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_n_fermionic | int                                            | 30                            | Number of fermionic Matsubara frequencies for G^4 measurement.                                          |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_g4_n_l         | int                                            | 20                            | Number of Legendre coefficients for G^4(iomega,l,l') measurement.                                       |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| nfft_buf_sizes         | std::map<std::string, int>                     | 100 for every block           | NFFT buffer sizes for different blocks                                                                  |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_pert_order     | bool                                           | false                         | Measure perturbation order?                                                                             |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_density_matrix | bool                                           | false                         | Measure the reduced impurity density matrix?                                                            |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| use_norm_as_weight     | bool                                           | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                           |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| performance_analysis   | bool                                           | false                         | Analyse performance of trace computation with histograms (developers only)?                             |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| proposal_prob          | dict(str:float)                                | {}                            | Operator insertion/removal probabilities for different blocks                                           |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| move_global            | dict(str : dict(indices : indices))            | {}                            | List of global moves (with their names). Each move is specified with an index substitution dictionary.  |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| move_global_prob       | double                                         | 0.05                          | Overall probability of the global moves                                                                 |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| imag_threshold         | double                                         | 1.e-15                        | Threshold below which imaginary components of Delta and h_loc are set to zero                           |
-+------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+ """
-
-c.add_method("""void solve (**cthyb::solve_parameters_t)""", doc = solve_doc)
+c.add_method("""void solve (**cthyb::solve_parameters_t)""",
+             doc = """+-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| Parameter Name                | Type                                           | Default                       | Documentation                                                                                           |
++===============================+================================================+===============================+=========================================================================================================+
+| h_int                         | Operator                                       |                               | Interacting part of the atomic Hamiltonian                                                              |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| n_cycles                      | int                                            |                               | Number of QMC cycles                                                                                    |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| partition_method              | str                                            | "autopartition"               | Partition method                                                                                        |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| quantum_numbers               | list(Operator)                                 | []                            | Quantum numbers                                                                                         |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| length_cycle                  | int                                            | 50                            | Length of a single QMC cycle                                                                            |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| n_warmup_cycles               | int                                            | 5000                          | Number of cycles for thermalization                                                                     |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| random_seed                   | int                                            | 34788 + 928374 * MPI.rank     | Seed for random number generator                                                                        |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| random_name                   | str                                            | ""                            | Name of random number generator                                                                         |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| max_time                      | int                                            | -1 = infinite                 | Maximum runtime in seconds, use -1 to set infinite                                                      |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| verbosity                     | int                                            | 3 on MPI rank 0, 0 otherwise. | Verbosity level                                                                                         |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| move_shift                    | bool                                           | true                          | Add shifting an operator as a move?                                                                     |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| move_double                   | bool                                           | false                         | Add double insertions as a move?                                                                        |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| use_trace_estimator           | bool                                           | false                         | Calculate the full trace or use an estimate?                                                            |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G_tau                 | bool                                           | true                          | Measure G(tau)?                                                                                         |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G_l                   | bool                                           | false                         | Measure G_l (Legendre)?                                                                                 |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_tau                | bool                                           | false                         | Measure G^4(tau,tau',tau'') with three fermionic times.                                                 |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_iw                 | bool                                           | false                         | Measure G^4(inu,inu',inu'') with three fermionic frequencies.                                           |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_iw_pp              | bool                                           | false                         | Measure G^4(iomega,inu,inu') within the particle-particle channel.                                      |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_iw_ph              | bool                                           | false                         | Measure G^4(iomega,inu,inu') within the particle-hole channel.                                          |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_iwll_pp            | bool                                           | false                         | Measure G^2(iomega,l,l') within the particle-particle channel.                                          |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_iwll_ph            | bool                                           | false                         | Measure G^2(iomega,l,l') within the particle-hole channel.                                              |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_block_order        | cthyb::block_order                             | AABB                          | Order of block indices in the definition of G^2.                                                        |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_blocks             | std::set<std::pair<std::string, std::string> > | measure all blocks            | List of block index pairs of G^2 to measure.                                                            |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_n_tau              | int                                            | 10                            | Number of imaginary time slices for G^4 measurement.                                                    |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_n_bosonic          | int                                            | 30                            | Number of bosonic Matsubara frequencies for G^4 measurement.                                            |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_n_fermionic        | int                                            | 30                            | Number of fermionic Matsubara frequencies for G^4 measurement.                                          |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_n_l                | int                                            | 20                            | Number of Legendre coefficients for G^4(iomega,l,l') measurement.                                       |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_G2_iwll_nfft_buf_size | int                                            | 100                           | NFFT buffer size for G^4(iomega,l,l') measurement.                                                      |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| nfft_buf_sizes                | std::map<std::string, int>                     | 100 for every block           | NFFT buffer sizes for different blocks                                                                  |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_pert_order            | bool                                           | false                         | Measure perturbation order?                                                                             |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| measure_density_matrix        | bool                                           | false                         | Measure the reduced impurity density matrix?                                                            |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| use_norm_as_weight            | bool                                           | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                           |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| performance_analysis          | bool                                           | false                         | Analyse performance of trace computation with histograms (developers only)?                             |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| proposal_prob                 | dict(str:float)                                | {}                            | Operator insertion/removal probabilities for different blocks                                           |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| move_global                   | dict(str : dict(indices : indices))            | {}                            | List of global moves (with their names). Each move is specified with an index substitution dictionary.  |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| move_global_prob              | double                                         | 0.05                          | Overall probability of the global moves                                                                 |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
+| imag_threshold                | double                                         | 1.e-15                        | Threshold below which imaginary components of Delta and h_loc are set to zero                           |
++-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+ """)
 
 c.add_property(name = "h_loc",
                getter = cfunction("many_body_op_t h_loc ()"),
@@ -204,16 +176,15 @@ c.add_property(name = "last_solve_parameters",
                doc = """Set of parameters used in the last call to ``solve()``. """)
 
 c.add_property(name = "Delta_tau",
-               getter = cfunction("block_gf_view<imtime> Delta_tau ()"),
+               getter = cfunction("block_gf_view<triqs::gfs::imtime> Delta_tau ()"),
                doc = """:math:`\\Delta(\\tau)` in imaginary time. """)
 
 c.add_property(name = "G0_iw",
-               getter = cfunction("block_gf_view<imfreq> G0_iw ()"),
+               getter = cfunction("block_gf_view<triqs::gfs::imfreq> G0_iw ()"),
                doc = """:math:`G_0(i\\omega)` in imaginary frequencies. """)
 
-
 c.add_property(name = "atomic_gf",
-               getter = cfunction("block_gf_view<imtime> atomic_gf ()"),
+               getter = cfunction("block_gf_view<triqs::gfs::imtime> atomic_gf ()"),
                doc = """Atomic :math:`G(\\tau)` in imaginary time. """)
 
 c.add_property(name = "density_matrix",
@@ -245,6 +216,7 @@ c.add_property(name = "solve_status",
                doc = """Status of the ``solve()`` on exit. """)
 
 module.add_class(c)
+
 
 # The class atom_diag
 c = class_(

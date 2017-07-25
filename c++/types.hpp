@@ -54,16 +54,16 @@ namespace cthyb {
 
   // Two-particle Green's function types
   using imtime_cube_mesh_t = cartesian_product<imtime, imtime, imtime>;
-  using g4_tau_t           = block2_gf<imtime_cube_mesh_t, tensor_valued<4>>;
+  using G2_tau_t           = block2_gf<imtime_cube_mesh_t, tensor_valued<4>>;
 
   using imfreq_cube_mesh_t = cartesian_product<imfreq, imfreq, imfreq>;
-  using g4_iw_t            = block2_gf<imfreq_cube_mesh_t, tensor_valued<4>>;
+  using G2_iw_t            = block2_gf<imfreq_cube_mesh_t, tensor_valued<4>>;
 
   using imfreq_legendre_mesh_t = cartesian_product<imfreq, legendre, legendre>;
-  using g4_wll_t               = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
+  using G2_iwll_t               = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
-  enum g4_channel { PP, PH, AllFermionic }; // g4 sampling channels
-  enum block_order { AABB, ABBA };          // order of hybridization blocks g2
+  enum G2_channel { PP, PH, AllFermionic }; // G2 sampling channels
+  enum block_order { AABB, ABBA };          // order of hybridization blocks G2
 
 } // namespace cthyb
 

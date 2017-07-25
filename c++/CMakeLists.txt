@@ -12,9 +12,11 @@ set(LIBRARY_SOURCES
     moves/double_insert.cpp
     moves/double_remove.cpp
     measures/density_matrix.cpp
-    measures/g4_tau.cpp
-    measures/g4_iw.cpp
-    measures/g4_l.cpp
+    measures/G_tau.cpp
+    measures/G_l.cpp
+    measures/G2_tau.cpp
+    measures/G2_iw.cpp
+    measures/G2_iwll.cpp
     )
 
 add_library(cthyb_c ${LIBRARY_SOURCES})

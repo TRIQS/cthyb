@@ -1,5 +1,6 @@
 #!/bin/env pytriqs
 
+import numpy as np
 from pytriqs.gf import *
 from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.archive import HDFArchive
@@ -27,14 +28,16 @@ for e_group_name in arch:
     oplot(rebinning_tau(e_group['G_tau']['up'],300),name="CTHYB,$\uparrow\uparrow$")
     oplot(rebinning_tau(e_group['G_tau']['dn'],300),name="CTHYB,$\downarrow\downarrow$")
 
-    oplot(rebinning_tau(e_group_ed['G_tau']['up'],300),name="ED,$\uparrow\uparrow$")
-    oplot(rebinning_tau(e_group_ed['G_tau']['dn'],300),name="ED,$\downarrow\downarrow$")
+    #oplot(rebinning_tau(e_group_ed['G_tau']['up'],300),name="ED,$\uparrow\uparrow$")
+    #oplot(rebinning_tau(e_group_ed['G_tau']['dn'],300),name="ED,$\downarrow\downarrow$")
+    oplot(e_group_ed['G_tau']['up'],name="ED,$\uparrow\uparrow$")
+    oplot(e_group_ed['G_tau']['dn'],name="ED,$\downarrow\downarrow$")
 
     a = plt.gca()
     a.set_ylabel('$G(\\tau)$')
     a.set_xlim((0,beta))
     a.set_ylim((-1,0))
-    a.legend(loc='lower right',prop={'size':10})
+    a.legend(loc='lower right',prop={'size':8})
 
     a.set_title("$U=%.1f$, $\epsilon_d=%.1f$, $V=%.1f$, $\epsilon_k=%.1f$" % (U,ed,V,e))
 

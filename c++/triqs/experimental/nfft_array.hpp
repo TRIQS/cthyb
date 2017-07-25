@@ -25,19 +25,19 @@
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/experimental/nfft_buf.hpp>
 
-namespace cthyb {
+namespace triqs {
+  namespace experimental {
 
     using namespace triqs::arrays;
     using namespace triqs::gfs;
     using triqs::utility::time_pt;
-    using triqs::experimental::nfft_buf_t;
 
     // NFFT transform of an array-valued function of MeshRank tau arguments
     template <int MeshRank, int TargetRank> class nfft_array_t {
 
       public:
-      using freq_mesh_t = typename nfft_buf_t<MeshRank>::freq_mesh_t;
-      using res_gf_t    = gf<typename freq_mesh_t::var_t, tensor_valued<TargetRank>>;
+      using freq_mesh_t                = typename nfft_buf_t<MeshRank>::freq_mesh_t;
+      using res_gf_t                   = gf<typename freq_mesh_t::var_t, tensor_valued<TargetRank>>;
       static constexpr int result_rank = MeshRank + TargetRank;
 
       nfft_array_t() = default;
@@ -45,17 +45,17 @@ namespace cthyb {
       // fiw_mesh - Matsubara frequency mesh
       // fiw_arr_ - array to contain the final NFFT output
       // buf_sizes - sizes of NFFT buffers
-      nfft_array_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, result_rank> fiw_arr_,
-                   array<int, TargetRank> const &buf_sizes) :
-      indexmap(make_target_shape(fiw_arr_.shape())), fiw_arr(fiw_arr_) {
+      nfft_array_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, result_rank> fiw_arr_, array<int, TargetRank> const &buf_sizes)
+         : indexmap(make_target_shape(fiw_arr_.shape())), fiw_arr(fiw_arr_) {
         buffers.reserve(indexmap.domain().number_of_elements());
-        foreach(buf_sizes, [this, &fiw_mesh, &buf_sizes](auto... ind) {
+        foreach (buf_sizes, [this, &fiw_mesh, &buf_sizes](auto... ind) {
 #ifdef NDEBUG
           buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), false);
 #else
           buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), true);
 #endif
-        });
+        })
+          ;
       }
 
       // Add a new element to the NFFT buffer
@@ -65,7 +65,7 @@ namespace cthyb {
 
       // Run transformation
       void flush() {
-        for (auto & buf : buffers) buf.flush();
+        for (auto &buf : buffers) buf.flush();
       }
 
       private:
@@ -73,9 +73,9 @@ namespace cthyb {
         return buffers[indexmap(ind_arr[Is]...)];
       }
 
-      mini_vector<int, TargetRank> make_target_shape(mini_vector<int, result_rank> const& shape) {
+      mini_vector<int, TargetRank> make_target_shape(mini_vector<int, result_rank> const &shape) {
         std::vector<int> res(TargetRank);
-        for(int n = 0; n < TargetRank; ++n) res[n] = shape[n + MeshRank];
+        for (int n = 0; n < TargetRank; ++n) res[n] = shape[n + MeshRank];
         return mini_vector<int, TargetRank>(res);
       }
 
@@ -88,4 +88,5 @@ namespace cthyb {
       // NFFT transformation result
       array_view<dcomplex, result_rank> fiw_arr;
     };
-}
+  } // namespace experimental
+} // namespace triqs

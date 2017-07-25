@@ -31,12 +31,12 @@ namespace cthyb {
   struct measure_g_l {
 
     qmc_data const &data;
-    g_l_t::view_type g_l;
+    G_l_t::view_type g_l;
     mc_weight_t average_sign;
 
-    measure_g_l(std::optional<g_l_t> & g_l_opt, qmc_data const &data, int n_l, gf_struct_t gf_struct) : data(data), average_sign(0) {
+    measure_g_l(std::optional<G_l_t> & g_l_opt, qmc_data const &data, int n_l, gf_struct_t gf_struct) : data(data), average_sign(0) {
       // Allocate storage in g_l_opt
-      g_l_opt = make_block_gf(g_l_t::g_t::mesh_t{data.config.beta(), Fermion, static_cast<size_t>(n_l)}, gf_struct);
+      g_l_opt = make_block_gf(G_l_t::g_t::mesh_t{data.config.beta(), Fermion, static_cast<size_t>(n_l)}, gf_struct);
       g_l.rebind(*g_l_opt);
       g_l() = 0.0;
     }

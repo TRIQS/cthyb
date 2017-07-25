@@ -43,7 +43,7 @@ namespace cthyb {
     int n_iw, n_tau, n_l;
 
     // Single-particle Green's function containers
-    g_iw_t _G0_iw; // Non-interacting Matsubara Green's function
+    G_iw_t _G0_iw; // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
     histogram _pert_order_total;               // Histogram of the total perturbation order

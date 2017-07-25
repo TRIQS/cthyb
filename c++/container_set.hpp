@@ -31,14 +31,16 @@ namespace cthyb {
   /// Containers for measurements
   struct container_set_t {
 
-    // Single particle Green's functions
-    std::optional<g_tau_g_target_t> g_tau_accum; // Intermediate object to accumulate g(tau), either real or complex
+    // -- Single particle Green's functions
+    
+    /// Intermediate Green's function to accumulate g(tau), either real or complex
+    std::optional<G_tau_G_target_t> G_tau_accum;
 
-    /// Accumulated single-particle Green's function :math:`G(\tau)` in imaginary time.
+    /// Single-particle Green's function :math:`G(\tau)` in imaginary time.
     std::optional<G_tau_t> G_tau;
 
-    /// Accumulated :math:`G_l` in Legendre polynomial representation.
-    std::optional<g_l_t> g_l;
+    /// Single-particle Green's function :math:`G_l` in Legendre polynomial representation.
+    std::optional<G_l_t> G_l;
 
     // Two-particle Green's functions
     std::optional<g4_tau_t> g4_tau;    // three fermionic imaginary times
@@ -56,7 +58,7 @@ namespace cthyb {
     //g_tau_t::view_type G_tau() { return *g_tau; }
 
     /// Accumulated :math:`G_l` in Legendre polynomial representation.
-    g_l_t::view_type G_l() { return *g_l; }
+    //g_l_t::view_type G_l() { return *g_l; }
 
     // Two-particle Green's functions
 

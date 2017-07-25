@@ -48,9 +48,9 @@ namespace cthyb {
 
   // One-particle Green's function types
   using G_tau_t          = block_gf<imtime, matrix_valued>;
-  using g_tau_g_target_t = block_gf<imtime, g_target_t>;
-  using g_iw_t           = block_gf<imfreq, matrix_valued>;
-  using g_l_t            = block_gf<legendre, matrix_valued>;
+  using G_tau_G_target_t = block_gf<imtime, G_target_t>;
+  using G_iw_t           = block_gf<imfreq, matrix_valued>;
+  using G_l_t            = block_gf<legendre, matrix_valued>;
 
   // Two-particle Green's function types
   using imtime_cube_mesh_t = cartesian_product<imtime, imtime, imtime>;

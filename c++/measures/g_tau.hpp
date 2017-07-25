@@ -31,12 +31,12 @@ namespace cthyb {
   // Measure imaginary time Green's function (all blocks)
   struct measure_g_tau {
 
-    g_tau_g_target_t::view_type g_tau;
+    G_tau_G_target_t::view_type g_tau;
     qmc_data const &data;
     mc_weight_t average_sign;
 
-    measure_g_tau(std::optional<g_tau_g_target_t> &g_tau_opt, qmc_data const &data, int n_tau, gf_struct_t gf_struct) : data(data), average_sign(0) {
-      g_tau_opt = make_block_gf<g_target_t>(gf_mesh<imtime>{data.config.beta(), Fermion, n_tau}, gf_struct);
+    measure_g_tau(std::optional<G_tau_G_target_t> &g_tau_opt, qmc_data const &data, int n_tau, gf_struct_t gf_struct) : data(data), average_sign(0) {
+      g_tau_opt = make_block_gf<G_target_t>(gf_mesh<imtime>{data.config.beta(), Fermion, n_tau}, gf_struct);
       g_tau.rebind(*g_tau_opt);
       g_tau() = 0.0;
     }

@@ -259,10 +259,10 @@
 
     if (params.measure_g_tau) {
       G_tau = make_block_gf(G_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
-      qmc.add_measure(measure_g_tau{g_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
+      qmc.add_measure(measure_g_tau{G_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
     }
 
-    if (params.measure_g_l) qmc.add_measure(measure_g_l{g_l, data, n_l, gf_struct}, "G_l measure");
+    if (params.measure_g_l) qmc.add_measure(measure_g_l{G_l, data, n_l, gf_struct}, "G_l measure");
 
     // Other measurements
     if (params.measure_pert_order) {
@@ -292,6 +292,6 @@
     if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
 
     // Copy local (real or complex) G_tau back to complex G_tau
-    if (G_tau && g_tau_accum) *G_tau = *g_tau_accum;
+    if (G_tau && G_tau_accum) *G_tau = *G_tau_accum;
   }
 }

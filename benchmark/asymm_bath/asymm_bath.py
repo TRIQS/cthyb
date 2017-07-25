@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import *

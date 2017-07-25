@@ -37,9 +37,14 @@ namespace cthyb {
   // Measure the two-particle Green's function in Matsubara frequency
   template <g4_channel Channel> struct measure_g4_iw {
 
+    // Comment header files
+    // Whats private? What is public?
+
+    // No Problem's with uncopyable nfft buffers?
+
     using M_block_type = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
-    using M_type = M_block_type::g_t;
-    
+    using M_type       = M_block_type::g_t;
+
     qmc_data const &data;
     g4_iw_t::view_type g4_iw;
     mc_weight_t average_sign;
@@ -49,13 +54,12 @@ namespace cthyb {
     M_block_type M;
     array<nfft_array_t<2, 2>, 1> M_nfft;
 
-    measure_g4_iw(std::optional<g4_iw_t> & g4_iw_opt, qmc_data const &data, g4_measures_t const & g4_measures);
+    measure_g4_iw(std::optional<g4_iw_t> &g4_iw_opt, qmc_data const &data, g4_measures_t const &g4_measures);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void collect_results(triqs::mpi::communicator const &c /* name consistently! comm? */);
 
-    inline void accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const & M_ab, M_type const & M_cd);
-    inline void accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const & M_ad, M_type const & M_cb);
-
+    inline void accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ab, M_type const &M_cd);
+    inline void accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ad, M_type const &M_cb);
   };
 
-}
+} // namespace cthyb

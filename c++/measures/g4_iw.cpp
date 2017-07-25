@@ -21,10 +21,11 @@
 
 #include "./g4_iw.hpp"
 
-namespace cthyb {
+namespace cthyb { // Maybe make a namespace for all measures and name them according to their measured quantity? (ctint)
 
   template <g4_channel Channel>
-  measure_g4_iw<Channel>::measure_g4_iw(std::optional<g4_iw_t> &g4_iw_opt, qmc_data const &data, g4_measures_t const &g4_measures)
+  measure_g4_iw<Channel>::measure_g4_iw(std::optional<g4_iw_t> &g4_iw_opt, qmc_data const &data /* split into qmc_config and params? */,
+                                        g4_measures_t const &g4_measures)
      : data(data), average_sign(0), g4_measures(g4_measures) {
 
     const double beta = data.config.beta();
@@ -52,9 +53,10 @@ namespace cthyb {
 
     // Allocate temporary NFFT two-frequency matrix M
     {
-      int resize_factor = 3; // How much bigger should the large mesh bee???
-      int nfreq         = resize_factor * std::max(n_fermionic, n_bosonic - 1 + n_fermionic);
+      // Determine maximum Matsubara index needed
+      int nfreq = std::max(3 * n_fermionic, n_bosonic + n_fermionic);
       gf_mesh<imfreq> iw_mesh_large{beta, Fermion, nfreq};
+      // In case of fermionic measurement, large mesh only needed for first component
       gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh{iw_mesh_large, iw_mesh_large};
 
       // Initialize intermediate scattering matrix
@@ -62,6 +64,7 @@ namespace cthyb {
     }
 
     // Initialize the nfft_buffers mirroring the matrix M
+    // Maybe we should sync the way the buffers are initialized between cthyb and ctint ?
     {
       M_nfft.resize(M.size());
 
@@ -106,6 +109,8 @@ namespace cthyb {
     }
   }
 
+  // Define placeholders once and for all in types.hpp?
+
   // Index placeholders
   clef::placeholder<0> i;
   clef::placeholder<1> j;
@@ -121,51 +126,56 @@ namespace cthyb {
   // -- Particle-hole
 
   template <> inline void measure_g4_iw<PH>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
-      + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l)       //
+          + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
   }
 
   template <> inline void measure_g4_iw<PH>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
-      - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l)       //
+          - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
   }
 
   // -- Particle-particle
 
   template <> inline void measure_g4_iw<PP>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
-      + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l)       //
+          + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
   }
 
   template <> inline void measure_g4_iw<PP>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
-    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l) //
-      - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
+    g4(w, n1, n2)(i, j, k, l) << g4(w, n1, n2)(i, j, k, l)       //
+          - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
   }
 
   // -- Fermionic
 
   template <>
-  inline void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  inline void measure_g4_iw<AllFermionic>::accumulate_impl_AABB(g4_iw_t::g_t::view_type g4, mc_weight_t s /* rename s -> sign ? */,
+                                                                M_type const &M_ij, M_type const &M_kl) {
 
-      int size_ij = M_ij.target_shape()[0];
-      int size_kl = M_kl.target_shape()[0];
+    int size_ij = M_ij.target_shape()[0];
+    int size_kl = M_kl.target_shape()[0];
 
-      for (auto const &n1 : std::get<0>(g4.mesh()))
-        for (auto const &n2 : std::get<1>(g4.mesh()))
-          for (auto const &n3 : std::get<2>(g4.mesh())) {
-            auto mesh = std::get<0>(g4.mesh());
-            typename decltype(mesh)::mesh_point_t n4{mesh, n1.index() + n3.index() - n2.index()};
-            for (int i : range(size_ij))
-              for (int j : range(size_ij))
-                for (int k : range(size_kl))
-                  for (int l : range(size_kl)) g4[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
-          }
+    // Assume equal grids for all three fermionic frequencies
+    auto const &iw_mesh = std::get<0>(g4.mesh());
 
-      //g4(n1, n2, n3)(i, j, k, l) << g4(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
+    for (auto const &n1 : iw_mesh)
+      for (auto const &n2 : iw_mesh)
+        for (auto const &n3 : iw_mesh) {
+          gf_mesh<imfreq>::mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
+          for (int i : range(size_ij))
+            for (int j : range(size_ij))
+              for (int k : range(size_kl))
+                for (int l : range(size_kl)) g4[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
+        }
+
+    //g4(n1, n2, n3)(i, j, k, l) << g4(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
   }
 
   template <>
   inline void measure_g4_iw<AllFermionic>::accumulate_impl_ABBA(g4_iw_t::g_t::view_type g4, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+
+    // Adjust according to ABBA part
 
     int size_il = M_il.target_shape()[0];
     int size_kj = M_kj.target_shape()[0];
@@ -189,7 +199,7 @@ namespace cthyb {
   template <g4_channel Channel> void measure_g4_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);
     g4_iw        = mpi_all_reduce(g4_iw, com);
-    for (auto const &g4_iw_block : g4_iw) g4_iw_block /= real(average_sign) * data.config.beta();
+    g4_iw        = g4_iw / (real(average_sign) * data.config.beta());
   }
 
   template class measure_g4_iw<AllFermionic>;

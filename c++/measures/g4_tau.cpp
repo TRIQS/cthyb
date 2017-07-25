@@ -85,8 +85,10 @@ namespace cthyb {
     average_sign = mpi_all_reduce(average_sign, comm);
     g4_tau       = mpi_all_reduce(g4_tau, comm);
 
+    // This loop over blocks is unnecessary. All the operations inside can be done for the block2_gf/block_gf
     for (auto &g4_tau_block : g4_tau) {
       // Bin volume in imaginary time space
+      // Do we really need the general case with different n_tau's for each dimension?
       double dtau0    = std::get<0>(g4_tau_block.mesh()).delta();
       double dtau1    = std::get<1>(g4_tau_block.mesh()).delta();
       double dtau2    = std::get<2>(g4_tau_block.mesh()).delta();

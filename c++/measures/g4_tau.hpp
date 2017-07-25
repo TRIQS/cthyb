@@ -32,6 +32,9 @@ namespace cthyb {
   // Measure imaginary time Green's function (all blocks)
   struct measure_g4_tau {
 
+    // Comment header files
+    // Whats private? What is public?
+
     qmc_data const &data;
     g4_tau_t::view_type g4_tau;
     mc_weight_t average_sign;

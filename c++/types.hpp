@@ -40,17 +40,17 @@ namespace cthyb {
   using namespace triqs::statistics;
 
   using triqs::utility::time_pt;
-  using op_t         = std::pair<time_pt, int>;
-  using histo_map_t  = std::map<std::string, histogram>;
+  using op_t        = std::pair<time_pt, int>;
+  using histo_map_t = std::map<std::string, histogram>;
 
   using indices_type = triqs::operators::indices_t;
-  using gf_struct_t = triqs::hilbert_space::gf_struct_t;
-  
+  using gf_struct_t  = triqs::hilbert_space::gf_struct_t;
+
   // One-particle Green's function types
-  using g_tau_t          = block_gf<imtime>;
+  using g_tau_t          = block_gf<imtime, matrix_valued>;
   using g_tau_g_target_t = block_gf<imtime, g_target_t>;
-  using g_iw_t           = block_gf<imfreq>;
-  using g_l_t            = block_gf<legendre>;
+  using g_iw_t           = block_gf<imfreq, matrix_valued>;
+  using g_l_t            = block_gf<legendre, matrix_valued>;
 
   // Two-particle Green's function types
   using imtime_cube_mesh_t = cartesian_product<imtime, imtime, imtime>;
@@ -63,7 +63,7 @@ namespace cthyb {
   using g4_wll_t               = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
   enum g4_channel { PP, PH, AllFermionic }; // g4 sampling channels
-  enum block_order { AABB, ABBA }; // order of hybridization blocks g2
+  enum block_order { AABB, ABBA };          // order of hybridization blocks g2
 
 } // namespace cthyb
 
@@ -73,7 +73,7 @@ namespace triqs {
     /// The structure of the gf : block_name -> [...]= list of indices (int/string). FIXME Change to pair of vec<str> and vec<int> or vec<pair<str,int>>
     using block_gf_structure_t = std::map<std::string, std::vector<triqs::utility::variant_int_string>>;
 
-    // Function template for block_gf initialization
+    /// Function template for block_gf initialization
     template <typename Val_t, typename Var_t> block_gf<Var_t, Val_t> make_block_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct) {
 
       std::vector<gf<Var_t, Val_t>> gf_vec;
@@ -97,7 +97,10 @@ namespace triqs {
       return make_block_gf<matrix_valued, Var_t>(m, gf_struct);
     }
 
-    template <typename Var_t> block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct, cthyb::block_order order = cthyb::AABB) {
+    /// Function template for block2_gf initialization
+    template <typename Var_t>
+    block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct,
+                                                      cthyb::block_order order = cthyb::AABB) {
 
       std::vector<std::vector<gf<Var_t, tensor_valued<4>>>> gf_vecvec;
       std::vector<std::string> block_names;
@@ -114,16 +117,11 @@ namespace triqs {
           int bl2_size = bl2.second.size();
           std::vector<std::string> indices2;
           for (auto const &var : bl2.second) apply_visitor([&indices2](auto &&arg) { indices2.push_back(std::to_string(arg)); }, var);
-	  // Assuming AABB ordering of the blocks!!
-	  auto I = std::vector<std::vector<std::string>>{indices1, indices1, indices2, indices2};
-	  if(order == cthyb::AABB) {
-	    auto shape = make_shape(bl1_size, bl1_size, bl2_size, bl2_size);
-	    gf_vec.emplace_back(m, shape, I);
-	  } else {
-	    assert( order == cthyb::ABBA );
-	    auto shape = make_shape(bl1_size, bl2_size, bl2_size, bl1_size);
-	    gf_vec.emplace_back(m, shape, I);	    
-	  }
+          auto I = std::vector<std::vector<std::string>>{indices1, indices1, indices2, indices2};
+          switch (order) {
+            case cthyb::AABB: gf_vec.emplace_back(m, make_shape(bl1_size, bl1_size, bl2_size, bl2_size), I); break;
+            case cthyb::ABBA: gf_vec.emplace_back(m, make_shape(bl1_size, bl2_size, bl2_size, bl1_size), I); break;
+          }
         }
         gf_vecvec.emplace_back(std::move(gf_vec));
       }

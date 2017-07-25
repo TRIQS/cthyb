@@ -2,7 +2,8 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2014-2017, H. U.R. Strand, P. Seth, I. Krivenko, 
+ *                          M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -58,7 +59,7 @@ namespace cthyb {
     solver_core(double beta, std::map<std::string, indices_type> const &gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50);
 
     /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
-    TRIQS_WRAP_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
+    CPP2PY_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
        void
        solve(solve_parameters_t const &p);
 

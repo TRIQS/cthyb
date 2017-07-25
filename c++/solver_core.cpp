@@ -243,26 +243,26 @@
     g4_measures_t g4_measures(_Delta_tau, gf_struct, params);
 
     // Imaginary-time binning
-    if (params.measure_g4_tau) qmc.add_measure(measure_g4_tau(g4_tau, data, g4_measures), "g4_tau imaginary-time measurement");
+    if (params.measure_g4_tau) qmc.add_measure(measure_g4_tau{g4_tau, data, g4_measures}, "g4_tau imaginary-time measurement");
 
     // NFFT Matsubara frequency measures
-    if (params.measure_g4_iw) qmc.add_measure(measure_g4_iw<AllFermionic>(g4_iw, data, g4_measures), "g4_iw fermionic measurement");
-    if (params.measure_g4_iw_pp) qmc.add_measure(measure_g4_iw<PP>(g4_iw_pp, data, g4_measures), "g4_iw_pp particle-particle measurement");
-    if (params.measure_g4_iw_ph) qmc.add_measure(measure_g4_iw<PH>(g4_iw_ph, data, g4_measures), "g4_iw_ph particle-hole measurement");
+    if (params.measure_g4_iw) qmc.add_measure(measure_g4_iw<AllFermionic>{g4_iw, data, g4_measures}, "g4_iw fermionic measurement");
+    if (params.measure_g4_iw_pp) qmc.add_measure(measure_g4_iw<PP>{g4_iw_pp, data, g4_measures}, "g4_iw_pp particle-particle measurement");
+    if (params.measure_g4_iw_ph) qmc.add_measure(measure_g4_iw<PH>{g4_iw_ph, data, g4_measures}, "g4_iw_ph particle-hole measurement");
 
     // Legendre mixed basis measurements
-    if (params.measure_g4_l_pp) qmc.add_measure(measure_g4_l<PP>(g4_wll_pp, data, g4_measures), "g4_wll_pp Legendre particle-particle measurement");
-    if (params.measure_g4_l_ph) qmc.add_measure(measure_g4_l<PH>(g4_wll_ph, data, g4_measures), "g4_wll_ph Legendre particle-hole measurement");
+    if (params.measure_g4_l_pp) qmc.add_measure(measure_g4_l<PP>{g4_wll_pp, data, g4_measures}, "g4_wll_pp Legendre particle-particle measurement");
+    if (params.measure_g4_l_ph) qmc.add_measure(measure_g4_l<PH>{g4_wll_ph, data, g4_measures}, "g4_wll_ph Legendre particle-hole measurement");
 
     // --------------------------------------------------------------------------
     // Single-particle correlators
 
     if (params.measure_g_tau) {
-      this->g_tau = make_block_gf(g_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
-      qmc.add_measure(measure_g_tau(g_tau_accum, data, n_tau, gf_struct), "G_tau measure");
+      g_tau = make_block_gf(g_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
+      qmc.add_measure(measure_g_tau{g_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
     }
 
-    if (params.measure_g_l) qmc.add_measure(measure_g_l(g_l, data, n_l, gf_struct), "G_l measure");
+    if (params.measure_g_l) qmc.add_measure(measure_g_l{g_l, data, n_l, gf_struct}, "G_l measure");
 
     // Other measurements
     if (params.measure_pert_order) {

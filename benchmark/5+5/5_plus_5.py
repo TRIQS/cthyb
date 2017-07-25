@@ -136,7 +136,7 @@ def five_plus_five(use_interaction=True):
         Results.create_group("log")
         log = Results["log"]
         log["version"] = version.version
-        log["release"] = version.release
+        #log["release"] = version.release
         log["triqs_hash"] = version.triqs_hash
         log["cthyb_hash"] = version.cthyb_hash
         log["script"] = inspect.getsource(__main__)

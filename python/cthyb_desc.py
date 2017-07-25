@@ -42,10 +42,10 @@ c = class_(
         doc = r"Core class of the cthyb solver",   # doc of the C++ class
 )
 
-c.add_member(c_name = "g_tau",
+c.add_member(c_name = "G_tau",
              c_type = "std::optional<g_tau_t>",
              read_only= True,
-             doc = """Imaginary-time Green\'s function """)
+             doc = """Accumulated single-particle Green's function :math:`G(\tau)` in imaginary time.""")
 
 c.add_member(c_name = "g_l",
              c_type = "std::optional<g_l_t>",
@@ -82,9 +82,9 @@ c.add_member(c_name = "g4_wll_ph",
              read_only= True,
              doc = """Two-particle Green\'s function (one bosonic matsubara and two legendre) """)
 
-c.add_property(name = "G_tau",
-               getter = cfunction("block_gf_view<imtime> G_tau ()"),
-               doc = """Accumulated :math:`G(\\tau)` in imaginary time. """)
+#c.add_property(name = "G_tau",
+#               getter = cfunction("block_gf_view<imtime> G_tau ()"),
+#               doc = """Accumulated :math:`G(\\tau)` in imaginary time. """)
 
 c.add_property(name = "G_l",
                getter = cfunction("block_gf_view<legendre> G_l ()"),

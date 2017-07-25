@@ -21,7 +21,8 @@
 
 #pragma once
 
-#include <triqs/utility/optional_compat.hpp>
+//#include <triqs/utility/optional_compat.hpp>
+#include <optional>
 
 #include "types.hpp"
 
@@ -30,57 +31,53 @@ namespace cthyb {
   /// Containers for measurements
   struct container_set_t {
 
-    /// Imaginary-time Green's function
-    std::optional<g_tau_t> g_tau;
+    // Single particle Green's functions
+    std::optional<g_tau_g_target_t> g_tau_accum; // Intermediate object to accumulate g(tau), either real or complex
 
-    /// Accumulated :math:`G(\tau)` in imaginary time.
-    g_tau_t::view_type G_tau() { return *g_tau; }
+    /// Accumulated single-particle Green's function :math:`G(\tau)` in imaginary time.
+    std::optional<G_tau_t> G_tau;
 
-    // Intermediate object to accumulate g(tau), either real or complex
-    std::optional<g_tau_g_target_t> g_tau_accum;
-    
-    /// Legendre Green's function
+    /// Accumulated :math:`G_l` in Legendre polynomial representation.
     std::optional<g_l_t> g_l;
 
-    /// Accumulated :math:`G_l` in Legendre polynomials representation.
+    // Two-particle Green's functions
+    std::optional<g4_tau_t> g4_tau;    // three fermionic imaginary times
+    std::optional<g4_iw_t> g4_iw;      // three fermionic matsubaras
+    std::optional<g4_iw_t> g4_iw_pp;   // one Bosonic and two Fermionic freqs, particle-particle channel
+    std::optional<g4_iw_t> g4_iw_ph;   // one Bosonic and two Fermionic freqs, particle-hole channel
+    std::optional<g4_wll_t> g4_wll_pp; // one Bosonic freq and two legendre poly, particle-particle channel
+    std::optional<g4_wll_t> g4_wll_ph; // one Bosonic freq and two legendre poly, particle-hole channel
+
+    // -- Getter functions
+
+    // Single particle Green's functions
+    
+    /// Accumulated :math:`G(\tau)` in imaginary time.
+    //g_tau_t::view_type G_tau() { return *g_tau; }
+
+    /// Accumulated :math:`G_l` in Legendre polynomial representation.
     g_l_t::view_type G_l() { return *g_l; }
 
-    /// Two-particle Green's function (three fermionic imaginary times)
-    std::optional<g4_tau_t> g4_tau;
+    // Two-particle Green's functions
 
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)`
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` (three Fermionic imaginary times)
     g4_tau_t::view_type G2_tau() { return *g4_tau; }
 
-    /// Two-particle Green's function (three fermionic matsubaras)
-    std::optional<g4_iw_t> g4_iw;
-
-    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')`
-    g4_iw_t::view_type G2_inu() { return *g4_iw;}
-
-    /// Two-particle Green's function (three fermionic matsubaras)
-    std::optional<g4_iw_t> g4_iw_pp;
+    /// Accumulated two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
+    g4_iw_t::view_type G2_inu() { return *g4_iw; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel.
-    g4_iw_t::view_type G2_iw_inu_inup_pp() { return *g4_iw_pp;}
-
-    /// Two-particle Green's function (three fermionic matsubaras)
-    std::optional<g4_iw_t> g4_iw_ph;
+    g4_iw_t::view_type G2_iw_inu_inup_pp() { return *g4_iw_pp; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel.
-    g4_iw_t::view_type G2_iw_inu_inup_ph() { return *g4_iw_ph;}
-
-    /// Two-particle Green's function (one bosonic matsubara and two legendre)
-    std::optional<g4_wll_t> g4_wll_pp;
+    g4_iw_t::view_type G2_iw_inu_inup_ph() { return *g4_iw_ph; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel.
-    g4_wll_t::view_type G2_iw_l_lp_pp() { return *g4_wll_pp;}
-
-    /// Two-particle Green's function (one bosonic matsubara and two legendre)
-    std::optional<g4_wll_t> g4_wll_ph;
+    g4_wll_t::view_type G2_iw_l_lp_pp() { return *g4_wll_pp; }
 
     /// Accumulated two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel.
-    g4_wll_t::view_type G2_iw_l_lp_ph() { return *g4_wll_ph;}
-    
+    g4_wll_t::view_type G2_iw_l_lp_ph() { return *g4_wll_ph; }
+
   }; // struct container_set_t
 
 } // namespace cthyb

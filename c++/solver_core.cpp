@@ -258,7 +258,7 @@
     // Single-particle correlators
 
     if (params.measure_g_tau) {
-      g_tau = make_block_gf(g_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
+      G_tau = make_block_gf(G_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
       qmc.add_measure(measure_g_tau{g_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
     }
 
@@ -292,6 +292,6 @@
     if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
 
     // Copy local (real or complex) G_tau back to complex G_tau
-    if (g_tau && g_tau_accum) *g_tau = *g_tau_accum;
+    if (G_tau && g_tau_accum) *G_tau = *g_tau_accum;
   }
 }

@@ -47,7 +47,7 @@ namespace cthyb {
   using gf_struct_t  = triqs::hilbert_space::gf_struct_t;
 
   // One-particle Green's function types
-  using g_tau_t          = block_gf<imtime, matrix_valued>;
+  using G_tau_t          = block_gf<imtime, matrix_valued>;
   using g_tau_g_target_t = block_gf<imtime, g_target_t>;
   using g_iw_t           = block_gf<imfreq, matrix_valued>;
   using g_l_t            = block_gf<legendre, matrix_valued>;

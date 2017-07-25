@@ -105,8 +105,8 @@ TEST(CtHyb, Kanamori) {
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
     for (int o = 0; o < num_orbitals; ++o) {
-      h5_write(G_file, "G_up-" + std::to_string(o), solver.G_tau()[o]);
-      h5_write(G_file, "G_down-" + std::to_string(o), solver.G_tau()[num_orbitals + o]);
+      h5_write(G_file, "G_up-" + std::to_string(o), solver.G_tau->operator[](o));
+      h5_write(G_file, "G_down-" + std::to_string(o), solver.G_tau->operator[](num_orbitals + o));
     }
   }
 
@@ -115,9 +115,9 @@ TEST(CtHyb, Kanamori) {
     triqs::h5::file G_file(filename + ".ref.h5", 'r');
     for (int o = 0; o < num_orbitals; ++o) {
       h5_read(G_file, "G_up-" + std::to_string(o), g);
-      EXPECT_GF_NEAR(g, solver.G_tau()[o]);
+      EXPECT_GF_NEAR(g, solver.G_tau->operator[](o));
       h5_read(G_file, "G_down-" + std::to_string(o), g);
-      EXPECT_GF_NEAR(g, solver.G_tau()[num_orbitals + o]);
+      EXPECT_GF_NEAR(g, solver.G_tau->operator[](num_orbitals + o));
     }
   }
 }

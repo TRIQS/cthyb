@@ -57,7 +57,7 @@ namespace cthyb {
 
     /// the constructor mangles the parameters, especially params.measure_g4_blocks
     /// and populates the std::vector<g4_measure_t> measures
-    g4_measures_t(const g_tau_t &_Delta_tau, const gf_struct_t &gf_struct, const solve_parameters_t &params) : gf_struct(gf_struct), params(params) {
+    g4_measures_t(const G_tau_t &_Delta_tau, const gf_struct_t &gf_struct, const solve_parameters_t &params) : gf_struct(gf_struct), params(params) {
 
       auto g4_blocks_to_measure = params.measure_g4_blocks;
 

@@ -90,10 +90,10 @@ TEST(CtHyb, Anderson) {
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
 #ifdef BLOCK
-    h5_write(G_file, "G_up", solver.G_tau()[0]);
-    h5_write(G_file, "G_down", solver.G_tau()[1]);
+    h5_write(G_file, "G_up", solver.G_tau->operator[](0));
+    h5_write(G_file, "G_down", solver.G_tau->operator[](1));
 #else
-    h5_write(G_file, "G_tot", solver.G_tau()[0]);
+    h5_write(G_file, "G_tot", solver.G_tau->operator[](0));
 #endif
   }
 
@@ -102,12 +102,12 @@ TEST(CtHyb, Anderson) {
     triqs::h5::file G_file(filename + ".ref.h5", 'r');
 #ifdef BLOCK
     h5_read(G_file, "G_up", g);
-    EXPECT_GF_NEAR(g, solver.G_tau()[0]);
+    EXPECT_GF_NEAR(g, solver.G_tau->operator[](0));
     h5_read(G_file, "G_down", g);
-    EXPECT_GF_NEAR(g, solver.G_tau()[1]);
+    EXPECT_GF_NEAR(g, solver.G_tau->operator[](1));
 #else
     h5_read(G_file, "G_tot", g);
-    EXPECT_GF_NEAR(g, solver.G_tau()[0]);
+    EXPECT_GF_NEAR(g, solver.G_tau->operator[](0));
 #endif
   }
 }

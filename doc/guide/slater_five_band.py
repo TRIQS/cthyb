@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.archive import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import Solver
 import pytriqs.operators.util as op

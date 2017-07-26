@@ -155,7 +155,7 @@ Final Step - analyze the output
 One of the most important checks that needs to be done is to ensure that the
 high-frequency behaviour of your imaginary frequency Green's function and
 self-energy are correct and lead to physically sensible values. You should use
-the fitting function ``tail_fit`` (provided in ``pytriqs.gf.local``) to determine the
+the fitting function ``tail_fit`` (provided in ``pytriqs.gf``) to determine the
 optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.  See :ref:`here <triqslibs:tailgf>`
 for more details on the tail fitting tool. This post-processing task can also be
 delegated to the ``Solver`` object by setting ``perform_tail_fit = True``

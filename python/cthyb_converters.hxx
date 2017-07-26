@@ -90,7 +90,7 @@ template <> struct py_converter<solve_parameters_t> {
   _get_optional(dic, "measure_G2_iw_ph"             , res.measure_G2_iw_ph                ,false);
   _get_optional(dic, "measure_G2_iwll_pp"           , res.measure_G2_iwll_pp              ,false);
   _get_optional(dic, "measure_G2_iwll_ph"           , res.measure_G2_iwll_ph              ,false);
-  _get_optional(dic, "measure_G2_block_order"       , res.measure_G2_block_order          ,AABB);
+  _get_optional(dic, "measure_G2_block_order"       , res.measure_G2_block_order          ,block_order::AABB);
   _get_optional(dic, "measure_G2_blocks"            , res.measure_G2_blocks               ,(std::set<std::pair<std::string,std::string>>{}));
   _get_optional(dic, "measure_G2_n_tau"             , res.measure_G2_n_tau                ,10);
   _get_optional(dic, "measure_G2_n_bosonic"         , res.measure_G2_n_bosonic            ,30);

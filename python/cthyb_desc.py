@@ -13,7 +13,7 @@ module.use_module('histograms', 'triqs')
 module.add_include("solver_core.hpp")
 module.add_include("atom_diag.hpp")
 
-module.add_enum("block_order", ["AABB","ABBA"], "cthyb", "Order of block indices for Block2Gf objects")
+module.add_enum("block_order", ["block_order::AABB","block_order::ABBA"], "cthyb", "Order of block indices for Block2Gf objects")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
@@ -138,7 +138,7 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 +-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
 | measure_G2_iwll_ph            | bool                                           | false                         | Measure G^2(iomega,l,l') within the particle-hole channel.                                              |
 +-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
-| measure_G2_block_order        | cthyb::block_order                             | AABB                          | Order of block indices in the definition of G^2.                                                        |
+| measure_G2_block_order        | cthyb::block_order                             | block_order::AABB             | Order of block indices in the definition of G^2.                                                        |
 +-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+
 | measure_G2_blocks             | std::set<std::pair<std::string, std::string> > | measure all blocks            | List of block index pairs of G^2 to measure.                                                            |
 +-------------------------------+------------------------------------------------+-------------------------------+---------------------------------------------------------------------------------------------------------+

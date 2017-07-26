@@ -57,9 +57,7 @@ namespace cthyb {
       gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh{iw_mesh_large, iw_mesh_large};
 
       if (Channel == G2_channel::AllFermionic) { // Smaller mesh possible in AllFermionic
-        // FIXME! Smaller size possible
-        // But NFFT looses accuracy
-        gf_mesh<imfreq> iw_mesh_small{beta, Fermion, 5 * n_fermionic / 3};
+        gf_mesh<imfreq> iw_mesh_small{beta, Fermion, n_fermionic};
         M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh_large, iw_mesh_small};
       }
 

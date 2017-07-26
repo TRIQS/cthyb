@@ -37,7 +37,7 @@ namespace triqs {
     using namespace triqs::gfs;
 
     using dcomplex = std::complex<double>;
-
+    
     // NFFT buffer
     template <int Rank> class nfft_buf_t {
 
@@ -71,7 +71,27 @@ namespace triqs {
 
         if (!all_fermion) nfft_indexmap = indexmaps::cuboid::domain_t<Rank>(buf_extents);
 
-        nfft_init(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size);
+        // -- Default init
+        //nfft_init(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size);
+
+	/// compute the next highest power of 2 of 32-bit v
+	auto next_highest_power_of_two = [](unsigned int v) {
+	  v--; v |= v >> 1; v |= v >> 2; v |= v >> 4; v |= v >> 8; v |= v >> 16; v++;
+	  return v;
+	};
+	
+        // Init nfft_plan
+	mini_vector<int, Rank> extents_fftw;
+        for (int i = 0; i < Rank; i++)
+	  extents_fftw[i] = 2 * next_highest_power_of_two(buf_extents[i]);
+
+        unsigned nfft_flags = PRE_PHI_HUT | PRE_PSI | MALLOC_X | MALLOC_F_HAT |
+	  MALLOC_F | FFTW_INIT | FFT_OUT_OF_PLACE | NFFT_SORT_NODES;
+        unsigned fftw_flags = FFTW_ESTIMATE | FFTW_DESTROY_INPUT;
+
+        int m = 6; // Truncation order for the window functions
+        nfft_init_guru(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size,
+		       extents_fftw.ptr(), m, nfft_flags, fftw_flags);
       }
 
       ~nfft_buf_t() {

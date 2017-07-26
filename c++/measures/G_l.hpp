@@ -31,14 +31,14 @@ namespace cthyb {
   struct measure_G_l {
 
     public:
-    measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t gf_struct);
+    measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
 
     private:
     qmc_data const &data;
-    G_l_t::view_type G_l;
     mc_weight_t average_sign;
+    G_l_t::view_type G_l;
   };
 
 } // namespace cthyb

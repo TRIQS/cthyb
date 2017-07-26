@@ -25,8 +25,7 @@ namespace cthyb {
 
   using namespace triqs::gfs;
 
-  measure_G_l::measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t gf_struct) : data(data), average_sign(0) {
-    // Allocate storage in G_l_opt
+  measure_G_l::measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct) : data(data), average_sign(0) {
     G_l_opt = make_block_gf(G_l_t::g_t::mesh_t{data.config.beta(), Fermion, static_cast<size_t>(n_l)}, gf_struct);
     G_l.rebind(*G_l_opt);
     G_l() = 0.0;
@@ -64,14 +63,14 @@ namespace cthyb {
 
     double beta = data.config.beta();
 
-    for (auto block_idx : range(G_l.size())) {
-      for (auto l : G_l[block_idx].mesh()) {
+    for (auto &G_l_block : G_l) {
+      for (auto l : G_l_block.mesh()) {
         /// Normalize polynomial coefficients with basis overlap
-        G_l[block_idx][l] *= -(sqrt(2.0 * l + 1.0) / (real(average_sign) * beta));
+        G_l_block[l] *= -(sqrt(2.0 * l + 1.0) / (real(average_sign) * beta));
       }
-      matrix<double> id(G_l[block_idx].target_shape());
+      matrix<double> id(G_l_block.target_shape());
       id() = 1.0; // this creates an unit matrix
-      enforce_discontinuity(G_l[block_idx], id);
+      enforce_discontinuity(G_l_block, id);
     }
   }
 

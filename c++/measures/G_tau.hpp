@@ -32,14 +32,14 @@ namespace cthyb {
   class measure_G_tau {
 
     public:
-    measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t gf_struct);
+    measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t const &gf_struct);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
 
     private:
-    G_tau_G_target_t::view_type G_tau;
     qmc_data const &data;
     mc_weight_t average_sign;
+    G_tau_G_target_t::view_type G_tau;
   };
 
 } // namespace cthyb

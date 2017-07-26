@@ -25,8 +25,8 @@ namespace cthyb {
 
   using namespace triqs::gfs;
 
-  measure_G_tau::measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t gf_struct)
-     : data(data), average_sign(0) {
+  measure_G_tau::measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t const & gf_struct)
+    : data(data), average_sign(0) {
     G_tau_opt = make_block_gf<G_target_t>(gf_mesh<imtime>{data.config.beta(), Fermion, n_tau}, gf_struct);
     G_tau.rebind(*G_tau_opt);
     G_tau() = 0.0;

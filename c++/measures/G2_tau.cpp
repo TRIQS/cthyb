@@ -85,22 +85,17 @@ namespace cthyb {
     average_sign = mpi_all_reduce(average_sign, comm);
     G2_tau       = mpi_all_reduce(G2_tau, comm);
 
+    // Rescale sampled Green's function
+    double beta = data.config.beta();
+    double dtau = std::get<0>(G2_tau(0,0).mesh()).delta();
+    G2_tau = G2_tau / (real(average_sign) * beta * std::pow(dtau, 3));
+
+    // Account for
+    // the 1/2 smaller volume of the side bins,
+    // the 1/4 smaller volume of the edge bins, and
+    // the 1/8 smaller volume of the corner bins.
+    
     for (auto &G2_tau_block : G2_tau) {
-      // Bin volume in imaginary time space
-      double dtau0    = std::get<0>(G2_tau_block.mesh()).delta();
-      double dtau1    = std::get<1>(G2_tau_block.mesh()).delta();
-      double dtau2    = std::get<2>(G2_tau_block.mesh()).delta();
-      double dtau_vol = dtau0 * dtau1 * dtau2;
-
-      // Rescale sampled Green's function
-      double beta  = data.config.beta();
-      G2_tau_block = G2_tau_block / (real(average_sign) * beta * dtau_vol);
-
-      // Account for
-      // the 1/2 smaller volume of the side bins,
-      // the 1/4 smaller volume of the edge bins, and
-      // the 1/8 smaller volume of the corner bins.
-
       auto _ = var_t{};
       int n  = std::get<0>(G2_tau_block.mesh().components()).size() - 1;
 

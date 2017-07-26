@@ -32,16 +32,18 @@ namespace cthyb {
   // Measure imaginary time Green's function (all blocks)
   struct measure_G2_tau {
 
+    public:
+    measure_G2_tau(std::optional<G2_tau_t> &G2_tau_opt, qmc_data const &data, G2_measures_t const &G2_measures);
+
+    void accumulate(mc_weight_t sign);
+    void collect_results(triqs::mpi::communicator const &comm);
+
+    private:
     qmc_data const &data;
     G2_tau_t::view_type G2_tau;
     mc_weight_t average_sign;
     block_order order;
     G2_measures_t G2_measures;
-
-    measure_G2_tau(std::optional<G2_tau_t> &G2_tau_opt, qmc_data const &data, G2_measures_t const &G2_measures);
-
-    void accumulate(mc_weight_t sign);
-    void collect_results(triqs::mpi::communicator const &comm);
   };
 
 } // namespace cthyb

@@ -90,7 +90,7 @@ namespace cthyb {
       bool diag_block = (m.b1.idx == m.b2.idx);
 
       // Perform the accumulation looping over both determinants
-      if (order == AABB || diag_block) {
+      if (order == block_order::AABB || diag_block) {
         foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &j, det_scalar_t M_ij) {
           foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &l, det_scalar_t M_kl) {
             accumulate_impl(i, j, k, l, s * M_ij * M_kl); // Accumulate in legendre-nfft buffer
@@ -99,7 +99,7 @@ namespace cthyb {
         })
           ;
       }
-      if (order == ABBA || diag_block) {
+      if (order == block_order::ABBA || diag_block) {
         foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &l, det_scalar_t M_il) {
           foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &j, det_scalar_t M_kj) {
             accumulate_impl(i, j, k, l, -s * M_il * M_kj); // Accumulate in legendre-nfft buffer
@@ -112,7 +112,7 @@ namespace cthyb {
   }
 
   template <>
-  double measure_G2_iwll<PH>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
+  double measure_G2_iwll<G2_channel::PH>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
     p_l1_gen.reset(i.first, j.first);
     p_l2_gen.reset(k.first, l.first);
     double dtau = 0.5 * double(i.first + j.first - k.first - l.first);
@@ -120,7 +120,7 @@ namespace cthyb {
   }
 
   template <>
-  double measure_G2_iwll<PP>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
+  double measure_G2_iwll<G2_channel::PP>::setup_times(tilde_p_gen &p_l1_gen, tilde_p_gen &p_l2_gen, op_t const &i, op_t const &j, op_t const &k, op_t const &l) {
     p_l1_gen.reset(i.first, k.first);
     p_l2_gen.reset(j.first, l.first);
     double dtau = 0.5 * double(i.first + mult_by_int(j.first, 3) - mult_by_int(k.first, 3) - l.first);
@@ -148,6 +148,6 @@ namespace cthyb {
     }
   }
 
-  template class measure_G2_iwll<PP>;
-  template class measure_G2_iwll<PH>;
+  template class measure_G2_iwll<G2_channel::PP>;
+  template class measure_G2_iwll<G2_channel::PH>;
 }

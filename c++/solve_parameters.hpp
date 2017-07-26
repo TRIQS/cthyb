@@ -85,7 +85,7 @@ namespace cthyb {
     bool measure_G2_iwll_ph = false;
 
     /// Order of block indices in the definition of G^2.
-    block_order measure_G2_block_order = AABB;
+    block_order measure_G2_block_order = block_order::AABB;
 
     /// List of block index pairs of G^2 to measure.
     /// default: measure all blocks

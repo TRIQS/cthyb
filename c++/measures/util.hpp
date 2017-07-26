@@ -90,8 +90,8 @@ namespace cthyb {
 
         int s1 = _Delta_tau[b1].target_shape()[0];
         int s3 = _Delta_tau[b2].target_shape()[0];
-        int s2 = params.measure_G2_block_order == AABB ? s1 : s3;
-        int s4 = params.measure_G2_block_order == AABB ? s3 : s1;
+        int s2 = params.measure_G2_block_order == block_order::AABB ? s1 : s3;
+        int s4 = params.measure_G2_block_order == block_order::AABB ? s3 : s1;
 
         mini_vector<int, 4> target_shape{s1, s2, s3, s4};
 

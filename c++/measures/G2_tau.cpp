@@ -70,8 +70,8 @@ namespace cthyb {
             G2_tau_block[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += pre_factor * M_ij * M_kl;
           };
 
-          if (order == AABB || diag_block) compute_M2_product(i, j, k, l, +sign);
-          if (order == ABBA || diag_block) compute_M2_product(i, l, k, j, -sign);
+          if (order == block_order::AABB || diag_block) compute_M2_product(i, j, k, l, +sign);
+          if (order == block_order::ABBA || diag_block) compute_M2_product(i, l, k, j, -sign);
 
         })
           ;

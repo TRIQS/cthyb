@@ -246,13 +246,13 @@
     if (params.measure_G2_tau) qmc.add_measure(measure_G2_tau{G2_tau, data, G2_measures}, "G2_tau imaginary-time measurement");
 
     // NFFT Matsubara frequency measures
-    if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
-    if (params.measure_G2_iw_pp) qmc.add_measure(measure_G2_iw<PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
-    if (params.measure_G2_iw_ph) qmc.add_measure(measure_G2_iw<PH>{G2_iw_ph, data, G2_measures}, "G2_iw_ph particle-hole measurement");
+    if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
+    if (params.measure_G2_iw_pp) qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
+    if (params.measure_G2_iw_ph) qmc.add_measure(measure_G2_iw<G2_channel::PH>{G2_iw_ph, data, G2_measures}, "G2_iw_ph particle-hole measurement");
 
     // Legendre mixed basis measurements
-    if (params.measure_G2_iwll_pp) qmc.add_measure(measure_G2_iwll<PP>{G2_iwll_pp, data, G2_measures}, "G2_iwll_pp Legendre particle-particle measurement");
-    if (params.measure_G2_iwll_ph) qmc.add_measure(measure_G2_iwll<PH>{G2_iwll_ph, data, G2_measures}, "G2_iwll_ph Legendre particle-hole measurement");
+    if (params.measure_G2_iwll_pp) qmc.add_measure(measure_G2_iwll<G2_channel::PP>{G2_iwll_pp, data, G2_measures}, "G2_iwll_pp Legendre particle-particle measurement");
+    if (params.measure_G2_iwll_ph) qmc.add_measure(measure_G2_iwll<G2_channel::PH>{G2_iwll_ph, data, G2_measures}, "G2_iwll_ph Legendre particle-hole measurement");
 
     // --------------------------------------------------------------------------
     // Single-particle correlators

@@ -41,7 +41,7 @@ namespace cthyb {
       gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> mesh_fff{mesh_f, mesh_f, mesh_f};
       gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> mesh_bff{mesh_b, mesh_f, mesh_f};
 
-      if (Channel == AllFermionic)
+      if (Channel == G2_channel::AllFermionic)
         G2_iw_opt = make_block2_gf(mesh_fff, G2_measures.gf_struct, order);
       else
         G2_iw_opt = make_block2_gf(mesh_bff, G2_measures.gf_struct, order);
@@ -56,7 +56,7 @@ namespace cthyb {
       gf_mesh<imfreq> iw_mesh_large{beta, Fermion, nfreq};
       gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh{iw_mesh_large, iw_mesh_large};
 
-      if (Channel == AllFermionic) { // Smaller mesh possible in AllFermionic
+      if (Channel == G2_channel::AllFermionic) { // Smaller mesh possible in AllFermionic
         // FIXME! Smaller size possible
         // But NFFT looses accuracy
         gf_mesh<imfreq> iw_mesh_small{beta, Fermion, 5 * n_fermionic / 3};
@@ -107,8 +107,8 @@ namespace cthyb {
     for (auto &m : G2_measures()) {
       auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
       bool diag_block  = (m.b1.idx == m.b2.idx);
-      if (order == AABB || diag_block) accumulate_impl_AABB(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-      if (order == ABBA || diag_block) accumulate_impl_ABBA(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::AABB || diag_block) accumulate_impl_AABB(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
     }
   }
 
@@ -126,13 +126,13 @@ namespace cthyb {
 
   // -- Particle-hole
 
-  template <> inline void measure_G2_iw<PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  template <> inline void measure_G2_iw<G2_channel::PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
   }
 
-  template <> inline void measure_G2_iw<PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+  template <> inline void measure_G2_iw<G2_channel::PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
@@ -140,13 +140,13 @@ namespace cthyb {
 
   // -- Particle-particle
 
-  template <> inline void measure_G2_iw<PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  template <> inline void measure_G2_iw<G2_channel::PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
   }
 
-  template <> inline void measure_G2_iw<PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+  template <> inline void measure_G2_iw<G2_channel::PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
@@ -155,7 +155,7 @@ namespace cthyb {
   // -- Fermionic
 
   template <>
-  inline void measure_G2_iw<AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  inline void measure_G2_iw<G2_channel::AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
 
     int size_ij = M_ij.target_shape()[0];
     int size_kl = M_kl.target_shape()[0];
@@ -177,7 +177,7 @@ namespace cthyb {
   }
 
   template <>
-  inline void measure_G2_iw<AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+  inline void measure_G2_iw<G2_channel::AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
 
     int size_il = M_il.target_shape()[0];
     int size_kj = M_kj.target_shape()[0];
@@ -206,8 +206,8 @@ namespace cthyb {
     G2_iw = G2_iw / (real(average_sign) * data.config.beta());
   }
 
-  template class measure_G2_iw<AllFermionic>;
-  template class measure_G2_iw<PP>;
-  template class measure_G2_iw<PH>;
+  template class measure_G2_iw<G2_channel::AllFermionic>;
+  template class measure_G2_iw<G2_channel::PP>;
+  template class measure_G2_iw<G2_channel::PH>;
 
 } // namespace cthyb

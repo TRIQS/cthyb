@@ -60,10 +60,10 @@ namespace cthyb {
   using G2_iw_t            = block2_gf<imfreq_cube_mesh_t, tensor_valued<4>>;
 
   using imfreq_legendre_mesh_t = cartesian_product<imfreq, legendre, legendre>;
-  using G2_iwll_t               = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
+  using G2_iwll_t              = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
-  enum G2_channel { PP, PH, AllFermionic }; // G2 sampling channels
-  enum block_order { AABB, ABBA };          // order of hybridization blocks G2
+  enum class G2_channel { PP, PH, AllFermionic }; // G2 sampling channels
+  enum class block_order { AABB, ABBA };          // order of hybridization blocks G2
 
 } // namespace cthyb
 
@@ -100,7 +100,7 @@ namespace triqs {
     /// Function template for block2_gf initialization
     template <typename Var_t>
     block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct,
-                                                      cthyb::block_order order = cthyb::AABB) {
+                                                      cthyb::block_order order = cthyb::block_order::AABB) {
 
       std::vector<std::vector<gf<Var_t, tensor_valued<4>>>> gf_vecvec;
       std::vector<std::string> block_names;
@@ -119,8 +119,12 @@ namespace triqs {
           for (auto const &var : bl2.second) apply_visitor([&indices2](auto &&arg) { indices2.push_back(std::to_string(arg)); }, var);
           auto I = std::vector<std::vector<std::string>>{indices1, indices1, indices2, indices2};
           switch (order) {
-            case cthyb::AABB: gf_vec.emplace_back(m, make_shape(bl1_size, bl1_size, bl2_size, bl2_size), I); break;
-            case cthyb::ABBA: gf_vec.emplace_back(m, make_shape(bl1_size, bl2_size, bl2_size, bl1_size), I); break;
+            case cthyb::block_order::AABB:
+	      gf_vec.emplace_back(m, make_shape(bl1_size, bl1_size, bl2_size, bl2_size), I);
+	      break;
+            case cthyb::block_order::ABBA:
+	      gf_vec.emplace_back(m, make_shape(bl1_size, bl2_size, bl2_size, bl1_size), I);
+	      break;
           }
         }
         gf_vecvec.emplace_back(std::move(gf_vec));

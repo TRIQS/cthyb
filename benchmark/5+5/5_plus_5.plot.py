@@ -1,7 +1,8 @@
 #!/bin/env pytriqs
 
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
+from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import *
 from pytriqs.operators.util.op_struct import get_mkind
 from matplotlib.backends.backend_pdf import PdfPages
@@ -14,7 +15,10 @@ for line in open("5_plus_5.ref.dat",'r'):
     tau.append(float(cols[0]))
     data.append([-float(c) for c in cols[1:]])
 
-g_ref = GfImTime(indices = range(len(data[0])), beta=tau[-1], n_points=len(tau))
+beta = tau[-1]
+n_tau = len(tau)
+    
+g_ref = GfImTime(indices = range(len(data[0])), beta=beta, n_points=n_tau)
 for nt, d in enumerate(data):
     for nc, val in enumerate(d):
         g_ref.data[nt,nc,nc] = val
@@ -38,7 +42,7 @@ if not use_interaction:
         e1 = e - V
         e2 = e + V
 
-        g_theor_w = GfImFreq(indices = [0], beta=beta)
+        g_theor_w = GfImFreq(indices = [0], beta=beta, n_points=10)
         g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
         g_theor[nc,nc] << InverseFourier(g_theor_w)
 

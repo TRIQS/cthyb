@@ -67,6 +67,12 @@
 
   void solver_core::solve(solve_parameters_t const &params) {
 
+    // http://patorjk.com/software/taag/#p=display&f=Calvin%20S&t=TRIQS%20cthyb
+    if (params.verbosity >= 2) std::cout << "\n"
+      "╔╦╗╦═╗╦╔═╗ ╔═╗  ┌─┐┌┬┐┬ ┬┬ ┬┌┐ \n"
+      " ║ ╠╦╝║║═╬╗╚═╗  │   │ ├─┤└┬┘├┴┐\n"
+      " ╩ ╩╚═╩╚═╝╚╚═╝  └─┘ ┴ ┴ ┴ ┴ └─┘\n\n";
+    
     _last_solve_parameters = params;
 
     // determine basis of operators to use

@@ -57,7 +57,7 @@ namespace cthyb {
         foreach (data.dets[m.b2.idx], [&](auto const &k, auto const &l, auto const M_kl) {
 
           // lambda for computing a single product term of M_ij and M_kl
-          auto compute_M2_product = [&](auto const &i, auto const &j, auto const &k, auto const &l, double sign) {
+          auto compute_M2_product = [&](auto const &i, auto const &j, auto const &k, auto const &l, mc_weight_t sign) {
 
             double t1 = double(i.first - l.first);
             double t2 = double(j.first - l.first);
@@ -65,7 +65,7 @@ namespace cthyb {
 
             // implicit beta-periodicity, but fix the sign properly
             int sign_flips    = int(i.first < l.first) + int(j.first < l.first) + int(k.first < l.first);
-            double pre_factor = (sign_flips % 2 ? -sign : sign);
+            mc_weight_t pre_factor = (sign_flips % 2 ? -sign : sign);
 
             G2_tau_block[closest_mesh_pt(t1, t2, t3)](i.second, j.second, k.second, l.second) += pre_factor * M_ij * M_kl;
           };

@@ -15,9 +15,14 @@ set(LIBRARY_SOURCES
     measures/G_tau.cpp
     measures/G_l.cpp
     measures/G2_tau.cpp
-    measures/G2_iw.cpp
-    measures/G2_iwll.cpp
     )
+
+if(NFFT_FOUND)
+  list(APPEND LIBRARY_SOURCES
+       measures/G2_iw.cpp
+       measures/G2_iwll.cpp
+       )
+endif(NFFT_FOUND)
 
 add_library(cthyb_c ${LIBRARY_SOURCES})
 

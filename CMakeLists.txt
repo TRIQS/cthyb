@@ -37,6 +37,7 @@ option(HYBRIDISATION_IS_COMPLEX "If ON, the hybridization Delta(tau) is complex"
 option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
+option(LOOK_FOR_NFFT "Look for the NFFT library for the G2 frequency sampling" ON)
 
 if(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
  message(FATAL_ERROR "Combination of options HYBRIDISATION_IS_COMPLEX=ON "
@@ -44,7 +45,12 @@ if(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
 endif(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
 
 # 2-particle GF measurement requires NFFT
-find_package(NFFT)
+if(LOOK_FOR_NFFT)
+  find_package(NFFT)
+else(LOOK_FOR_NFFT)
+  message(STATUS "Not looking for NFFT")
+endif(LOOK_FOR_NFFT)
+
 if(NFFT_FOUND)
   add_definitions(-DCTHYB_G2_NFFT)
   include_directories(${NFFT_INCLUDE_DIR})

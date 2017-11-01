@@ -1,92 +1,85 @@
-# Version number of the application
+# Version number 
 set (CTHYB_VERSION "1.5")
-
-# Append triqs installed files to the cmake load path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${TRIQS_PATH}/share/triqs/cmake)
 
 # start configuration
 cmake_minimum_required(VERSION 2.8)
 project(cthyb CXX)
-set(CMAKE_BUILD_TYPE Release)
-enable_testing()
 
-# Load TRIQS, including all predefined variables from TRIQS installation
-find_package(TRIQS REQUIRED)
-
-# Check that versions are compatible
-if(NOT CTHYB_VERSION EQUAL TRIQS_VERSION)
-  message(FATAL_ERROR "The application version is not compatible with the TRIQS library (TRIQS library version: ${TRIQS_VERSION} while this application version: ${CTHYB_VERSION})")
+# Default to Release build type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Type of build" FORCE)
 endif()
-
-# Get hash
-triqs_get_git_hash(${CMAKE_SOURCE_DIR} "CTHYB")
-if(${GIT_RESULT} EQUAL 0)
-  message(STATUS "Hash: ${CTHYB_GIT_HASH}")
-endif(${GIT_RESULT} EQUAL 0)
-
-# We want to be installed in the TRIQS tree
-set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
-
-# Add the compiling options (-D... ) for C++
-message(STATUS "TRIQS : Adding compilation flags detected by the library (C++11/14, libc++, etc...) ")
-add_definitions(${TRIQS_CXX_DEFINITIONS})
+message( STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} -------------")
 
 # Options for the compilation ...
-option(Tests "Enable Tests" ON)
-option(HYBRIDISATION_IS_COMPLEX "If ON, the hybridization Delta(tau) is complex" OFF)
-option(LOCAL_HAMILTONIAN_IS_COMPLEX "If ON, the H_loc is complex" OFF)
-option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
-option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
-option(LOOK_FOR_NFFT "Look for the NFFT library for the G2 frequency sampling" ON)
+option(Hybridisation_is_complex "If ON, the hybridization Delta(tau) is complex" OFF)
+option(Local_hamiltonian_is_complex "If ON, the H_loc is complex" OFF)
+option(MeasureG2 "Measure the two particle object (requires the NFFT library)" ON)
 
-if(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
- message(FATAL_ERROR "Combination of options HYBRIDISATION_IS_COMPLEX=ON "
-                     "and LOCAL_HAMILTONIAN_IS_COMPLEX=OFF is not supported.")
-endif(HYBRIDISATION_IS_COMPLEX AND NOT LOCAL_HAMILTONIAN_IS_COMPLEX)
+# check that options are compatible
+if(Hybridisation_is_complex AND NOT Local_hamiltonian_is_complex)
+ message(FATAL_ERROR "Combination of options Hybridisation_is_complex=ON "
+                     "and Local_hamiltonian_is_complex=OFF is not supported.")
+endif()
+
+# Use shared libraries
+set(BUILD_SHARED_LIBS ON)
+
+# Load TRIQS and Cpp2Py
+find_package(TRIQS 1.5 EXACT REQUIRED)
+find_package(Cpp2Py REQUIRED)
+
+# We will need the FindNNFT of triqs, so we adjust CMake Module Path to find it
+list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake)
 
 # 2-particle GF measurement requires NFFT
-if(LOOK_FOR_NFFT)
-  find_package(NFFT)
-else(LOOK_FOR_NFFT)
-  message(STATUS "Not looking for NFFT")
-endif(LOOK_FOR_NFFT)
+if(MeasureG2)
+ find_package(NFFT REQUIRED)
+endif()
 
-if(NFFT_FOUND)
-  add_definitions(-DCTHYB_G2_NFFT)
-  include_directories(${NFFT_INCLUDE_DIR})
-  link_libraries(${NFFT_LIBRARIES})
-  if(NFFT_OLD_API)
-    add_definitions(-DNFFT_OLD_API)
-  endif(NFFT_OLD_API)
-endif(NFFT_FOUND)
+# Default Install directory to TRIQS_ROOT if not given. Checks an absolute name is given.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTALL_PREFIX}))
+  message(STATUS " No install prefix given (or invalid). Defaulting to TRIQS_ROOT")
+  set(CMAKE_INSTALL_PREFIX ${TRIQS_ROOT} CACHE PATH "default install path" FORCE)
+endif()
+message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} -------------")
 
-if(EXT_DEBUG)
- add_definitions(-DEXT_DEBUG)
-endif(EXT_DEBUG)
+# Macro defined in TRIQS which picks the hash of repo.
+triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
+message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
-if(SAVE_CONFIGS)
- set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
- add_definitions(-DSAVE_CONFIGS -DNUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE})
-endif(SAVE_CONFIGS)
+option(Tests "Enable Tests" ON)
+option(Documentation "Build documentation" OFF)
 
-include_directories(${CMAKE_BINARY_DIR}/c++ c++)
+# All PRIVATE common options.
+# The std for all targets
+add_compile_options(-std=c++14 $<$<CONFIG:Release>:-march=native>)
 
-# Compile C++ code
-add_subdirectory(c++)
+# Common to all targets (ctint, python, tests).
+include_directories(${CMAKE_SOURCE_DIR})
+
+# To be fixed!!
+triqs_set_rpath_for_all_targets()
+
+add_subdirectory(cthyb)
 
 # Tests
- if (${Tests})
-   add_subdirectory(test)
+if (${Tests})
+ enable_testing()
+ add_subdirectory(test)
+endif()
+
+if (${TRIQS_WITH_PYTHON_SUPPORT})
+
+ # Python interface
+ add_subdirectory(python/cthyb)
+
+ # Build the documentation
+ if (${Documentation})
+   add_subdirectory(doc)
  endif()
 
-# Python interface
-if (${TRIQS_WITH_PYTHON_SUPPORT})
- add_subdirectory(python)
- option(BUILD_DOC "Build documentation" OFF)
- if(${BUILD_DOC})
-   if(NOT ${TRIQS_WITH_DOCUMENTATION})
-     message(FATAL_ERROR "Error: TRIQS library has not been compiled with its documentation")
-   endif()
-   add_subdirectory(doc)
- endif(${BUILD_DOC})
 endif()
+
+
+

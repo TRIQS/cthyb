@@ -39,6 +39,8 @@ namespace cthyb {
   using namespace triqs::utility;
   using namespace triqs::statistics;
 
+  using atom_diag = triqs::atom_diag::atom_diag<is_h_scalar_complex>;
+
   using triqs::utility::time_pt;
   using op_t        = std::pair<time_pt, int>;
   using histo_map_t = std::map<std::string, histogram>;
@@ -63,7 +65,9 @@ namespace cthyb {
   using G2_iwll_t              = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
   enum class G2_channel { PP, PH, AllFermionic }; // G2 sampling channels
-  enum class block_order { AABB, ABBA };          // order of hybridization blocks G2
+
+  /// Order of block indices for Block2Gf objects 
+  enum class block_order { AABB, ABBA };
 
 } // namespace cthyb
 

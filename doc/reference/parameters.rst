@@ -1,1 +1,1 @@
-../../python/cthyb_parameters.rst
+../../python/triqs_cthyb/solver_core_parameters.rst

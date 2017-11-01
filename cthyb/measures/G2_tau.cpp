@@ -99,13 +99,13 @@ namespace cthyb {
       auto _ = var_t{};
       int n  = std::get<0>(G2_tau_block.mesh().components()).size() - 1;
 
-      G2_tau_block[0][_][_] *= 2.0;
-      G2_tau_block[_][0][_] *= 2.0;
-      G2_tau_block[_][_][0] *= 2.0;
+      G2_tau_block[0, _, _] *= 2.0;
+      G2_tau_block[_, 0, _] *= 2.0;
+      G2_tau_block[_, _, 0] *= 2.0;
 
-      G2_tau_block[n][_][_] *= 2.0;
-      G2_tau_block[_][n][_] *= 2.0;
-      G2_tau_block[_][_][n] *= 2.0;
+      G2_tau_block[n, _, _] *= 2.0;
+      G2_tau_block[_, n, _] *= 2.0;
+      G2_tau_block[_, _, n] *= 2.0;
     }
   }
 

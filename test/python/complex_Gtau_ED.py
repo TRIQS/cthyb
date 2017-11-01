@@ -1,6 +1,6 @@
 import numpy as np
 from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
+from cthyb import *
 from pytriqs.gf import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.h5diff import h5diff

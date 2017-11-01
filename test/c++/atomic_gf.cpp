@@ -1,7 +1,8 @@
-#include "solver_core.hpp"
+#include "cthyb/solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace cthyb;
@@ -12,8 +13,6 @@ using namespace triqs::gfs;
 using indices_type = triqs::operators::indices_t;
 
 TEST(CtHyb, AtomicGf) {
-
-  std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
   int rank = triqs::mpi::communicator().rank();

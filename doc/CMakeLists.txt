@@ -1,38 +1,39 @@
-# Path to the Sphinx inventory file of the library
-set(TRIQS_INVENTORY_DIR "${TRIQS_PATH}/share/doc/triqs" CACHE STRING
-    "Path or URL to a directory containing a Sphinx inventory file of the TRIQS library")
-mark_as_advanced(TRIQS_INVENTORY_DIR)
-
-# Path to the Sphinx extensions provided by TRIQS
-set(TRIQS_SPHINXEXT_PATH "${TRIQS_PATH}/share/triqs/sphinxext")
+if (NOT ${TRIQS_WITH_DOCUMENTATION})
+     message("Error: TRIQS library has not been compiled with its documentation")
+endif()
 
 # generate the conf.py
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py @ONLY)
 
-# all rst files of the documentation
-file(GLOB_RECURSE doc_sources *.rst)
+# ---------------------------------
+# Top Sphinx target
+# ---------------------------------
+# Sources
+file(GLOB_RECURSE sources *.rst)
 
-# create documentation target
-set(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/index.html)
-add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${doc_sources} py_copy cthyb cthyb_c cthyb
-                   COMMAND ${CMAKE_BINARY_DIR}/build_pytriqs ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -b html ${CMAKE_CURRENT_SOURCE_DIR} html)
-add_custom_target(doc_sphinx ALL DEPENDS ${sphinx_top})
+set(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
+add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${sources}
+  		   COMMAND ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_BINARY_DIR} html)
+add_custom_target(docs_sphinx ALL DEPENDS ${sphinx_top} ${CMAKE_CURRENT_BINARY_DIR})
 
-# install
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/cthyb
- FILES_MATCHING 
- PATTERN "*.html" 
- PATTERN "*.png"
- PATTERN "*.js"
+# Application must be compiled first
+add_dependencies(docs_sphinx solver_core) 
+
+# ------------------------------------------------------------------------------------------------
+# Copy the directory substructure and link all files with relevant extensions
+# cp_rs is a script in cpp2py/bin, it mimics cp -rs on Linux
+# and filters the relevant extension
+# ------------------------------------------------------------------------------------------------
+
+set(EXT_FOR_DOC "rst png txt css_t conf css js gif jpg py html bib h5")
+execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
+
+# ---------------------------------
+# Install
+# ---------------------------------
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs_cthyb
+ FILES_MATCHING
+ REGEX "\\.(html|pdf|png|gif|jpg|js|xsl|css|py|txt|inv|bib)$"
  PATTERN "_*"
- PATTERN "*.png" 
- PATTERN "*.jpg" 
- PATTERN "*.gif" 
- PATTERN "*.xsl" 
- PATTERN "*.css"
- PATTERN "*.pdf"
- PATTERN "*.py"
- PATTERN "*.txt"
- PATTERN "*.inv"
- PATTERN "*.bib"
  )
+

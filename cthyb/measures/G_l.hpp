@@ -19,27 +19,26 @@
  *
  ******************************************************************************/
 #pragma once
-
 #include <triqs/gfs.hpp>
-
-#include "./qmc_data.hpp"
+#include <triqs/utility/legendre.hpp>
+#include "../qmc_data.hpp"
 
 namespace cthyb {
 
   using namespace triqs::gfs;
 
-  // Measure imaginary time Green's function (all blocks)
-  class measure_G_tau {
+  // Measure Legendre Green's function (all blocks)
+  struct measure_G_l {
 
     public:
-    measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t const &gf_struct);
+    measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct);
     void accumulate(mc_weight_t s);
     void collect_results(triqs::mpi::communicator const &c);
 
     private:
     qmc_data const &data;
     mc_weight_t average_sign;
-    G_tau_G_target_t::view_type G_tau;
+    G_l_t::view_type G_l;
   };
 
 } // namespace cthyb

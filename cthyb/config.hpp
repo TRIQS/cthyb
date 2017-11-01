@@ -29,9 +29,6 @@
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include "./array_suppl.hpp"
 
-#cmakedefine HYBRIDISATION_IS_COMPLEX
-#cmakedefine LOCAL_HAMILTONIAN_IS_COMPLEX
-
 namespace cthyb {
 
 using namespace triqs::arrays;
@@ -59,8 +56,10 @@ using delta_target_t = matrix_real_valued;
 
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
 using h_scalar_t = dcomplex; // type of scalar for H_loc: double or complex.
+static constexpr bool is_h_scalar_complex = true;
 #else
 using h_scalar_t = double; // type of scalar for H_loc: double or complex.
+static constexpr bool is_h_scalar_complex = false;
 #endif
 
 using mc_weight_t = decltype(h_scalar_t{} * det_scalar_t{});                     // complex iif either is complex

@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -24,26 +25,26 @@
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/statistics/histograms.hpp>
+#include <triqs/atom_diag/atom_diag.hpp>
+#include <triqs/atom_diag/functions.hpp>
 
 #include "types.hpp"
 #include "container_set.hpp"
 #include "solve_parameters.hpp"
-#include "atom_diag.hpp"
-#include "atom_diag_functions.hpp"
 
 namespace cthyb {
 
   /// Core class of the cthyb solver
   class solver_core : public container_set_t {
 
-    double beta;                                   // inverse temperature
-    atom_diag h_diag;                              // diagonalization of the local problem
+    double beta;           // inverse temperature
+    atom_diag h_diag;      // diagonalization of the local problem
     gf_struct_t gf_struct; // Block structure of the Green function FIXME
-    many_body_op_t _h_loc;                         // The local Hamiltonian = h_int + h0
+    many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
     int n_iw, n_tau, n_l;
 
     // Single-particle Green's function containers
-    G_iw_t _G0_iw; // Non-interacting Matsubara Green's function
+    G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
     histogram _pert_order_total;               // Histogram of the total perturbation order
@@ -76,7 +77,7 @@ namespace cthyb {
     block_gf_view<imfreq> G0_iw() { return _G0_iw; }
 
     /// Atomic :math:`G(\tau)` in imaginary time.
-    block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }
+    //block_gf_view<imtime> atomic_gf() const { return ::cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }
 
     /// Accumulated density matrix.
     std::vector<matrix_t> const &density_matrix() const { return _density_matrix; }
@@ -99,4 +100,4 @@ namespace cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
   };
-}
+} // namespace cthyb

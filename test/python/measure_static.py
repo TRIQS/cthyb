@@ -1,7 +1,9 @@
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
+#from atom_diag import trace_rho_op
+from pytriqs.atom_diag import trace_rho_op
+from cthyb import *
 from pytriqs.gf import *
 import numpy as np
 

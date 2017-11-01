@@ -20,10 +20,11 @@
  ******************************************************************************/
 #pragma once
 #include "./configuration.hpp"
-#include "./atom_diag.hpp"
 #include "./solve_parameters.hpp"
 #include "triqs/utility/rbt.hpp"
 #include <triqs/statistics/histograms.hpp>
+#include <triqs/atom_diag/atom_diag.hpp>
+
 //#define PRINT_CONF_DEBUG
 
 using namespace triqs;
@@ -57,7 +58,7 @@ namespace cthyb {
     const configuration *config;                                  // config object does exist longer (temporally) than this object.
     const atom_diag *h_diag;                                      // access to the diagonalization of h_loc
     const int n_orbitals  = h_diag->get_fops().size();            // total number of orbital flavours
-    const int n_blocks    = h_diag->n_blocks();                   //
+    const int n_blocks    = h_diag->n_subspaces();                //
     const int n_eigstates = h_diag->get_full_hilbert_space_dim(); // size of the hilbert space
 
     // ------- Trace data ----------------
@@ -108,7 +109,7 @@ namespace cthyb {
 
     private:
     // The dimension of block b
-    int get_block_dim(int b) const { return h_diag->get_block_dim(b); }
+    int get_block_dim(int b) const { return h_diag->get_subspace_dim(b); }
 
     // the i-th eigenvalue of the block b
     double get_block_eigenval(int b, int i) const { return h_diag->get_eigenvalue(b, i); }
@@ -206,17 +207,17 @@ namespace cthyb {
       if (smaller)
         h->left = try_insert_impl(h->left, n);
       else
-        h->right                                                                                    = try_insert_impl(h->right, n);
+        h->right = try_insert_impl(h->right, n);
       if (inserted_nodes[trial_nodes.index()].first == nullptr) inserted_nodes[trial_nodes.index()] = {h, smaller};
-      h->modified                                                                                   = true;
+      h->modified = true;
       return h;
     }
 
     // unlink all glued trial nodes
     void cancel_insert_impl() {
       for (int i = 0; i <= trial_nodes.index(); ++i) {
-        auto &r                                                             = inserted_nodes[i];
-        if (r.first != nullptr) (r.second ? r.first->left : r.first->right) = nullptr;
+        auto &r = inserted_nodes[i];
+        if (r.first != nullptr) (r.second ? r.first->left : r.first->right)= nullptr;
       }
       if (tree_size == trial_nodes.index() + 1) tree.get_root() = nullptr;
     }
@@ -367,7 +368,7 @@ namespace cthyb {
     node try_replace_impl(node n, configuration::oplist_t const &updated_ops) noexcept {
 
       node new_left = nullptr, new_right = nullptr;
-      if (n->left) new_left   = try_replace_impl(n->left, updated_ops);
+      if (n->left) new_left              = try_replace_impl(n->left, updated_ops);
       if (n->right) new_right = try_replace_impl(n->right, updated_ops);
 
       auto const &op     = n->op;
@@ -395,8 +396,8 @@ namespace cthyb {
     }
 
     node cancel_replace_impl(node n) {
-      node n_in_tree                          = n;
-      if (n_in_tree && n_in_tree->modified) n = backup_nodes.swap_prev(n);
+      node n_in_tree = n;
+      if (n_in_tree && n_in_tree->modified) n= backup_nodes.swap_prev(n);
       if (n_in_tree->right) cancel_replace_impl(n_in_tree->right);
       if (n_in_tree->left) cancel_replace_impl(n_in_tree->left);
       return n;
@@ -467,4 +468,4 @@ namespace cthyb {
     };
     std::unique_ptr<histograms_t> histo;
   };
-}
+} // namespace cthyb

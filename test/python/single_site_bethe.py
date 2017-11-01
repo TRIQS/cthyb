@@ -2,8 +2,9 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.utility.comparison_tests import *
+
+from cthyb import *
 
 #  Example of DMFT single site solution with CTQMC
 

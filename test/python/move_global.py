@@ -5,7 +5,7 @@ from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.observables import S_op
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
+from cthyb import *
 from pytriqs.utility.comparison_tests import *
 
 # H_loc parameters

@@ -54,7 +54,7 @@ namespace cthyb {
   impurity_trace::impurity_trace(configuration &c, atom_diag const &h_diag_, solve_parameters_t const &p, histo_map_t *hist_map)
      : config(&c),
        h_diag(&h_diag_),
-       histo(p.performance_analysis ? new histograms_t(h_diag_.n_blocks(), *hist_map) : nullptr),
+       histo(p.performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr),
        atomic_z(partition_function(*h_diag, config->beta())),
        atomic_norm(0),
        atomic_rho(n_blocks),

@@ -1,11 +1,13 @@
 #include <triqs/utility/first_include.hpp>
-#include "./atom_diag.hpp"
+#include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
-using namespace cthyb;
 using triqs::operators::c;
 using triqs::operators::c_dag;
+
+using atom_diag= triqs::atom_diag::atom_diag<false>;
+using namespace triqs::atom_diag;
 
 int main() {
 

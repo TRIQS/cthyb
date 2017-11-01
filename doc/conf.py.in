@@ -18,7 +18,7 @@ extensions = ['sphinx.ext.autodoc',
 source_suffix = '.rst'
 
 project = u'TRIQS Hybridization Expansion Solver'
-copyright = u'2014, P. Seth, I. Krivenko, M. Ferrero, O. Parcollet'
+copyright = u'2014-2017, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 version = '@CTHYB_VERSION@'
 release = '@CTHYB_RELEASE@'
 
@@ -39,4 +39,4 @@ html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 
 htmlhelp_basename = 'TRIQSCTHYBdoc'
 
-intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('@TRIQS_INVENTORY_DIR@', None)}
+intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('@TRIQS_SPHINX_INVENTORY_DIR@', None)}

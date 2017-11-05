@@ -10,7 +10,7 @@ macro(add_test_defs name)
  foreach(opt ${ARGV2})
   target_compile_definitions(${t} PRIVATE ${opt}) 
  endforeach()
- add_test(${t} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${t})
+ add_test(NAME ${t} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${t})
 endmacro()
 
 #

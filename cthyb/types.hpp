@@ -26,6 +26,7 @@
 #include <triqs/utility/variant_int_string.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
 #include <triqs/statistics/histograms.hpp>
+#include <triqs/atom_diag/atom_diag.hpp>
 
 #include "config.hpp"
 
@@ -66,7 +67,7 @@ namespace cthyb {
 
   enum class G2_channel { PP, PH, AllFermionic }; // G2 sampling channels
 
-  /// Order of block indices for Block2Gf objects 
+  /// Order of block indices for Block2Gf objects
   enum class block_order { AABB, ABBA };
 
 } // namespace cthyb

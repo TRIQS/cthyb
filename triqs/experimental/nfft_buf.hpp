@@ -37,7 +37,7 @@ namespace triqs {
     using namespace triqs::gfs;
 
     using dcomplex = std::complex<double>;
-    
+
     // NFFT buffer
     template <int Rank> class nfft_buf_t {
 
@@ -74,24 +74,27 @@ namespace triqs {
         // -- Default init
         //nfft_init(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size);
 
-	/// compute the next highest power of 2 of 32-bit v
-	auto next_highest_power_of_two = [](unsigned int v) {
-	  v--; v |= v >> 1; v |= v >> 2; v |= v >> 4; v |= v >> 8; v |= v >> 16; v++;
-	  return v;
-	};
-	
-        // Init nfft_plan
-	mini_vector<int, Rank> extents_fftw;
-        for (int i = 0; i < Rank; i++)
-	  extents_fftw[i] = 2 * next_highest_power_of_two(buf_extents[i]);
+        /// compute the next highest power of 2 of 32-bit v
+        auto next_highest_power_of_two = [](unsigned int v) {
+          v--;
+          v |= v >> 1;
+          v |= v >> 2;
+          v |= v >> 4;
+          v |= v >> 8;
+          v |= v >> 16;
+          v++;
+          return v;
+        };
 
-        unsigned nfft_flags = PRE_PHI_HUT | PRE_PSI | MALLOC_X | MALLOC_F_HAT |
-	  MALLOC_F | FFTW_INIT | FFT_OUT_OF_PLACE | NFFT_SORT_NODES;
+        // Init nfft_plan
+        mini_vector<int, Rank> extents_fftw;
+        for (int i = 0; i < Rank; i++) extents_fftw[i] = 2 * next_highest_power_of_two(buf_extents[i]);
+
+        unsigned nfft_flags = PRE_PHI_HUT | PRE_PSI | MALLOC_X | MALLOC_F_HAT | MALLOC_F | FFTW_INIT | FFT_OUT_OF_PLACE | NFFT_SORT_NODES;
         unsigned fftw_flags = FFTW_ESTIMATE | FFTW_DESTROY_INPUT;
 
         int m = 6; // Truncation order for the window functions
-        nfft_init_guru(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size,
-		       extents_fftw.ptr(), m, nfft_flags, fftw_flags);
+        nfft_init_guru(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size, extents_fftw.ptr(), m, nfft_flags, fftw_flags);
       }
 
       ~nfft_buf_t() {
@@ -211,12 +214,13 @@ namespace triqs {
       void do_nfft() {
 
         // nfft_adjoint() uses a window function (Kaiser-Bessel by default)
-        // that cannot be constructed for plan_ptr->N_total < 12.
-        // In the small N_total case one has to call nfft_adjoint_direct() instead,
-        // which is also faster for the smaller N_total.
+        // that cannot be constructed for plan_ptr->N[i] < plan_ptr->m.
+        // In the small N[i] case one has to call nfft_adjoint_direct() instead,
+        // which is also faster for the smaller N[i].
         //
         // C.f. https://github.com/NFFT/nfft/issues/34
-        if (plan_ptr->N_total < 12) {
+        auto N_min = *std::min_element(plan_ptr->N, plan_ptr->N + plan_ptr->d);
+        if (N_min <= plan_ptr->m) {
 
           // Execute transform
           nfft_adjoint_direct(plan_ptr.get());

@@ -9,8 +9,8 @@ Installation
 Prerequisite
 -------------------
 
-#. The :ref:`TRIQS <triqslibs:welcome>` toolbox (see :ref:`TRIQS installation instruction <triqslibs:installation>`).
-   In the following, we will suppose that it is installed in the ``path_to_triqs`` directory.
+#. The :ref:`TRIQS <triqslibs:welcome>` toolbox and Cpp2Py (see :ref:`TRIQS installation instruction <triqslibs:installation>`).
+   In the following, we will suppose that both are installed in the ``path_to_triqs`` directory.
 
 Installation steps
 ------------------
@@ -23,17 +23,20 @@ Installation steps
 
      $ mkdir cthyb.build && cd cthyb.build
 
-#. In the build directory call cmake specifying where the TRIQS library is installed::
+#. Make sure that you have added the TRIQS and Cpp2Py installation to your environment variables::
 
-     $ cmake -DTRIQS_PATH=path_to_triqs ../cthyb.src
+     $ source path_to_triqs/share/cpp2pyvarsh.sh
+     $ source path_to_triqs/share/triqsvarsh.sh
+
+#. In the build directory call cmake::
+
+     $ cmake ../cthyb.src
 
 #. Compile the code, run the tests and install the application::
 
      $ make
      $ make test
      $ make install
-
-.. note:: Be careful with the cmake command above: set TRIQS_PATH, not CMAKE_INSTALL_PREFIX (this variable is only for the TRIQS library)!
 
 Version compatibility
 ---------------------

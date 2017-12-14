@@ -53,7 +53,7 @@ option(Documentation "Build documentation" OFF)
 
 # All PRIVATE common options.
 # The std for all targets
-add_compile_options(-std=c++14 $<$<CONFIG:Release>:-march=native>)
+add_compile_options(-std=c++17 $<$<CONFIG:Release>:-march=native>)
 
 # Common to all targets (ctint, python, tests).
 include_directories(${CMAKE_SOURCE_DIR})

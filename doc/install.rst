@@ -60,23 +60,25 @@ Custom CMake options
 
 Functionality of ``cthyb`` can be tweaked using extra compile-time options passed to CMake::
 
-    cmake -DTRIQS_PATH=path_to_triqs -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
+    cmake -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
 
-+---------------------------------------------------------------+-----------------------------------+
-| Options                                                       | Syntax                            |
-+===============================================================+===================================+
-| Disable testing (not recommended)                             | -DTests=OFF                       |
-+---------------------------------------------------------------+-----------------------------------+
-| Build the documentation locally                               | -DBUILD_DOC=ON                    |
-+---------------------------------------------------------------+-----------------------------------+
-| Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON     |
-+---------------------------------------------------------------+-----------------------------------+
-| Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON |
-+---------------------------------------------------------------+-----------------------------------+
-| Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                    |
-+---------------------------------------------------------------+-----------------------------------+
-| Save visited configurations to configs.h5 (*developers only*) | -DSAVE_CONFIGS=ON                 |
-+---------------------------------------------------------------+-----------------------------------+
++---------------------------------------------------------------+-----------------------------------------------+
+| Options                                                       | Syntax                                        |
++===============================================================+===============================================+
+| Disable testing (not recommended)                             | -DTests=OFF                                   |
++---------------------------------------------------------------+-----------------------------------------------+
+| Specify an installation path other than path_to_triqs         | -DCMAKE_INSTALL_PREFIX=path_to_cthyb          |
++---------------------------------------------------------------+-----------------------------------------------+
+| Build the documentation locally                               | -DBUILD_DOC=ON                                |
++---------------------------------------------------------------+-----------------------------------------------+
+| Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON                 |
++---------------------------------------------------------------+-----------------------------------------------+
+| Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON             |
++---------------------------------------------------------------+-----------------------------------------------+
+| Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                                |
++---------------------------------------------------------------+-----------------------------------------------+
+| Save visited configurations to configs.h5 (*developers only*) | -DSAVE_CONFIGS=ON                             |
++---------------------------------------------------------------+-----------------------------------------------+
 
 .. note::
 

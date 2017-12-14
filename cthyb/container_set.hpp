@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <triqs/utility/optional_compat.hpp>
+#include <optional>
 
 #include "types.hpp"
 

@@ -6,7 +6,7 @@ file(COPY ${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 set(all_tests single_site_bethe atomic_observables kanamori slater measure_static histograms move_global)
 
 if(LOCAL_HAMILTONIAN_IS_COMPLEX)
- list(APPEND all_tests atomic_gf_complex atomdiag_ed)
+ list(APPEND all_tests atomic_gf_complex atomdiag_ed complex_bug81)
  if(LOCAL_HAMILTONIAN_IS_COMPLEX)
   list(APPEND all_tests complex_Gtau_ED)
  endif()

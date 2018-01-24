@@ -53,7 +53,8 @@ if mpi.is_master_node():
     with HDFArchive('measure_static.out.h5','w') as ar:
         for name,op in static_observables.iteritems():
             ave = trace_rho_op(dm,op,S.h_loc_diagonalization)
-            ar[name] = ave
+            assert( np.abs(ave.imag) < 1e-10 )
+            ar[name] = ave.real
 
 from pytriqs.utility.h5diff import h5diff
 h5diff("measure_static.out.h5","measure_static.ref.h5")

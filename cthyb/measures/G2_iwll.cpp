@@ -72,7 +72,7 @@ namespace cthyb {
 
       if (data.dets[m.b1.idx].size() == 0 || data.dets[m.b2.idx].size() == 0) continue;
 
-      auto accumulate_impl = [&](op_t const &i, op_t const &j, op_t const &k, op_t const &l, det_scalar_t val) {
+      auto accumulate_impl = [&](op_t const &i, op_t const &j, op_t const &k, op_t const &l, mc_weight_t val) {
 
         tilde_p_gen p_l1_gen(beta), p_l2_gen(beta);
         double dtau = setup_times(p_l1_gen, p_l2_gen, i, j, k, l);
@@ -91,8 +91,8 @@ namespace cthyb {
 
       // Perform the accumulation looping over both determinants
       if (order == block_order::AABB || diag_block) {
-        foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &j, det_scalar_t M_ij) {
-          foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &l, det_scalar_t M_kl) {
+        foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &j, mc_weight_t M_ij) {
+          foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &l, mc_weight_t M_kl) {
             accumulate_impl(i, j, k, l, s * M_ij * M_kl); // Accumulate in legendre-nfft buffer
           })
             ;
@@ -100,8 +100,8 @@ namespace cthyb {
           ;
       }
       if (order == block_order::ABBA || diag_block) {
-        foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &l, det_scalar_t M_il) {
-          foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &j, det_scalar_t M_kj) {
+        foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &l, mc_weight_t M_il) {
+          foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &j, mc_weight_t M_kj) {
             accumulate_impl(i, j, k, l, -s * M_il * M_kj); // Accumulate in legendre-nfft buffer
           })
             ;

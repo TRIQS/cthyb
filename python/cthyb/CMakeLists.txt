@@ -17,7 +17,7 @@ foreach(f ${PYTHON_SOURCES})
 endforeach()
 
 # Install python module to proper location
-set(PYTHON_LIB_DEST ${CPP2PY_PYTHON_LIB_DEST_ROOT}/pytriqs/cthyb)
+set(PYTHON_LIB_DEST ${CPP2PY_PYTHON_LIB_DEST_ROOT}/triqs_cthyb)
 install(TARGETS solver_core DESTINATION ${PYTHON_LIB_DEST})
 install(FILES ${PYTHON_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/version.py DESTINATION ${PYTHON_LIB_DEST})
 

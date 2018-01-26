@@ -1,5 +1,5 @@
 import numpy as np
-from cthyb import AtomDiag, atomic_gf
+from pytriqs.atom_diag import AtomDiag, atomic_g_tau
 from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.utility.comparison_tests import *
@@ -28,7 +28,11 @@ for i in range(H_matrix.shape[0]):
 H+=3*n('ud',0)*n('ud',1)
 
 S = AtomDiag(H,fops)
-G_tau = atomic_gf(S,beta=10,indices_list={'ud':range(4)},n_tau=41)
+G_tau = atomic_g_tau(S,beta=10,gf_struct={'ud':range(4)},n_tau=41)
+
+# -- The reference data only have first order tail info
+G_tau['ud'].singularity *= 0.
+G_tau['ud'].singularity[1] = np.eye(4)
 
 with HDFArchive('atomdiag_ed.out.h5','w') as ar:
     ar['G_tau']=G_tau

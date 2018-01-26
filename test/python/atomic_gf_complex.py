@@ -1,7 +1,7 @@
 import numpy as np
 from pytriqs.gf import *
 from pytriqs.operators import *
-from cthyb import AtomDiag, atomic_gf
+from pytriqs.atom_diag import AtomDiag, atomic_g_tau
 from pytriqs.utility.comparison_tests import *
 
 # for the imaginary GFs
@@ -29,7 +29,7 @@ for i in range(H.shape[0]):
 AD = AtomDiag(H_op,[('ud',0),('ud',1)])
 
 # atomic G(tau) from solver
-G_at = atomic_gf(AD,beta,{'ud':[0,1]},n_tau)
+G_at = atomic_g_tau(AD,beta,{'ud':[0,1]},n_tau)
 
 assert_gfs_are_close(G_at['ud'],G_tau)
 

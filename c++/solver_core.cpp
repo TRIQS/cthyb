@@ -121,7 +121,7 @@ void solver_core::solve(solve_parameters_t const & params) {
 
   // Do I have imaginary components in my local Hamiltonian?
   auto max_imag = 0.0;
-  for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(real(_G0_iw[b].singularity()(2)))));
+  for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(imag(_G0_iw[b].singularity()(2)))));
 
   // Add quadratic terms to h_loc
   int b = 0;

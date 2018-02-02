@@ -9,7 +9,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::operators::indices_t;
+using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, Anderson) {
 
@@ -29,11 +29,11 @@ TEST(CtHyb, Anderson) {
   // GF structure
   enum spin { up, down };
 #ifdef BLOCK
-  std::map<std::string, indices_type> gf_struct{{"up", {0}}, {"down", {0}}};
+  gf_struct_t gf_struct{{"up", {0}}, {"down", {0}}};
   auto n_up   = n("up", 0);
   auto n_down = n("down", 0);
 #else
-  std::map<std::string, indices_type> gf_struct{{"tot", {0, 1}}};
+  gf_struct_t gf_struct{{"tot", {0, 1}}};
   auto n_up   = n("tot", 0);
   auto n_down = n("tot", 1);
 #endif

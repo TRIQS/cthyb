@@ -6,10 +6,10 @@ from cpp2py.wrap_generator import *
 module = module_(full_name = "solver_core", doc = "The cthyb solver", app_name = "cthyb")
 
 # Imports
+import pytriqs.atom_diag
 import pytriqs.gf
 import pytriqs.operators
 import pytriqs.statistics.histograms
-import pytriqs.atom_diag
 
 # Add here all includes
 module.add_include("../../cthyb/solver_core.hpp")
@@ -25,6 +25,7 @@ module.add_preamble("""
 #include <cpp2py/converters/vector.hpp>
 #include <triqs/cpp2py_converters/arrays.hpp>
 #include <triqs/cpp2py_converters/gf.hpp>
+#include <triqs/cpp2py_converters/h5.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 
 using namespace cthyb;
@@ -86,19 +87,20 @@ c.add_member(c_name = "G2_iwll_ph",
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)""")
 
 c.add_constructor("""(**cthyb::constr_parameters_t)""", doc = """Construct a CTHYB solver\n\n :param p: Set of parameters specific to the CTHYB solver
-+----------------+--------------------+---------+-----------------------------------------------------------------+
-| Parameter Name | Type               | Default | Documentation                                                   |
-+================+====================+=========+=================================================================+
-| beta           | double             |         | Inverse temperature                                             |
-+----------------+--------------------+---------+-----------------------------------------------------------------+
-| gf_struct      | cthyb::gf_struct_t |         | block structure of the gf                                       |
-+----------------+--------------------+---------+-----------------------------------------------------------------+
-| n_iw           | int                | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>   |
-+----------------+--------------------+---------+-----------------------------------------------------------------+
-| n_tau          | int                | 10001   | Number of tau points for gf<imtime, matrix_valued>              |
-+----------------+--------------------+---------+-----------------------------------------------------------------+
-| n_l            | int                | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>  |
-+----------------+--------------------+---------+-----------------------------------------------------------------+""")
++----------------+-----------------------------------+---------+-----------------------------------------------------------------+
+| Parameter Name | Type                              | Default | Documentation                                                   |
++================+===================================+=========+=================================================================+
+| beta           | double                            |         | Inverse temperature                                             |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------+
+| gf_struct      | triqs::hilbert_space::gf_struct_t |         | block structure of the gf                                       |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------+
+| n_iw           | int                               | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>   |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------+
+| n_tau          | int                               | 10001   | Number of tau points for gf<imtime, matrix_valued>              |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------+
+| n_l            | int                               | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>  |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------+
+""")
 
 c.add_method("""void solve (**cthyb::solve_parameters_t)""",
              doc = """Solve method that performs CTHYB calculation\n\n :param p: Set of parameters for the CTHYB calculation
@@ -178,7 +180,8 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 | move_global_prob              | double                                         | 0.05                                             | Overall probability of the global moves                                                                                                                                         |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | imag_threshold                | double                                         | 1.e-15                                           | Threshold below which imaginary components of Delta and h_loc are set to zero                                                                                                   |
-+-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+""")
++-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+""")
 
 c.add_method("""std::string hdf5_scheme ()""",
              is_static = True,
@@ -442,7 +445,7 @@ c.add_member(c_name = "beta",
              doc = """Inverse temperature""")
 
 c.add_member(c_name = "gf_struct",
-             c_type = "cthyb::gf_struct_t",
+             c_type = "triqs::hilbert_space::gf_struct_t",
              initializer = """  """,
              doc = """block structure of the gf""")
 

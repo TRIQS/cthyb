@@ -31,7 +31,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::operators::indices_t;
+using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, G2_measurments) {
 

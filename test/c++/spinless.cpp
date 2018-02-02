@@ -9,7 +9,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::operators::indices_t;
+using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, Spinless) {
 
@@ -27,7 +27,7 @@ TEST(CtHyb, Spinless) {
 
   // define operators
   auto H = U * n("tot", 0) * n("tot", 1) - t * c_dag("tot", 0) * c("tot", 1) - t * c_dag("tot", 1) * c("tot", 0);
-  std::map<std::string, indices_type> gf_struct{{"tot", {0, 1}}};
+  gf_struct_t gf_struct{{"tot", {0, 1}}};
 
 #ifdef QN
   // quantum numbers

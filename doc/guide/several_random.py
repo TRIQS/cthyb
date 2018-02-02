@@ -8,7 +8,7 @@ D, V, U = 1.0, 0.2, 4.0
 e_f, beta = -U/2.0, 50
 
 # Construct the impurity solver
-S = Solver(beta = beta, gf_struct = {'up':[0],'down':[0]})
+S = Solver(beta = beta, gf_struct = [ ['up',[0]], ['down',[0]] ])
 
 # Loop for two random generators
 for random_name in ['mt11213b','lagged_fibonacci607']:

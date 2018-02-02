@@ -13,12 +13,12 @@ class Solver(SolverCore):
         ----------
         beta : scalar
                Inverse temperature.
-        gf_struct : dict{str:list}
+        gf_struct : list of pairs [ [str,[int,...]], ...]
                     Structure of the Green's functions. It must be a
-                    dictionary, which maps the name of each block of the
-                    Green's function as a string to a list of integer
+                    list of pairs, each containing the name of the
+                    Green's function block as a string and a list of integer
                     indices.
-                    For example: ``{'up': [1,2,3], 'down', [1,2,3]}``.
+                    For example: ``[ ['up', [0, 1, 2]], ['down', [0, 1, 2]] ]``.
         n_iw : integer, optional
                Number of Matsubara frequencies used for the Green's functions.
         n_tau : integer, optional
@@ -26,6 +26,10 @@ class Solver(SolverCore):
         n_l : integer, optional
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
+        if isinstance(gf_struct,dict):
+            print "WARNING: gf_struct should be a list of pairs [ [str,[int,...]], ...], not a dict"
+            gf_struct = [ [k, v] for k, v in gf_struct.iteritems() ]
+
         # Initialise the core solver
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
                             n_iw=n_iw, n_tau=n_tau, n_l=n_l)
@@ -99,7 +103,7 @@ class Solver(SolverCore):
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
         print_warning = False
-        for name, indices in self.gf_struct.items():
+        for name, indices in self.gf_struct:
             dim = len(indices)
             if ( (self.G0_iw[name].tail[1]-np.eye(dim)) > 10**(-6) ).any(): print_warning = True
 	if print_warning and mpi.is_master_node():

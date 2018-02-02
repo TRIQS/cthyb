@@ -7,7 +7,7 @@ from cthyb import SolverCore
 
 cp = dict(
     beta=10.0,
-    gf_struct={'up' : [0], 'do' : [0]},
+    gf_struct=[['up',[0]], ['do',[0]]],
     n_iw=1025, n_tau=2500, n_l=20
     )
 

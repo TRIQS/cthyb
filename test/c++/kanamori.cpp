@@ -9,7 +9,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::operators::indices_t;
+using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, Kanamori) {
 
@@ -64,11 +64,9 @@ TEST(CtHyb, Kanamori) {
 #endif
 
   // gf structure
-  std::map<std::string, indices_type> gf_struct;
-  for (int o = 0; o < num_orbitals; ++o) {
-    gf_struct["up-" + std::to_string(o)]   = {0};
-    gf_struct["down-" + std::to_string(o)] = {0};
-  }
+  gf_struct_t gf_struct;
+  for (int o = 0; o < num_orbitals; ++o) gf_struct.push_back({"down-" + std::to_string(o),{0}});
+  for (int o = 0; o < num_orbitals; ++o) gf_struct.push_back({"up-" + std::to_string(o),{0}});
 
   // Construct CTQMC solver
   solver_core solver({beta, gf_struct, 1025, 2500});

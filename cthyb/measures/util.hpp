@@ -68,8 +68,9 @@ namespace cthyb {
         }
       } else { // Check the blocks we've been asked to measure
         for (auto const &bn : G2_blocks_to_measure) {
-          if (!gf_struct.count(bn.first)) TRIQS_RUNTIME_ERROR << "Invalid left block name " << bn.first << " for G^2 measurement";
-          if (!gf_struct.count(bn.second)) TRIQS_RUNTIME_ERROR << "Invalid right block name " << bn.second << " for G^2 measurement";
+	  auto count_bl = [&gf_struct](auto bl_name){ return std::count_if(gf_struct.cbegin(), gf_struct.cend(), [&bl_name](auto & bl){ return bl.first == bl_name; }); };
+          if (count_bl(bn.first) != 1) TRIQS_RUNTIME_ERROR << "Invalid left block name " << bn.first << " for G^2 measurement";
+          if (count_bl(bn.second) != 1) TRIQS_RUNTIME_ERROR << "Invalid right block name " << bn.second << " for G^2 measurement";
         }
       }
 

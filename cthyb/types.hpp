@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2017, H. U.R. Strand
+ * Copyright (C) 2017, H. U.R. Strand, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -50,6 +50,7 @@ namespace cthyb {
 
   using atom_diag = triqs::atom_diag::atom_diag<is_h_scalar_complex>;
 
+  using triqs::hilbert_space::gf_struct_t;
   using triqs::utility::time_pt;
   using op_t        = std::pair<time_pt, int>;
   using histo_map_t = std::map<std::string, histogram>;
@@ -93,10 +94,8 @@ namespace cthyb {
 namespace triqs {
   namespace gfs {
 
-    /// The structure of the gf : block_name -> [...]= list of indices (int/string). FIXME Change to pair of vec<str> and vec<int> or vec<pair<str,int>>
-    using block_gf_structure_t = std::map<std::string, std::vector<std::variant<int, std::string>>>;
     /// Function template for block_gf initialization
-    template <typename Val_t, typename Var_t> block_gf<Var_t, Val_t> make_block_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct) {
+    template <typename Val_t, typename Var_t> block_gf<Var_t, Val_t> make_block_gf(gf_mesh<Var_t> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
 
       std::vector<gf<Var_t, Val_t>> gf_vec;
       std::vector<std::string> block_names;
@@ -115,13 +114,13 @@ namespace triqs {
     }
 
     // default to matrix_valued gf
-    template <typename Var_t> block_gf<Var_t, matrix_valued> make_block_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct) {
+    template <typename Var_t> block_gf<Var_t, matrix_valued> make_block_gf(gf_mesh<Var_t> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
       return make_block_gf<matrix_valued, Var_t>(m, gf_struct);
     }
 
     /// Function template for block2_gf initialization
     template <typename Var_t>
-    block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct,
+    block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct,
                                                       cthyb::block_order order = cthyb::block_order::AABB) {
 
       std::vector<std::vector<gf<Var_t, tensor_valued<4>>>> gf_vecvec;

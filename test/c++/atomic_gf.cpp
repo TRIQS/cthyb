@@ -10,7 +10,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::operators::indices_t;
+using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, AtomicGf) {
 
@@ -30,7 +30,7 @@ TEST(CtHyb, AtomicGf) {
   H += ed0 * (n("up", 0) + n("dn", 0)) + ed1 * (n("up", 1) + n("dn", 1));
   H += V * (c_dag("up", 0) * c("up", 1) + c_dag("up", 1) * c("up", 0) + c_dag("dn", 0) * c("dn", 1) + c_dag("dn", 1) * c("dn", 0));
 
-  std::map<std::string, indices_type> gf_struct{{"up", {0, 1}}, {"dn", {0, 1}}};
+  gf_struct_t gf_struct{{"up", {0, 1}}, {"dn", {0, 1}}};
 
   // Construct CTQMC solver
   solver_core solver(beta, gf_struct, 1025, 2051);

@@ -35,7 +35,7 @@ H = U*n("up",1)*n("dn",1) + U*n("up",2)*n("dn",2)
 H = H + 0.5*h*(n("up",1) - n("dn",1)) + 0.5*h*(n("up",2) - n("dn",2))
 
 # Construct the solver
-S = Solver(beta=beta, gf_struct={"up":[1,2], "dn":[1,2]}, n_tau=n_tau, n_iw=n_iw)
+S = Solver(beta=beta, gf_struct=[["dn",[1,2]], ["up",[1,2]]], n_tau=n_tau, n_iw=n_iw)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [1,2], beta=beta)

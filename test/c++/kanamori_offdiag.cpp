@@ -3,12 +3,14 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/test_tools/gfs.hpp>
+#include <triqs/utility/itertools.hpp>
 
 using namespace cthyb;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
+using triqs::hilbert_space::gf_struct_t;
 using indices_type = triqs::operators::indices_t;
 
 TEST(CtHyb, KanamoriOffDiag) {
@@ -75,11 +77,9 @@ TEST(CtHyb, KanamoriOffDiag) {
 #endif
 
   // gf structure
-  std::map<std::string, indices_type> gf_struct{{"up", indices_type{}}, {"down", indices_type{}}};
-  for (int o = 0; o < num_orbitals; ++o) {
-    gf_struct["up"].push_back(o);
-    gf_struct["down"].push_back(o);
-  }
+  indices_t indices{}; 
+  for( int o : range(num_orbitals) ) indices.emplace_back(o); 
+  gf_struct_t gf_struct{{"up", indices}, {"down", indices}};
 
   // Construct CTQMC solver
   solver_core solver({beta, gf_struct, 1025, 2500});
@@ -94,8 +94,8 @@ TEST(CtHyb, KanamoriOffDiag) {
 
     matrix<std::complex<double>> m(num_orbitals, num_orbitals);
     for (std::size_t w_index = 0; w_index < term.mesh().size(); ++w_index) {
-      m = term.data()(w_index, ellipsis());
-      m = conj(V[j]) * m * V[j];
+      m                                = term.data()(w_index, ellipsis());
+      m                                = conj(V[j]) * m * V[j];
       term.data()(w_index, ellipsis()) = m;
     }
     for (int tail_o = term.singularity().order_min(); tail_o <= term.singularity().order_max(); ++tail_o) {
@@ -133,8 +133,8 @@ TEST(CtHyb, KanamoriOffDiag) {
   filename += "_qn";
 #endif
 
-  auto & G_tau = *solver.G_tau;
-  
+  auto &G_tau = *solver.G_tau;
+
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
     h5_write(G_file, "G_up", G_tau[0]);

@@ -9,7 +9,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
-using indices_type = triqs::operators::indices_t;
+using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, Legendre) {
 
@@ -32,7 +32,7 @@ TEST(CtHyb, Legendre) {
   // quantum numbers
   std::vector<many_body_op_t> qn{n("up", 0), n("down", 0)};
   // gf structure
-  std::map<std::string, indices_type> gf_struct{{"up", {0}}, {"down", {0}}};
+  gf_struct_t gf_struct{{"up", {0}}, {"down", {0}}};
 
   // Construct CTQMC solver
   solver_core solver({beta, gf_struct, 1025, 2500, 50});
@@ -60,8 +60,8 @@ TEST(CtHyb, Legendre) {
   // Solve!
   solver.solve(p);
 
-  auto & G_l = *solver.G_l;
-  
+  auto &G_l = *solver.G_l;
+
   // Save the results
   if (rank == 0) {
     triqs::h5::file G_file("legendre.out.h5", 'w');

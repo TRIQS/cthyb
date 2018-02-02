@@ -23,9 +23,9 @@
 
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/variant_int_string.hpp>
 #include <triqs/gfs.hpp>
 #include <fstream>
+#include <variant>
 
 #include "./moves/insert.hpp"
 #include "./moves/remove.hpp"

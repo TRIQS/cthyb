@@ -35,7 +35,7 @@ TEST(CtHyb, Spinless) {
 #endif
 
   // Construct CTQMC solver
-  solver_core solver(beta, gf_struct, 1025, 2500);
+  solver_core solver({beta, gf_struct, 1025, 2500});
 
   // Set hybridization function
   triqs::clef::placeholder<0> om_;

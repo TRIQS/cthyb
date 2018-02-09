@@ -47,7 +47,7 @@ TEST(CtHyb, Anderson) {
 #endif
 
   // Construct CTQMC solver
-  solver_core solver(beta, gf_struct, 1025, 2500);
+  solver_core solver({beta, gf_struct, 1025, 2500});
 
   // Set G0
   triqs::clef::placeholder<0> om_;

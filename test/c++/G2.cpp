@@ -52,7 +52,7 @@ TEST(CtHyb, G2_measurments) {
 
   // GF structure
   enum spin { up, down };
-  std::map<std::string, indices_type> gf_struct{{"up", {0}}, {"down", {0}}};
+  gf_struct_t gf_struct{{"up", {0}}, {"down", {0}}};
   auto n_up   = n("up", 0);
   auto n_down = n("down", 0);
 
@@ -63,7 +63,7 @@ TEST(CtHyb, G2_measurments) {
   int n_iw  = 1025;
   int n_tau = 2500;
   int n_l   = 10;
-  solver_core solver(beta, gf_struct, n_iw, n_tau, n_l);
+  solver_core solver({beta, gf_struct, n_iw, n_tau, n_l});
 
   // Set G0
   triqs::clef::placeholder<0> om_;

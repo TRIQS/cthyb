@@ -35,7 +35,7 @@ TEST(CtHyb, Legendre) {
   std::map<std::string, indices_type> gf_struct{{"up", {0}}, {"down", {0}}};
 
   // Construct CTQMC solver
-  solver_core solver(beta, gf_struct, 1025, 2500, 50);
+  solver_core solver({beta, gf_struct, 1025, 2500, 50});
 
   // Set G0
   triqs::clef::placeholder<0> om_;

@@ -21,6 +21,9 @@
 
 #pragma once
 
+#define STR(x) #x
+#define STRINGIZE(x) STR(x)
+
 #include <triqs/gfs.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
@@ -81,7 +84,6 @@ namespace triqs {
 
     /// The structure of the gf : block_name -> [...]= list of indices (int/string). FIXME Change to pair of vec<str> and vec<int> or vec<pair<str,int>>
     using block_gf_structure_t = std::map<std::string, std::vector<std::variant<int, std::string>>>;
-
     /// Function template for block_gf initialization
     template <typename Val_t, typename Var_t> block_gf<Var_t, Val_t> make_block_gf(gf_mesh<Var_t> const &m, block_gf_structure_t const &gf_struct) {
 

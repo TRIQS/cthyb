@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./configuration.hpp"
-#include "./solve_parameters.hpp"
+#include "./parameters.hpp"
 #include "triqs/utility/rbt.hpp"
 #include <triqs/statistics/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>

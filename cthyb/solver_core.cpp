@@ -45,7 +45,7 @@
 #endif
 #include "./measures/util.hpp"
 
-   namespace cthyb {
+namespace cthyb {
 
   struct index_visitor {
     std::vector<std::string> indices;
@@ -53,11 +53,11 @@
     void operator()(std::string s) { indices.push_back(s); }
   };
 
-  solver_core::solver_core(double beta_, std::map<std::string, indices_type> const &gf_struct_, int n_iw, int n_tau, int n_l)
-     : beta(beta_), gf_struct(gf_struct_), n_iw(n_iw), n_tau(n_tau), n_l(n_l) {
+  solver_core::solver_core(constr_parameters_t const &p)
+     : constr_parameters(p), beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l) {
 
-    if (n_tau < 2 * n_iw)
-      TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << n_iw << " but n_tau = " << n_tau
+    if (p.n_tau < 2 * p.n_iw)
+      TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << p.n_iw << " but n_tau = " << p.n_tau
                           << ".";
 
     // Allocate single particle greens functions
@@ -67,15 +67,20 @@
 
   /// -------------------------------------------------------------------------------------------
 
-  void solver_core::solve(solve_parameters_t const &params) {
+  void solver_core::solve(solve_parameters_t const &solve_parameters_) {
+
+    solve_parameters = solve_parameters_;
+    solve_parameters_t params(solve_parameters_);
+
+    // Merge constr_params and solve_params
+    //params_t params(constr_parameters, solve_parameters);
 
     // http://patorjk.com/software/taag/#p=display&f=Calvin%20S&t=TRIQS%20cthyb
-    if (params.verbosity >= 2) std::cout << "\n"
-      "╔╦╗╦═╗╦╔═╗ ╔═╗  ┌─┐┌┬┐┬ ┬┬ ┬┌┐ \n"
-      " ║ ╠╦╝║║═╬╗╚═╗  │   │ ├─┤└┬┘├┴┐\n"
-      " ╩ ╩╚═╩╚═╝╚╚═╝  └─┘ ┴ ┴ ┴ ┴ └─┘\n\n";
-    
-    _last_solve_parameters = params;
+    if (params.verbosity >= 2)
+      std::cout << "\n"
+                   "╔╦╗╦═╗╦╔═╗ ╔═╗  ┌─┐┌┬┐┬ ┬┬ ┬┌┐ \n"
+                   " ║ ╠╦╝║║═╬╗╚═╗  │   │ ├─┤└┬┘├┴┐\n"
+                   " ╩ ╩╚═╩╚═╝╚╚═╝  └─┘ ┴ ┴ ┴ ┴ └─┘\n\n";
 
     // determine basis of operators to use
     fundamental_operator_set fops;
@@ -106,7 +111,7 @@
     _h_loc = params.h_int;
 
     // Do I have imaginary components in my local Hamiltonian?
-    auto max_imag                                  = 0.0;
+    auto max_imag = 0.0;
     for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(imag(_G0_iw[b].singularity()(2)))));
 
     // Add quadratic terms to h_loc
@@ -256,12 +261,15 @@
 
     // NFFT Matsubara frequency measures
     if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
-    if (params.measure_G2_iw_pp) qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
+    if (params.measure_G2_iw_pp)
+      qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
     if (params.measure_G2_iw_ph) qmc.add_measure(measure_G2_iw<G2_channel::PH>{G2_iw_ph, data, G2_measures}, "G2_iw_ph particle-hole measurement");
 
     // Legendre mixed basis measurements
-    if (params.measure_G2_iwll_pp) qmc.add_measure(measure_G2_iwll<G2_channel::PP>{G2_iwll_pp, data, G2_measures}, "G2_iwll_pp Legendre particle-particle measurement");
-    if (params.measure_G2_iwll_ph) qmc.add_measure(measure_G2_iwll<G2_channel::PH>{G2_iwll_ph, data, G2_measures}, "G2_iwll_ph Legendre particle-hole measurement");
+    if (params.measure_G2_iwll_pp)
+      qmc.add_measure(measure_G2_iwll<G2_channel::PP>{G2_iwll_pp, data, G2_measures}, "G2_iwll_pp Legendre particle-particle measurement");
+    if (params.measure_G2_iwll_ph)
+      qmc.add_measure(measure_G2_iwll<G2_channel::PH>{G2_iwll_ph, data, G2_measures}, "G2_iwll_ph Legendre particle-hole measurement");
 #endif
 
     // --------------------------------------------------------------------------
@@ -304,4 +312,5 @@
     // Copy local (real or complex) G_tau back to complex G_tau
     if (G_tau && G_tau_accum) *G_tau = *G_tau_accum;
   }
-}
+
+} // namespace cthyb

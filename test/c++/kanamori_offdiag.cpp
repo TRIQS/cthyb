@@ -82,7 +82,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   }
 
   // Construct CTQMC solver
-  solver_core solver(beta, gf_struct, 1025, 2500);
+  solver_core solver({beta, gf_struct, 1025, 2500});
 
   // Set G0
   auto delta_iw = gf<imfreq>{{beta, Fermion}, {num_orbitals, num_orbitals}};

@@ -27,7 +27,8 @@ class Solver(SolverCore):
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
         # Initialise the core solver
-        SolverCore.__init__(self, beta, gf_struct, n_iw=n_iw, n_tau=n_tau, n_l=n_l)
+        SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
+                            n_iw=n_iw, n_tau=n_tau, n_l=n_l)
 
         self.Sigma_iw = self.G0_iw.copy()
         self.Sigma_iw.zero()

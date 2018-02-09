@@ -1,4 +1,6 @@
 set(LIBRARY_SOURCES
+    parameters.cpp
+    container_set.cpp
     solver_core.cpp
     impurity_trace.cpp
     moves/insert.cpp
@@ -65,7 +67,7 @@ install(TARGETS cthyb_c DESTINATION lib)
 # FIXME : WHY DO WE INSTALL HEADERS HERE ??
 set(HEADERS_TO_INSTALL
  #array_suppl.hpp # FIXME
-    solve_parameters.hpp
+    parameters.hpp
     solver_core.hpp
     config.hpp
 )

@@ -1,3 +1,24 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2017, H. U.R. Strand, M. Ferrero and O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+
 #pragma once
 
 #include "./config.hpp"
@@ -8,6 +29,32 @@ namespace cthyb {
   using namespace triqs::operators;
   using indices_map_t = std::map<triqs::operators::indices_t, triqs::operators::indices_t>;
 
+  // All the arguments of the solver_core constructor
+  struct constr_parameters_t {
+    
+    /// Inverse temperature
+    double beta;
+
+    ///block structure of the gf
+    gf_struct_t gf_struct;
+
+    /// Number of Matsubara frequencies for gf<imfreq, matrix_valued>
+    int n_iw = 1025;
+
+    /// Number of tau points for gf<imtime, matrix_valued>
+    int n_tau = 10001;
+
+    /// Number of Legendre polynomials for gf<legendre, matrix_valued>
+    int n_l = 50;
+
+    /// Write constr_parameters_t to hdf5
+    friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, constr_parameters_t const &sp);
+
+    /// Read constr_parameters_t from hdf5
+    friend void h5_read(triqs::h5::group h5group, std::string subgroup_name, constr_parameters_t &sp);
+    
+  };
+  
   // All the arguments of the solve function
   struct solve_parameters_t {
 
@@ -142,5 +189,18 @@ namespace cthyb {
     solve_parameters_t() {}
 
     solve_parameters_t(many_body_op_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
+
+    /// Write solve_parameters_t to hdf5
+    friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, solve_parameters_t const &sp);
+
+    /// Read solve_parameters_t from hdf5
+    friend void h5_read(triqs::h5::group h5group, std::string subgroup_name, solve_parameters_t &sp);
+
+  };
+
+  /// A struct combining both constr_params_t and solve_params_t
+  struct params_t : constr_parameters_t, solve_parameters_t {
+    params_t(constr_parameters_t constr_parameters_, solve_parameters_t solve_parameters_)
+      : constr_parameters_t(constr_parameters_), solve_parameters_t(solve_parameters_) {}
   };
 }

@@ -30,7 +30,7 @@
 
 #include "types.hpp"
 #include "container_set.hpp"
-#include "solve_parameters.hpp"
+#include "parameters.hpp"
 
 namespace cthyb {
 
@@ -43,32 +43,57 @@ namespace cthyb {
     many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
     int n_iw, n_tau, n_l;
 
+    histogram _pert_order_total;           // Histogram of the total perturbation order
+    histo_map_t _pert_order;               // Histograms of the perturbation order for each block
+    std::vector<matrix_t> _density_matrix; // density matrix, when used in Norm mode
+    triqs::mpi::communicator _comm;        // define the communicator, here MPI_COMM_WORLD
+    histo_map_t _performance_analysis;     // Histograms used for performance analysis
+    mc_weight_t _average_sign;             // average sign of the QMC
+    int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
+
+    // Return reference to container_set
+    container_set_t &result_set() { return static_cast<container_set_t &>(*this); }
+    container_set_t const &result_set() const { return static_cast<container_set_t const &>(*this); }
+
+    // Struct containing the parameters relevant for the solver construction
+    constr_parameters_t constr_parameters;
+
+    // Struct containing the parameters of the last call to the solve method
+    solve_parameters_t solve_parameters;
+
     // Single-particle Green's function containers
     G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
-    histogram _pert_order_total;               // Histogram of the total perturbation order
-    histo_map_t _pert_order;                   // Histograms of the perturbation order for each block
-    std::vector<matrix_t> _density_matrix;     // density matrix, when used in Norm mode
-    triqs::mpi::communicator _comm;            // define the communicator, here MPI_COMM_WORLD
-    solve_parameters_t _last_solve_parameters; // parameters of the last call to solve
-    histo_map_t _performance_analysis;         // Histograms used for performance analysis
-    mc_weight_t _average_sign;                 // average sign of the QMC
-    int _solve_status;                         // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
-
     public:
-    solver_core(double beta, std::map<std::string, indices_type> const &gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50);
 
-    /// Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
-    CPP2PY_ARG_AS_DICT // Wrap the solver parameters as a dictionary in python with the clang tool
-       void
-       solve(solve_parameters_t const &p);
+    /**
+     * Construct a CTHYB solver
+     *
+     * @param p Set of parameters specific to the CTHYB solver
+     */
+    CPP2PY_ARG_AS_DICT
+    solver_core(constr_parameters_t const &p);
+
+    // Delete assignement operator because of const members
+    solver_core(solver_core const &p) = default;
+    solver_core(solver_core &&p)      = default;
+    solver_core &operator=(solver_core const &p) = delete;
+    solver_core &operator=(solver_core &&p) = default;
+
+    /**
+     * Solve method that performs CTHYB calculation
+     *
+     * @param p Set of parameters for the CTHYB calculation
+     */
+    CPP2PY_ARG_AS_DICT
+    void solve(solve_parameters_t const &p);
 
     /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
     many_body_op_t const &h_loc() const { return _h_loc; }
 
     /// Set of parameters used in the last call to ``solve()``.
-    solve_parameters_t last_solve_parameters() const { return _last_solve_parameters; }
+    solve_parameters_t last_solve_parameters() const { return solve_parameters; }
 
     /// :math:`\Delta(\tau)` in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
@@ -99,5 +124,35 @@ namespace cthyb {
 
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
+
+    CPP2PY_IGNORE
+    static std::string hdf5_scheme() { return "CTHYB_SolverCore"; }
+
+    // Function that writes the solver_core to hdf5 file
+    CPP2PY_IGNORE
+    friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, solver_core const &s) {
+      triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
+      h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", solver_core::hdf5_scheme());
+      h5_write_attribute(grp, "TRIQS_GIT_HASH", std::string(STRINGIZE(TRIQS_GIT_HASH)));
+      h5_write_attribute(grp, "CTHYB_GIT_HASH", std::string(STRINGIZE(CTHYB_GIT_HASH)));
+      h5_write(grp, "", s.result_set());
+      h5_write(grp, "constr_params", s.constr_parameters);
+      h5_write(grp, "solve_params", s.solve_parameters);
+      h5_write(grp, "G0_iw", s._G0_iw);
+      h5_write(grp, "Delta_tau", s._Delta_tau);
+    }
+
+    // Function that read all containers to hdf5 file
+    CPP2PY_IGNORE
+    static solver_core h5_read_construct(triqs::h5::group h5group, std::string subgroup_name) {
+      triqs::h5::group grp   = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
+      auto constr_parameters = h5_read<constr_parameters_t>(grp, "constr_parameters");
+      auto s                 = solver_core{constr_parameters};
+      h5_read(grp, "", s.result_set());
+      h5_read(grp, "solve_parameters", s.solve_parameters);
+      h5_read(grp, "G0_iw", s._G0_iw);
+      h5_read(grp, "Delta_iw", s._Delta_tau);
+      return s;
+    }
   };
 } // namespace cthyb

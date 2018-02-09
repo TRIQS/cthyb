@@ -1,5 +1,5 @@
 # Generated automatically using the command :
-# c++2py ../../cthyb/solver_core.hpp -p -m solver_core -o solver_core --moduledoc="The cthyb solver" --cxxflags="-std=c++14" -C pytriqs --only="solver_core block_order" -N cthyb -I../../app_atom_diag
+# c++2py ../../cthyb/solver_core.hpp -p -m solver_core -o solver_core --moduledoc="The cthyb solver" --cxxflags="-std=c++17" -C pytriqs --only="solver_core block_order" -N cthyb -I../../app_atom_diag --include /opt/local/include --include /opt/local/include/openmpi-clang50/
 from cpp2py.wrap_generator import *
 
 # The module
@@ -21,8 +21,8 @@ module.add_preamble("""
 #include <cpp2py/converters/pair.hpp>
 #include <cpp2py/converters/set.hpp>
 #include <cpp2py/converters/string.hpp>
-#include <cpp2py/converters/vector.hpp>
 #include <cpp2py/converters/variant.hpp>
+#include <cpp2py/converters/vector.hpp>
 #include <triqs/cpp2py_converters/arrays.hpp>
 #include <triqs/cpp2py_converters/gf.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
@@ -37,6 +37,7 @@ c = class_(
         py_type = "SolverCore",  # name of the python class
         c_type = "cthyb::solver_core",   # name of the C++ class
         doc = """Core class of the cthyb solver""",   # doc of the C++ class
+        hdf5 = True,
 )
 
 c.add_member(c_name = "G_tau",
@@ -84,10 +85,23 @@ c.add_member(c_name = "G2_iwll_ph",
              read_only= False,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)""")
 
-c.add_constructor("""(double beta, std::map<std::string,indices_type> gf_struct, int n_iw = 1025, int n_tau = 10001, int n_l = 50)""", doc = """""")
+c.add_constructor("""(**cthyb::constr_parameters_t)""", doc = """Construct a CTHYB solver\n\n :param p: Set of parameters specific to the CTHYB solver
++----------------+--------------------+---------+-----------------------------------------------------------------+
+| Parameter Name | Type               | Default | Documentation                                                   |
++================+====================+=========+=================================================================+
+| beta           | double             |         | Inverse temperature                                             |
++----------------+--------------------+---------+-----------------------------------------------------------------+
+| gf_struct      | cthyb::gf_struct_t |         | block structure of the gf                                       |
++----------------+--------------------+---------+-----------------------------------------------------------------+
+| n_iw           | int                | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>   |
++----------------+--------------------+---------+-----------------------------------------------------------------+
+| n_tau          | int                | 10001   | Number of tau points for gf<imtime, matrix_valued>              |
++----------------+--------------------+---------+-----------------------------------------------------------------+
+| n_l            | int                | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>  |
++----------------+--------------------+---------+-----------------------------------------------------------------+""")
 
 c.add_method("""void solve (**cthyb::solve_parameters_t)""",
-             doc = """Solve the impurity problem for the given Hamiltonian h_loc and with specified parameters params.
+             doc = """Solve method that performs CTHYB calculation\n\n :param p: Set of parameters for the CTHYB calculation
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Parameter Name                | Type                                           | Default                                          | Documentation                                                                                                                                                                   |
 +===============================+================================================+==================================================+=================================================================================================================================================================================+
@@ -165,6 +179,14 @@ c.add_method("""void solve (**cthyb::solve_parameters_t)""",
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | imag_threshold                | double                                         | 1.e-15                                           | Threshold below which imaginary components of Delta and h_loc are set to zero                                                                                                   |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+""")
+
+c.add_method("""std::string hdf5_scheme ()""",
+             is_static = True,
+             doc = """""")
+
+c.add_method("""cthyb::solver_core h5_read_construct (triqs::h5::group h5group, std::string subgroup_name)""",
+             is_static = True,
+             doc = """""")
 
 c.add_property(name = "h_loc",
                getter = cfunction("cthyb::many_body_op_t h_loc ()"),
@@ -402,6 +424,38 @@ c.add_member(c_name = "imag_threshold",
              c_type = "double",
              initializer = """ 1.e-15 """,
              doc = """Threshold below which imaginary components of Delta and h_loc are set to zero""")
+
+module.add_converter(c)
+
+# Converter for constr_parameters_t
+c = converter_(
+        c_type = "cthyb::constr_parameters_t",
+        doc = """""",
+)
+c.add_member(c_name = "beta",
+             c_type = "double",
+             initializer = """  """,
+             doc = """Inverse temperature""")
+
+c.add_member(c_name = "gf_struct",
+             c_type = "cthyb::gf_struct_t",
+             initializer = """  """,
+             doc = """block structure of the gf""")
+
+c.add_member(c_name = "n_iw",
+             c_type = "int",
+             initializer = """ 1025 """,
+             doc = """Number of Matsubara frequencies for gf<imfreq, matrix_valued>""")
+
+c.add_member(c_name = "n_tau",
+             c_type = "int",
+             initializer = """ 10001 """,
+             doc = """Number of tau points for gf<imtime, matrix_valued>""")
+
+c.add_member(c_name = "n_l",
+             c_type = "int",
+             initializer = """ 50 """,
+             doc = """Number of Legendre polynomials for gf<legendre, matrix_valued>""")
 
 module.add_converter(c)
 

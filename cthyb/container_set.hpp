@@ -61,6 +61,12 @@ namespace cthyb {
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel (one bosonic matsubara and two legendre)
     std::optional<G2_iwll_t> G2_iwll_ph;
 
+    /// Function that writes all containers to hdf5 file
+    friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, container_set_t const &c);
+
+    /// Function that reads all containers to hdf5 file
+    friend void h5_read(triqs::h5::group h5group, std::string subgroup_name, container_set_t &c);
+
   }; // struct container_set_t
 
 } // namespace cthyb

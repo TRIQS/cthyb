@@ -43,11 +43,11 @@ namespace cthyb {
 
   void h5_write(triqs::h5::group h5group, std::string subgroup_name, solve_parameters_t const &sp) {
     triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
-    //h5_write(grp, "h_int", sp.h_int);
+    h5_write(grp, "h_int", sp.h_int);
 
     h5_write(grp, "n_cycles", sp.n_cycles);
     h5_write(grp, "partition_method", sp.partition_method);
-    //h5_write(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_write(grp, "quantum_numbers", sp.quantum_numbers);
 
     h5_write(grp, "length_cycle", sp.length_cycle);
     h5_write(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -68,8 +68,8 @@ namespace cthyb {
     h5_write(grp, "measure_G2_iw_ph", sp.measure_G2_iw_ph);
     h5_write(grp, "measure_G2_iwll_pp", sp.measure_G2_iwll_pp);
     h5_write(grp, "measure_G2_iwll_ph", sp.measure_G2_iwll_ph);
-    //h5_write(grp, "measure_G2_block_order", sp.measure_G2_block_order);
-    //h5_write(grp, "measure_G2_blocks", sp.measure_G2_blocks);
+    h5_write(grp, "measure_G2_block_order", sp.measure_G2_block_order);
+    h5_write(grp, "measure_G2_blocks", sp.measure_G2_blocks);
 
     h5_write(grp, "measure_G2_n_tau", sp.measure_G2_n_tau);
     h5_write(grp, "measure_G2_n_bosonic", sp.measure_G2_n_bosonic);
@@ -85,7 +85,7 @@ namespace cthyb {
     h5_write(grp, "performance_analysis", sp.performance_analysis);
     h5_write(grp, "proposal_prob", sp.proposal_prob);
 
-    //h5_write(grp, "move_global", sp.move_global);
+    h5_write(grp, "move_global", sp.move_global);
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
     h5_write(grp, "imag_threshold", sp.imag_threshold);
@@ -93,11 +93,11 @@ namespace cthyb {
 
   void h5_read(triqs::h5::group h5group, std::string subgroup_name, solve_parameters_t &sp) {
     triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
-    //h5_read(grp, "h_int", sp.h_int);
+    h5_read(grp, "h_int", sp.h_int);
 
     h5_read(grp, "n_cycles", sp.n_cycles);
     h5_read(grp, "partition_method", sp.partition_method);
-    //h5_read(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_read(grp, "quantum_numbers", sp.quantum_numbers);
 
     h5_read(grp, "length_cycle", sp.length_cycle);
     h5_read(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -118,8 +118,8 @@ namespace cthyb {
     h5_read(grp, "measure_G2_iw_ph", sp.measure_G2_iw_ph);
     h5_read(grp, "measure_G2_iwll_pp", sp.measure_G2_iwll_pp);
     h5_read(grp, "measure_G2_iwll_ph", sp.measure_G2_iwll_ph);
-    //h5_read(grp, "measure_G2_block_order", sp.measure_G2_block_order);
-    //h5_read(grp, "measure_G2_blocks", sp.measure_G2_blocks);
+    h5_read(grp, "measure_G2_block_order", sp.measure_G2_block_order);
+    h5_read(grp, "measure_G2_blocks", sp.measure_G2_blocks);
 
     h5_read(grp, "measure_G2_n_tau", sp.measure_G2_n_tau);
     h5_read(grp, "measure_G2_n_bosonic", sp.measure_G2_n_bosonic);
@@ -135,7 +135,7 @@ namespace cthyb {
     h5_read(grp, "performance_analysis", sp.performance_analysis);
     h5_read(grp, "proposal_prob", sp.proposal_prob);
 
-    //h5_read(grp, "move_global", sp.move_global);
+    h5_read(grp, "move_global", sp.move_global);
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);

@@ -26,19 +26,6 @@ using triqs::utility::enumerate;
 
 namespace cthyb {
 
-  // -- many_body_operator_generic
-  
-  inline void h5_write(triqs::h5::group h5group, std::string name, many_body_op_t const &op) {
-    triqs::operators::many_body_operator op_gen(op);
-    h5_write(h5group, name, op_gen);
-  }
-
-  inline void h5_read(triqs::h5::group h5group, std::string name, many_body_op_t &op) {
-    triqs::operators::many_body_operator op_gen;
-    h5_read(h5group, name, op_gen);
-    op = op_gen;
-  }
-
   // -- pair<string, string>
   
   inline void h5_write(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> const &pair) {

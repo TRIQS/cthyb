@@ -34,6 +34,7 @@
 #include <variant>
 
 namespace std {
+  inline string to_string(string const &str) { return str; }
   inline string to_string(variant<int, string> const &var_int_string) {
     stringstream ss;
     ss << var_int_string;

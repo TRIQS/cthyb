@@ -55,17 +55,17 @@ namespace cthyb {
     container_set_t &result_set() { return static_cast<container_set_t &>(*this); }
     container_set_t const &result_set() const { return static_cast<container_set_t const &>(*this); }
 
-    // Struct containing the parameters relevant for the solver construction
-    constr_parameters_t constr_parameters;
-
-    // Struct containing the parameters of the last call to the solve method
-    solve_parameters_t solve_parameters;
-
     // Single-particle Green's function containers
     G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
     public:
+
+    // Struct containing the parameters relevant for the solver construction
+    constr_parameters_t constr_parameters;
+
+    // Struct containing the parameters of the last call to the solve method
+    solve_parameters_t solve_parameters;
 
     /**
      * Construct a CTHYB solver
@@ -152,7 +152,7 @@ namespace cthyb {
       h5_read(grp, "", s.result_set());
       h5_read(grp, "solve_parameters", s.solve_parameters);
       h5_read(grp, "G0_iw", s._G0_iw);
-      h5_read(grp, "Delta_iw", s._Delta_tau);
+      h5_read(grp, "Delta_tau", s._Delta_tau);
       return s;
     }
   };

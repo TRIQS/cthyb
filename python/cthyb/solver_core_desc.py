@@ -1,9 +1,9 @@
 # Generated automatically using the command :
-# c++2py ../../cthyb/solver_core.hpp -p -m solver_core -o solver_core --moduledoc="The cthyb solver" --cxxflags="-std=c++17" -C pytriqs --only="solver_core block_order" -N cthyb -I../../app_atom_diag --include /opt/local/include --include /opt/local/include/openmpi-clang50/
+# c++2py ../../cthyb/solver_core.hpp -p -a cthyb -m solver_core -o solver_core --moduledoc="The cthyb solver" --cxxflags="-std=c++17" -C pytriqs --only="solver_core block_order" -N cthyb -I../../app_atom_diag --include /opt/local/include --include /opt/local/include/openmpi-clang50/
 from cpp2py.wrap_generator import *
 
 # The module
-module = module_(full_name = "solver_core", doc = "The cthyb solver", app_name = "solver_core")
+module = module_(full_name = "solver_core", doc = "The cthyb solver", app_name = "cthyb")
 
 # Imports
 import pytriqs.gf
@@ -84,6 +84,16 @@ c.add_member(c_name = "G2_iwll_ph",
              c_type = "std::optional<G2_iwll_t>",
              read_only= False,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)""")
+
+c.add_member(c_name = "constr_parameters",
+             c_type = "cthyb::constr_parameters_t",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "solve_parameters",
+             c_type = "cthyb::solve_parameters_t",
+             read_only= False,
+             doc = """""")
 
 c.add_constructor("""(**cthyb::constr_parameters_t)""", doc = """Construct a CTHYB solver\n\n :param p: Set of parameters specific to the CTHYB solver
 +----------------+--------------------+---------+-----------------------------------------------------------------+

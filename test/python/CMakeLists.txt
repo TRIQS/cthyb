@@ -3,7 +3,7 @@ file(GLOB all_h5_files *.h5)
 file(COPY ${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # List all tests
-set(all_tests single_site_bethe atomic_observables kanamori slater measure_static histograms move_global)
+set(all_tests single_site_bethe atomic_observables kanamori slater measure_static histograms move_global h5_read_write)
 
 if(Local_hamiltonian_is_complex)
  list(APPEND all_tests atomic_gf_complex atomdiag_ed complex_bug81)

@@ -76,6 +76,16 @@ namespace cthyb {
 
   /// Order of block indices for Block2Gf objects
   enum class block_order { AABB, ABBA };
+  
+  inline void h5_write(triqs::h5::group h5group, std::string name, block_order const &bo) {
+    h5_write(h5group, name, static_cast<int>(bo));
+  }
+
+  inline void h5_read(triqs::h5::group h5group, std::string name, block_order &bo) {
+    int idx;
+    h5_read(h5group, name, idx);
+    bo = static_cast<block_order>(idx);
+  }
 
 } // namespace cthyb
 

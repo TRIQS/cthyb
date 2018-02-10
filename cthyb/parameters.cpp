@@ -21,10 +21,59 @@
 
 #include "./parameters.hpp"
 
+#include <triqs/utility/itertools.hpp>
+using triqs::utility::enumerate;
+
 namespace cthyb {
 
-  void h5_write(triqs::h5::group h5group, std::string subgroup_name, constr_parameters_t const &cp) {
-    triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
+  // -- many_body_operator_generic
+  
+  inline void h5_write(triqs::h5::group h5group, std::string name, many_body_op_t const &op) {
+    triqs::operators::many_body_operator op_gen(op);
+    h5_write(h5group, name, op_gen);
+  }
+
+  inline void h5_read(triqs::h5::group h5group, std::string name, many_body_op_t &op) {
+    triqs::operators::many_body_operator op_gen;
+    h5_read(h5group, name, op_gen);
+    op = op_gen;
+  }
+
+  // -- pair<string, string>
+  
+  inline void h5_write(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> const &pair) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
+    h5_write(grp, "0", std::string(pair.first));
+    h5_write(grp, "1", std::string(pair.second));
+  }
+
+  inline void h5_read(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> &pair) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
+    assert(grp.get_all_subgroup_names().size() == 2);
+    h5_read(grp, "0", pair.first);
+    h5_read(grp, "1", pair.second);
+  }
+
+  // -- set<pair<string, string>>
+  
+  inline void h5_write(triqs::h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> const &pair_set) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
+    for( auto [idx, pair] : enumerate(pair_set) ) {
+      h5_write(grp, std::to_string(idx), pair);
+    }
+  }
+
+  inline void h5_read(triqs::h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> &pair_set) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
+    for( auto sgrp_name : grp.get_all_subgroup_names() ) {
+      std::pair<std::string, std::string> pair;
+      h5_read(grp, sgrp_name, pair);
+      pair_set.insert(pair);
+    }
+  }
+  
+  void h5_write(triqs::h5::group h5group, std::string name, constr_parameters_t const &cp) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "beta", cp.beta);
     h5_write(grp, "gf_struct", cp.gf_struct);
     h5_write(grp, "n_iw", cp.n_iw);
@@ -32,8 +81,8 @@ namespace cthyb {
     h5_write(grp, "n_l", cp.n_l);
   }
 
-  void h5_read(triqs::h5::group h5group, std::string subgroup_name, constr_parameters_t &cp) {
-    triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
+  void h5_read(triqs::h5::group h5group, std::string name, constr_parameters_t &cp) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     h5_read(grp, "beta", cp.beta);
     h5_read(grp, "gf_struct", cp.gf_struct);
     h5_read(grp, "n_iw", cp.n_iw);
@@ -41,13 +90,13 @@ namespace cthyb {
     h5_read(grp, "n_l", cp.n_l);
   }
 
-  void h5_write(triqs::h5::group h5group, std::string subgroup_name, solve_parameters_t const &sp) {
-    triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
+  void h5_write(triqs::h5::group h5group, std::string name, solve_parameters_t const &sp) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "h_int", sp.h_int);
 
     h5_write(grp, "n_cycles", sp.n_cycles);
     h5_write(grp, "partition_method", sp.partition_method);
-    h5_write(grp, "quantum_numbers", sp.quantum_numbers);
+    //h5_write(grp, "quantum_numbers", sp.quantum_numbers);
 
     h5_write(grp, "length_cycle", sp.length_cycle);
     h5_write(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -85,19 +134,19 @@ namespace cthyb {
     h5_write(grp, "performance_analysis", sp.performance_analysis);
     h5_write(grp, "proposal_prob", sp.proposal_prob);
 
-    h5_write(grp, "move_global", sp.move_global);
+    //h5_write(grp, "move_global", sp.move_global);
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
     h5_write(grp, "imag_threshold", sp.imag_threshold);
   }
 
-  void h5_read(triqs::h5::group h5group, std::string subgroup_name, solve_parameters_t &sp) {
-    triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
+  void h5_read(triqs::h5::group h5group, std::string name, solve_parameters_t &sp) {
+    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     h5_read(grp, "h_int", sp.h_int);
 
     h5_read(grp, "n_cycles", sp.n_cycles);
     h5_read(grp, "partition_method", sp.partition_method);
-    h5_read(grp, "quantum_numbers", sp.quantum_numbers);
+    //h5_read(grp, "quantum_numbers", sp.quantum_numbers);
 
     h5_read(grp, "length_cycle", sp.length_cycle);
     h5_read(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -135,7 +184,7 @@ namespace cthyb {
     h5_read(grp, "performance_analysis", sp.performance_analysis);
     h5_read(grp, "proposal_prob", sp.proposal_prob);
 
-    h5_read(grp, "move_global", sp.move_global);
+    //h5_read(grp, "move_global", sp.move_global);
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);

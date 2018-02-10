@@ -192,6 +192,10 @@ c.add_property(name = "h_loc",
                getter = cfunction("cthyb::many_body_op_t h_loc ()"),
                doc = """The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.""")
 
+c.add_property(name = "last_constr_parameters",
+               getter = cfunction("cthyb::constr_parameters_t last_constr_parameters ()"),
+               doc = """Set of parameters used in the construction of the ``solver_core`` class.""")
+
 c.add_property(name = "last_solve_parameters",
                getter = cfunction("cthyb::solve_parameters_t last_solve_parameters ()"),
                doc = """Set of parameters used in the last call to ``solve()``.""")

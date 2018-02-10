@@ -92,6 +92,9 @@ namespace cthyb {
     /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
     many_body_op_t const &h_loc() const { return _h_loc; }
 
+    /// Set of parameters used in the construction of the ``solver_core`` class.
+    constr_parameters_t last_constr_parameters() const { return constr_parameters; }
+
     /// Set of parameters used in the last call to ``solve()``.
     solve_parameters_t last_solve_parameters() const { return solve_parameters; }
 
@@ -125,7 +128,6 @@ namespace cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
-    CPP2PY_IGNORE
     static std::string hdf5_scheme() { return "CTHYB_SolverCore"; }
 
     // Function that writes the solver_core to hdf5 file
@@ -133,20 +135,19 @@ namespace cthyb {
     friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, solver_core const &s) {
       triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
       h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", solver_core::hdf5_scheme());
-      h5_write_attribute(grp, "TRIQS_GIT_HASH", std::string(STRINGIZE(TRIQS_GIT_HASH)));
-      h5_write_attribute(grp, "CTHYB_GIT_HASH", std::string(STRINGIZE(CTHYB_GIT_HASH)));
+      //h5_write_attribute(grp, "TRIQS_GIT_HASH", std::string(STRINGIZE(TRIQS_GIT_HASH)));
+      //h5_write_attribute(grp, "CTHYB_GIT_HASH", std::string(STRINGIZE(CTHYB_GIT_HASH)));
       h5_write(grp, "", s.result_set());
-      h5_write(grp, "constr_params", s.constr_parameters);
-      h5_write(grp, "solve_params", s.solve_parameters);
+      h5_write(grp, "constr_parameters", s.constr_parameters);
+      h5_write(grp, "solve_parameters", s.solve_parameters);
       h5_write(grp, "G0_iw", s._G0_iw);
       h5_write(grp, "Delta_tau", s._Delta_tau);
     }
 
     // Function that read all containers to hdf5 file
-    CPP2PY_IGNORE
     static solver_core h5_read_construct(triqs::h5::group h5group, std::string subgroup_name) {
       triqs::h5::group grp   = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
-      auto constr_parameters = h5_read<constr_parameters_t>(grp, "constr_parameters");
+      auto constr_parameters = triqs::h5::h5_read<constr_parameters_t>(grp, "constr_parameters");
       auto s                 = solver_core{constr_parameters};
       h5_read(grp, "", s.result_set());
       h5_read(grp, "solve_parameters", s.solve_parameters);

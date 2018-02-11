@@ -59,13 +59,13 @@ namespace cthyb {
     G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
 
-    public:
-
     // Struct containing the parameters relevant for the solver construction
     constr_parameters_t constr_parameters;
 
     // Struct containing the parameters of the last call to the solve method
     solve_parameters_t solve_parameters;
+
+    public:
 
     /**
      * Construct a CTHYB solver

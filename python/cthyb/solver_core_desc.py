@@ -85,16 +85,6 @@ c.add_member(c_name = "G2_iwll_ph",
              read_only= False,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)""")
 
-c.add_member(c_name = "constr_parameters",
-             c_type = "cthyb::constr_parameters_t",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "solve_parameters",
-             c_type = "cthyb::solve_parameters_t",
-             read_only= False,
-             doc = """""")
-
 c.add_constructor("""(**cthyb::constr_parameters_t)""", doc = """Construct a CTHYB solver\n\n :param p: Set of parameters specific to the CTHYB solver
 +----------------+--------------------+---------+-----------------------------------------------------------------+
 | Parameter Name | Type               | Default | Documentation                                                   |

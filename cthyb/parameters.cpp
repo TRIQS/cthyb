@@ -83,7 +83,7 @@ namespace cthyb {
 
     h5_write(grp, "n_cycles", sp.n_cycles);
     h5_write(grp, "partition_method", sp.partition_method);
-    //h5_write(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_write(grp, "quantum_numbers", sp.quantum_numbers);
 
     h5_write(grp, "length_cycle", sp.length_cycle);
     h5_write(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -122,6 +122,8 @@ namespace cthyb {
     h5_write(grp, "proposal_prob", sp.proposal_prob);
 
     //h5_write(grp, "move_global", sp.move_global);
+    if( sp.move_global.size() != 0 )
+      TRIQS_RUNTIME_ERROR << "Error serailizing: CTHYB solve_parameters, can not serialize the global moves data type.";
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
     h5_write(grp, "imag_threshold", sp.imag_threshold);
@@ -133,7 +135,7 @@ namespace cthyb {
 
     h5_read(grp, "n_cycles", sp.n_cycles);
     h5_read(grp, "partition_method", sp.partition_method);
-    //h5_read(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_read(grp, "quantum_numbers", sp.quantum_numbers);
 
     h5_read(grp, "length_cycle", sp.length_cycle);
     h5_read(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -172,6 +174,8 @@ namespace cthyb {
     h5_read(grp, "proposal_prob", sp.proposal_prob);
 
     //h5_read(grp, "move_global", sp.move_global);
+    if( grp.has_key("move_global") )
+      TRIQS_RUNTIME_ERROR << "Error reading: CTHYB solve_parameters, can not de-serialize the global moves data type.";
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);

@@ -117,8 +117,11 @@ namespace triqs_cthyb {
     bool measure_G2_tau = false;
 
     /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
-    bool measure_G2_iw = false;
+    bool measure_G2_iw_nfft = false;
 
+    /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
+    bool measure_G2_iw = false;
+    
     /// Measure G^4(iomega,inu,inu') within the particle-particle channel.
     bool measure_G2_iw_pp = false;
 

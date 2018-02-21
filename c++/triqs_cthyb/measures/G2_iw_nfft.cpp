@@ -19,12 +19,12 @@
  *
  ******************************************************************************/
 
-#include "./G2_iw.hpp"
+#include "./G2_iw_nfft.hpp"
 
 namespace triqs_cthyb {
 
   template <G2_channel Channel>
-  measure_G2_iw<Channel>::measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures)
+  measure_G2_iw_nfft<Channel>::measure_G2_iw_nfft(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures)
      : data(data), average_sign(0), G2_measures(G2_measures) {
 
     const double beta = data.config.beta();
@@ -62,7 +62,7 @@ namespace triqs_cthyb {
       }
 
       // Initialize intermediate scattering matrix
-      M = block_gf{M_mesh, G2_measures.gf_struct};
+      M = make_block_gf(M_mesh, G2_measures.gf_struct);
     }
 
     // Initialize the nfft_buffers mirroring the matrix M
@@ -82,7 +82,7 @@ namespace triqs_cthyb {
     }
   }
 
-  template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate(mc_weight_t s) {
+  template <G2_channel Channel> void measure_G2_iw_nfft<Channel>::accumulate(mc_weight_t s) {
 
     s *= data.atomic_reweighting;
     average_sign += s;
@@ -129,14 +129,16 @@ namespace triqs_cthyb {
   // -- Particle-hole
 
   template <>
-  inline void measure_G2_iw<G2_channel::PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  inline void measure_G2_iw_nfft<G2_channel::PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
+                                                                       M_type const &M_kl) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
   }
 
   template <>
-  inline void measure_G2_iw<G2_channel::PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+  inline void measure_G2_iw_nfft<G2_channel::PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
+                                                                       M_type const &M_kj) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
@@ -145,14 +147,16 @@ namespace triqs_cthyb {
   // -- Particle-particle
 
   template <>
-  inline void measure_G2_iw<G2_channel::PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij, M_type const &M_kl) {
+  inline void measure_G2_iw_nfft<G2_channel::PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
+                                                                       M_type const &M_kl) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
   }
 
   template <>
-  inline void measure_G2_iw<G2_channel::PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il, M_type const &M_kj) {
+  inline void measure_G2_iw_nfft<G2_channel::PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
+                                                                       M_type const &M_kj) {
     G2(w, n1, n2)
     (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
           - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
@@ -161,8 +165,8 @@ namespace triqs_cthyb {
   // -- Fermionic
 
   template <>
-  inline void measure_G2_iw<G2_channel::AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
-                                                                            M_type const &M_kl) {
+  inline void measure_G2_iw_nfft<G2_channel::AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
+                                                                                 M_type const &M_kl) {
 
     int size_ij = M_ij.target_shape()[0];
     int size_kl = M_kl.target_shape()[0];
@@ -184,8 +188,8 @@ namespace triqs_cthyb {
   }
 
   template <>
-  inline void measure_G2_iw<G2_channel::AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
-                                                                            M_type const &M_kj) {
+  inline void measure_G2_iw_nfft<G2_channel::AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
+                                                                                 M_type const &M_kj) {
 
     int size_il = M_il.target_shape()[0];
     int size_kj = M_kj.target_shape()[0];
@@ -208,14 +212,14 @@ namespace triqs_cthyb {
 
   // --
 
-  template <G2_channel Channel> void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
+  template <G2_channel Channel> void measure_G2_iw_nfft<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);
     G2_iw        = mpi_all_reduce(G2_iw, com);
-    G2_iw = G2_iw / (real(average_sign) * data.config.beta());
+    G2_iw        = G2_iw / (real(average_sign) * data.config.beta());
   }
 
-  template class measure_G2_iw<G2_channel::AllFermionic>;
-  template class measure_G2_iw<G2_channel::PP>;
-  template class measure_G2_iw<G2_channel::PH>;
+  template class measure_G2_iw_nfft<G2_channel::AllFermionic>;
+  template class measure_G2_iw_nfft<G2_channel::PP>;
+  template class measure_G2_iw_nfft<G2_channel::PH>;
 
 } // namespace triqs_cthyb

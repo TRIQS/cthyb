@@ -47,6 +47,9 @@ namespace triqs_cthyb {
     std::optional<G2_tau_t> G2_tau;
 
     /// Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
+    std::optional<G2_iw_t> G2_iw_nfft;
+
+    /// Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
     std::optional<G2_iw_t> G2_iw;
 
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel (one bosonic matsubara and two fermionic)

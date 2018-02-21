@@ -1,7 +1,7 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf import GfImFreq, SemiCircular, inverse, iOmega_n
-from pytriqs.operators import n
+from pytriqs.operators import n, c, c_dag
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
 
@@ -22,7 +22,7 @@ for name, g0 in solver.G0_iw:
     g0 << inverse(iOmega_n + mu - delta_w)
 
 sp = dict(
-    h_int = n('up',0)*n('do',0),
+    h_int = n('up',0)*n('do',0) + c_dag('up',0)*c('do',0) + c_dag('do',0)*c('up',0),
     max_time = -1,
     length_cycle = 50,
     n_warmup_cycles = 50,
@@ -30,6 +30,7 @@ sp = dict(
     move_double = False,
     )
     
+print type(sp['h_int'])
 solver.solve(**sp)
 
 sp = solver.last_solve_parameters

@@ -34,8 +34,17 @@
 
 namespace triqs_cthyb {
 
+  namespace G2_iw {
+    using M_block_t = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
+    using M_t       = M_block_t::g_t;
+    using M_mesh_t = M_block_t::g_t::mesh_t;
+    using M_arr_t = array<std::complex<double>, 4>;
+    using M_block_arr_t = std::vector<M_arr_t>;
+  }
+
   using namespace triqs::arrays;
   using namespace triqs::experimental;
+  using namespace G2_iw;
 
   // Measure the two-particle Green's function in Matsubara frequency
   template <G2_channel Channel> struct measure_G2_iw {
@@ -46,14 +55,6 @@ namespace triqs_cthyb {
     void collect_results(triqs::mpi::communicator const &c);
 
     private:
-    using M_block_t = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
-    using M_t       = M_block_t::g_t;
-    using M_mesh_t = M_block_t::g_t::mesh_t;
-    using M_arr_t = array<std::complex<double>, 4>;
-    using M_block_arr_t = std::vector<M_arr_t>;
-
-    inline void accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ab, M_t const &M_cd);
-    inline void accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ad, M_t const &M_cb);
 
     qmc_data const &data;
     G2_iw_t::view_type G2_iw;

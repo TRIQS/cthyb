@@ -62,12 +62,12 @@ c.add_member(c_name = "G2_tau",
              read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` (three Fermionic imaginary times)""")
 
-c.add_member(c_name = "G2_iw_nfft",
+c.add_member(c_name = "G2_iw",
              c_type = "std::optional<G2_iw_t>",
              read_only= False,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)""")
 
-c.add_member(c_name = "G2_iw",
+c.add_member(c_name = "G2_iw_nfft",
              c_type = "std::optional<G2_iw_t>",
              read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)""")
@@ -77,9 +77,19 @@ c.add_member(c_name = "G2_iw_pp",
              read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)""")
 
+c.add_member(c_name = "G2_iw_pp_nfft",
+             c_type = "std::optional<G2_iw_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)""")
+
 c.add_member(c_name = "G2_iw_ph",
              c_type = "std::optional<G2_iw_t>",
              read_only= True,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
+
+c.add_member(c_name = "G2_iw_ph_nfft",
+             c_type = "std::optional<G2_iw_t>",
+             read_only= False,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
 
 c.add_member(c_name = "G2_iwll_pp",
@@ -155,13 +165,17 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_tau                | bool                                           | false                                            | Measure G^4(tau,tau\',tau\'\') with three fermionic times.                                                                                                                      |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| measure_G2_iw_nfft            | bool                                           | false                                            | Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.                                                                                                                |
-+-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iw                 | bool                                           | false                                            | Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.                                                                                                                |
++-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| measure_G2_iw_nfft            | bool                                           | false                                            | Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.                                                                                                                |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iw_pp              | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-particle channel.                                                                                                             |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| measure_G2_iw_pp_nfft         | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-particle channel.                                                                                                             |
++-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iw_ph              | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-hole channel.                                                                                                                 |
++-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| measure_G2_iw_ph_nfft         | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-hole channel.                                                                                                                 |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iwll_pp            | bool                                           | false                                            | Measure G^2(iomega,l,l\') within the particle-particle channel.                                                                                                                 |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -349,12 +363,12 @@ c.add_member(c_name = "measure_G2_tau",
              initializer = """ false """,
              doc = """Measure G^4(tau,tau\',tau\'\') with three fermionic times.""")
 
-c.add_member(c_name = "measure_G2_iw_nfft",
+c.add_member(c_name = "measure_G2_iw",
              c_type = "bool",
              initializer = """ false """,
              doc = """Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.""")
 
-c.add_member(c_name = "measure_G2_iw",
+c.add_member(c_name = "measure_G2_iw_nfft",
              c_type = "bool",
              initializer = """ false """,
              doc = """Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.""")
@@ -364,7 +378,17 @@ c.add_member(c_name = "measure_G2_iw_pp",
              initializer = """ false """,
              doc = """Measure G^4(iomega,inu,inu\') within the particle-particle channel.""")
 
+c.add_member(c_name = "measure_G2_iw_pp_nfft",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = """Measure G^4(iomega,inu,inu\') within the particle-particle channel.""")
+
 c.add_member(c_name = "measure_G2_iw_ph",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = """Measure G^4(iomega,inu,inu\') within the particle-hole channel.""")
+
+c.add_member(c_name = "measure_G2_iw_ph_nfft",
              c_type = "bool",
              initializer = """ false """,
              doc = """Measure G^4(iomega,inu,inu\') within the particle-hole channel.""")

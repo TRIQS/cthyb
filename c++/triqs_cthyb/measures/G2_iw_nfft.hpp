@@ -46,9 +46,6 @@ namespace triqs_cthyb {
     using M_block_type = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
     using M_type       = M_block_type::g_t;
 
-    inline void accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ab, M_type const &M_cd);
-    inline void accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ad, M_type const &M_cb);
-
     qmc_data const &data;
     G2_iw_t::view_type G2_iw;
     mc_weight_t average_sign;

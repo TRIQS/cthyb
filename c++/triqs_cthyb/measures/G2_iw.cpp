@@ -22,6 +22,7 @@
 #include <boost/math/constants/constants.hpp>
 
 #include "./G2_iw.hpp"
+#include "./G2_iw_acc.hpp"
 
 namespace triqs_cthyb {
 
@@ -54,6 +55,7 @@ namespace triqs_cthyb {
 
     // Allocate temporary two-frequency matrix M
     {
+      /*
       int nfreq = std::max(3 * n_fermionic, n_bosonic + n_fermionic);
       gf_mesh<imfreq> iw_mesh_large{beta, Fermion, nfreq};
       //gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh{iw_mesh_large, iw_mesh_large};
@@ -63,40 +65,39 @@ namespace triqs_cthyb {
         gf_mesh<imfreq> iw_mesh_small{beta, Fermion, n_fermionic};
         M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh_large, iw_mesh_small};
       }
+      */
+      
+      if (Channel == G2_channel::AllFermionic) { // Smaller mesh possible in AllFermionic
+	gf_mesh<imfreq> iw_mesh_large{beta, Fermion, 3 * n_fermionic};
+        gf_mesh<imfreq> iw_mesh_small{beta, Fermion, n_fermionic};
+        M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh_large, iw_mesh_small};
+      } else {
+	int nfreq = n_bosonic + n_fermionic;
+	gf_mesh<imfreq> iw_mesh{beta, Fermion, nfreq};
+        M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh, iw_mesh};
+      }
 
       // Initialize intermediate scattering matrix
       M = block_gf{M_mesh, G2_measures.gf_struct};
 
+      // Accumulation buffer for scattering matrix
       for (auto const &m : M) {
-        auto norb1        = static_cast<size_t>(m.target_shape()[0]);
-        auto norb2        = static_cast<size_t>(m.target_shape()[1]);
+        auto norb1       = static_cast<size_t>(m.target_shape()[0]);
+        auto norb2       = static_cast<size_t>(m.target_shape()[1]);
         size_t nfreq_pts = static_cast<size_t>(std::get<0>(M_mesh.components()).full_size());
-        M_block_arr.push_back(array<std::complex<double>, 4>{norb1, norb2, nfreq_pts, nfreq_pts});
+        M_block_arr.push_back(M_arr_t{norb1, norb2, nfreq_pts, nfreq_pts});
       }
     }
   }
-
-  namespace {
-
-    // Index placeholders
-    clef::placeholder<0> i;
-    clef::placeholder<1> j;
-    clef::placeholder<2> k;
-    clef::placeholder<3> l;
-
-    // Frequency placeholders
-    clef::placeholder<4> w;
-    clef::placeholder<5> n1;
-    clef::placeholder<6> n2;
-    clef::placeholder<7> n3;
-
-  } // namespace
 
   template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate(mc_weight_t s) {
 
     s *= data.atomic_reweighting;
     average_sign += s;
 
+    // ---------------------------------------------------------------
+    // Base line scattering matrix computation in two frequencies
+    /*
     auto M_ww_fill = [this](det_type const &det, M_t &M_ww) {
       const double beta = this->data.config.beta();
       foreach (det, [&M_ww, beta](op_t const &x, op_t const &y, det_scalar_t M_xy) {
@@ -104,73 +105,80 @@ namespace triqs_cthyb {
         double t1 = double(x.first);
         double t2 = double(y.first);
 
-        for (auto const & [ w1, w2 ] : M_ww.mesh()) {
-	  M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * exp(t2 * w2);
-	}
+        for (auto const & [ w1, w2 ] : M_ww.mesh()) { M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * exp(t2 * w2); }
       })
         ;
     };
 
     {
-    timer_M_ww_fill.start();
-    // Intermediate M matrices for all blocks
-    M() = 0;
-    for (auto bidx : range(M.size())) { M_ww_fill(data.dets[bidx], M[bidx]); }
-    timer_M_ww_fill.stop();
+      timer_M_ww_fill.start();
+      // Intermediate M matrices for all blocks
+      M() = 0;
+      for (auto bidx : range(M.size())) { M_ww_fill(data.dets[bidx], M[bidx]); }
+      timer_M_ww_fill.stop();
     }
-    
-    // ========================================================
+    */
+    // ---------------------------------------------------------------
+    // Scattering matrix accumulation with minimal exponent evaluations
+    // using product relations for imaginary time + frequenc exponents
 
-    const double beta = data.config.beta();
+    const double beta    = data.config.beta();
     const double pi_beta = boost::math::constants::pi<double>() / beta;
-    
-    auto M_arr_fill = [pi_beta, beta](det_type const &det, M_arr_t &M_arr, M_mesh_t const & M_mesh) {
+
+    auto M_arr_fill = [pi_beta, beta](det_type const &det, M_arr_t &M_arr, M_mesh_t const &M_mesh) {
       foreach (det, [&M_mesh, &M_arr, pi_beta, beta](op_t const &x, op_t const &y, det_scalar_t M_xy) {
 
         double t1 = double(x.first);
         double t2 = double(y.first);
 
-	auto mesh1 = std::get<0>(M_mesh.components());
-	auto mesh2 = std::get<1>(M_mesh.components());
+        auto mesh1 = std::get<0>(M_mesh.components());
+        auto mesh2 = std::get<1>(M_mesh.components());
 
-	std::complex<double> dWt1(0., 2 * pi_beta * (beta - t1));
-	std::complex<double> dWt2(0., 2 * pi_beta * t2);
+        std::complex<double> dWt1(0., 2 * pi_beta * (beta - t1));
+        std::complex<double> dWt2(0., 2 * pi_beta * t2);
 
-	auto dexp1 = exp(dWt1);
-	auto dexp2 = exp(dWt2);
+        auto dexp1 = exp(dWt1);
+        auto dexp2 = exp(dWt2);
 
-	auto exp1 = exp(dWt1 * (mesh1.first_index() + 0.5));
-	
-	for (auto const i1 : range(M_arr.shape()[2]) ) {
+        auto exp1 = exp(dWt1 * (mesh1.first_index() + 0.5));
 
-	  auto exp2 = exp(dWt2 * (mesh2.first_index() + 0.5));
-	  auto exp1_M_xy = exp1 * M_xy;
+        for (auto const i1 : range(M_arr.shape()[2])) {
 
-	  for (auto const i2 : range(M_arr.shape()[3]) ) {
+          auto exp2      = exp(dWt2 * (mesh2.first_index() + 0.5));
+          auto exp1_M_xy = exp1 * M_xy;
 
-	    M_arr(x.second, y.second, i1, i2) += exp1_M_xy * exp2;
-	    exp2 *= dexp2;
-	    
-	  }
-	  exp1 *= dexp1;
-	}
-	
+          for (auto const i2 : range(M_arr.shape()[3])) {
+
+            M_arr(x.second, y.second, i1, i2) += exp1_M_xy * exp2;
+            exp2 *= dexp2;
+          }
+          exp1 *= dexp1;
+        }
+
       })
         ;
     };
 
     {
-    timer_M_arr_fill.start();
-    // Intermediate M matrices for all blocks
-    for (auto bidx : range(M_block_arr.size())) {
-      M_block_arr[bidx] *= 0;
-      M_arr_fill(data.dets[bidx], M_block_arr[bidx], M_mesh);
-    }
+      timer_M_arr_fill.start();
+      // Intermediate M matrices for all blocks
+      for (auto bidx : range(M_block_arr.size())) {
+        M_block_arr[bidx] *= 0;
+        M_arr_fill(data.dets[bidx], M_block_arr[bidx], M_mesh);
+      }
 
-    for (auto bidx : range(M_block_arr.size())) {
-      M[bidx].data()(n1, n2, i, j) << M_block_arr[bidx](i, j, n1, n2);
+      // Reshuffle the accumulated scattering matrix into a Green's function object
+      for (auto bidx : range(M_block_arr.size())) {
+	{
+	  clef::placeholder<0> n1;
+	  clef::placeholder<1> n2;
+	  clef::placeholder<2> i;
+	  clef::placeholder<3> j;
 
-      /*
+	  M[bidx].data()(n1, n2, i, j) << M_block_arr[bidx](i, j, n1, n2);
+	}
+
+        /*
       auto M_arr = M_block_arr[bidx];
 
       for (auto const a : range(M_arr.shape()[0]) )
@@ -180,115 +188,52 @@ namespace triqs_cthyb {
 	M[bidx].data()(w1, w2, a, b) = M_block_arr[bidx](a, b, w1, w2);
       //M[bidx][{w1, w2}](a, b) = M_block_arr[bidx](a, b, w1, w2);
       */
+      }
+
+      timer_M_arr_fill.stop();
     }
 
-    timer_M_arr_fill.stop();
-    }
-
-    // ========================================================
+    // ---------------------------------------------------------------
+    // Recombine products of scattering matrices
+    // to accumulate two particle quantities
+    
     {
       timer_MM_prod.start();
+
+      /*
+      for (auto &m : G2_measures()) {
+        auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
+        bool diag_block  = (m.b1.idx == m.b2.idx);
+        if (order == block_order::AABB || diag_block) accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+        if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      }
+      */
+
     for (auto &m : G2_measures()) {
       auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
       bool diag_block  = (m.b1.idx == m.b2.idx);
-      if (order == block_order::AABB || diag_block) accumulate_impl_AABB(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if(Channel == G2_channel::PH && m.target_shape[0] == 1) {
+	if (order == block_order::AABB || diag_block) accumulate_impl_AABB_opt<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA_opt<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      } else {
+      if (order == block_order::AABB || diag_block) accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      }
     }
+
+      
       timer_MM_prod.stop();
     }
-    
   }
-
-  // -- Particle-hole
-
-  template <>
-  inline void measure_G2_iw<G2_channel::PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
-  }
-
-  template <>
-  inline void measure_G2_iw<G2_channel::PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
-  }
-
-  // -- Particle-particle
-
-  template <>
-  inline void measure_G2_iw<G2_channel::PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
-  }
-
-  template <>
-  inline void measure_G2_iw<G2_channel::PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
-  }
-
-  // -- Fermionic
-
-  template <>
-  inline void measure_G2_iw<G2_channel::AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij,
-                                                                            M_t const &M_kl) {
-
-    int size_ij = M_ij.target_shape()[0];
-    int size_kl = M_kl.target_shape()[0];
-
-    auto const iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
-
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_ij))
-            for (int j : range(size_ij))
-              for (int k : range(size_kl))
-                for (int l : range(size_kl)) G2[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
-        }
-
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
-  }
-
-  template <>
-  inline void measure_G2_iw<G2_channel::AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il,
-                                                                            M_t const &M_kj) {
-
-    int size_il = M_il.target_shape()[0];
-    int size_kj = M_kj.target_shape()[0];
-
-    auto const iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
-
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_il))
-            for (int j : range(size_kj))
-              for (int k : range(size_kj))
-                for (int l : range(size_il)) G2[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
-        }
-
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
-  }
-
-  // --
 
   template <G2_channel Channel> void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);
     G2_iw        = mpi_all_reduce(G2_iw, com);
     G2_iw = G2_iw / (real(average_sign) * data.config.beta());
 
-    std::cout << "timer_M_arr_fill = " << double(timer_M_arr_fill) << "\n";    
-    std::cout << "timer_M_ww_fill = " << double(timer_M_ww_fill) << "\n";    
-    std::cout << "timer_MM_prod = " << double(timer_MM_prod) << "\n";    
+    std::cout << "timer_M_arr_fill = " << double(timer_M_arr_fill) << "\n";
+    std::cout << "timer_M_ww_fill = " << double(timer_M_ww_fill) << "\n";
+    std::cout << "timer_MM_prod = " << double(timer_MM_prod) << "\n";
   }
 
   template class measure_G2_iw<G2_channel::AllFermionic>;

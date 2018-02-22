@@ -286,7 +286,10 @@ namespace triqs_cthyb {
     // NFFT Matsubara frequency measures
 
     if (params.measure_G2_iw_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::AllFermionic>{G2_iw_nfft, data, G2_measures}, "G2_iw nfft fermionic measurement");
-
+    if (params.measure_G2_iw_pp_nfft)
+      qmc.add_measure(measure_G2_iw_nfft<G2_channel::PP>{G2_iw_pp_nfft, data, G2_measures}, "G2_iw_pp nfft particle-particle measurement");
+    if (params.measure_G2_iw_ph_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::PH>{G2_iw_ph_nfft, data, G2_measures}, "G2_iw_ph nfft particle-hole measurement");
+    
     if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
     if (params.measure_G2_iw_pp)
       qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");

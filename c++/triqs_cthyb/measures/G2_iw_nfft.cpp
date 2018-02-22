@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include "./G2_iw_nfft.hpp"
+#include "./G2_iw_acc.hpp"
 
 namespace triqs_cthyb {
 
@@ -52,14 +53,17 @@ namespace triqs_cthyb {
 
     // Allocate temporary NFFT two-frequency matrix M
     {
-      int nfreq = std::max(3 * n_fermionic, n_bosonic + n_fermionic);
-      gf_mesh<imfreq> iw_mesh_large{beta, Fermion, nfreq};
-      gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh{iw_mesh_large, iw_mesh_large};
+      gf_mesh<cartesian_product<imfreq, imfreq>> M_mesh;
 
       if (Channel == G2_channel::AllFermionic) { // Smaller mesh possible in AllFermionic
+	gf_mesh<imfreq> iw_mesh_large{beta, Fermion, 3 * n_fermionic};
         gf_mesh<imfreq> iw_mesh_small{beta, Fermion, n_fermionic};
         M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh_large, iw_mesh_small};
-      }
+      } else {
+	int nfreq = n_bosonic + n_fermionic;
+	gf_mesh<imfreq> iw_mesh{beta, Fermion, nfreq};
+        M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh, iw_mesh};
+      }      
 
       // Initialize intermediate scattering matrix
       M = make_block_gf(M_mesh, G2_measures.gf_struct);
@@ -77,6 +81,8 @@ namespace triqs_cthyb {
         array<int, 2> buf_sizes{M(bidx).target_shape()};
         buf_sizes() = buf_size;
 
+	std::cout << "bname = " << bname << " buf_size = " << buf_size << "\n";
+	
         M_nfft(bidx) = nfft_array_t<2, 2>(M(bidx).mesh(), M(bidx).data(), buf_sizes);
       }
     }
@@ -102,115 +108,27 @@ namespace triqs_cthyb {
       M_nfft(bidx).flush();
     }
 
+    /*
     for (auto &m : G2_measures()) {
       auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
       bool diag_block  = (m.b1.idx == m.b2.idx);
       if (order == block_order::AABB || diag_block) accumulate_impl_AABB(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
       if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
     }
+    */
+    
+    for (auto &m : G2_measures()) {
+      auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
+      bool diag_block  = (m.b1.idx == m.b2.idx);
+      if(Channel == G2_channel::PH && m.target_shape[0] == 1) {
+	if (order == block_order::AABB || diag_block) accumulate_impl_AABB_opt<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA_opt<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      } else {
+      if (order == block_order::AABB || diag_block) accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      }
+    }    
   }
-
-  namespace {
-
-    // Index placeholders
-    clef::placeholder<0> i;
-    clef::placeholder<1> j;
-    clef::placeholder<2> k;
-    clef::placeholder<3> l;
-
-    // Frequency placeholders
-    clef::placeholder<4> w;
-    clef::placeholder<5> n1;
-    clef::placeholder<6> n2;
-    clef::placeholder<7> n3;
-
-  } // namespace
-
-  // -- Particle-hole
-
-  template <>
-  inline void measure_G2_iw_nfft<G2_channel::PH>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
-                                                                       M_type const &M_kl) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
-  }
-
-  template <>
-  inline void measure_G2_iw_nfft<G2_channel::PH>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
-                                                                       M_type const &M_kj) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
-  }
-
-  // -- Particle-particle
-
-  template <>
-  inline void measure_G2_iw_nfft<G2_channel::PP>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
-                                                                       M_type const &M_kl) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
-  }
-
-  template <>
-  inline void measure_G2_iw_nfft<G2_channel::PP>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
-                                                                       M_type const &M_kj) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
-  }
-
-  // -- Fermionic
-
-  template <>
-  inline void measure_G2_iw_nfft<G2_channel::AllFermionic>::accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ij,
-                                                                                 M_type const &M_kl) {
-
-    int size_ij = M_ij.target_shape()[0];
-    int size_kl = M_kl.target_shape()[0];
-
-    auto const iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
-
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_ij))
-            for (int j : range(size_ij))
-              for (int k : range(size_kl))
-                for (int l : range(size_kl)) G2[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
-        }
-
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
-  }
-
-  template <>
-  inline void measure_G2_iw_nfft<G2_channel::AllFermionic>::accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_il,
-                                                                                 M_type const &M_kj) {
-
-    int size_il = M_il.target_shape()[0];
-    int size_kj = M_kj.target_shape()[0];
-
-    auto const iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
-
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_il))
-            for (int j : range(size_kj))
-              for (int k : range(size_kj))
-                for (int l : range(size_il)) G2[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
-        }
-
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
-  }
-
-  // --
 
   template <G2_channel Channel> void measure_G2_iw_nfft<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);

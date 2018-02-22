@@ -43,7 +43,6 @@
 #ifdef CTHYB_G2_NFFT
 #include "./measures/G2_tau.hpp"
 #include "./measures/G2_iw.hpp"
-#include "./measures/G2_iw_w0.hpp"
 #include "./measures/G2_iw_nfft.hpp"
 #include "./measures/G2_iwll.hpp"
 #endif
@@ -283,10 +282,6 @@ namespace triqs_cthyb {
 #ifdef CTHYB_G2_NFFT
     // Imaginary-time binning
     if (params.measure_G2_tau) qmc.add_measure(measure_G2_tau{G2_tau, data, G2_measures}, "G2_tau imaginary-time measurement");
-
-    // Matsubara frequency measures with zero bosonic transfer
-    
-    if (params.measure_G2_iw_ph_w0) qmc.add_measure(measure_G2_iw_w0<G2_channel::PH>{G2_iw_ph_w0, data, G2_measures}, "G2_iw_ph_w0 fermionic measurement");
 
     // NFFT Matsubara frequency measures
 

@@ -104,7 +104,6 @@ namespace triqs_cthyb {
     h5_write(grp, "measure_G2_iw_pp", sp.measure_G2_iw_pp);
     h5_write(grp, "measure_G2_iw_pp_nfft", sp.measure_G2_iw_pp_nfft);
     h5_write(grp, "measure_G2_iw_ph", sp.measure_G2_iw_ph);
-    h5_write(grp, "measure_G2_iw_ph_w0", sp.measure_G2_iw_ph_w0);
     h5_write(grp, "measure_G2_iw_ph_nfft", sp.measure_G2_iw_ph_nfft);
     h5_write(grp, "measure_G2_iwll_pp", sp.measure_G2_iwll_pp);
     h5_write(grp, "measure_G2_iwll_ph", sp.measure_G2_iwll_ph);
@@ -160,7 +159,6 @@ namespace triqs_cthyb {
     h5_read(grp, "measure_G2_iw_pp", sp.measure_G2_iw_pp);
     h5_read(grp, "measure_G2_iw_pp_nfft", sp.measure_G2_iw_pp_nfft);
     h5_read(grp, "measure_G2_iw_ph", sp.measure_G2_iw_ph);
-    h5_read(grp, "measure_G2_iw_ph_w0", sp.measure_G2_iw_ph_w0);
     h5_read(grp, "measure_G2_iw_ph_nfft", sp.measure_G2_iw_ph_nfft);
     h5_read(grp, "measure_G2_iwll_pp", sp.measure_G2_iwll_pp);
     h5_read(grp, "measure_G2_iwll_ph", sp.measure_G2_iwll_ph);

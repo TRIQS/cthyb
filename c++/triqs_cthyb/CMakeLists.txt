@@ -19,7 +19,6 @@ if(MeasureG2)
   list(APPEND LIBRARY_SOURCES
        measures/G2_tau.cpp
        measures/G2_iw.cpp
-       measures/G2_iw_w0.cpp
        measures/G2_iw_acc.cpp
        measures/G2_iw_nfft.cpp
        measures/G2_iwll.cpp

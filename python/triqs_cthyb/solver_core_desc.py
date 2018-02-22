@@ -87,11 +87,6 @@ c.add_member(c_name = "G2_iw_ph",
              read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
 
-c.add_member(c_name = "G2_iw_ph_w0",
-             c_type = "std::optional<G2_iw_t>",
-             read_only= False,
-             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
-
 c.add_member(c_name = "G2_iw_ph_nfft",
              c_type = "std::optional<G2_iw_t>",
              read_only= False,
@@ -179,8 +174,6 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 | measure_G2_iw_pp_nfft         | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-particle channel.                                                                                                             |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iw_ph              | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-hole channel.                                                                                                                 |
-+-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| measure_G2_iw_ph_w0           | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-hole channel.                                                                                                                 |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iw_ph_nfft         | bool                                           | false                                            | Measure G^4(iomega,inu,inu\') within the particle-hole channel.                                                                                                                 |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -391,11 +384,6 @@ c.add_member(c_name = "measure_G2_iw_pp_nfft",
              doc = """Measure G^4(iomega,inu,inu\') within the particle-particle channel.""")
 
 c.add_member(c_name = "measure_G2_iw_ph",
-             c_type = "bool",
-             initializer = """ false """,
-             doc = """Measure G^4(iomega,inu,inu\') within the particle-hole channel.""")
-
-c.add_member(c_name = "measure_G2_iw_ph_w0",
              c_type = "bool",
              initializer = """ false """,
              doc = """Measure G^4(iomega,inu,inu\') within the particle-hole channel.""")

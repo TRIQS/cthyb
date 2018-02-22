@@ -62,6 +62,11 @@ c.add_member(c_name = "G2_tau",
              read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` (three Fermionic imaginary times)""")
 
+c.add_member(c_name = "G2_iw_nfft",
+             c_type = "std::optional<G2_iw_t>",
+             read_only= False,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)""")
+
 c.add_member(c_name = "G2_iw",
              c_type = "std::optional<G2_iw_t>",
              read_only= True,
@@ -149,6 +154,8 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 | measure_G_l                   | bool                                           | false                                            | Measure G_l (Legendre)?                                                                                                                                                         |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_tau                | bool                                           | false                                            | Measure G^4(tau,tau\',tau\'\') with three fermionic times.                                                                                                                      |
++-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| measure_G2_iw_nfft            | bool                                           | false                                            | Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.                                                                                                                |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iw                 | bool                                           | false                                            | Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.                                                                                                                |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -341,6 +348,11 @@ c.add_member(c_name = "measure_G2_tau",
              c_type = "bool",
              initializer = """ false """,
              doc = """Measure G^4(tau,tau\',tau\'\') with three fermionic times.""")
+
+c.add_member(c_name = "measure_G2_iw_nfft",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = """Measure G^4(inu,inu\',inu\'\') with three fermionic frequencies.""")
 
 c.add_member(c_name = "measure_G2_iw",
              c_type = "bool",

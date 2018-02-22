@@ -2,7 +2,8 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2016, P. Seth, I. Krivenko, H. U.R. Strand, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,15 +23,10 @@
 
 #include <vector>
 #include <triqs/mpi/base.hpp>
-#include <triqs/statistics/histograms.hpp>
-#include <triqs/experimental/nfft_array.hpp>
+#include <triqs/utility/timer.hpp> // DEBUG
 
 #include "../qmc_data.hpp"
-
 #include "util.hpp"
-
-// DEBUG
-#include <triqs/utility/timer.hpp>
 
 namespace triqs_cthyb {
 
@@ -44,7 +40,6 @@ namespace triqs_cthyb {
   }
 
   using namespace triqs::arrays;
-  using namespace triqs::experimental;
   using namespace G2_iw;
 
   // Measure the two-particle Green's function in Matsubara frequency
@@ -67,9 +62,8 @@ namespace triqs_cthyb {
     M_mesh_t M_mesh;
     M_block_arr_t M_block_arr;
 
-    triqs::utility::timer timer_M_ww_fill;
-    triqs::utility::timer timer_M_arr_fill;
-    triqs::utility::timer timer_MM_prod;    
+    triqs::utility::timer timer_M;
+    triqs::utility::timer timer_G2;    
     
   };
 

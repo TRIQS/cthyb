@@ -101,6 +101,8 @@ namespace triqs_cthyb {
         ;
     };
 
+    timer_M.start();
+
     // Intermediate M matrices for all blocks
     M() = 0;
     for (auto bidx : range(M.size())) {
@@ -108,15 +110,9 @@ namespace triqs_cthyb {
       M_nfft(bidx).flush();
     }
 
-    /*
-    for (auto &m : G2_measures()) {
-      auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
-      bool diag_block  = (m.b1.idx == m.b2.idx);
-      if (order == block_order::AABB || diag_block) accumulate_impl_AABB(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-      if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-    }
-    */
-    
+    timer_M.stop();
+    timer_G2.start();
+
     for (auto &m : G2_measures()) {
       auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
       bool diag_block  = (m.b1.idx == m.b2.idx);
@@ -127,14 +123,20 @@ namespace triqs_cthyb {
       if (order == block_order::AABB || diag_block) accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
       if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
       }
-    }    
+    }
+    
+    timer_G2.stop();
   }
 
   template <G2_channel Channel> void measure_G2_iw_nfft<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);
     G2_iw        = mpi_all_reduce(G2_iw, com);
+    
     for (auto &g2_iw : G2_iw) g2_iw /= (real(average_sign) * data.config.beta());
     //G2_iw = G2_iw / (real(average_sign) * data.config.beta()); // This segfaults on triqs/unstable da793fbd
+
+    std::cout << "measure/G2_iw_nfft: timer_M  = " << double(timer_M) << "\n";
+    std::cout << "measure/G2_iw_nfft: timer_G2 = " << double(timer_G2) << "\n";
   }
 
   template class measure_G2_iw_nfft<G2_channel::AllFermionic>;

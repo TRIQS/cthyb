@@ -22,11 +22,10 @@
 
 #include <vector>
 #include <triqs/mpi/base.hpp>
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/utility/timer.hpp> // DEBUG
 #include <triqs/experimental/nfft_array.hpp>
 
 #include "../qmc_data.hpp"
-
 #include "util.hpp"
 
 namespace triqs_cthyb {
@@ -54,6 +53,9 @@ namespace triqs_cthyb {
 
     M_block_type M;
     array<nfft_array_t<2, 2>, 1> M_nfft;
+
+    triqs::utility::timer timer_M;
+    triqs::utility::timer timer_G2;    
   };
 
 } // namespace triqs_cthyb

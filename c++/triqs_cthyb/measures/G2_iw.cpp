@@ -2,7 +2,8 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2016, P. Seth, I. Krivenko, H. U.R. Strand, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -149,7 +150,8 @@ namespace triqs_cthyb {
     };
 
     {
-      timer_M_arr_fill.start();
+      timer_M.start();
+
       // Intermediate M matrices for all blocks
       for (auto bidx : range(M_block_arr.size())) {
         M_block_arr[bidx] *= 0;
@@ -168,7 +170,7 @@ namespace triqs_cthyb {
         }
       }
 
-      timer_M_arr_fill.stop();
+      timer_M.stop();
     }
 
     // ---------------------------------------------------------------
@@ -176,7 +178,7 @@ namespace triqs_cthyb {
     // to accumulate two particle quantities
 
     {
-      timer_MM_prod.start();
+      timer_G2.start();
 
       for (auto &m : G2_measures()) {
         auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
@@ -200,18 +202,18 @@ namespace triqs_cthyb {
         }
       }
 
-      timer_MM_prod.stop();
+      timer_G2.stop();
     }
   }
 
   template <G2_channel Channel> void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
+
     average_sign = mpi_all_reduce(average_sign, com);
     G2_iw        = mpi_all_reduce(G2_iw, com);
     G2_iw = G2_iw / (real(average_sign) * data.config.beta());
 
-    std::cout << "timer_M_arr_fill = " << double(timer_M_arr_fill) << "\n";
-    std::cout << "timer_M_ww_fill = " << double(timer_M_ww_fill) << "\n";
-    std::cout << "timer_MM_prod = " << double(timer_MM_prod) << "\n";
+    std::cout << "measure/G2_iw: timer_M  = " << double(timer_M) << "\n";
+    std::cout << "measure/G2_iw: timer_G2 = " << double(timer_G2) << "\n";
   }
 
   template class measure_G2_iw<G2_channel::AllFermionic>;

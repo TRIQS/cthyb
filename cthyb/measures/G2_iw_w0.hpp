@@ -32,7 +32,7 @@
 // DEBUG
 #include <triqs/utility/timer.hpp>
 
-namespace triqs_cthyb {
+namespace cthyb {
 
   namespace G2_iw {
     using M_block_t = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
@@ -80,4 +80,4 @@ namespace triqs_cthyb {
     
   };
 
-} // namespace triqs_cthyb
+} // namespace cthyb

@@ -19,12 +19,12 @@
  *
  ******************************************************************************/
 
-#include <boost/math/constants/constants.hpp>
-
 #include "./G2_iw.hpp"
 #include "./G2_iw_acc.hpp"
 
-namespace triqs_cthyb {
+#include <boost/math/constants/constants.hpp>
+
+namespace cthyb {
 
   template <G2_channel Channel>
   measure_G2_iw<Channel>::measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures)
@@ -78,7 +78,7 @@ namespace triqs_cthyb {
       }
 
       // Initialize intermediate scattering matrix
-      M = block_gf{M_mesh, G2_measures.gf_struct};
+      M = make_block_gf(M_mesh, G2_measures.gf_struct);
 
       // Accumulation buffer for scattering matrix
       for (auto const &m : M) {
@@ -268,7 +268,8 @@ namespace triqs_cthyb {
   template <G2_channel Channel> void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
     average_sign = mpi_all_reduce(average_sign, com);
     G2_iw        = mpi_all_reduce(G2_iw, com);
-    G2_iw = G2_iw / (real(average_sign) * data.config.beta());
+    for (auto &g2_iw : G2_iw) g2_iw /= (real(average_sign) * data.config.beta());
+    // G2_iw = G2_iw / (real(average_sign) * data.config.beta()); // This segfaults on triqs/unstable da793fbd
 
     std::cout << "timer_M_arr_fill = " << double(timer_M_arr_fill) << "\n";
     std::cout << "timer_M_ww_fill = " << double(timer_M_ww_fill) << "\n";
@@ -279,4 +280,4 @@ namespace triqs_cthyb {
   template class measure_G2_iw<G2_channel::PP>;
   template class measure_G2_iw<G2_channel::PH>;
 
-} // namespace triqs_cthyb
+} // namespace cthyb

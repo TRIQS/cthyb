@@ -126,128 +126,20 @@ namespace triqs_cthyb {
     
     auto M_arr_fill = [pi_beta, beta](det_type const &det, M_arr_t &M_arr, M_mesh_t const & M_mesh) {
       foreach (det, [&M_mesh, &M_arr, pi_beta, beta](op_t const &x, op_t const &y, det_scalar_t M_xy) {
-        // insert accumulation
+
         double t1 = double(x.first);
         double t2 = double(y.first);
-
-	/*
-	int npts1 = M_arr.shape()[2];
-	int npts2 = M_arr.shape()[3];
-
-	auto mesh_f = std::get<0>(M_mesh.components());
-	
-        for (auto const i1 : range(npts1) ) {
-	  //int idx1 = i1 - npts1;
-          //std::complex<double> w1(0., pi_beta * (2 * idx1 + 1));
-	  
-	  auto w1 = mesh_f.index_to_point(mesh_f.linear_to_index(i1));
-
-	  //std::cout << "i1, w1 = " << i1 << ", " << w1 << "\n";
-	  
-	  std::complex<double> exp1(exp((beta - t1) * w1));
-
-	  for (auto const i2 : range(npts2) ) {
-
-	    //int idx2 = i2 - npts2;
-	    //std::complex<double> w2(0., pi_beta * (2 * idx2 + 1));
-
-	    auto w2 = mesh_f.index_to_point(mesh_f.linear_to_index(i2));
-            std::complex<double> exp2(exp(t2 * w2));
-
-            M_arr(x.second, y.second, i1, i2) += exp1 * M_xy * exp2;
-          }
-        }
-	*/
-
-	/*
-	for ( auto const & [w1, w2] : M_mesh ) {
-	  M_arr(x.second, y.second, w1.linear_index(), w2.linear_index()) += exp((beta - t1) * w1) * M_xy * exp(t2 * w2);
-	}
-	*/
-
-	/*
-	auto mesh1 = std::get<0>(M_mesh.components());
-	auto mesh2 = std::get<1>(M_mesh.components());
-	
-	for ( auto const & [w1, w2] : M_mesh ) {
-	  int i1 = w1.linear_index();
-	  int i2 = w2.linear_index();
-
-	  int idx1 = i1 + mesh1.first_index();
-          std::complex<double> W1(0., pi_beta * (2 * idx1 + 1));
-
-	  int idx2 = i2 + mesh2.first_index();
-	  std::complex<double> W2(0., pi_beta * (2 * idx2 + 1));
-
-	  if( std::abs(W1 - w1) > 1e-9) {
-	  std::cout << "i1, i1_ref, idx1, idx1_ref, w1, W1 = " << i1 << ", " << w1.linear_index() << ", "
-	  	    << idx1 << ", " << w1.index() << ", " << w1 << ", " << W1 << ", " << w1 - W2 << "\n";
-	  }
-	  
-	  if( std::abs(W2 - w2) > 1e-9 )
-	  std::cout << "i2, i2_ref, idx2, idx2_ref, w2, W2 = " << i2 << ", " << w2.linear_index() << ", "
-	  	    << idx2 << ", " << w2.index() << ", " << w2 << ", " << W2 << ", " << w2 - W2 << "\n";
-	  
-	  
-	  M_arr(x.second, y.second, i1, i2) += exp((beta - t1) * W1) * M_xy * exp(t2 * W2);
-	  
-	  //M_arr(x.second, y.second, i1, i2) += exp((beta - t1) * w1) * M_xy * exp(t2 * w2);
-	  
-	}
-	*/
-
-	/*
-	auto mesh1 = std::get<0>(M_mesh.components());
-	auto mesh2 = std::get<1>(M_mesh.components());
-
-	for (auto const i1 : range(M_arr.shape()[2]) ) {
-
-	  int idx1 = i1 + mesh1.first_index();
-          std::complex<double> W1(0., pi_beta * (2 * idx1 + 1));
-
-	  for (auto const i2 : range(M_arr.shape()[3]) ) {
-	    
-	    int idx2 = i2 + mesh2.first_index();
-	    std::complex<double> W2(0., pi_beta * (2 * idx2 + 1));
-
-	    M_arr(x.second, y.second, i1, i2) += exp((beta - t1) * W1) * M_xy * exp(t2 * W2);
-	    
-	  }
-	}
-
-	*/
-
-	/*
-	auto mesh1 = std::get<0>(M_mesh.components());
-	auto mesh2 = std::get<1>(M_mesh.components());
-
-	for (auto const i1 : range(M_arr.shape()[2]) ) {
-
-	  int idx1 = i1 + mesh1.first_index();
-          std::complex<double> W1(0., pi_beta * (2 * idx1 + 1));
-	  auto exp1 = exp((beta - t1) * W1);
-
-	  for (auto const i2 : range(M_arr.shape()[3]) ) {
-	    
-	    int idx2 = i2 + mesh2.first_index();
-	    std::complex<double> W2(0., pi_beta * (2 * idx2 + 1));
-	    auto exp2 = exp(t2 * W2);
-
-	    M_arr(x.second, y.second, i1, i2) += exp1 * M_xy * exp2;
-	    
-	  }
-	}
-	*/
 
 	auto mesh1 = std::get<0>(M_mesh.components());
 	auto mesh2 = std::get<1>(M_mesh.components());
 
 	std::complex<double> dWt1(0., 2 * pi_beta * (beta - t1));
-	auto dexp1 = exp(dWt1);
-	auto exp1 = exp(dWt1 * (mesh1.first_index() + 0.5));
-	
 	std::complex<double> dWt2(0., 2 * pi_beta * t2);
+
+	auto dexp1 = exp(dWt1);
 	auto dexp2 = exp(dWt2);
+
+	auto exp1 = exp(dWt1 * (mesh1.first_index() + 0.5));
 	
 	for (auto const i1 : range(M_arr.shape()[2]) ) {
 
@@ -255,8 +147,10 @@ namespace triqs_cthyb {
 	  auto exp1_M_xy = exp1 * M_xy;
 
 	  for (auto const i2 : range(M_arr.shape()[3]) ) {
+
 	    M_arr(x.second, y.second, i1, i2) += exp1_M_xy * exp2;
-	    exp2 *= dexp2;	    
+	    exp2 *= dexp2;
+	    
 	  }
 	  exp1 *= dexp1;
 	}
@@ -284,8 +178,8 @@ namespace triqs_cthyb {
       for (auto const w1 : range(M_arr.shape()[2]) )
       for (auto const w2 : range(M_arr.shape()[3]) )
 	M[bidx].data()(w1, w2, a, b) = M_block_arr[bidx](a, b, w1, w2);
-      */
       //M[bidx][{w1, w2}](a, b) = M_block_arr[bidx](a, b, w1, w2);
+      */
     }
 
     timer_M_arr_fill.stop();

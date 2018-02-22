@@ -132,6 +132,9 @@ namespace triqs_cthyb {
     bool measure_G2_iw_ph = false;
 
     /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
+    bool measure_G2_iw_ph_w0 = false;
+
+    /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
     bool measure_G2_iw_ph_nfft = false;
     
     /// Measure G^2(iomega,l,l') within the particle-particle channel.

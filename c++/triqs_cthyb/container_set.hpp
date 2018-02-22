@@ -62,6 +62,9 @@ namespace triqs_cthyb {
     std::optional<G2_iw_t> G2_iw_ph;
 
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel (one bosonic matsubara and two fermionic)
+    std::optional<G2_iw_t> G2_iw_ph_w0;
+
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel (one bosonic matsubara and two fermionic)
     std::optional<G2_iw_t> G2_iw_ph_nfft;
 
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel (one bosonic matsubara and two legendre)

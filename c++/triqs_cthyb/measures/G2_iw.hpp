@@ -39,14 +39,8 @@ namespace triqs_cthyb {
     using M_t       = M_block_t::g_t;
     using M_mesh_t = M_block_t::g_t::mesh_t;
 
-    using M_diag_block_t = block_gf<imfreq, matrix_valued>;
-    using M_diag_t = M_diag_block_t::g_t;
-    
     using M_arr_t = array<std::complex<double>, 4>;
     using M_block_arr_t = std::vector<M_arr_t>;
-
-    using M_diag_arr_t = array<std::complex<double>, 3>;
-    using M_diag_block_arr_t = std::vector<M_diag_arr_t>;
   }
 
   using namespace triqs::arrays;
@@ -72,7 +66,6 @@ namespace triqs_cthyb {
     M_block_t M;
     M_mesh_t M_mesh;
     M_block_arr_t M_block_arr;
-    M_diag_block_arr_t M_diag_block_arr;
 
     triqs::utility::timer timer_M_ww_fill;
     triqs::utility::timer timer_M_arr_fill;

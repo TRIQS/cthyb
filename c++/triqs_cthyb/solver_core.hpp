@@ -104,11 +104,12 @@ namespace triqs_cthyb {
     std::vector<matrix<dcomplex>> Delta_infty() { return Delta_infty_vec; }
 
     /// Get a copy of the last container set.
-
     // HACK TO GET CPP2PY TO WRAP THE container_set_t struct.
+    /*
     CPP2PY_ARG_AS_DICT
     void set_container_set(container_set_t &cs) { static_cast<container_set_t &>(*this) = cs; }
     container_set_t last_container_set() { return static_cast<container_set_t>(*this); }
+    */
     
     /// :math:`\Delta(\tau)` in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }

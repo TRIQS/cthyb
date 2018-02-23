@@ -30,12 +30,7 @@ sp = dict(
     move_double = False,
     )
     
-print type(sp['h_int'])
 solver.solve(**sp)
-
-sp = solver.last_solve_parameters
-cp = solver.last_constr_parameters
-cs = solver.last_container_set
 
 filename = 'h5_read_write.h5'
 
@@ -45,11 +40,20 @@ with HDFArchive(filename, 'w') as A:
 with HDFArchive(filename, 'r') as A:
     solver_ref = A['solver']
 
-cp_h5_ref = solver_ref.last_constr_parameters
-sp_h5_ref = solver_ref.last_solve_parameters
-cs_h5_ref = solver_ref.last_container_set
+assert( solver.last_constr_parameters == solver_ref.last_constr_parameters )
+assert( solver.last_solve_parameters == solver.last_solve_parameters )
+#assert( solver.last_container_set == solver_ref.last_container_set ) # want to write this
 
-assert( cp_h5_ref == cp )
-assert( sp_h5_ref == sp )
-assert( cs_h5_ref == cs )
+# -- Poor mans version of comparison of the container sets
+for key in dir(solver_ref):
+    if 'G' in key or 'Delta' in key:
+        print 'comparing', key
+        
+        val = getattr(solver, key)
+        val_ref = getattr(solver_ref, key)
 
+        if val is None:
+            assert( val == val_ref )
+        else:
+            for (n1, g1), (n1, g2) in zip(val, val_ref):
+                np.testing.assert_array_almost_equal(g1.data, g2.data)

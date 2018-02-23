@@ -212,8 +212,10 @@ namespace triqs_cthyb {
     G2_iw        = mpi_all_reduce(G2_iw, com);
     G2_iw = G2_iw / (real(average_sign) * data.config.beta());
 
-    std::cout << "measure/G2_iw: timer_M  = " << double(timer_M) << "\n";
-    std::cout << "measure/G2_iw: timer_G2 = " << double(timer_G2) << "\n";
+    if(triqs::mpi::communicator().rank() == 0) {
+      std::cout << "measure/G2_iw: timer_M  = " << double(timer_M) << "\n";
+      std::cout << "measure/G2_iw: timer_G2 = " << double(timer_G2) << "\n";
+    }
   }
 
   template class measure_G2_iw<G2_channel::AllFermionic>;

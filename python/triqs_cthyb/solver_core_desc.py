@@ -24,7 +24,6 @@ module.add_preamble("""
 #include <cpp2py/converters/string.hpp>
 #include <cpp2py/converters/variant.hpp>
 #include <cpp2py/converters/vector.hpp>
-#include <triqs/cpp2py_converters/arrays.hpp>
 #include <triqs/cpp2py_converters/gf.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 #include <triqs/cpp2py_converters/h5.hpp>
@@ -193,6 +192,36 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 | imag_threshold                | double                                         | 1.e-15                                           | Threshold below which imaginary components of Delta and h_loc are set to zero                                                                                                   |
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 """)
+
+c.add_method("""void set_container_set (**cthyb::container_set_t)""",
+             doc = """Get a copy of the last container set.
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| Parameter Name | Type                            | Default | Documentation                                                                                                                       |
++================+=================================+=========+=====================================================================================================================================+
+| G_tau          | std::optional<G_tau_t>          |         | Single-particle Green\'s function :math:`G(\\tau)` in imaginary time.                                                               |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G_tau_accum    | std::optional<G_tau_G_target_t> |         | Intermediate Green\'s function to accumulate g(tau), either real or complex                                                         |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G_l            | std::optional<G_l_t>            |         | Single-particle Green\'s function :math:`G_l` in Legendre polynomial representation.                                                |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_tau         | std::optional<G2_tau_t>         |         | Two-particle Green\'s function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` (three Fermionic imaginary times)                           |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iw          | std::optional<G2_iw_t>          |         | Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)                               |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iw_nfft     | std::optional<G2_iw_t>          |         | Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)                               |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iw_pp       | std::optional<G2_iw_t>          |         | Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)  |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iw_pp_nfft  | std::optional<G2_iw_t>          |         | Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)  |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iw_ph       | std::optional<G2_iw_t>          |         | Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)  |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iw_ph_nfft  | std::optional<G2_iw_t>          |         | Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)  |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iwll_pp     | std::optional<G2_iwll_t>        |         | Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the pp-channel (one bosonic matsubara and two legendre)           |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+
+| G2_iwll_ph     | std::optional<G2_iwll_t>        |         | Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)           |
++----------------+---------------------------------+---------+-------------------------------------------------------------------------------------------------------------------------------------+""")
 
 c.add_method("""std::string hdf5_scheme ()""",
              is_static = True,
@@ -446,6 +475,73 @@ c.add_member(c_name = "imag_threshold",
              c_type = "double",
              initializer = """ 1.e-15 """,
              doc = """Threshold below which imaginary components of Delta and h_loc are set to zero""")
+
+module.add_converter(c)
+
+# Converter for container_set_t
+c = converter_(
+        c_type = "cthyb::container_set_t",
+        doc = """""",
+)
+c.add_member(c_name = "G_tau",
+             c_type = "std::optional<G_tau_t>",
+             initializer = """  """,
+             doc = """Single-particle Green\'s function :math:`G(\\tau)` in imaginary time.""")
+
+c.add_member(c_name = "G_tau_accum",
+             c_type = "std::optional<G_tau_G_target_t>",
+             initializer = """  """,
+             doc = """Intermediate Green\'s function to accumulate g(tau), either real or complex""")
+
+c.add_member(c_name = "G_l",
+             c_type = "std::optional<G_l_t>",
+             initializer = """  """,
+             doc = """Single-particle Green\'s function :math:`G_l` in Legendre polynomial representation.""")
+
+c.add_member(c_name = "G2_tau",
+             c_type = "std::optional<G2_tau_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(\\tau_1,\\tau_2,\\tau_3)` (three Fermionic imaginary times)""")
+
+c.add_member(c_name = "G2_iw",
+             c_type = "std::optional<G2_iw_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)""")
+
+c.add_member(c_name = "G2_iw_nfft",
+             c_type = "std::optional<G2_iw_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)""")
+
+c.add_member(c_name = "G2_iw_pp",
+             c_type = "std::optional<G2_iw_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)""")
+
+c.add_member(c_name = "G2_iw_pp_nfft",
+             c_type = "std::optional<G2_iw_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)""")
+
+c.add_member(c_name = "G2_iw_ph",
+             c_type = "std::optional<G2_iw_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
+
+c.add_member(c_name = "G2_iw_ph_nfft",
+             c_type = "std::optional<G2_iw_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
+
+c.add_member(c_name = "G2_iwll_pp",
+             c_type = "std::optional<G2_iwll_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the pp-channel (one bosonic matsubara and two legendre)""")
+
+c.add_member(c_name = "G2_iwll_ph",
+             c_type = "std::optional<G2_iwll_t>",
+             initializer = """  """,
+             doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)""")
 
 module.add_converter(c)
 

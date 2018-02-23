@@ -23,10 +23,7 @@ from pytriqs.utility import mpi
 # ----------------------------------------------------------------------
 
 from pyed.TriqsExactDiagonalization import TriqsExactDiagonalization
-
-# ----------------------------------------------------------------------
-
-from brew_dmft.ParameterCollection import ParameterCollection
+from pyed.ParameterCollection import ParameterCollection
 
 # ----------------------------------------------------------------------
 def make_calc(beta=2.0, h_field=0.0):

@@ -25,12 +25,42 @@ namespace triqs_cthyb {
 
   /// Function that writes all containers to hdf5 file
   void h5_write(triqs::h5::group h5group, std::string subgroup_name, container_set_t const &c) {
+
     triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
+
+    h5_write(grp, "G_tau", c.G_tau);
+    h5_write(grp, "G_tau_accum", c.G_tau_accum);
+    h5_write(grp, "G_l", c.G_l);
+
+    h5_write(grp, "G2_tau", c.G2_tau);
+    h5_write(grp, "G2_iw", c.G2_iw);
+    h5_write(grp, "G2_iw_nfft", c.G2_iw_nfft);
+    h5_write(grp, "G2_iw_pp", c.G2_iw_pp);
+    h5_write(grp, "G2_iw_pp_nfft", c.G2_iw_pp_nfft);
+    h5_write(grp, "G2_iw_ph", c.G2_iw_ph);
+    h5_write(grp, "G2_iw_ph_nfft", c.G2_iw_ph_nfft);
+    h5_write(grp, "G2_iwll_pp", c.G2_iwll_pp);
+    h5_write(grp, "G2_iwll_ph", c.G2_iwll_ph);
   }
 
   /// Function that reads all containers to hdf5 file
   void h5_read(triqs::h5::group h5group, std::string subgroup_name, container_set_t &c) {
+
     triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
+
+    h5_read(grp, "G_tau", c.G_tau);
+    h5_read(grp, "G_tau_accum", c.G_tau_accum);
+    h5_read(grp, "G_l", c.G_l);
+
+    h5_read(grp, "G2_tau", c.G2_tau);
+    h5_read(grp, "G2_iw", c.G2_iw);
+    h5_read(grp, "G2_iw_nfft", c.G2_iw_nfft);
+    h5_read(grp, "G2_iw_pp", c.G2_iw_pp);
+    h5_read(grp, "G2_iw_pp_nfft", c.G2_iw_pp_nfft);
+    h5_read(grp, "G2_iw_ph", c.G2_iw_ph);
+    h5_read(grp, "G2_iw_ph_nfft", c.G2_iw_ph_nfft);
+    h5_read(grp, "G2_iwll_pp", c.G2_iwll_pp);
+    h5_read(grp, "G2_iwll_ph", c.G2_iwll_ph);
   }
 
 } // namespace triqs_cthyb

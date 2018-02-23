@@ -35,6 +35,7 @@ solver.solve(**sp)
 
 sp = solver.last_solve_parameters
 cp = solver.last_constr_parameters
+cs = solver.last_container_set
 
 filename = 'h5_read_write.h5'
 
@@ -46,6 +47,9 @@ with HDFArchive(filename, 'r') as A:
 
 cp_h5_ref = solver_ref.last_constr_parameters
 sp_h5_ref = solver_ref.last_solve_parameters
+cs_h5_ref = solver_ref.last_container_set
 
 assert( cp_h5_ref == cp )
 assert( sp_h5_ref == sp )
+assert( cs_h5_ref == cs )
+

@@ -141,6 +141,7 @@ namespace triqs_cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
+    CPP2PY_IGNORE
     static std::string hdf5_scheme() { return "CTHYB_SolverCore"; }
 
     // Function that writes the solver_core to hdf5 file

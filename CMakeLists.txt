@@ -101,3 +101,18 @@ if(BUILD_DEBIAN_PACKAGE)
   SET(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   INCLUDE(CPack)
 endif()
+
+#--------------------------------------------------------
+#   Remind the user how to set up his/her variables
+#--------------------------------------------------------
+
+# Configure and install the file to source to setup the environment variables 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cthybvars.sh.in ${CMAKE_CURRENT_BINARY_DIR}/cthybvars.sh @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cthybvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
+
+MESSAGE(STATUS "***************************************************************")
+MESSAGE(STATUS "* Use :                                                        ")
+MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/cthybvars.sh          ")
+MESSAGE(STATUS "*                                                              ") 
+MESSAGE(STATUS "*   to set up the environment variables                        ") 
+MESSAGE(STATUS "***************************************************************")

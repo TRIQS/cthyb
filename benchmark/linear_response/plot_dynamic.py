@@ -13,11 +13,11 @@ from pytriqs.archive import HDFArchive
 from pytriqs.operators import n
 from pytriqs.operators.util.op_struct import set_operator_structure
 
-from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt     
+from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 
 # ----------------------------------------------------------------------
 
-from brew_dmft.ParameterCollection import ParameterCollection
+from pyed.ParameterCollection import ParameterCollection
 
 # ----------------------------------------------------------------------
 def calc_dynamic(plot=True):
@@ -83,13 +83,14 @@ def plot_dynamic(p):
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
 
-    #paths = glob.glob('pomerol_*')
-    paths = glob.glob('pomerol_nw8_beta0.1000*')
+    paths = glob.glob('pomerol_*')
+    #paths = glob.glob('pomerol_nw8_beta*')
+    #paths = glob.glob('pomerol_nw8_beta0.1000*')
 
     for path in paths:
         print '--> path:', path
         os.chdir(path)
-        calc_dynamic()
+        calc_dynamic(plot=False)
         os.chdir('../')
 
     plt.show()

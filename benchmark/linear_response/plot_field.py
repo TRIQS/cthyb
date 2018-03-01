@@ -17,7 +17,7 @@ from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 
 # ----------------------------------------------------------------------
 
-from brew_dmft.ParameterCollection import ParameterCollection
+from pyed.ParameterCollection import ParameterCollection
 
 # ----------------------------------------------------------------------
 def calc_field(plot=True):

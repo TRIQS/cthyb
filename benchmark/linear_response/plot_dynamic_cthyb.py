@@ -17,7 +17,7 @@ from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 
 # ----------------------------------------------------------------------
 
-from brew_dmft.ParameterCollection import ParameterCollection
+from pyed.ParameterCollection import ParameterCollection
 
 # ----------------------------------------------------------------------
 def calc_dynamic(plot=True):
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         print '--> path:', path
         if len(path) > 0:
             os.chdir(path)
-        calc_dynamic()
+        calc_dynamic(plot=True)
         if len(path) > 0:
             os.chdir('../')
 

@@ -26,7 +26,7 @@ from triqs_cthyb import Solver
 
 # ----------------------------------------------------------------------    
 
-from brew_dmft.ParameterCollection import ParameterCollection
+from pyed.ParameterCollection import ParameterCollection
 
 # ----------------------------------------------------------------------    
 def make_calc(nw=2, nc=1e5, beta=2.0, h_field=0.0, rand=1):

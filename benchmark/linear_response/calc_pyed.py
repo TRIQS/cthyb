@@ -79,11 +79,11 @@ def make_calc(beta=2.0, h_field=0.0):
     p.G_tau = BlockGf(name_list=[up,do], block_list=[g_tau]*2, make_copies=True)
     p.G_iw = BlockGf(name_list=[up,do], block_list=[g_iw]*2, make_copies=True)
     
-    ed.set_g2_tau(p.G_tau[up], c(up,0), c_dag(up,0))
-    ed.set_g2_tau(p.G_tau[do], c(do,0), c_dag(do,0))
+    ed.set_g2_tau(p.G_tau[up][0, 0], c(up,0), c_dag(up,0))
+    ed.set_g2_tau(p.G_tau[do][0, 0], c(do,0), c_dag(do,0))
 
-    ed.set_g2_iwn(p.G_iw[up], c(up,0), c_dag(up,0))
-    ed.set_g2_iwn(p.G_iw[do], c(do,0), c_dag(do,0))
+    ed.set_g2_iwn(p.G_iw[up][0, 0], c(up,0), c_dag(up,0))
+    ed.set_g2_iwn(p.G_iw[do][0, 0], c(do,0), c_dag(do,0))
 
     p.magnetization = ed.get_expectation_value(0.5 * mA)
     

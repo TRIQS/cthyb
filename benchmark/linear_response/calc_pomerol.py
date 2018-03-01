@@ -23,7 +23,7 @@ from pytriqs.utility import mpi
 # ----------------------------------------------------------------------
 
 from pomerol2triqs import PomerolED
-from brew_dmft.ParameterCollection import ParameterCollection
+from pyed.ParameterCollection import ParameterCollection
 
 # ----------------------------------------------------------------------
 def make_calc(nw=10, beta=2.0, h_field=0.0):

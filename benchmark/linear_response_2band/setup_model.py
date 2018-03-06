@@ -1,9 +1,11 @@
   
-""" Test calculation for Hubbard atom with two bath sites.
+""" Test calculation for two-band Hubbard atom with two bath sites.
 
-Author: Hugo U.R. Strand (2017) hugo.strand@gmail.com
+A unitary transformed impurity model is also constructed with
+off diagonal hybridization terms, inorder to be able to sample
+all components of the two-particle Green's function using cthyb
 
- """ 
+Author: Hugo U.R. Strand (2018) hugo.strand@gmail.com """ 
 
 # ----------------------------------------------------------------------
 
@@ -90,7 +92,7 @@ if __name__ == '__main__':
 
     # -- Unitary transform
 
-    if False: 
+    if False:
         from scipy.stats import unitary_group, ortho_group
         np.random.seed(seed=233423) # -- Reproducible "randomness"
         p.T = unitary_group.rvs(4) # General complex unitary transf
@@ -130,15 +132,7 @@ if __name__ == '__main__':
         ('1', 2) : ('bath', 1, 'up'),
         ('1', 3) : ('bath', 1, 'down'),
         }
-    # ------------------------------------------------------------------
-    # -- Useful operators for field response calculations
-        
-    p.n_up = n('0', 0) + n('0', 2)
-    p.n_do = n('0', 1) + n('0', 3)
-    p.Sz = 0.5*( p.n_up - p.n_do )
-
-    p.N_tot = sum([n(block, idx) for block, idx in itertools.product(['0','1'],range(4))])
-        
+    
     # ------------------------------------------------------------------
     # -- Setup Hamiltonian
 
@@ -175,17 +169,18 @@ if __name__ == '__main__':
     
     h_tot = quadratic_matrix_from_operator(p.H_bath + p.H_loc, p.op_full)
 
-    g0_iwn = GfImFreq(beta=p.beta, statistic='Fermion',
+    g0_iw = GfImFreq(beta=p.beta, statistic='Fermion',
                       n_points=p.nw, target_shape=(8, 8))
 
-    g0_iwn << inverse(iOmega_n - h_tot)
+    g0_iw << inverse(iOmega_n - h_tot)
 
-    p.g0_iwn = g0_iwn[:4, :4] # -- Cut out impurity Gf
+    p.g0_iw = g0_iw[:4, :4] # -- Cut out impurity Gf
+    p.g0t_iw = g2_single_particle_transform(p.g0_iw, p.T.H)
 
     p.g0_tau = GfImTime(beta=p.beta, statistic='Fermion',
-                      n_points=p.ntau, target_shape=(4, 4))
+                        n_points=p.ntau, target_shape=(4, 4))
 
-    p.g0_tau << InverseFourier(p.g0_iwn)
+    p.g0_tau << InverseFourier(p.g0_iw)
     p.g0t_tau = g2_single_particle_transform(p.g0_tau, p.T.H)
 
     p.g0_tau_ref = g2_single_particle_transform(p.g0t_tau, p.T)

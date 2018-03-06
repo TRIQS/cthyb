@@ -1,9 +1,10 @@
+
   
-""" Test calculation for Hubbard atom with two bath sites.
+""" Test calculation for two-band Hubbard atom with two bath sites.
 
-Author: Hugo U.R. Strand (2017) hugo.strand@gmail.com
+Use pyed to compute static and dynamic two-particle responses. 
 
- """ 
+Author: Hugo U.R. Strand (2018) hugo.strand@gmail.com """
 
 # ----------------------------------------------------------------------
 
@@ -17,126 +18,68 @@ from pytriqs.utility import mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.gf import GfImTime, GfImFreq
 from pytriqs.gf import MeshImTime, MeshProduct, Gf
+from pytriqs.operators import n, c, c_dag, Operator, dagger
 
 # ----------------------------------------------------------------------
 
 from pyed.ParameterCollection import ParameterCollection
 from pyed.TriqsExactDiagonalization import TriqsExactDiagonalization
-from pyed.GfUtils import g2_single_particle_transform
-from pyed.GfUtils import g4_single_particle_transform
 
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
     
     if mpi.is_master_node():
-        with HDFArchive('data_model.h5','r') as A: p = A["p"]
-    else: p = None
-    p = mpi.bcast(p)
+        with HDFArchive('data_model.h5','r') as A: m = A["p"]
+    else: m = None
+    m = mpi.bcast(m)
 
-    p.T = np.matrix(p.T)
+    p = ParameterCollection()
+    ed = TriqsExactDiagonalization(m.H, m.op_full, m.beta)
+
+    p.O1_exp = np.zeros((4, 4), dtype=np.complex)
+    p.O2_exp = np.zeros((4, 4), dtype=np.complex)
+    p.chi_dissconn = np.zeros((4, 4, 4, 4), dtype=np.complex)
     
-    ed = TriqsExactDiagonalization(p.H, p.op_full, p.beta)
-    edt = TriqsExactDiagonalization(p.Ht, p.op_full, p.beta)
+    p.chi_static = np.zeros((4, 4, 4, 4), dtype=np.complex)
+    
+    p.chi_tau = GfImTime(name=r'$g$', beta=m.beta,
+                         statistic='Boson', n_points=50,
+                         target_shape=(4, 4, 4, 4))
 
-    if mpi.is_master_node():
-        print p.T
-        print p.T * p.T.H
-        print 'Ground state energies:',
-        print ed.get_ground_state_energy(),
-        print edt.get_ground_state_energy()
-        print 'max(abs(dE)) =', np.max(np.abs(ed.ed.E - edt.ed.E))
+    p.chi = np.zeros_like(p.chi_static)
+    
+    tau = np.array([float(tau) for tau in p.chi_tau.mesh])
 
-    N = ed.get_expectation_value(p.N_tot)
-    Nt = edt.get_expectation_value(p.N_tot)
+    for i1, i2, i3, i4, in itertools.product(range(4), repeat=4):
 
-    print 'Total density:', N, Nt
+        print i1, i2, i3, i4
         
-    np.testing.assert_array_almost_equal(ed.ed.E, edt.ed.E, decimal=4)
+        o1, o2, o3, o4 = m.op_imp[i1], m.op_imp[i2], m.op_imp[i3], m.op_imp[i4]
 
-    # ------------------------------------------------------------------
-    # -- Single-particle Green's functions
+        O1 = dagger(o1) * o2
+        O2 = dagger(o3) * o4
 
-    g_tau = GfImTime(name=r'$g$', beta=p.beta,
-                     statistic='Fermion', n_points=15,
-                     target_shape=(4, 4))
+        p.O1_exp[i1, i2] = ed.get_expectation_value(O1)
+        p.O2_exp[i3, i4] = ed.get_expectation_value(O2)
 
-    gt_tau = g_tau.copy()
+        p.chi_dissconn[i1, i2, i3, i4] = p.O1_exp[i1, i2] * p.O2_exp[i3, i4]
+        
+        p.chi_static[i1, i2, i3, i4] = ed.get_expectation_value(O1 * O2)
 
-    ed.set_g2_tau_matrix(g_tau, p.op_imp)
-    edt.set_g2_tau_matrix(gt_tau, p.op_imp)
+        ed.set_g2_tau(p.chi_tau[i1, i2, i3, i4], O1, O2)
 
-    g_iwn = GfImFreq(name=r'$g$', beta=p.beta,
-                     statistic='Fermion', n_points=15,
-                     target_shape=(4, 4))
-    
-    gt_iwn = g_iwn.copy()
+        chi_tau = p.chi_tau[i1, i2, i3, i4]
+        chi_tau *= -1. # cancel gf -1 prefactor
 
-    ed.set_g2_iwn_matrix(g_iwn, p.op_imp)
-    edt.set_g2_iwn_matrix(gt_iwn, p.op_imp)
-    
-    # ------------------------------------------------------------------
-    # -- Transform single particle Green's function
-
-    g_tau_ref = g2_single_particle_transform(gt_tau, p.T)
-    np.testing.assert_array_almost_equal(g_tau_ref.data, g_tau.data)
-    if mpi.is_master_node(): print '--> pyed g_tau and gt_tau agree'
-
-    calc_g4 = False
-    
-    if calc_g4:
-        # ------------------------------------------------------------------
-        # -- Two particle Green's functions
-
-        ntau = 4
-        imtime = MeshImTime(p.beta, 'Fermion', ntau)
-        prodmesh = MeshProduct(imtime, imtime, imtime)
-
-        g4_tau = Gf(name='g4_tau', mesh=prodmesh, target_shape=[4, 4, 4, 4])
-        g40_tau = g4_tau.copy()
-
-        g4t_tau = g4_tau.copy()
-        g40t_tau = g4_tau.copy()
-
-        if mpi.is_master_node():
-            print '--> g4 calc'
-
-        ed.set_g40_tau_matrix(g40_tau, g_tau)
-        edt.set_g40_tau_matrix(g40t_tau, gt_tau)
-
-        ed.set_g4_tau_matrix(g4_tau, p.op_imp)
-        edt.set_g4_tau_matrix(g4t_tau, p.op_imp)
-
-        # ------------------------------------------------------------------
-        # -- Transform two particle Green's function
-
-        g40_tau_ref = g4_single_particle_transform(g40t_tau, p.T)
-        np.testing.assert_array_almost_equal(g40_tau.data, g40_tau_ref.data)
-        if mpi.is_master_node(): print '--> pyed g40_tau and g40t_tau agree'    
-
-        g4_tau_ref = g4_single_particle_transform(g4t_tau, p.T)
-        np.testing.assert_array_almost_equal(g4_tau.data, g4_tau_ref.data)
-        if mpi.is_master_node(): print '--> pyed g4_tau and g4t_tau agree'    
+        chi_dissconn = p.chi_dissconn[i1, i2, i3, i4]
+        chi_tau.data[:] -= chi_dissconn        
+        
+        p.chi[i1, i2, i3, i4] = np.trapz(chi_tau.data, x=tau) / m.beta
 
     # ------------------------------------------------------------------
     # -- Store to hdf5
 
     if mpi.is_master_node():
-
-        p = ParameterCollection()
-        
-        p.g_iwn = g_iwn
-        p.g_tau = g_tau
-
-        p.gt_iwn = gt_iwn
-        p.gt_tau = gt_tau
-
-        if calc_g4:
-            p.g4_tau = g4_tau
-            p.g40_tau = g40_tau
-
-            p.g4t_tau = g4t_tau
-            p.g40t_tau = g40t_tau
-        
         with HDFArchive('data_pyed.h5','w') as res:
             res['p'] = p
         

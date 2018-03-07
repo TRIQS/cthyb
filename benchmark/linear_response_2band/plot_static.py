@@ -1,10 +1,11 @@
+
+""" Test calculation for two-band Hubbard atom with two bath sites.
+
+Plot the static suceptibility calculated in three different ways from
+exact diagonalization (pyed and pomerol) and from cthyb.
+
+Author: Hugo U.R. Strand (2018) hugo.strand@gmail.com """
   
-""" Test calculation for Hubbard atom with two bath sites.
-
-Author: Hugo U.R. Strand (2017) hugo.strand@gmail.com
-
- """ 
-
 # ----------------------------------------------------------------------
 
 import copy

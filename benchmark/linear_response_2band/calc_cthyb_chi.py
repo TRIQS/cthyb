@@ -1,3 +1,11 @@
+
+  """ Test calculation for two-band Hubbard atom with two bath sites.
+
+Use cthyb one- and two-particle Green's function to costruct the 
+generalized susceptibility trasformed back to the original basis.
+
+Author: Hugo U.R. Strand (2018) hugo.strand@gmail.com """
+
 # ----------------------------------------------------------------------
 
 import itertools

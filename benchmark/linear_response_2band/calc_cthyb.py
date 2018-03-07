@@ -1,9 +1,10 @@
-  
-""" Test calculation for Hubbard atom with two bath sites.
 
-Author: Hugo U.R. Strand (2017) hugo.strand@gmail.com
+  """ Test calculation for two-band Hubbard atom with two bath sites.
 
- """ 
+Use cthyb to compute one- and two-particle Green's function in 
+unitary transformed basis with off-diagonal hybridization.
+
+Author: Hugo U.R. Strand (2018) hugo.strand@gmail.com """
 
 # ----------------------------------------------------------------------
 

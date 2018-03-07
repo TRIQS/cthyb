@@ -39,6 +39,11 @@ if __name__ == '__main__':
     m, p = mpi.bcast(m), mpi.bcast(p)
 
     p.chi_field = np.zeros((4, 4, 4, 4), dtype=np.complex)
+    p.g_tau_field = {}
+
+    g_tau = GfImTime(name=r'$g$', beta=m.beta,
+                     statistic='Fermion', n_points=50,
+                     target_shape=(4, 4))
 
     # -- The field is symmetric in (i1, i2)
     # -- only calculate upper triangle
@@ -48,7 +53,8 @@ if __name__ == '__main__':
         for i2 in xrange(i1, 4):
             index_list.append((i1, i2))
 
-    F = 0.0001 / m.beta
+    #F = 0.0001 / m.beta
+    F = 0.1 / m.beta
     F_vec = np.array([-F, F])
     
     work_list = np.array(index_list)
@@ -63,6 +69,9 @@ if __name__ == '__main__':
         ed_p = TriqsExactDiagonalization(m.H + F * O1, m.op_full, m.beta)
         ed_m = TriqsExactDiagonalization(m.H - F * O1, m.op_full, m.beta)
         
+        p.g_tau_field[(i1, i2)] = g_tau.copy()
+        ed_p.set_g2_tau_matrix(p.g_tau_field[(i1, i2)], m.op_imp)
+
         for i3, i4 in itertools.product(range(4), repeat=2):
 
             o3, o4 = m.op_imp[i3], m.op_imp[i4]

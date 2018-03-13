@@ -4,7 +4,7 @@ from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.comparison_tests import *
 
-from cthyb import *
+from triqs_cthyb import *
 
 #  Example of DMFT single site solution with CTQMC
 

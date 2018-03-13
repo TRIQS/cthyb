@@ -1,11 +1,11 @@
-#include "cthyb/solver_core.hpp"
+#include "triqs_cthyb/solver_core.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/test_tools/gfs.hpp>
 
-using namespace cthyb;
+using namespace triqs_cthyb;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;

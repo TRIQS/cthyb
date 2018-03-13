@@ -17,7 +17,7 @@ from pytriqs.utility.comparison_tests import *
 
 # ----------------------------------------------------------------------
 
-from cthyb import *
+from triqs_cthyb import *
 
 # ----------------------------------------------------------------------
 def get_h_loc(eps0, eps1, V, orb):

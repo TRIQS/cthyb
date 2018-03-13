@@ -65,11 +65,11 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
 +---------------------------------------------------------------+-----------------------------------------------+
 | Options                                                       | Syntax                                        |
 +===============================================================+===============================================+
-| Disable testing (not recommended)                             | -DTests=OFF                                   |
+| Disable testing (not recommended)                             | -DBuild_Tests=OFF                             |
 +---------------------------------------------------------------+-----------------------------------------------+
 | Specify an installation path other than path_to_triqs         | -DCMAKE_INSTALL_PREFIX=path_to_cthyb          |
 +---------------------------------------------------------------+-----------------------------------------------+
-| Build the documentation locally                               | -DBUILD_DOC=ON                                |
+| Build the documentation locally                               | -DBuild_Documentation=ON                      |
 +---------------------------------------------------------------+-----------------------------------------------+
 | Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON                 |
 +---------------------------------------------------------------+-----------------------------------------------+

@@ -8,7 +8,7 @@ from pytriqs.archive import HDFArchive
 from pytriqs.gf import *
 from pytriqs.atom_diag import quantum_number_eigenvalues
 #from atom_diag import * # quantum_number_eigenvalues
-from cthyb import *
+from triqs_cthyb import *
 
 beta = 100.0
 # H_int parameters

@@ -54,23 +54,23 @@ triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
 MESSAGE(STATUS "Cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
-option(Tests "Enable Tests" ON)
-option(Documentation "Build documentation" OFF)
+option(Build_Tests "Enable Tests" ON)
+option(Build_Documentation "Build documentation" OFF)
 
 # All PRIVATE common options.
 # The std for all targets
 add_compile_options(-std=c++17 $<$<CONFIG:Release>:-march=native>)
 
 # Common to all targets (ctint, python, tests).
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(c++)
 
 # To be fixed!!
 triqs_set_rpath_for_all_targets()
 
-add_subdirectory(cthyb)
+add_subdirectory(c++/triqs_cthyb)
 
 # Tests
-if (${Tests})
+if (${Build_Tests})
  enable_testing()
  add_subdirectory(test)
 endif()
@@ -78,10 +78,10 @@ endif()
 if (${TRIQS_WITH_PYTHON_SUPPORT})
 
  # Python interface
- add_subdirectory(python/cthyb)
+ add_subdirectory(python/triqs_cthyb)
 
  # Build the documentation
- if (${Documentation})
+ if (${Build_Documentation})
    add_subdirectory(doc)
  endif()
 

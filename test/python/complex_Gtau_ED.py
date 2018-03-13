@@ -1,6 +1,6 @@
 import numpy as np
 from pytriqs.operators import *
-from cthyb import *
+from triqs_cthyb import *
 from pytriqs.gf import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.h5diff import h5diff

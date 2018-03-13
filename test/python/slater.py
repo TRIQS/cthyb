@@ -4,7 +4,7 @@ from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.U_matrix import U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.archive import HDFArchive
-from cthyb import *
+from triqs_cthyb import *
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 

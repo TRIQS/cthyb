@@ -3,7 +3,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.gf import GfImFreq, SemiCircular, inverse, iOmega_n
 from pytriqs.operators import n
 from pytriqs.archive import HDFArchive
-from cthyb import SolverCore
+from triqs_cthyb import SolverCore
 
 cp = dict(
     beta=10.0,

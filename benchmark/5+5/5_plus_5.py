@@ -1,13 +1,15 @@
 #!/bin/env pytriqs
 
+import inspect
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.U_matrix import cubic_names, U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf import *
+from triqs_cthyb import SolverCore
+import triqs_cthyb.version as version
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 from itertools import product
 
 def five_plus_five(use_interaction=True):
@@ -66,7 +68,7 @@ def five_plus_five(use_interaction=True):
     p["n_warmup_cycles"] = 1000
     p["n_cycles"] = 30000
     p["partition_method"] = "autopartition"
-    p["measure_g_tau"] = True
+    p["measure_G_tau"] = True
     p["move_shift"] = True
     p["measure_pert_order"] = False
     p["performance_analysis"] = False
@@ -130,13 +132,10 @@ def five_plus_five(use_interaction=True):
         Results['spin_names'] = spin_names
         Results['orb_names'] = orb_names
 
-        import pytriqs.applications.impurity_solvers.cthyb.version as version
-        import inspect
         import __main__
         Results.create_group("log")
         log = Results["log"]
         log["version"] = version.version
-        #log["release"] = version.release
         log["triqs_hash"] = version.triqs_hash
         log["cthyb_hash"] = version.cthyb_hash
         log["script"] = inspect.getsource(__main__)

@@ -1,10 +1,10 @@
 #!/bin/env pytriqs
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf import *
-from pytriqs.operators import *
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from pytriqs.operators import n
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
+from triqs_cthyb import SolverCore
 
 mpi.report("Welcome to asymm_bath test (1 band with a small asymmetric hybridization function).")
 mpi.report("This test helps to detect sampling problems.")
@@ -32,7 +32,7 @@ p["performance_analysis"] = True
 p["measure_pert_order"] = True
 
 # Block structure of GF
-gf_struct = {'up':[0], 'dn':[0]}
+gf_struct = [['up', [0]], ['dn', [0]]]
 
 # Hamiltonian
 H = U*n("up",0)*n("dn",0)

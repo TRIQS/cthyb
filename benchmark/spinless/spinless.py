@@ -4,9 +4,9 @@ import numpy as np
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.operators import *
-from pytriqs.gf import *
+from triqs_cthyb import SolverCore
+from pytriqs.operators import n
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 
 def run_calculation(use_qn=True):
 
@@ -42,7 +42,7 @@ def run_calculation(use_qn=True):
         p["partition_method"] = "quantum_numbers"
         p["quantum_numbers"] = QN
 
-    gf_struct = {"tot":["A","B"]}
+    gf_struct = [["tot", ["A","B"]]]
 
     mpi.report("Constructing the solver...")
 

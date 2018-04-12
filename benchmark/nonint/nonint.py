@@ -2,9 +2,9 @@
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.operators import *
-from pytriqs.gf import *
+from triqs_cthyb import SolverCore
+from pytriqs.operators import Operator, n
+from pytriqs.gf import GfImFreq, inverse, iOmega_n
 
 mpi.report("Welcome to nonint (non-interacting many-band systems) test.")
 mpi.report("This test is aimed to reveal excessive state truncation issues.")
@@ -27,17 +27,18 @@ for modes in range(1,N_max+1):
     V = [0.2]*modes
     e = [-0.2]*modes
 
-    gf_struct = {str(n):[0] for n in range(0,len(V))}
+    #gf_struct = {str(n):[0] for n in range(0,len(V))}
+    gf_struct = [ [str(bidx), [0]] for bidx in range(0,len(V)) ]
 
     # Local Hamiltonian
     H = Operator()
 
     # Quantum numbers (N_up and N_down)
     QN = []
-    for b in sorted(gf_struct.keys()): QN.append(n(b,0))
+    for b, idxs in gf_struct: QN.append(n(b,0))
     p["partition_method"] = "quantum_numbers"
     p["quantum_numbers"] = QN
-
+    
     mpi.report("Constructing the solver...")
 
     # Construct the solver
@@ -46,7 +47,8 @@ for modes in range(1,N_max+1):
     mpi.report("Preparing the hybridization function...")
 
     # Set hybridization function
-    for m, b in enumerate(sorted(gf_struct.keys())):
+    #for m, b in enumerate(sorted(gf_struct.keys())):
+    for m, (b, idxs) in enumerate(gf_struct):
         delta_w = GfImFreq(indices = [0], beta=beta)
         delta_w << (V[m]**2) * inverse(iOmega_n - e[m])
         S.G0_iw[b][0,0] << inverse(iOmega_n - e[m] - delta_w)

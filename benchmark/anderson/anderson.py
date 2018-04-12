@@ -4,8 +4,9 @@ import itertools
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf import *
+from triqs_cthyb import SolverCore
+from pytriqs.atom_diag import trace_rho_op
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 
 def anderson(use_qn=True, use_blocks=True):
 
@@ -53,6 +54,8 @@ def anderson(use_qn=True, use_blocks=True):
         bn, i = mkind(spin)
         gf_struct.setdefault(bn,[]).append(i)
 
+    gf_struct = [ [key, value] for key, value in gf_struct.items() ] # convert from dict to list of lists
+            
     mpi.report("Constructing the solver...")
 
     # Construct the solver

@@ -61,8 +61,8 @@ namespace cthyb {
                           << ".";
 
     // Allocate single particle greens functions
-    _G0_iw     = make_block_gf(gf_mesh<imfreq>{beta, Fermion, n_iw}, gf_struct);
-    _Delta_tau = make_block_gf(gf_mesh<imtime>{beta, Fermion, n_tau}, gf_struct);
+    _G0_iw     = block_gf<imfreq>({beta, Fermion, n_iw}, gf_struct);
+    _Delta_tau = block_gf<imtime>({beta, Fermion, n_tau}, gf_struct);
   }
 
   /// -------------------------------------------------------------------------------------------
@@ -276,7 +276,7 @@ namespace cthyb {
     // Single-particle correlators
 
     if (params.measure_G_tau) {
-      G_tau = make_block_gf(G_tau_t::g_t::mesh_t{beta, Fermion, n_tau}, gf_struct);
+      G_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
       qmc.add_measure(measure_G_tau{G_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
     }
 

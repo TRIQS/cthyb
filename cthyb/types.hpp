@@ -33,15 +33,6 @@
 #include "config.hpp"
 #include <variant>
 
-namespace std {
-  inline string to_string(string const &str) { return str; }
-  inline string to_string(variant<int, string> const &var_int_string) {
-    stringstream ss;
-    ss << var_int_string;
-    return ss.str();
-  }
-} // namespace std
-
 namespace cthyb {
 
   using namespace triqs::gfs;
@@ -93,30 +84,6 @@ namespace cthyb {
 
 namespace triqs {
   namespace gfs {
-
-    /// Function template for block_gf initialization
-    template <typename Val_t, typename Var_t> block_gf<Var_t, Val_t> make_block_gf(gf_mesh<Var_t> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
-
-      std::vector<gf<Var_t, Val_t>> gf_vec;
-      std::vector<std::string> block_names;
-
-      //for (auto const & [ bname, idx_lst ] : gf_struct) { // C++17
-      for (auto const &bl : gf_struct) {
-        auto &bname  = bl.first;
-        auto bl_size = bl.second.size();
-        block_names.push_back(bname);
-        std::vector<std::string> indices;
-        for (auto const &var : bl.second) visit([&indices](auto &&arg) { indices.push_back(std::to_string(arg)); }, var);
-        gf_vec.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>{indices, indices});
-      }
-
-      return make_block_gf(std::move(block_names), std::move(gf_vec));
-    }
-
-    // default to matrix_valued gf
-    template <typename Var_t> block_gf<Var_t, matrix_valued> make_block_gf(gf_mesh<Var_t> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
-      return make_block_gf<matrix_valued, Var_t>(m, gf_struct);
-    }
 
     /// Function template for block2_gf initialization
     template <typename Var_t>

@@ -62,7 +62,7 @@ namespace cthyb {
       }
 
       // Initialize intermediate scattering matrix
-      M = make_block_gf(M_mesh, G2_measures.gf_struct);
+      M = block_gf{M_mesh, G2_measures.gf_struct};
     }
 
     // Initialize the nfft_buffers mirroring the matrix M

@@ -25,7 +25,7 @@
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/gfs.hpp>
 #include <fstream>
-#include <variant>
+#include <triqs/utility/variant.hpp>
 
 #include "./moves/insert.hpp"
 #include "./moves/remove.hpp"

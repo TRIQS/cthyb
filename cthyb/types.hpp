@@ -31,7 +31,7 @@
 #include <triqs/atom_diag/atom_diag.hpp>
 
 #include "config.hpp"
-#include <variant>
+#include <triqs/utility/variant.hpp>
 
 namespace cthyb {
 

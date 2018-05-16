@@ -62,7 +62,8 @@ namespace cthyb {
       G_tau_block[last] *= 2;
 
       // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
-      G_tau_block.singularity()(1) = 1.0;
+      if(max_element(abs(G_tau_block[0] + G_tau_block[last] + 1)) > 1e-2 && c.rank() == 0)
+	std::cerr << "WARNING: Tau discontinuity of G_tau deviates from -1\n";
     }
   }
 

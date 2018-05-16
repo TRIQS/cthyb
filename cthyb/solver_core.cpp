@@ -104,15 +104,35 @@ namespace cthyb {
     std::vector<int> n_inner;
     for (auto const &bl : gf_struct) { n_inner.push_back(bl.second.size()); }
 
-    // Calculate imfreq quantities
+    // ==== Compute Delta from G0_iw ====
+
     auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw);
     auto Delta_iw  = G0_iw_inv;
+
+    for (auto &Delta_iw_bl : Delta_iw)
+      for (auto const &iw : Delta_iw[0].mesh()) Delta_iw_bl[iw] = iw - Delta_iw_bl[iw];
+
+    // Compute the constant part of Delta
+    auto Delta_infty_vec = map(
+       // Compute 0th moment of one block
+       [](gf_const_view<imfreq> d) {
+         auto [tail, err] = fit_tail(d);
+	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
+         auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
+#ifndef HYBRIDISATION_IS_COMPLEX
+         if (max_element(abs(imag(Delta_infty))) > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real";
+#endif
+         return Delta_infty;
+       },
+       Delta_iw);
+
+    // ==== Compute h_loc ====
 
     _h_loc = params.h_int;
 
     // Do I have imaginary components in my local Hamiltonian?
     auto max_imag = 0.0;
-    for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(imag(_G0_iw[b].singularity()(2)))));
+    for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
 
     // Add quadratic terms to h_loc
     int b = 0;
@@ -124,11 +144,11 @@ namespace cthyb {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
           dcomplex e_ij;
           if (max_imag > params.imag_threshold)
-            e_ij = _G0_iw[b].singularity()(2)(n1, n2);
+            e_ij = Delta_infty_vec[b](n1, n2);
           else
-            e_ij = _G0_iw[b].singularity()(2)(n1, n2).real();
+            e_ij = Delta_infty_vec[b](n1, n2).real();
 #else
-          auto e_ij = _G0_iw[b].singularity()(2)(n1, n2).real();
+          double e_ij = Delta_infty_vec[b](n1, n2).real();
 #endif
           _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
           n2++;
@@ -143,9 +163,7 @@ namespace cthyb {
     range _;
     triqs::clef::placeholder<0> iw_;
     for (auto const &bl : gf_struct) {
-      Delta_iw[b](iw_) << G0_iw_inv[b].singularity()(-1) * iw_ + G0_iw_inv[b].singularity()(0);
-      Delta_iw[b]     = Delta_iw[b] - G0_iw_inv[b];
-      _Delta_tau[b]() = inverse_fourier(Delta_iw[b]);
+      _Delta_tau[b]() = fourier(Delta_iw[b]);
       // Force all diagonal elements to be real
       for (int i : range(bl.second.size())) _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
       // If off-diagonal elements are below threshold, set to real

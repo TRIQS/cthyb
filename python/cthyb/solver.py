@@ -1,62 +1,31 @@
+################################################################################
+#
+# TRIQS: a Toolbox for Research in Interacting Quantum Systems
+#
+# Copyright (C) 2017 by H. UR Strand, P. Seth, I. Krivenko,
+#                       M. Ferrero, O. Parcollet
+#
+# TRIQS is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# TRIQS. If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
 from solver_core  import SolverCore
 from pytriqs.gf import *
 import pytriqs.utility.mpi as mpi
 import numpy as np
 
-# Fit tails for Sigma_iw and G_iw.
-# Either give window to fix in terms of matsubara frequencies index (fit_min_n/fit_max_n) or value (fit_min_w/fit_max_w).
-def tail_fit_new(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min_w=None,fit_max_w=None,fit_max_moment=None,fit_known_moments=None):
-    """
-    Fit the tails of Sigma_iw and optionally G_iw.
-
-    Parameters
-    ----------
-    Sigma_iw : Gf
-               Self-energy.
-    G0_iw : Gf, optional
-            Non-interacting Green's function.
-    G_iw : Gf, optional
-           Interacting Green's function.
-           If G0_iw and G_iw are provided, the tails of G_iw will also be fitted.
-    fit_min_n : int, optional, default=int(0.8*len(Sigma_iw.mesh))
-                Matsubara frequency index from which tail fitting should start.
-    fit_max_n : int, optional, default=int(len(Sigma_iw.mesh))
-                Matsubara frequency index at which tail fitting should end.
-    fit_min_w : float, optional
-                Matsubara frequency from which tail fitting should start.
-    fit_max_w : float, optional
-                Matsubara frequency at which tail fitting should end.
-    fit_max_moment : int, optional
-                     Highest moment to fit in the tail of Sigma_iw.
-    fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, max_moment=0, order_min=0)}
-                        Known moments of Sigma_iw, given as a TailGf object.
-
-    Returns
-    -------
-    Sigma_iw : Gf
-               Self-energy.
-    G_iw : Gf, optional
-           Interacting Green's function.
-    """
-
-    # Define default tail quantities
-    if fit_known_moments is None:
-        fit_known_moments = {name:TailGf(sig.target_shape[0],sig.target_shape[1],0,0) for name, sig in Sigma_iw}
-    if fit_min_w is not None: fit_min_n = int(0.5*(fit_min_w*Sigma_iw.mesh.beta/np.pi - 1.0))
-    if fit_max_w is not None: fit_max_n = int(0.5*(fit_max_w*Sigma_iw.mesh.beta/np.pi - 1.0))
-    if fit_min_n is None: fit_min_n = int(0.8*len(Sigma_iw.mesh)/2)
-    if fit_max_n is None: fit_max_n = int(len(Sigma_iw.mesh)/2)
-    if fit_max_moment is None: fit_max_moment = 3
-
-    # Now fit the tails of Sigma_iw and G_iw
-    try:
-        for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, fit_min_n, fit_max_n)
-    except RuntimeError:
-        for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, -fit_max_n-1, -fit_min_n-1, fit_min_n, fit_max_n)
-    if (G_iw is not None) and (G0_iw is not None):
-        for name, g in G_iw: g.tail = inverse( inverse(G0_iw[name].tail) - Sigma_iw[name].tail )
-
-    return Sigma_iw, G_iw
+from tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
@@ -115,8 +84,8 @@ class Solver(SolverCore):
                            Should the tails of ``Sigma_iw`` and ``G_iw`` be fitted?
         fit_max_moment : integer, optional, default = 3
                          Highest moment to fit in the tail of ``Sigma_iw``.
-        fit_known_moments : dict{str:``TailGf`` object}, optional, default = {'block_name': ``TailGf(dim1, dim2, max_moment, order_min``)}
-                            Known moments of ``Sigma_iw``, given as a :ref:`TailGf <triqslibs:tailgf>` object.
+        fit_known_moments : ``ndarray.shape[order, Sigma_iw[0].target_shape]``, optional, default = None
+                            Known moments of Sigma_iw, given as an numpy ndarray
         fit_min_n : integer, optional, default = ``int(0.8 * self.n_iw)``
                     Index of ``iw`` from which to start fitting.
         fit_max_n : integer, optional, default = ``n_iw``
@@ -158,9 +127,11 @@ class Solver(SolverCore):
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
         print_warning = False
-        for name, indices in self.gf_struct:
-            dim = len(indices)
-            if ( (self.G0_iw[name].tail[1]-np.eye(dim)) > 10**(-6) ).any(): print_warning = True
+        # -- FIXME
+        #for name, indices in self.gf_struct:
+        #    dim = len(indices)
+        #    if ( (self.G0_iw[name].tail[1]-np.eye(dim)) > 10**(-6) ).any(): print_warning = True
+        
 	if print_warning and mpi.is_master_node():
             warning = ("!--------------------------------------------------------------------------------------!\n"
                        "! WARNING: Some components of your G0_iw do not decay as 1/iw. Continuing nonetheless. !\n"
@@ -177,8 +148,13 @@ class Solver(SolverCore):
             for name, g in self.G_tau: self.G_iw[name] << Fourier(g)
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
             self.Sigma_iw = dyson(G0_iw=self.G0_iw,G_iw=self.G_iw)
-            if perform_tail_fit: tail_fit(Sigma_iw=self.Sigma_iw,G0_iw=self.G0_iw,G_iw=self.G_iw,\
-                                          fit_min_n=fit_min_n,fit_max_n=fit_max_n,fit_min_w=fit_min_w,fit_max_w=fit_max_w,\
-                                          fit_max_moment=fit_max_moment,fit_known_moments=fit_known_moments)
+            if perform_tail_fit:
+                cthyb_tail_fit(
+                    Sigma_iw=self.Sigma_iw,
+                    fit_min_n = fit_min_n, fit_max_n = fit_max_n,
+                    fit_min_w = fit_min_w, fit_max_w = fit_max_w,
+                    fit_max_moment = fit_max_moment,
+                    fit_known_moments = fit_known_moments,
+                    )
 
         return solve_status

@@ -10,7 +10,7 @@ target_include_directories(solver_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 configure_file(version.py.in version.py)
 
 # All Python file. Copy them in the build dir to have a complete package for the tests.
-set(PYTHON_SOURCES __init__.py util.py solver.py)
+set(PYTHON_SOURCES __init__.py util.py solver.py tail_fit.py)
 
 foreach(f ${PYTHON_SOURCES})
  configure_file(${f} ${f} COPYONLY)

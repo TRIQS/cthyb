@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2017, H. UR Strand, P. Seth, I. Krivenko, 
+ *                     M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -163,6 +165,8 @@ namespace cthyb {
     range _;
     triqs::clef::placeholder<0> iw_;
     for (auto const &bl : gf_struct) {
+      // Remove constant quadratic part
+      for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
       _Delta_tau[b]() = fourier(Delta_iw[b]);
       // Force all diagonal elements to be real
       for (int i : range(bl.second.size())) _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
@@ -330,5 +334,4 @@ namespace cthyb {
     // Copy local (real or complex) G_tau back to complex G_tau
     if (G_tau && G_tau_accum) *G_tau = *G_tau_accum;
   }
-
 } // namespace cthyb

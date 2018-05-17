@@ -122,7 +122,8 @@ namespace cthyb {
 	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
 #ifndef HYBRIDISATION_IS_COMPLEX
-         if (max_element(abs(imag(Delta_infty))) > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real";
+	 double imag_Delta = max_element(abs(imag(Delta_infty)));
+         if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta;
 #endif
          return Delta_infty;
        },

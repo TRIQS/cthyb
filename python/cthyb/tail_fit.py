@@ -82,9 +82,9 @@ def tail_fit(
             n_min = fit_min_n,
             n_max = fit_max_n,
             known_moments = fit_known_moments[name],
-            n_expansion_order = fit_max_moment,
             # set max number of pts used in fit larger than mesh size, to use all data in fit
             n_tail_max = 10 * len(sig.mesh), 
+            expansion_order = fit_max_moment
             )
         
         replace_by_tail(sig, tail, n_min=fit_min_n)        

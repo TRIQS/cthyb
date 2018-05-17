@@ -84,8 +84,8 @@ elif False:
         n_min = n_min,
         n_max = n_max,
         known_moments = known_moments,
-        n_expansion_order=order_max,
         n_tail_max = 10 * len(Delta_iw.mesh),
+        expansion_order=order_max
         )
 
     print 'tail =', tail

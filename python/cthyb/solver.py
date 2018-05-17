@@ -148,6 +148,8 @@ class Solver(SolverCore):
             for name, g in self.G_tau:
                 self.G_iw[name].set_from_fourier(g, np.zeros(([2] + list(g.target_shape)), dtype=np.complex))
 
+            self.G_iw_raw = self.G_iw.copy()
+
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
             self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
 
@@ -163,7 +165,12 @@ class Solver(SolverCore):
                     )
 
                 # Recompute G_iw with the fitted Sigma_iw
-                self.G_iw_raw = self.G_iw.copy()
                 self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
-            
+            else:
+                # Enforce 1/w behavior if we did not tail fit Sigma
+                for name, g in self.G_iw:
+                    tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
+                    tail[1] = np.eye(g.target_shape[0])
+                    replace_by_tail(g, tail)
+
         return solve_status

@@ -167,10 +167,14 @@ class Solver(SolverCore):
                 # Recompute G_iw with the fitted Sigma_iw
                 self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
             else:
-                # Enforce 1/w behavior if we did not tail fit Sigma
-                for name, g in self.G_iw:
-                    tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
-                    tail[1] = np.eye(g.target_shape[0])
-                    replace_by_tail(g, tail)
+
+                # Enforce 1/w behavior of G_iw by setting Sigma_iw to zero
+                # in fit window
+
+                for name, s in self.Sigma_iw:
+                    tail = np.zeros([1] + list(g.target_shape), dtype=np.complex)
+                    s.replace_by_tail(tail)
+                    
+                self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
 
         return solve_status

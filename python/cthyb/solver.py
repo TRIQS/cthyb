@@ -145,10 +145,15 @@ class Solver(SolverCore):
         # (only supported for G_tau, to permit compatibility with dft_tools)
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
             # Fourier transform G_tau to obtain G_iw
-            for name, g in self.G_tau: self.G_iw[name] << Fourier(g)
+            for name, g in self.G_tau:
+                self.G_iw[name].set_from_fourier(g, np.zeros(([2] + list(g.target_shape)), dtype=np.complex))
+
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
-            self.Sigma_iw = dyson(G0_iw=self.G0_iw,G_iw=self.G_iw)
+            self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+
             if perform_tail_fit:
+                self.Sigma_iw_raw = self.Sigma_iw.copy()
+                
                 cthyb_tail_fit(
                     Sigma_iw=self.Sigma_iw,
                     fit_min_n = fit_min_n, fit_max_n = fit_max_n,
@@ -157,4 +162,8 @@ class Solver(SolverCore):
                     fit_known_moments = fit_known_moments,
                     )
 
+                # Recompute G_iw with the fitted Sigma_iw
+                self.G_iw_raw = self.G_iw.copy()
+                self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
+            
         return solve_status

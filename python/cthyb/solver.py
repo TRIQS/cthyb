@@ -152,9 +152,9 @@ class Solver(SolverCore):
 
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
             self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+            self.Sigma_iw_raw = self.Sigma_iw.copy()
 
             if perform_tail_fit:
-                self.Sigma_iw_raw = self.Sigma_iw.copy()
                 
                 cthyb_tail_fit(
                     Sigma_iw=self.Sigma_iw,
@@ -168,13 +168,13 @@ class Solver(SolverCore):
                 self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
             else:
 
-                # Enforce 1/w behavior of G_iw by setting Sigma_iw to zero
-                # in fit window
+                # Enforce 1/w behavior of G_iw in the tail fit window
+                # and recompute Sigma_iw
+                for name, g in self.G_iw:
+                    tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
+                    tail[1] = np.eye(g.target_shape[0])
+                    g.replace_by_tail(tail)
 
-                for name, s in self.Sigma_iw:
-                    tail = np.zeros([1] + list(g.target_shape), dtype=np.complex)
-                    s.replace_by_tail(tail)
-                    
-                self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
+                self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
 
         return solve_status

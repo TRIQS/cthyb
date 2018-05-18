@@ -102,7 +102,8 @@ else:
     Delta_iw_fit = Delta_iw.copy()
     Delta_iw_fit_bgf = BlockGf(name_list=['foo'], block_list=[Delta_iw_fit])
 
-    from triqs_cthyb.tail_fit import tail_fit as cthyb_tail_fit
+    #from triqs_cthyb.tail_fit import tail_fit as cthyb_tail_fit
+    from cthyb.tail_fit import tail_fit as cthyb_tail_fit
     cthyb_tail_fit(Delta_iw_fit_bgf, fit_min_n=n_min, fit_max_n=n_max, fit_max_moment=order_max)
     
     filename = 'data_tail_fit_example_cthyb.h5'

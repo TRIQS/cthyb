@@ -173,7 +173,7 @@ class Solver(SolverCore):
                 for name, g in self.G_iw:
                     tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
                     tail[1] = np.eye(g.target_shape[0])
-                    g.replace_by_tail(tail)
+                    g.replace_by_tail_in_fit_window(tail)
 
                 self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
 

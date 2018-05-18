@@ -115,7 +115,7 @@ namespace cthyb {
       for (auto const &iw : Delta_iw[0].mesh()) Delta_iw_bl[iw] = iw - Delta_iw_bl[iw];
 
     // Compute the constant part of Delta
-    auto Delta_infty_vec = map(
+    Delta_infty_vec = map(
        // Compute 0th moment of one block
        [](gf_const_view<imfreq> d) {
          auto [tail, err] = fit_tail(d);
@@ -125,6 +125,7 @@ namespace cthyb {
 	 double imag_Delta = max_element(abs(imag(Delta_infty)));
          if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta;
 #endif
+	 TRIQS_PRINT( Delta_infty );
          return Delta_infty;
        },
        Delta_iw);

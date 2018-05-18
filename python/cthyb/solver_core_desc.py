@@ -16,6 +16,7 @@ module.add_include("../../cthyb/solver_core.hpp")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
+#include <cpp2py/converters/complex.hpp>
 #include <cpp2py/converters/map.hpp>
 #include <cpp2py/converters/optional.hpp>
 #include <cpp2py/converters/pair.hpp>
@@ -27,6 +28,7 @@ module.add_preamble("""
 #include <triqs/cpp2py_converters/gf.hpp>
 #include <triqs/cpp2py_converters/h5.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
+#include <triqs/cpp2py_converters/h5.hpp>
 
 using namespace cthyb;
 """)
@@ -202,6 +204,10 @@ c.add_property(name = "last_constr_parameters",
 c.add_property(name = "last_solve_parameters",
                getter = cfunction("cthyb::solve_parameters_t last_solve_parameters ()"),
                doc = """Set of parameters used in the last call to ``solve()``.""")
+
+c.add_property(name = "Delta_infty",
+               getter = cfunction("std::vector<matrix<dcomplex>> Delta_infty ()"),
+               doc = """:math:`G_0^{-1}(i\\omega_n = \\infty)` in Matsubara Frequency.""")
 
 c.add_property(name = "Delta_tau",
                getter = cfunction("block_gf_view<triqs::gfs::imtime> Delta_tau ()"),

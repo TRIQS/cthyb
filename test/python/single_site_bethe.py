@@ -50,7 +50,7 @@ S.solve(h_int=H, **p)
 if mpi.is_master_node():
     with HDFArchive("single_site_bethe.out.h5",'w') as Results:
 
-        Results["h_loc"] = S.h_loc
+        #Results["h_loc"] = S.h_loc
         Results["Delta_infty"] = S.Delta_infty
         Results["Delta_tau"] = S.Delta_tau
         
@@ -63,7 +63,7 @@ if mpi.is_master_node():
         Results["G_iw_raw"] = S.G_iw_raw
 
         Results["Sigma_iw"] = S.Sigma_iw
-        Results["Sigma_iw_raw"] = S.Sigma_iw_raw
+        #Results["Sigma_iw_raw"] = S.Sigma_iw_raw
         
 # Check against reference
 if mpi.is_master_node():

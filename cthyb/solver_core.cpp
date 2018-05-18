@@ -125,7 +125,6 @@ namespace cthyb {
 	 double imag_Delta = max_element(abs(imag(Delta_infty)));
          if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta;
 #endif
-	 TRIQS_PRINT( Delta_infty );
          return Delta_infty;
        },
        Delta_iw);

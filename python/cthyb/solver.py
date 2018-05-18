@@ -112,7 +112,7 @@ class Solver(SolverCore):
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
         if perform_post_proc and perform_tail_fit:
             # If tail parameters provided for Sigma_iw fitting, use them, otherwise use defaults
-            if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw)):
+            if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw) or ("fit_max_w" in params_kw) or ("fit_min_w" in params_kw)):
 	        if mpi.is_master_node():
                     warning = ("!------------------------------------------------------------------------------------!\n"
                                "! WARNING: Using default high-frequency tail fitting parameters in the CTHYB solver. !\n"
@@ -125,18 +125,6 @@ class Solver(SolverCore):
             fit_max_w = params_kw.pop("fit_max_w", None)
             fit_max_moment = params_kw.pop("fit_max_moment", None)
             fit_known_moments = params_kw.pop("fit_known_moments", None)
-
-        print_warning = False
-        # -- FIXME
-        #for name, indices in self.gf_struct:
-        #    dim = len(indices)
-        #    if ( (self.G0_iw[name].tail[1]-np.eye(dim)) > 10**(-6) ).any(): print_warning = True
-        
-	if print_warning and mpi.is_master_node():
-            warning = ("!--------------------------------------------------------------------------------------!\n"
-                       "! WARNING: Some components of your G0_iw do not decay as 1/iw. Continuing nonetheless. !\n"
-                       "!--------------------------------------------------------------------------------------!")
-            print warning
 
         # Call the core solver's solve routine
         solve_status = SolverCore.solve(self, **params_kw)

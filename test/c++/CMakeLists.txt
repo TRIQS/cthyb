@@ -15,8 +15,9 @@ endmacro()
 
 #
 if(NFFT_FOUND)
- add_test_defs(test_nfft)
- target_link_libraries(test_nfft PRIVATE nfft)
+ # Disable nfft test, scheduled for removal
+ #add_test_defs(test_nfft)
+ #target_link_libraries(test_nfft PRIVATE nfft)
 endif(NFFT_FOUND)
 
 add_test_defs(anderson)

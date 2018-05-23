@@ -31,7 +31,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
 	mv -f Dockerfile.jenkins Dockerfile
       """
       /* build and tag */
-      def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", ".")
+      def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_DOC=${platform==documentationPlatform} .")
       if (!publish || platform != documentationPlatform) {
         /* but we don't need the tag so clean it up (except for documentation) */
 	sh "docker rmi --no-prune ${img.imageName()}"
@@ -85,6 +85,22 @@ try {
     stage("publish") { timeout(time: 1, unit: 'HOURS') {
       def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
       def workDir = pwd()
+      /* Update documention on gh-pages branch */
+      dir("$workDir/gh-pages") {
+        def subdir = env.BRANCH_NAME
+        git(url: "ssh://git@github.com/TRIQS/${projectName}.git", branch: "gh-pages", credentialsId: "ssh", changelog: false)
+        sh "rm -rf ${subdir}"
+        docker.image("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${documentationPlatform}").inside() {
+          sh "cp -rp \$INSTALL/share/doc/${projectName} ${subdir}"
+        }
+        sh "git add -A ${subdir}"
+        sh """
+          git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${env.BRANCH_NAME}' -m '${env.BUILD_TAG} ${commit}'
+        """
+        // note: credentials used above don't work (need JENKINS-28335)
+        sh "git push origin gh-pages"
+      }
+      /* Update docker repo submodule */
       dir("$workDir/docker") { try {
         git(url: "ssh://git@github.com/TRIQS/docker.git", branch: env.BRANCH_NAME, credentialsId: "ssh", changelog: false)
         sh "echo '160000 commit ${commit}\t${projectName}' | git update-index --index-info"

@@ -96,7 +96,7 @@ namespace cthyb {
     // the 1/8 smaller volume of the corner bins.
     
     for (auto &G2_tau_block : G2_tau) {
-      auto _ = var_t{};
+      auto _ = all_t{};
       int n  = std::get<0>(G2_tau_block.mesh().components()).size() - 1;
 
       G2_tau_block[0, _, _] *= 2.0;

@@ -138,7 +138,7 @@ namespace cthyb {
     for (auto &G2_iwll_block : G2_iwll) {
 
       for (auto l : std::get<1>(G2_iwll_block.mesh().components())) {
-        auto _   = var_t{};
+        auto _   = all_t{};
         double s = std::sqrt(2 * l + 1);
         G2_iwll_block[_, l, _] *= s;
         G2_iwll_block[_, _, l] *= s * (l % 2 ? 1 : -1);

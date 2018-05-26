@@ -134,7 +134,12 @@ class Solver(SolverCore):
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
             # Fourier transform G_tau to obtain G_iw
             for name, g in self.G_tau:
-                self.G_iw[name].set_from_fourier(g, np.zeros(([2] + list(g.target_shape)), dtype=np.complex))
+                bl_size = g.target_shape[0]
+                known_moments = np.zeros((4, bl_size, bl_size), dtype=np.complex)
+                for i in range(bl_size):
+                    known_moments[1,i,i] = 1
+
+                self.G_iw[name].set_from_fourier(g, known_moments)
 
             self.G_iw_raw = self.G_iw.copy()
 

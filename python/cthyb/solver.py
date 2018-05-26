@@ -1,7 +1,31 @@
+################################################################################
+#
+# TRIQS: a Toolbox for Research in Interacting Quantum Systems
+#
+# Copyright (C) 2017 by H. UR Strand, P. Seth, I. Krivenko,
+#                       M. Ferrero, O. Parcollet
+#
+# TRIQS is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# TRIQS. If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
 from solver_core  import SolverCore
 from pytriqs.gf import *
 import pytriqs.utility.mpi as mpi
 import numpy as np
+
+from tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
@@ -60,8 +84,8 @@ class Solver(SolverCore):
                            Should the tails of ``Sigma_iw`` and ``G_iw`` be fitted?
         fit_max_moment : integer, optional, default = 3
                          Highest moment to fit in the tail of ``Sigma_iw``.
-        fit_known_moments : dict{str:``TailGf`` object}, optional, default = {'block_name': ``TailGf(dim1, dim2, max_moment, order_min``)}
-                            Known moments of ``Sigma_iw``, given as a :ref:`TailGf <triqslibs:tailgf>` object.
+        fit_known_moments : ``ndarray.shape[order, Sigma_iw[0].target_shape]``, optional, default = None
+                            Known moments of Sigma_iw, given as an numpy ndarray
         fit_min_n : integer, optional, default = ``int(0.8 * self.n_iw)``
                     Index of ``iw`` from which to start fitting.
         fit_max_n : integer, optional, default = ``n_iw``
@@ -88,7 +112,7 @@ class Solver(SolverCore):
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
         if perform_post_proc and perform_tail_fit:
             # If tail parameters provided for Sigma_iw fitting, use them, otherwise use defaults
-            if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw)):
+            if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw) or ("fit_max_w" in params_kw) or ("fit_min_w" in params_kw)):
 	        if mpi.is_master_node():
                     warning = ("!------------------------------------------------------------------------------------!\n"
                                "! WARNING: Using default high-frequency tail fitting parameters in the CTHYB solver. !\n"
@@ -102,16 +126,6 @@ class Solver(SolverCore):
             fit_max_moment = params_kw.pop("fit_max_moment", None)
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
-        print_warning = False
-        for name, indices in self.gf_struct:
-            dim = len(indices)
-            if ( (self.G0_iw[name].tail[1]-np.eye(dim)) > 10**(-6) ).any(): print_warning = True
-	if print_warning and mpi.is_master_node():
-            warning = ("!--------------------------------------------------------------------------------------!\n"
-                       "! WARNING: Some components of your G0_iw do not decay as 1/iw. Continuing nonetheless. !\n"
-                       "!--------------------------------------------------------------------------------------!")
-            print warning
-
         # Call the core solver's solve routine
         solve_status = SolverCore.solve(self, **params_kw)
 
@@ -119,11 +133,41 @@ class Solver(SolverCore):
         # (only supported for G_tau, to permit compatibility with dft_tools)
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
             # Fourier transform G_tau to obtain G_iw
-            for name, g in self.G_tau: self.G_iw[name] << Fourier(g)
+            for name, g in self.G_tau:
+                bl_size = g.target_shape[0]
+                known_moments = np.zeros((4, bl_size, bl_size), dtype=np.complex)
+                for i in range(bl_size):
+                    known_moments[1,i,i] = 1
+
+                self.G_iw[name].set_from_fourier(g, known_moments)
+
+            self.G_iw_raw = self.G_iw.copy()
+
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
-            self.Sigma_iw = dyson(G0_iw=self.G0_iw,G_iw=self.G_iw)
-            if perform_tail_fit: tail_fit(Sigma_iw=self.Sigma_iw,G0_iw=self.G0_iw,G_iw=self.G_iw,\
-                                          fit_min_n=fit_min_n,fit_max_n=fit_max_n,fit_min_w=fit_min_w,fit_max_w=fit_max_w,\
-                                          fit_max_moment=fit_max_moment,fit_known_moments=fit_known_moments)
+            self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+            self.Sigma_iw_raw = self.Sigma_iw.copy()
+
+            if perform_tail_fit:
+                
+                cthyb_tail_fit(
+                    Sigma_iw=self.Sigma_iw,
+                    fit_min_n = fit_min_n, fit_max_n = fit_max_n,
+                    fit_min_w = fit_min_w, fit_max_w = fit_max_w,
+                    fit_max_moment = fit_max_moment,
+                    fit_known_moments = fit_known_moments,
+                    )
+
+                # Recompute G_iw with the fitted Sigma_iw
+                self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
+            else:
+
+                # Enforce 1/w behavior of G_iw in the tail fit window
+                # and recompute Sigma_iw
+                for name, g in self.G_iw:
+                    tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
+                    tail[1] = np.eye(g.target_shape[0])
+                    g.replace_by_tail_in_fit_window(tail)
+
+                self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
 
         return solve_status

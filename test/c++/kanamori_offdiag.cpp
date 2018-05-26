@@ -98,10 +98,6 @@ TEST(CtHyb, KanamoriOffDiag) {
       m                                = conj(V[j]) * m * V[j];
       term.data()(w_index, ellipsis()) = m;
     }
-    for (int tail_o = term.singularity().order_min(); tail_o <= term.singularity().order_max(); ++tail_o) {
-      m                          = term.singularity()(tail_o);
-      term.singularity()(tail_o) = conj(V[j]) * m * V[j];
-    }
     delta_iw = delta_iw + term;
   }
 

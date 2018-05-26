@@ -1,4 +1,4 @@
-""" 
+"""
 Test the initial setup that computes the hybridization function Delta_tau
 and the local quadratic term of the Hamiltonain form G0_iw.
 
@@ -7,6 +7,7 @@ Author: Hugo U.R. Strand """
 import numpy as np
 
 from cthyb import SolverCore
+#from triqs_cthyb import SolverCore
 
 from pytriqs.operators import n, c, c_dag, Operator
 import pytriqs.utility.mpi as mpi
@@ -17,7 +18,7 @@ beta = 10.0
 gf_struct = [['0', [0, 1]]]
 target_shape = [2, 2]
 
-nw = 1024
+nw = 48
 nt = 3 * nw
 
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt)
@@ -72,21 +73,29 @@ h_loc_ref = S.h_loc - h_int
 print 'h_loc =\n', h_loc
 print 'h_loc_ref =\n', h_loc_ref
 
-diff = h_loc - h_loc_ref
-print 'h_loc diff =', diff
-assert( diff == Operator() )
-
 Delta_tau_ref = S.Delta_tau['0']
 Delta_iw_ref = Delta_iw.copy()
 Delta_iw_ref << Fourier(Delta_tau_ref)
 
+diff = h_loc - h_loc_ref
+print 'h_loc diff =', diff
+for ops, prefactor in diff:
+    assert( np.abs(prefactor) < 1e-12 )
+#assert( diff == Operator() )
+
 diff = np.max(np.abs(Delta_tau.data - Delta_tau_ref.data))
 print 'Delta_tau diff =', diff
 np.testing.assert_array_almost_equal(Delta_tau.data, Delta_tau_ref.data)
-assert( diff < 1e-10 )
+assert( diff < 1e-8 )
 
 diff = np.max(np.abs(Delta_iw.data - Delta_iw_ref.data))
 print 'Delta_iw diff =', diff
 np.testing.assert_array_almost_equal(Delta_iw.data, Delta_iw_ref.data)
-assert( diff < 1e-10 )
+assert( diff < 1e-7 )
+
+if False:
+    from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
+    oplotr(Delta_tau)
+    oplotr(Delta_tau_ref)
+    plt.show(); exit()
 

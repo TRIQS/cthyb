@@ -58,6 +58,7 @@ namespace cthyb {
     // Single-particle Green's function containers
     G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
+    std::vector<matrix<dcomplex>> Delta_infty_vec; // Quadratic instantaneous part of G0_iw
 
     // Struct containing the parameters relevant for the solver construction
     constr_parameters_t constr_parameters;
@@ -97,6 +98,9 @@ namespace cthyb {
 
     /// Set of parameters used in the last call to ``solve()``.
     solve_parameters_t last_solve_parameters() const { return solve_parameters; }
+
+    /// :math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara Frequency.
+    std::vector<matrix<dcomplex>> Delta_infty() { return Delta_infty_vec; }
 
     /// :math:`\Delta(\tau)` in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }

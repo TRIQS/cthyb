@@ -2,9 +2,9 @@
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from triqs_cthyb import SolverCore
+from pytriqs.operators import n
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 
 spin_names = ("up","dn")
 def mkind(spin): return (spin,0)
@@ -29,8 +29,8 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50000
 p["n_cycles"] = 5000000
-p["measure_g_tau"] = False
-p["measure_g_l"] = True
+p["measure_G_tau"] = False
+p["measure_G_l"] = True
 
 results_file_name = "legendre.h5"
 
@@ -45,6 +45,7 @@ gf_struct = {}
 for spin in spin_names:
     bn, i = mkind(spin)
     gf_struct.setdefault(bn,[]).append(i)
+gf_struct = [ [key, value] for key, value in gf_struct.items() ]
 
 mpi.report("Constructing the solver...")
 

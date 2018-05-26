@@ -2,7 +2,8 @@
 
 from itertools import product
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
+from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -11,7 +12,7 @@ spin_names = ("up","dn")
 def setup_fig():
     axes = plt.gca()
     axes.set_ylabel('$G(\\tau)$')
-    axes.legend(loc='lower center',prop={'size':10})
+    axes.legend(loc='best',prop={'size':8},ncol=2)
 
 pp = PdfPages('G.pdf')
 ed_arch = HDFArchive('spinless.ed.h5','r')
@@ -27,7 +28,8 @@ for use_qn in (False,True):
 
         name = 'cthyb' + (' (QN)' if use_qn else '')
         for i1,i2 in product(("A","B"),("A","B")):
-            GF = rebinning_tau(arch['tot'][i1,i2],500)
+            #GF = rebinning_tau(arch['tot'][i1,i2],500)
+            #oplot(GF, name=name + ",%s%s" % (i1,i2))
             oplot(arch["tot"][i1,i2], name=name + ",%s%s" % (i1,i2))
             oplot(ed_arch["tot"][i1,i2], name="ED, %s%s" % (i1,i2))
 

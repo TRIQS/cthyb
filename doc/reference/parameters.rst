@@ -1,1 +1,0 @@
-../../python/cthyb_parameters.rst

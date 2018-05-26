@@ -1,22 +1,22 @@
-find_package(TriqsTest)
-
 # Copy h5 files to binary dir
-FILE(GLOB all_h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(GLOB all_h5_files *.h5)
+file(COPY ${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-triqs_add_python_test(single_site_bethe)
-triqs_add_python_test(atomic_observables)
-triqs_add_python_test(kanamori)
-triqs_add_python_test(slater)
-triqs_add_python_test(measure_static)
-triqs_add_python_test(histograms)
-triqs_add_python_test(move_global)
+# List all tests
+set(all_tests setup_Delta_tau_and_h_loc single_site_bethe atomic_observables kanamori slater measure_static histograms move_global h5_read_write)
 
-if(LOCAL_HAMILTONIAN_IS_COMPLEX)
-    triqs_add_python_test(atomic_gf_complex)
-    triqs_add_python_test(atomdiag_ed)
+if(Local_hamiltonian_is_complex)
+ list(APPEND all_tests atomic_gf_complex atomdiag_ed complex_bug81)
+ if(Hybridisation_is_complex)
+  list(APPEND all_tests complex_Gtau_ED)
+ endif()
 endif()
-if(HYBRIDISATION_IS_COMPLEX AND LOCAL_HAMILTONIAN_IS_COMPLEX)
-    triqs_add_python_test(complex_Gtau_ED)
-    triqs_add_python_test(complex_bug81)
-endif()
+
+foreach(t ${all_tests})
+  add_test(NAME ${t} COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/${t}.py)
+endforeach()
+
+# Set the PythonPath : put the build dir first (in case there is an installed version). 
+set_property(TEST ${all_tests} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH} )
+
+

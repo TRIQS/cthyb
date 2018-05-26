@@ -1,9 +1,10 @@
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
 from pytriqs.utility.comparison_tests import *
+
+from cthyb import *
 
 #  Example of DMFT single site solution with CTQMC
 
@@ -13,7 +14,7 @@ U = 2.5
 mu = (U/2.0)+0.2
 beta = 100.0
 
-gf_struct = {'up':[0],'down':[0]}
+gf_struct = [['down',[0]], ['up',[0]]]
 
 # Construct solver
 S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=3000, n_l=30)

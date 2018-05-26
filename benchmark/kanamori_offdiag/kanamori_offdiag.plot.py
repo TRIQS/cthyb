@@ -1,7 +1,8 @@
 #!/bin/env pytriqs
 
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
+from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import *
 from matplotlib.backends.backend_pdf import PdfPages
 from itertools import product
@@ -9,8 +10,7 @@ from itertools import product
 def setup_fig():
     axes = plt.gca()
     axes.set_ylabel('$G(\\tau)$')
-    axes.set_ylim(-1.0,.0)
-    axes.legend(loc='lower center',prop={'size':10})
+    axes.legend(loc='lower center',prop={'size':8}, ncol=1)
 
 spin_names = ("up","dn")
 num_orbitals = 2
@@ -25,22 +25,32 @@ for use_qn in (True,False):
 
     try:
         arch = HDFArchive(file_name,'r')
-        plt.clf()
 
         name = "cthyb (QN)" if use_qn else "cthyb"
 
         GF_up = rebinning_tau(arch['G_tau']['up'],200)
         GF_dn = rebinning_tau(arch['G_tau']['dn'],200)
 
-        for o1, o2 in product(range(num_orbitals),range(num_orbitals)):
-            oplot(GF_up[o1,o2], name=name+",$\uparrow%i%i$"%(o1,o2))
-            oplot(GF_dn[o1,o2], name=name+",$\downarrow%i%i$"%(o1,o2))
-            oplot(ed_arch['up'][o1,o2], name="ED,$\uparrow%i%i$"%(o1,o2))
-            oplot(ed_arch['dn'][o1,o2], name="ED,$\downarrow%i%i$"%(o1,o2))
+        ed_opt = dict(lw=2.0, alpha=1.0)
+        cthyb_opt = dict(lw=1.0, alpha=1.0)
+        
+        for o1, o2 in product(range(num_orbitals), repeat=2):
+            plt.clf()
+            plt.title('using_qn = ' + str(use_qn))
+            oplot(ed_arch['up'][o1,o2], name="ED,$\uparrow%i%i$"%(o1,o2), **ed_opt)
+            oplotr(GF_up[o1,o2], name=name+",$\uparrow%i%i$"%(o1,o2), **cthyb_opt)
+            oploti(GF_up[o1,o2], name=name+",$\uparrow%i%i$"%(o1,o2), **cthyb_opt)
+            setup_fig()
+            pp.savefig(plt.gcf())
 
-        setup_fig()
-        pp.savefig(plt.gcf())
-
+            plt.clf()
+            plt.title('using_qn = ' + str(use_qn))
+            oplot(ed_arch['dn'][o1,o2], name="ED,$\downarrow%i%i$"%(o1,o2), **ed_opt)
+            oplotr(GF_dn[o1,o2], name=name+",$\downarrow%i%i$"%(o1,o2), **cthyb_opt)
+            oploti(GF_dn[o1,o2], name=name+",$\downarrow%i%i$"%(o1,o2), **cthyb_opt)
+            setup_fig()
+            pp.savefig(plt.gcf())
+            
     except IOError: pass
 
 pp.close()

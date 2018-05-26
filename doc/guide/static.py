@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import Solver
 
@@ -12,7 +12,7 @@ beta = 50       # Inverse temperature
 
 # Construct the impurity solver with the inverse temperature
 # and the structure of the Green's functions
-S = Solver(beta = beta, gf_struct = {'up':[0], 'down':[0]})
+S = Solver(beta = beta, gf_struct = [ ['up',[0]], ['down',[0]] ])
 
 # Initialize the non-interacting Green's function S.G0_iw
 # External magnetic field introduces Zeeman energy splitting between

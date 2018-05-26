@@ -3,7 +3,7 @@
 Solver
 ======
 
-.. autoclass:: cthyb.Solver
+.. autoclass:: triqs_cthyb.Solver
     :members:
     :special-members: __init__
     :show-inheritance:

@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import *
 import pytriqs.utility.mpi as mpi
@@ -12,7 +12,7 @@ beta = 100
 n_loops = 5
 
 # Construct the CTQMC solver
-S = Solver(beta = beta, gf_struct = {'up':[0], 'down':[0]})
+S = Solver(beta = beta, gf_struct = [ ['up',[0]], ['down',[0]] ])
 
 # Initalize the Green's function to a semi circular DOS
 S.G_iw << SemiCircular(half_bandwidth)

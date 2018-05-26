@@ -8,11 +8,9 @@ Author: Hugo Strand """
 
 # ----------------------------------------------------------------------
 
-import numpy as np
-
 import pytriqs.utility.mpi as mpi
 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.comparison_tests import *

@@ -2,14 +2,15 @@
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from pytriqs.operators import n
+from pytriqs.atom_diag import trace_rho_op
+from triqs_cthyb import SolverCore
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 import numpy as np
 
 spin_names = ("up","dn")
 mkind = lambda sn, on: (sn,on)
-gf_struct = {"up":[1,2], "dn":[1,2]}
+gf_struct = [ ["up", [1, 2]], ["dn", [1, 2]] ]
 
 # Input parameters
 beta = 100.0
@@ -29,7 +30,7 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 100000
 p["n_cycles"] = 1000000
-p["measure_g_tau"] = True
+p["measure_G_tau"] = True
 p["measure_density_matrix"] = True
 p["use_norm_as_weight"] = True
 

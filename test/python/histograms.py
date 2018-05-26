@@ -3,14 +3,14 @@
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
+from cthyb import *
 from pytriqs.statistics.histograms import Histogram
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import numpy as np
 
 spin_names = ("up","dn")
 mkind = lambda sn: (sn,0)
-gf_struct = {"up":[0], "dn":[0]}
+gf_struct = [["dn",[0]], ["up",[0]]]
 
 # Input parameters
 beta = 10.0

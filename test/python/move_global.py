@@ -1,11 +1,11 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.observables import S_op
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
+from cthyb import *
 from pytriqs.utility.comparison_tests import *
 
 # H_loc parameters
@@ -26,9 +26,10 @@ V = 2.0 * np.eye(num_orbitals) + 0.2 * (np.ones(num_orbitals) - np.eye(num_orbit
 spin_names = ('up','dn')
 orb_names = range(num_orbitals)
 gf_struct = set_operator_structure(spin_names,orb_names,True)
+gf_struct.reverse() # the reference data was computed with reversed block order
 
 # Construct solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500, n_l=50)
 
 # Hamiltonian
 H = h_int_kanamori(spin_names,orb_names,

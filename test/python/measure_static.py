@@ -1,8 +1,10 @@
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+#from atom_diag import trace_rho_op
+from pytriqs.atom_diag import trace_rho_op
+from cthyb import *
+from pytriqs.gf import *
 import numpy as np
 
 # Input parameters
@@ -33,7 +35,7 @@ H = U*n("up",1)*n("dn",1) + U*n("up",2)*n("dn",2)
 H = H + 0.5*h*(n("up",1) - n("dn",1)) + 0.5*h*(n("up",2) - n("dn",2))
 
 # Construct the solver
-S = Solver(beta=beta, gf_struct={"up":[1,2], "dn":[1,2]}, n_tau=n_tau, n_iw=n_iw)
+S = Solver(beta=beta, gf_struct=[["dn",[1,2]], ["up",[1,2]]], n_tau=n_tau, n_iw=n_iw)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [1,2], beta=beta)
@@ -51,7 +53,8 @@ if mpi.is_master_node():
     with HDFArchive('measure_static.out.h5','w') as ar:
         for name,op in static_observables.iteritems():
             ave = trace_rho_op(dm,op,S.h_loc_diagonalization)
-            ar[name] = ave
+            assert( np.abs(ave.imag) < 1e-10 )
+            ar[name] = ave.real
 
 from pytriqs.utility.h5diff import h5diff
 h5diff("measure_static.out.h5","measure_static.ref.h5")

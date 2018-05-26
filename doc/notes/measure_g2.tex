@@ -1,0 +1,398 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.7in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{caption}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+
+\newcommand{\aver}[1]{\ensuremath{\langle#1\rangle}}
+\renewcommand{\t}{\ensuremath{\tau}}
+\newcommand{\w}{\ensuremath{\omega}}
+\newcommand{\W}{\ensuremath{\Omega}}
+\newcommand{\n}{\ensuremath{\nu}}
+\newcommand{\TT}{\ensuremath{\mathcal{T}_\t}}
+
+\begin{document}
+\title{Implementation notes: accumulation of two-particle Green's functions in \texttt{CTHYB}}
+\author{Igor Krivenko}
+\maketitle
+
+\section{General notations}
+\begin{itemize}
+	\item $\nu_n = \pi(2n+1)/\beta$ --- fermionic Matsubara frequency;
+	\item $\w_m = 2\pi m/\beta$ -- bosonic Matsubara frequency;
+	\item $P_\ell[x(\t)]$ --- Legendre polynomials of $x$, $x(\t) = 2\t/\beta - 1$;
+	\item $\sum_{\nu_n} = \frac{1}{\beta}\sum_{n=-\infty}^{+\infty}$ ---
+		  Matsubara frequency summation.
+\end{itemize}
+
+\section{Single-particle Green's function}
+
+Definition:
+\begin{equation}
+	G_{\alpha\beta}(\t_1-\t_2) = -\aver{\TT c_\alpha(\t_1) c^\dag_\beta(\t_2)}.
+\end{equation}
+
+Matsubara-frequency representation:
+\begin{equation}
+	G_{\alpha\beta}(i\nu_n) = \int_0^\beta d\t e^{i\nu_n\t} G_{\alpha\beta}(\t),
+	\quad
+	G_{\alpha\beta}(\t) = \sum_{\nu_n} e^{-i\nu_n} G_{\alpha\beta}(i\nu_n).
+\end{equation}
+
+Legendre representation:
+\begin{equation}
+	G_{\alpha\beta}(\ell) = \sqrt{2\ell+1}\int_0^\beta d\t P_\ell[x(\t)] G_{\alpha\beta}(\t),
+	\quad
+	G_{\alpha\beta}(\t) = \sum_{\l\ge 0} \frac{\sqrt{2\l+1}}{\beta} P_\ell[x(\t)] G_{\alpha\beta}(\ell).
+\end{equation}
+
+\section{Two-particle Green's function}
+\subsection{Definition}
+
+I define a general two-particle Green's function in imaginary-time following the notation adopted in
+\cite{Boehnke15} and \cite{RohringerThesis}.
+\begin{equation}
+	G^{(2)}_{\alpha\beta\gamma\delta}(\t_1,\t_2,\t_3,\t_4) =
+	\aver{\mathcal{T}_\t c^\dag_\alpha(\t_1) c_\beta(\t_2) c^\dag_\gamma(\t_3) c_\delta(\t_4)}.
+\end{equation}
+
+A configuration of the hybridization expansion algorithm is defined by the
+perturbation order $K$, the pairs of imaginary time points where $c$ and $c^\dag$
+operators are inserted, and their corresponding indices,
+\begin{equation}
+\mathcal{C} = (K;\{\tau_1\lambda_1,\tau'_1\lambda'_1;\ldots;\tau_K\lambda_K,\tau'_K\lambda'_K\}).
+\end{equation}
+The hybridization processes contribute to the Monte-Carlo weight of the configuration
+$\mathcal{C}$ as $|\det \mathbf{\hat\Delta}(\mathcal{C})|$ factor, where
+$\mathbf{\Delta}(\mathcal{C})_{ij} \equiv \Delta_{\lambda_i,\lambda'_j}(\tau_i-\tau'_j)$.
+The accumulation procedures involve the inverted matrix $\mathbf{\hat M} = \mathbf{\hat\Delta}^{-1}$.
+
+$G^{(2)}$ can in principle be accumulated directly in the imaginary time representation,
+\begin{multline}\label{accum_tau}
+    G^{(2)}_{\alpha\beta\gamma\delta}(\t_1,\t_2,\t_3,\t_4) =
+    \frac{1}{\beta}\left\langle
+    \sum_{ijkl=1}^K
+    (\mathbf{M}_{ij} \mathbf{M}_{kl} - \mathbf{M}_{il} \mathbf{M}_{kj})
+    \delta_{\lambda'_i,\alpha} \delta_{\lambda_j,\beta}
+    \delta_{\lambda'_k,\gamma} \delta_{\lambda_l,\delta}
+    \times\right.\\\left.\times
+    \delta^-[\t_1 - \t_2 -(\t'_i-\t_j)]\delta^-[\t_3-\t_4-(\t'_k-\t_l)]
+    \delta^+[\t_1-\t_4-(\tau'_i-\tau_l)]
+    \vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC},
+\end{multline}
+with $\delta^{\pm}$ being periodized/anti-periodized delta-function,
+\begin{equation}
+    \delta^{\pm}(\tau) = \sum_{n\in\mathbb{Z}}(\pm1)^n\delta(\tau-n\beta).
+\end{equation}
+
+
+\subsection{Block structure of $G^{(2)}$}
+
+In the previous paragraph I used Greek letters to denote operator indices without paying attention to the block structure of the hybridization function.
+It is, however, important to treat a general index $\alpha=(A;a)$ as a combination of a
+block index $A$ and an internal index $a$ in order to analyze the block structure of
+$G^{(2)}$. The matrix $\mathbf{M}$ is block diagonal with the same blocks as $\hat \Delta(\t)$. Therefore, only the following two block index combinations can receive
+non-vanishing contributions during accumulation,
+\begin{multline}\label{accum_AABB}
+	G^{(2)AABB}_{abcd}(\t_1,\t_2,\t_3,\t_4) =
+	\frac{1}{\beta}\left\langle
+	\sum_{ij=1}^{K_A}\sum_{kl=1}^{K_B}
+	(\mathbf{M}^A_{ij} \mathbf{M}^B_{kl} - \delta_{AB}\mathbf{M}^A_{il} \mathbf{M}^A_{kj})
+	\times\right.\\\left.\times
+	\delta_{\lambda'_i,a} \delta_{\lambda_j,b}\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+	\delta^-[\t_1 - \t_2 -(\t'_i-\t_j)]\delta^-[\t_3-\t_4-(\t'_k-\t_l)]
+	\delta^+[\t_1-\t_4-(\tau'_i-\tau_l)]
+	\vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC},
+\end{multline}
+\begin{multline}\label{accum_ABBA}
+	G^{(2)ABBA}_{abcd}(\t_1,\t_2,\t_3,\t_4) =
+	\frac{1}{\beta}\left\langle
+	\sum_{il=1}^{K_A}\sum_{kj=1}^{K_B}
+	(\delta_{AB}\mathbf{M}^A_{ij} \mathbf{M}^A_{kl} - \mathbf{M}^A_{il} \mathbf{M}^B_{kj})
+	\times\right.\\\left.\times
+	\delta_{\lambda'_i,a} \delta_{\lambda_j,b}\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+	\delta^-[\t_1 - \t_2 -(\t'_i-\t_j)]\delta^-[\t_3-\t_4-(\t'_k-\t_l)]
+	\delta^+[\t_1-\t_4-(\tau'_i-\tau_l)]
+	\vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC}.
+\end{multline}
+
+The choice between the two notations is dictated by the physical quantity of interest.
+For example, in many cases the block indices correspond to spin projections,
+$A=\uparrow,\downarrow$. One would prefer the $AABB$ notation to compute a
+density-density correlator $\langle n_\sigma(\t)n_{\sigma'}(0)\rangle$ from the results
+of $G^{(2)}$ accumulation. On the other hand, the $ABBA$ notation would be more
+convenient for a calculation of the transversal magnetic susceptibility $\langle S_+(\t)S_-(0) \rangle$.
+
+In order to minimize memory consumption, the accumulated Green's function will be stored
+in a \texttt{block2\_gf} container with indices $A,B$. Interpretation of this
+pair of indices
+as either $AABB$ or $ABBA$ will be controlled via a switchable option. There will also be
+an option to measure a subset of all possible $AB$ pairs.
+
+\subsection{Accumulation at Matsubara frequencies: $ph$- and $pp$-channels}
+
+It is rather impractical to accumulate in the imaginary time domain, because the number of
+time slices along each of the three $\t$-directions (one dimension is eliminated by
+the time shift symmetry) is strongly limited. Typically one has enough memory to store only
+$10^1-10^2$ slices, which would provide a very rough description of the actual function.
+The same number of data points in the Matsubara frequency representation would contain
+much more relevant information.
+
+It will be possible to switch between the \textit{particle-hole} and \textit{particle-particle}
+notation for the Fourier transform.
+
+\begin{equation}
+	G^{(2)ph}_{\alpha\beta\gamma\delta}(\w;\nu,\nu') =
+	\frac{1}{\beta}\int_0^\beta d\t_1d\t_2d\t_3d\t_4\
+	e^{-i\nu\t_1} e^{i(\nu+\w)\t_2} e^{-i(\nu'+\w)\t_3} e^{i\nu'\tau_4}
+	G^{(2)}_{\alpha\beta\gamma\delta}(\t_1,\t_2,\t_3,\t_4).
+\end{equation}
+\begin{equation}
+	G^{(2)pp}_{\alpha\beta\gamma\delta}(\w;\nu,\nu') =
+	\frac{1}{\beta}\int_0^\beta d\t_1d\t_2d\t_3d\t_4\
+	e^{-i\nu\t_1} e^{i(\w-\nu')\t_2} e^{-i(\w-\nu)\t_3} e^{i\nu'\tau_4}
+	G^{(2)}_{\alpha\beta\gamma\delta}(\t_1,\t_2,\t_3,\t_4).
+\end{equation}
+
+Let us apply these Fourier transformations to the product of $\delta^\pm$-functions in
+(\ref{accum_tau}).
+
+\begin{multline}\label{ph_fourier_kernel}
+	\frac{1}{\beta}\int_0^\beta d\t_1d\t_2d\t_3d\t_4\
+	e^{-i\nu\t_1} e^{i(\nu+\w)\t_2} e^{-i(\nu'+\w)\t_3} e^{i\nu'\tau_4}\times\\\times
+    \delta^-[\t_1 - \t_2 -(\t'_i-\t_j)]\delta^-[\t_3-\t_4-(\t'_k-\t_l)]
+    \delta^+[\t_1-\t_4-(\tau'_i-\tau_l)] =\\=
+    \exp[-i\nu\t_i' +i(\nu+\w)\t_j - i(\nu'+\w)\t'_k + i\nu'\t_l].
+\end{multline}
+\begin{multline}\label{pp_fourier_kernel}
+	\frac{1}{\beta}\int_0^\beta d\t_1d\t_2d\t_3d\t_4\
+	e^{-i\nu\t_1} e^{i(\w-\nu')\t_2} e^{-i(\w-\nu)\t_3} e^{i\nu'\tau_4}\times\\\times
+	\delta^-[\t_1 - \t_2 -(\t'_i-\t_j)]\delta^-[\t_3-\t_4-(\t'_k-\t_l)]
+	\delta^+[\t_1-\t_4-(\tau'_i-\tau_l)] =\\=
+	\exp[-i\nu\t_i' +i(\w-\nu')\t_j - i(\w-\nu)\t'_k + i\nu'\t_l].
+\end{multline}
+
+This result allows me to write down $G^{(2)}$ accumulation formulas for all combinations
+of $AB$-orderings and channels.
+
+\begin{itemize}
+	\item \textbf{AABB-ph}
+	\begin{multline}
+		G^{(2),AABB,ph}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
+			\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
+				\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
+				e^{-i\nu\t_i'+i(\nu+\w)\t_j}
+			\right)
+			\left(\sum_{kl=1}^{K_B} \mathbf{M}^B_{kl}
+				\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+				e^{-i(\nu'+\w)\t_k'+i\nu'\t_l}
+			\right) -\right.\\\left.-\delta_{AB}
+			\left(\sum_{il=1}^{K_A} \mathbf{M}^A_{il}
+				\delta_{\lambda'_i,a} \delta_{\lambda_l,d}
+				e^{-i\nu\t_i'+i\nu'\t_l}
+			\right)
+			\left(\sum_{kj=1}^{K_A} \mathbf{M}^A_{kj}
+				\delta_{\lambda'_k,c} \delta_{\lambda_j,b}
+				e^{-i(\nu'+\w)\t_k'+i(\nu+\w)\t_j}
+			\right)
+		\right\rangle_\mathrm{MC}.
+	\end{multline}
+
+	\item \textbf{ABBA-ph}
+	\begin{multline}
+		G^{(2),ABBA,ph}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
+			\delta_{AB}
+			\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
+				\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
+				e^{-i\nu\t_i'+i(\nu+\w)\t_j}
+			\right)
+			\left(\sum_{kl=1}^{K_A} \mathbf{M}^A_{kl}
+				\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+				e^{-i(\nu'+\w)\t_k'+i\nu'\t_l}
+			\right) -\right.\\\left.-
+			\left(\sum_{il=1}^{K_A} \mathbf{M}^A_{il}
+				\delta_{\lambda'_i,a} \delta_{\lambda_l,d}
+				e^{-i\nu\t_i'+i\nu'\t_l}
+			\right)
+			\left(\sum_{kj=1}^{K_B} \mathbf{M}^B_{kj}
+				\delta_{\lambda'_k,c} \delta_{\lambda_j,b}
+				e^{-i(\nu'+\w)\t_k'+i(\nu+\w)\t_j}
+			\right)
+			\right\rangle_\mathrm{MC}.
+	\end{multline}
+
+	\item \textbf{AABB-pp}
+	\begin{multline}
+	G^{(2),AABB,pp}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
+		\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
+			\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
+			e^{-i\nu\t_i'+i(\w-\nu')\t_j}
+		\right)
+		\left(\sum_{kl=1}^{K_B} \mathbf{M}^B_{kl}
+			\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+			e^{-i(\w-\nu)\t_k'+i\nu'\t_l}
+		\right) -\right.\\\left.-\delta_{AB}
+		\left(\sum_{il=1}^{K_A} \mathbf{M}^A_{il}
+			\delta_{\lambda'_i,a} \delta_{\lambda_l,d}
+			e^{-i\nu\t_i'+i\nu'\t_l}
+		\right)
+		\left(\sum_{kj=1}^{K_A} \mathbf{M}^A_{kj}
+			\delta_{\lambda'_k,c} \delta_{\lambda_j,b}
+			e^{-i(\w-\nu)\t_k'+i(\w-\nu')\t_j}
+		\right)
+		\right\rangle_\mathrm{MC}.
+	\end{multline}
+
+	\item \textbf{ABBA-pp}
+	\begin{multline}
+	G^{(2),ABBA,pp}_{abcd}(\w;\nu,\nu') =\\= \frac{1}{\beta}\left\langle
+		\delta_{AB}
+		\left(\sum_{ij=1}^{K_A} \mathbf{M}^A_{ij}
+			\delta_{\lambda'_i,a} \delta_{\lambda_j,b}
+			e^{-i\nu\t_i'+i(\w-\nu')\t_j}
+		\right)
+		\left(\sum_{kl=1}^{K_A} \mathbf{M}^A_{kl}
+			\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+			e^{-i(\w-\nu)\t_k'+i\nu'\t_l}
+		\right) -\right.\\\left.-
+		\left(\sum_{il=1}^{K_A} \mathbf{M}^A_{il}
+			\delta_{\lambda'_i,a} \delta_{\lambda_l,d}
+			e^{-i\nu\t_i'+i\nu'\t_l}
+		\right)
+		\left(\sum_{kj=1}^{K_B} \mathbf{M}^B_{kj}
+			\delta_{\lambda'_k,c} \delta_{\lambda_j,b}
+			e^{-i(\w-\nu)\t_k'+i(\w-\nu')\t_j}
+		\right)
+		\right\rangle_\mathrm{MC}.
+	\end{multline}
+\end{itemize}
+
+It is worth noting that none of the formulas above contain a four-fold sum
+over elements of the $\mathbf{M}$ matrices. Factorization of such sums
+into products of double sums allows to significantly speed up the accumulation
+process.
+
+\subsection{Accumulation in the mixed Matsubara/Legendre basis}
+
+Lewin Boehnke proves in his thesis \cite{Boehnke15} that a modified (shifted)
+transformation to the Legendre basis should be used in order to minimize the
+number of required coefficients. Matrix inversion of quantities in this basis
+is also more stable.
+
+\begin{equation}\label{legendre_transform}
+	G^{(2)}_{\alpha\beta\gamma\delta}(\w_m;\ell,\ell') \equiv
+	\sum_{n,n'\in\mathbb{Z}}
+	\bar T_{2n+m+1,\ell}
+	G^{(2)}_{\alpha\beta\gamma\delta}(\w_m;\nu_n,\nu_{n'})
+	\bar T^*_{2n'+m+1,\ell'},
+\end{equation}
+\begin{equation}
+	\bar T_{o,\ell} \equiv \frac{\sqrt{2\ell+1}}{\beta}
+	\int_0^\beta d\t e^{io\pi\frac{\t}{\beta}} P_\ell[x(\t)] =
+	\sqrt{2\ell+1}i^o i^\ell j_\ell\left(\frac{o\pi}{2}\right).
+\end{equation}
+
+Applying transformation (\ref{legendre_transform}) to the right hand parts of
+equations (\ref{ph_fourier_kernel}) and (\ref{pp_fourier_kernel}) we obtain
+
+\begin{multline}
+	\sum_{n,n'\in\mathbb{Z}}
+	\bar T_{2n+m+1,\ell}
+	e^{-i\nu_n(\t'_i-\t_j) -i\w_m(\t'_k-\t_j) -i\nu_{n'}(\t'_k-\t_l)}
+	\bar T^*_{2n'+m+1,\ell'} =\\=
+	(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}
+	\tilde P_\ell[x(\t'_i-\t_j)] \tilde P_{\ell'}[x(\t'_k-\t_l)]
+	e^{i\frac{\w_m}{2}(\t'_i-\t_j+\t'_k-\t_l)} e^{-i\w_m(\t'_k-\t_j)},
+\end{multline}
+\begin{multline}
+	\sum_{n,n'\in\mathbb{Z}}
+	\bar T_{2n+m+1,\ell}
+	e^{-i\nu_n(\t'_i-\t'_k) -i\w_m(\t'_k-\t_j) -i\nu_{n'}(\t_j-\t_l)}
+	\bar T^*_{2n'+m+1,\ell'} =\\=
+	(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}
+	\tilde P_\ell[x(\t'_i-\t'_k)] \tilde P_{\ell'}[x(\t_j-\t_l)]
+	e^{i\frac{\w_m}{2}(\t'_i-\t'_k+\t_j-\t_l)} e^{-i\w_m(\t'_k-\t_j)},
+\end{multline}
+\begin{equation}
+	\tilde P_\ell[x(\delta\t)] \equiv \left\{
+	\begin{array}{ll}
+	P_\ell[x(\delta\t)], &\delta\t>0,\\
+	-P_\ell[x(\delta\t+\beta)], &\delta\t<0.
+	\end{array}
+	\right.
+\end{equation}
+
+Accumulation formulas in the mixed Matsubara/Legendre basis are given below.
+\begin{itemize}
+	\item \textbf{AABB-ph}
+	\begin{multline}
+		G^{(2)AABB}_{abcd}(\w;\ell,\ell') =
+		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
+		\sum_{ij=1}^{K_A}\sum_{kl=1}^{K_B}
+		(\mathbf{M}^A_{ij} \mathbf{M}^B_{kl} - \delta_{AB}\mathbf{M}^A_{il} \mathbf{M}^A_{kj})
+		\times\right.\\\left.\times
+		\delta_{\lambda'_i,a} \delta_{\lambda_j,b}\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+		\tilde P_\ell[x(\t'_i-\t_j)] \tilde P_{\ell'}[x(\t'_k-\t_l)]
+		e^{i\frac{\w}{2}(\t'_i-\t_j+\t'_k-\t_l)} e^{-i\w(\t'_k-\t_j)}
+		\vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC}.
+	\end{multline}
+	\item \textbf{ABBA-ph}
+	\begin{multline}
+		G^{(2)ABBA}_{abcd}(\w;\ell,\ell') =
+		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
+		\sum_{il=1}^{K_A}\sum_{kj=1}^{K_B}
+		(\delta_{AB}\mathbf{M}^A_{ij} \mathbf{M}^A_{kl} - \mathbf{M}^A_{il} \mathbf{M}^B_{kj})
+		\times\right.\\\left.\times
+		\delta_{\lambda'_i,a} \delta_{\lambda_j,b}\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+		\tilde P_\ell[x(\t'_i-\t_j)] \tilde P_{\ell'}[x(\t'_k-\t_l)]
+		e^{i\frac{\w}{2}(\t'_i-\t_j+\t'_k-\t_l)} e^{-i\w(\t'_k-\t_j)}
+		\vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC}.
+	\end{multline}
+	\item \textbf{AABB-pp}
+	\begin{multline}
+		G^{(2)AABB}_{abcd}(\w;\ell,\ell') =
+		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
+		\sum_{ij=1}^{K_A}\sum_{kl=1}^{K_B}
+		(\mathbf{M}^A_{ij} \mathbf{M}^B_{kl} - \delta_{AB}\mathbf{M}^A_{il} \mathbf{M}^A_{kj})
+		\times\right.\\\left.\times
+		\delta_{\lambda'_i,a} \delta_{\lambda_j,b}\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+		\tilde P_\ell[x(\t'_i-\t'_k)] \tilde P_{\ell'}[x(\t_j-\t_l)]
+		e^{i\frac{\w}{2}(\t'_i-\t'_k+\t_j-\t_l)} e^{-i\w(\t'_k-\t_j)}
+		\vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC}.
+	\end{multline}
+	\item \textbf{ABBA-pp}
+	\begin{multline}
+		G^{(2)ABBA}_{abcd}(\w;\ell,\ell') =
+		\frac{(-1)^{\ell'+1}\sqrt{2\ell+1}\sqrt{2\ell'+1}}{\beta}\left\langle
+		\sum_{il=1}^{K_A}\sum_{kj=1}^{K_B}
+		(\delta_{AB}\mathbf{M}^A_{ij} \mathbf{M}^A_{kl} - \mathbf{M}^A_{il} \mathbf{M}^B_{kj})
+		\times\right.\\\left.\times
+		\delta_{\lambda'_i,a} \delta_{\lambda_j,b}\delta_{\lambda'_k,c} \delta_{\lambda_l,d}
+		\tilde P_\ell[x(\t'_i-\t'_k)] \tilde P_{\ell'}[x(\t_j-\t_l)]
+		e^{i\frac{\w}{2}(\t'_i-\t'_k+\t_j-\t_l)} e^{-i\w(\t'_k-\t_j)}
+		\vphantom{\sum_{ijkl=1}^K} \right\rangle_\mathrm{MC}.
+	\end{multline}
+\end{itemize}
+
+\bibliographystyle{plain}
+
+\begin{thebibliography}{9}
+
+\bibitem{Boehnke15}
+    Lewin Volker Boehnke,
+    \emph{Susceptibilities in materials with multiple strongly correlated orbitals}
+    PhD thesis, Universit\"at Hamburg, 2015,
+    \url{http://ediss.sub.uni-hamburg.de/volltexte/2015/7325/pdf/Dissertation.pdf}
+
+\bibitem{RohringerThesis}
+    Georg Rohringer,
+    \emph{New routes towards a theoretical treatment of nonlocal electronic correlations}
+    PhD thesis, Technische Universit\"at Wien, 2013,
+    \url{https://www.ifp.tuwien.ac.at/fileadmin/Arbeitsgruppen/quantum_manybody_physics/docs/thesis/RohringerPhD.pdf},
+
+\end{thebibliography}
+
+\end{document}

@@ -9,8 +9,8 @@ Installation
 Prerequisite
 -------------------
 
-#. The :ref:`TRIQS <triqslibs:welcome>` toolbox (see :ref:`TRIQS installation instruction <triqslibs:installation>`).
-   In the following, we will suppose that it is installed in the ``path_to_triqs`` directory.
+#. The :ref:`TRIQS <triqslibs:welcome>` toolbox and Cpp2Py (see :ref:`TRIQS installation instruction <triqslibs:installation>`).
+   In the following, we will suppose that both are installed in the ``path_to_triqs`` directory.
 
 Installation steps
 ------------------
@@ -23,17 +23,20 @@ Installation steps
 
      $ mkdir cthyb.build && cd cthyb.build
 
-#. In the build directory call cmake specifying where the TRIQS library is installed::
+#. Make sure that you have added the TRIQS and Cpp2Py installation to your environment variables::
 
-     $ cmake -DTRIQS_PATH=path_to_triqs ../cthyb.src
+     $ source path_to_triqs/share/cpp2pyvarsh.sh
+     $ source path_to_triqs/share/triqsvarsh.sh
+
+#. In the build directory call cmake::
+
+     $ cmake ../cthyb.src
 
 #. Compile the code, run the tests and install the application::
 
      $ make
      $ make test
      $ make install
-
-.. note:: Be careful with the cmake command above: set TRIQS_PATH, not CMAKE_INSTALL_PREFIX (this variable is only for the TRIQS library)!
 
 Version compatibility
 ---------------------
@@ -57,25 +60,29 @@ Custom CMake options
 
 Functionality of ``cthyb`` can be tweaked using extra compile-time options passed to CMake::
 
-    cmake -DTRIQS_PATH=path_to_triqs -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
+    cmake -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
 
-+---------------------------------------------------------------+-----------------------------------+
-| Options                                                       | Syntax                            |
-+===============================================================+===================================+
-| Disable testing (not recommended)                             | -DTests=OFF                       |
-+---------------------------------------------------------------+-----------------------------------+
-| Build the documentation locally                               | -DBUILD_DOC=ON                    |
-+---------------------------------------------------------------+-----------------------------------+
-| Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON     |
-+---------------------------------------------------------------+-----------------------------------+
-| Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON |
-+---------------------------------------------------------------+-----------------------------------+
-| Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                    |
-+---------------------------------------------------------------+-----------------------------------+
-| Save visited configurations to configs.h5 (*developers only*) | -DSAVE_CONFIGS=ON                 |
-+---------------------------------------------------------------+-----------------------------------+
++---------------------------------------------------------------+-----------------------------------------------+
+| Options                                                       | Syntax                                        |
++===============================================================+===============================================+
+| Disable testing (not recommended)                             | -DTests=OFF                                   |
++---------------------------------------------------------------+-----------------------------------------------+
+| Specify an installation path other than path_to_triqs         | -DCMAKE_INSTALL_PREFIX=path_to_cthyb          |
++---------------------------------------------------------------+-----------------------------------------------+
+| Build the documentation locally                               | -DBUILD_DOC=ON                                |
++---------------------------------------------------------------+-----------------------------------------------+
+| Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON                 |
++---------------------------------------------------------------+-----------------------------------------------+
+| Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON             |
++---------------------------------------------------------------+-----------------------------------------------+
+| Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                                |
++---------------------------------------------------------------+-----------------------------------------------+
+| Save visited configurations to configs.h5 (*developers only*) | -DSAVE_CONFIGS=ON                             |
++---------------------------------------------------------------+-----------------------------------------------+
 
 .. note::
 
-    Combination of options ``HYBRIDISATION_IS_COMPLEX=ON`` and ``LOCAL_HAMILTONIAN_IS_COMPLEX=OFF``
-    is not supported.
+    * Combination of options ``HYBRIDISATION_IS_COMPLEX=ON`` and ``LOCAL_HAMILTONIAN_IS_COMPLEX=OFF``
+      is not supported.
+
+    * The two-particle Green's function measurement requires the TRIQS library to be built with NFFT support.

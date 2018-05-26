@@ -3,4 +3,4 @@
 solve() parameters
 ==================
 
-.. include:: parameters.rst
+.. include:: parameters_solve_parameters_t.rst

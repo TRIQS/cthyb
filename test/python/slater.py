@@ -4,8 +4,8 @@ from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.U_matrix import U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from cthyb import *
+from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 
 beta = 100.0
@@ -41,7 +41,7 @@ gf_struct = set_operator_structure(spin_names,cubic_names,False)
 H = h_int_slater(spin_names,cubic_names,U_mat,False)
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000, n_l=50)
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)

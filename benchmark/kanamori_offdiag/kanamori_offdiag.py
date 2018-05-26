@@ -2,11 +2,11 @@
 
 import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
-from pytriqs.operators import *
+from pytriqs.operators import n, Operator
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.gf.local import *
+from triqs_cthyb import SolverCore
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 import numpy as np
 
 # Input parameters
@@ -32,8 +32,8 @@ p["max_time"] = -1
 p["random_name"] = ""
 p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
-p["n_warmup_cycles"] = 50000/10
-p["n_cycles"] = 3200000/10
+p["n_warmup_cycles"] = 50000
+p["n_cycles"] = 3200000
 p["use_norm_as_weight"] = True
 p["measure_density_matrix"] = False
 

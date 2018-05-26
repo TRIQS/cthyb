@@ -24,8 +24,8 @@ correct structure of the Green's function for the problem you are considering.
 You should always try to take advantage of a possible block structure of the
 Green's function. In a spin-conserving system, the Green's function can often
 be (at least) cut into *up* and *down* spin sectors.  When the structure is
-clear you can set the parameter ``gf_struct``, which is a ``dict()`` mapping a
-string that gives the name of the block to a list of the indices of the block.
+clear you can set the parameter ``gf_struct``, which is a ``list()`` or pairs,
+each containing the name of the block and a list of the indices of the block.
 
 Examples
 ........
@@ -33,12 +33,12 @@ Examples
 * For a single-band Hubbard model with a local Coulomb interaction, the Green's function
   can be cut in two up/down blocks of size 1. We would have::
 
-    gf_struct = { 'up': [0], 'down': [0] }
+    gf_struct = [ ['up',[0]], ['down',[0]] ]
 
 * For a two-band Hubbard model with a hybridization between the bands, the Green's function
   can be cut in two up/down blocks, but there are off-diagonal orbital elements. We have::
 
-    gf_struct = { 'up': [0,1], 'down': [0,1] }
+    gf_struct = [ ['up',[0, 1]], ['down',[0, 1]] ]
 
 
 Step 2 - the Hamiltonian
@@ -155,7 +155,7 @@ Final Step - analyze the output
 One of the most important checks that needs to be done is to ensure that the
 high-frequency behaviour of your imaginary frequency Green's function and
 self-energy are correct and lead to physically sensible values. You should use
-the fitting function ``tail_fit`` (provided in ``pytriqs.gf.local``) to determine the
+the fitting function ``tail_fit`` (provided in ``pytriqs.gf``) to determine the
 optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.  See :ref:`here <triqslibs:tailgf>`
 for more details on the tail fitting tool. This post-processing task can also be
 delegated to the ``Solver`` object by setting ``perform_tail_fit = True``

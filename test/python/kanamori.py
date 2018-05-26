@@ -1,10 +1,10 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
+from cthyb import *
 from pytriqs.utility.comparison_tests import *
 
 # H_loc parameters
@@ -26,7 +26,7 @@ orb_names = range(num_orbitals)
 gf_struct = set_operator_structure(spin_names,orb_names,True)
 
 # Construct solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500, n_l=50)
 
 # Hamiltonian
 H = h_int_kanamori(spin_names,orb_names,

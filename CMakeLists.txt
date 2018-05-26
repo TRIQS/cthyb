@@ -26,7 +26,7 @@ endif()
 set(BUILD_SHARED_LIBS ON)
 
 # Load TRIQS and Cpp2Py
-find_package(TRIQS 1.5 EXACT REQUIRED)
+find_package(TRIQS 2.0 REQUIRED)
 find_package(Cpp2Py REQUIRED)
 
 # We will need the FindNNFT of triqs, so we adjust CMake Module Path to find it

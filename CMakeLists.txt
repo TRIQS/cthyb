@@ -27,7 +27,7 @@ set(BUILD_SHARED_LIBS ON)
 
 # Load TRIQS and Cpp2Py
 find_package(TRIQS 2.0 REQUIRED)
-find_package(Cpp2Py REQUIRED)
+find_package(Cpp2Py 1.5 REQUIRED)
 
 # We will need the FindNNFT of triqs, so we adjust CMake Module Path to find it
 list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake)
@@ -90,6 +90,6 @@ if(BUILD_DEBIAN_PACKAGE)
   SET(CPACK_PACKAGE_VERSION ${CTHYB_VERSION})
   SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/cthyb")
   EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.23), libgcc1 (>= 1:6), libstdc++6, python, libpython2.7, libopenmpi1.10, libhdf5-10, libgmp10, libfftw3-double3, libibverbs1, libgfortran3, zlib1g, libsz2, libhwloc5, libquadmath0, libaec0, libnuma1, libltdl7, libblas3, liblapack3, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, cpp2py (= ${CTHYB_VERSION}), triqs (= ${CTHYB_VERSION}), libnfft3-double2")
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.23), libgcc1 (>= 1:6), libstdc++6, python, libpython2.7, libopenmpi1.10, libhdf5-10, libgmp10, libfftw3-double3, libibverbs1, libgfortran3, zlib1g, libsz2, libhwloc5, libquadmath0, libaec0, libnuma1, libltdl7, libblas3, liblapack3, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, cpp2py (>= 1.5), triqs (>= 2.0), libnfft3-double2")
   INCLUDE(CPack)
 endif()

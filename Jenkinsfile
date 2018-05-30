@@ -71,7 +71,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 	  sh "make test"
 	} catch (exc) {
 	  archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
-	  throw exc
+	  // throw exc
 	}
 	sh "make install"
       } }

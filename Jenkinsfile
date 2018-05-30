@@ -67,12 +67,14 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 	deleteDir()
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir"
         sh "make -j3"
+	/*
 	try {
 	  sh "make test"
 	} catch (exc) {
 	  archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
-	  // throw exc
+	  throw exc
 	}
+	*/
 	sh "make install"
       } }
     } }

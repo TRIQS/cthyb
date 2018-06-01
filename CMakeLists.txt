@@ -1,6 +1,3 @@
-# Version number 
-set (CTHYB_VERSION "1.5")
-
 # start configuration
 cmake_minimum_required(VERSION 2.8)
 project(cthyb CXX)
@@ -44,8 +41,17 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} -------------")
 
-# Macro defined in TRIQS which picks the hash of repo.
+# Use git to detect Cthyb version and git hash
+execute_process(COMMAND bash "-c" "${TRIQS_GIT_EXECUTABLE} describe | sed \"s/-\\([0-9]*\\)-.*/.\\1/g\""
+ WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+ OUTPUT_VARIABLE   CTHYB_VERSION
+ OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(NOT CTHYB_VERSION)
+  set(CTHYB_VERSION 1.5)
+endif()
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
+MESSAGE(STATUS "Cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
 option(Tests "Enable Tests" ON)

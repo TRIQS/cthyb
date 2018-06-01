@@ -20,7 +20,6 @@ source_suffix = '.rst'
 project = u'TRIQS Hybridization Expansion Solver'
 copyright = u'2014-2017, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 version = '@CTHYB_VERSION@'
-release = '@CTHYB_RELEASE@'
 
 mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
 templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']

@@ -4,7 +4,7 @@ Measurements: definitions
 =========================
 
 Here we list all the observables that can be measured by the solver along with their definitions.
-Each measurement can be turned on or off via the corresponding :doc:`solve() parameters <parameters>`.
+Each measurement can be turned on or off via the corresponding :doc:`solve() parameters <solve_parameters>`.
 
 Green's function
 ----------------

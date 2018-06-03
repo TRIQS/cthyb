@@ -31,6 +31,7 @@ Reference manual
    :maxdepth: 1
 
    reference/solver
+   reference/constr_parameters
    reference/solve_parameters
    reference/moves
    reference/measurements

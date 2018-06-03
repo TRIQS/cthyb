@@ -3,6 +3,11 @@
 The hybridization-expansion solver
 ==================================
 
+.. sidebar:: CTHyb 1.5
+
+   This is the homepage CTHyb Version 1.5
+   For the changes in 1.5, Cf :ref:`changelog page <changelog>`
+
 The :ref:`TRIQS-based <triqslibs:welcome>` hybridization-expansion solver
 allows to solve the generic problem of a quantum impurity embedded in a
 conduction bath for an arbitrary local interaction vertex.  The "impurity" can

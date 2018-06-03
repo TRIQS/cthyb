@@ -25,7 +25,7 @@ add_dependencies(docs_sphinx solver_core)
 # and filters the relevant extension
 # ------------------------------------------------------------------------------------------------
 
-set(EXT_FOR_DOC "rst png txt css_t conf css js gif jpg py html bib h5")
+set(EXT_FOR_DOC "rst png txt css_t conf css js gif jpg py html bib h5 md")
 execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
 
 # ---------------------------------

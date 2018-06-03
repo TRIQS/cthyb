@@ -6,8 +6,7 @@ Author: Hugo U.R. Strand """
 
 import numpy as np
 
-from cthyb import SolverCore
-#from triqs_cthyb import SolverCore
+from triqs_cthyb import SolverCore
 
 from pytriqs.operators import n, c, c_dag, Operator
 import pytriqs.utility.mpi as mpi

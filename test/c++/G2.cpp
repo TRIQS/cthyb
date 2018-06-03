@@ -19,12 +19,12 @@
  *
  ******************************************************************************/
 
+#include <triqs_cthyb/solver_core.hpp>
+
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/test_tools/gfs.hpp>
-
-#include "triqs_cthyb/solver_core.hpp"
 
 using namespace triqs_cthyb;
 using triqs::operators::c;

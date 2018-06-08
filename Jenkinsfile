@@ -27,14 +27,14 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       checkout scm
       /* construct a Dockerfile for this base */
       sh """
-	( echo "FROM flatironinstitute/triqs:${triqsBranch}-${env.STAGE_NAME}" ; sed '0,/^FROM /d' Dockerfile ) > Dockerfile.jenkins
-	mv -f Dockerfile.jenkins Dockerfile
+        ( echo "FROM flatironinstitute/triqs:${triqsBranch}-${env.STAGE_NAME}" ; sed '0,/^FROM /d' Dockerfile ) > Dockerfile.jenkins
+        mv -f Dockerfile.jenkins Dockerfile
       """
       /* build and tag */
       def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_DOC=${platform==documentationPlatform} .")
       if (!publish || platform != documentationPlatform) {
         /* but we don't need the tag so clean it up (except for documentation) */
-	sh "docker rmi --no-prune ${img.imageName()}"
+        sh "docker rmi --no-prune ${img.imageName()}"
       }
     } }
   } }
@@ -42,7 +42,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
 
 def osxPlatforms = [
   ["gcc", ['CC=gcc-7', 'CXX=g++-7']],
-  ["clang", ['CC=/usr/local/opt/llvm/bin/clang', 'CXX=/usr/local/opt/llvm/bin/clang++', 'CXXFLAGS=-I/usr/local/opt/llvm/include', 'LDFLAGS=-L/usr/local/opt/llvm/lib']]
+  ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
 ]
 for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
@@ -55,25 +55,25 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
       def installDir = "$tmpDir/install"
       def triqsDir = "${env.HOME}/install/triqs/${triqsBranch}/${platform}"
       dir(installDir) {
-	deleteDir()
+        deleteDir()
       }
 
       checkout scm
-      dir(buildDir) { withEnv(platformEnv[1]+[
-          "PATH=$triqsDir/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin",
-          "CPATH=$triqsDir/include",
-          "LIBRARY_PATH=$triqsDir/lib",
-          "CMAKE_PREFIX_PATH=$triqsDir/share/cmake"]) {
-	deleteDir()
+      dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
+        "PATH=$triqsDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
+        "CPATH=$triqsDir/include:${env.BREW}/include",
+        "LIBRARY_PATH=$triqsDir/lib:${env.BREW}/lib",
+        "CMAKE_PREFIX_PATH=$triqsDir/share/cmake"]) {
+        deleteDir()
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir"
         sh "make -j3"
-	try {
-	  sh "make test"
-	} catch (exc) {
-	  archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
-	  // throw exc
-	}
-	sh "make install"
+        try {
+          sh "make test"
+        } catch (exc) {
+          archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
+          // throw exc
+        }
+        sh "make install"
       } }
     } }
   } }

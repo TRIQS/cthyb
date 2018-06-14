@@ -81,9 +81,11 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
 +---------------------------------------------------------------+-----------------------------------------------+
 | Build the documentation locally                               | -DBuild_Documentation=ON                      |
 +---------------------------------------------------------------+-----------------------------------------------+
-| Allow the hybridization \Delta(tau) to be complex             | -DHYBRIDISATION_IS_COMPLEX=ON                 |
+| Allow the hybridization \Delta(tau) to be complex             | -DHybridisation_is_complex=ON                 |
 +---------------------------------------------------------------+-----------------------------------------------+
-| Allow the local Hamiltonian H_loc to be complex               | -DLOCAL_HAMILTONIAN_IS_COMPLEX=ON             |
+| Allow the local Hamiltonian H_loc to be complex               | -DLocal_hamiltonian_is_complex=ON             |
++---------------------------------------------------------------+-----------------------------------------------+
+| Measure the two particle object (requires the NFFT library)   | -DMeasureG2=ON                                |
 +---------------------------------------------------------------+-----------------------------------------------+
 | Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                                |
 +---------------------------------------------------------------+-----------------------------------------------+

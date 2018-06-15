@@ -79,7 +79,8 @@ Delta_iw_ref << Fourier(Delta_tau_ref)
 diff = h_loc - h_loc_ref
 print 'h_loc diff =', diff
 for ops, prefactor in diff:
-    assert( np.abs(prefactor) < 1e-12 )
+    print prefactor, ops
+    assert( np.abs(prefactor) < 1e-10 )
 #assert( diff == Operator() )
 
 diff = np.max(np.abs(Delta_tau.data - Delta_tau_ref.data))

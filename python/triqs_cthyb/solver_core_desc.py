@@ -1,5 +1,5 @@
 # Generated automatically using the command :
-# c++2py ../../c++/triqs_cthyb/solver_core.hpp -p --members_read_only -N triqs_cthyb -a triqs_cthyb -m solver_core -o solver_core --moduledoc="The TRIQS cthyb solver" --cxxflags="-std=c++17" -C pytriqs --only="solver_core block_order"
+# c++2py ../../c++/triqs_cthyb/solver_core.hpp -p --members_read_only -N triqs_cthyb -a triqs_cthyb -m solver_core -o solver_core --moduledoc="The TRIQS cthyb solver" --cxxflags="-std=c++17" -C pytriqs --only=solver_core block_order
 from cpp2py.wrap_generator import *
 
 # The module
@@ -64,7 +64,7 @@ c.add_member(c_name = "G2_tau",
 
 c.add_member(c_name = "G2_iw",
              c_type = "std::optional<G2_iw_t>",
-             read_only= False,
+             read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\nu,i\\nu\',i\\nu\'\')` (three Fermionic frequencies)""")
 
 c.add_member(c_name = "G2_iw_nfft",
@@ -79,7 +79,7 @@ c.add_member(c_name = "G2_iw_pp",
 
 c.add_member(c_name = "G2_iw_pp_nfft",
              c_type = "std::optional<G2_iw_t>",
-             read_only= False,
+             read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the pp-channel (one bosonic matsubara and two fermionic)""")
 
 c.add_member(c_name = "G2_iw_ph",
@@ -89,7 +89,7 @@ c.add_member(c_name = "G2_iw_ph",
 
 c.add_member(c_name = "G2_iw_ph_nfft",
              c_type = "std::optional<G2_iw_t>",
-             read_only= False,
+             read_only= True,
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,i\\nu,i\\nu\')` in the ph-channel (one bosonic matsubara and two fermionic)""")
 
 c.add_member(c_name = "G2_iwll_pp",
@@ -103,13 +103,13 @@ c.add_member(c_name = "G2_iwll_ph",
              doc = """Two-particle Green\'s function :math:`G^{(2)}(i\\omega,l,l\')` in the ph-channel (one bosonic matsubara and two legendre)""")
 
 c.add_member(c_name = "constr_parameters",
-             c_type = "cthyb::constr_parameters_t",
-             read_only= False,
+             c_type = "triqs_cthyb::constr_parameters_t",
+             read_only= True,
              doc = """""")
 
 c.add_member(c_name = "solve_parameters",
-             c_type = "cthyb::solve_parameters_t",
-             read_only= False,
+             c_type = "triqs_cthyb::solve_parameters_t",
+             read_only= True,
              doc = """""")
 
 c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = """Construct a CTHYB solver\n\n :param p: Set of parameters specific to the CTHYB solver
@@ -215,10 +215,6 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+------------------------------------------------+--------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 """)
 
-c.add_method("""std::string hdf5_scheme ()""",
-             is_static = True,
-             doc = """""")
-
 c.add_property(name = "h_loc",
                getter = cfunction("triqs_cthyb::many_body_op_t h_loc ()"),
                doc = """The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.""")
@@ -234,10 +230,6 @@ c.add_property(name = "last_solve_parameters",
 c.add_property(name = "Delta_infty",
                getter = cfunction("std::vector<matrix<dcomplex>> Delta_infty ()"),
                doc = """:math:`G_0^{-1}(i\\omega_n = \\infty)` in Matsubara Frequency.""")
-
-c.add_property(name = "last_container_set",
-               getter = cfunction("cthyb::container_set_t last_container_set ()"),
-               doc = """""")
 
 c.add_property(name = "Delta_tau",
                getter = cfunction("block_gf_view<triqs::gfs::imtime> Delta_tau ()"),

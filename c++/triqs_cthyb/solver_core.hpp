@@ -56,11 +56,10 @@ namespace triqs_cthyb {
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
     std::vector<matrix<dcomplex>> Delta_infty_vec; // Quadratic instantaneous part of G0_iw
 
-    
     // Return reference to container_set
     container_set_t &container_set() { return static_cast<container_set_t &>(*this); }
     container_set_t const &container_set() const { return static_cast<container_set_t const &>(*this); }
-    
+ 
     public:
 
     // Struct containing the parameters relevant for the solver construction

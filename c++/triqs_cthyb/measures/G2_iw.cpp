@@ -73,8 +73,8 @@ namespace triqs_cthyb {
       for (auto const &m : M) {
         auto norb1       = static_cast<size_t>(m.target_shape()[0]);
         auto norb2       = static_cast<size_t>(m.target_shape()[1]);
-        size_t nfreq_pts = static_cast<size_t>(std::get<0>(M_mesh.components()).full_size());
-        M_block_arr.push_back(M_arr_t{norb1, norb2, nfreq_pts, nfreq_pts});
+        size_t nfreq_pts = static_cast<size_t>(std::get<0>(M_mesh.components()).size());
+        M_block_arr.push_back(M_arr_t(norb1, norb2, nfreq_pts, nfreq_pts));
       }
     }
   }

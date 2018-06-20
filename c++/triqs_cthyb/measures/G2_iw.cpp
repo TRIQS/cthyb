@@ -20,8 +20,6 @@
  *
  ******************************************************************************/
 
-#include <boost/math/constants/constants.hpp>
-
 #include "./G2_iw.hpp"
 #include "./G2_iw_acc.hpp"
 
@@ -113,7 +111,7 @@ namespace triqs_cthyb {
 
     const int n_bosonic  = G2_measures.params.measure_G2_n_bosonic;
     const double beta    = data.config.beta();
-    const double pi_beta = boost::math::constants::pi<double>() / beta;
+    const double pi_beta = M_PI / beta;
 
     auto M_arr_fill = [pi_beta, beta](det_type const &det, M_arr_t &M_arr, M_mesh_t const &M_mesh) {
       foreach (det, [&M_mesh, &M_arr, pi_beta, beta](op_t const &x, op_t const &y, det_scalar_t M_xy) {

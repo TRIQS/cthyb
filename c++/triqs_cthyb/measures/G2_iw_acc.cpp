@@ -1,7 +1,7 @@
 
 #include "./G2_iw_acc.hpp"
 
-namespace cthyb {
+namespace triqs_cthyb {
   namespace G2_iw {
 
   namespace {
@@ -222,4 +222,4 @@ namespace cthyb {
 
     
   } // namespace G2_iw
-} // namespace cthyb
+} // namespace triqs_cthyb

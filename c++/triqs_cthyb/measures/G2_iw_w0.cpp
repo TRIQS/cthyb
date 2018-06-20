@@ -24,7 +24,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
-namespace cthyb {
+namespace triqs_cthyb {
 
   template <G2_channel Channel>
   measure_G2_iw<Channel>::measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures)
@@ -280,4 +280,4 @@ namespace cthyb {
   template class measure_G2_iw<G2_channel::PP>;
   template class measure_G2_iw<G2_channel::PH>;
 
-} // namespace cthyb
+} // namespace triqs_cthyb

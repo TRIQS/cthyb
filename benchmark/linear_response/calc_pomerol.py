@@ -86,7 +86,7 @@ def make_calc(nw=10, beta=2.0, h_field=0.0):
     ed = PomerolED(index_converter, verbose=True)
     ed.diagonalize(p.H) # -- Diagonalize H
 
-    gf_struct = {up : [0], do : [0]}
+    gf_struct = [[up, [0]], [do, [0]]]
 
     # -- Single-particle Green's functions
     p.G_iw = ed.G_iw(gf_struct, beta, n_iw=100)

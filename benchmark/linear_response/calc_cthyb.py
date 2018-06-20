@@ -45,9 +45,9 @@ def make_calc(nw=2, nc=1e5, beta=2.0, h_field=0.0, rand=1):
 
     p.init = ParameterCollection(
         beta = p.beta,
-        gf_struct = {'up':[0],'do':[0]},
-        n_iw = 15,
-        n_tau = 4*128+1,
+        gf_struct = [['up',[0]],['do',[0]]],
+        n_iw = 500,
+        n_tau = 4*500+1,
         n_l = 20,
         )
 

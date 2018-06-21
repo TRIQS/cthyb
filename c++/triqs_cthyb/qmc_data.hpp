@@ -26,6 +26,7 @@
 
 namespace triqs_cthyb {
   using namespace triqs::gfs;
+  using namespace triqs::arrays;
 
   /************************
  * The Monte Carlo data
@@ -82,7 +83,13 @@ namespace triqs_cthyb {
 #ifdef HYBRIDISATION_IS_COMPLEX
         dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
 #else
-        if (!is_gf_real(delta[bl], 1e-10)) TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
+        if (!is_gf_real(delta[bl], 1e-10)) {
+	  //TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
+	  if (p.verbosity >= 2) {
+	    std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
+	    std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
+	  }
+	}
         dets.emplace_back(delta_block_adaptor(real(delta[bl])), 100);
 #endif
       }

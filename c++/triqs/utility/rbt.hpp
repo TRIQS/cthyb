@@ -454,7 +454,7 @@ namespace triqs {
       private:
       // make a left-leaning link lean to the right
       node rotateRight(node h) {
-        _assert((h != nullptr) && is_red(h->left));
+        rbt_assert((h != nullptr) && is_red(h->left));
         node x          = h->left;
         h->left         = x->right;
         x->right        = h;
@@ -469,7 +469,7 @@ namespace triqs {
 
       // make a right-leaning link lean to the left
       node rotateLeft(node h) {
-        _assert((h != nullptr) && is_red(h->right));
+        rbt_assert((h != nullptr) && is_red(h->right));
         node x         = h->right;
         h->right       = x->left;
         x->left        = h;
@@ -485,8 +485,8 @@ namespace triqs {
       // flip the colors of a node and its two children
       void flipColors(node h) {
         // h must have opposite color of its two children
-        _assert((h != nullptr) && (h->left != nullptr) && (h->right != nullptr));
-        _assert((!is_red(h) && is_red(h->left) && is_red(h->right)) || ((is_red(h) && !is_red(h->left) && !is_red(h->right))));
+        rbt_assert((h != nullptr) && (h->left != nullptr) && (h->right != nullptr));
+        rbt_assert((!is_red(h) && is_red(h->left) && is_red(h->right)) || ((is_red(h) && !is_red(h->left) && !is_red(h->right))));
         h->color        = !h->color;
         h->left->color  = !h->left->color;
         h->right->color = !h->right->color;
@@ -495,8 +495,8 @@ namespace triqs {
       // Assuming that h is red and both h->left and h->left->left
       // are black, make h->left or one of its children red.
       node moveRedLeft(node h) {
-        _assert((h != nullptr));
-        _assert(is_red(h) && !is_red(h->left) && !is_red(h->left->left));
+        rbt_assert((h != nullptr));
+        rbt_assert(is_red(h) && !is_red(h->left) && !is_red(h->left->left));
 
         flipColors(h);
         if (is_red(h->right->left)) {
@@ -509,8 +509,8 @@ namespace triqs {
       // Assuming that h is red and both h->right and h->right->left
       // are black, make h->right or one of its children red.
       node moveRedRight(node h) {
-        _assert((h != nullptr));
-        _assert(is_red(h) && !is_red(h->right) && !is_red(h->right->left));
+        rbt_assert((h != nullptr));
+        rbt_assert(is_red(h) && !is_red(h->right) && !is_red(h->right->left));
         flipColors(h);
         if (is_red(h->left->left)) { h = rotateRight(h); }
         return h;
@@ -518,7 +518,7 @@ namespace triqs {
 
       // restore red-black tree invariant
       node balance(node h) {
-        _assert((h != nullptr));
+        rbt_assert((h != nullptr));
 
         if (is_red(h->right)) h                         = rotateLeft(h);
         if (is_red(h->left) && is_red(h->left->left)) h = rotateRight(h);
@@ -557,7 +557,7 @@ namespace triqs {
 
       /// Get smallest key in subtree rooted at x, throws if tree is empty
       node min(node x) const {
-        _assert(x != nullptr);
+        rbt_assert(x != nullptr);
         if (x->left == nullptr)
           return x;
         else
@@ -574,7 +574,7 @@ namespace triqs {
 
       /// Get the largest key in the subtree rooted at x, throws if tree is empty
       node max(node x) const {
-        _assert(x != nullptr);
+        rbt_assert(x != nullptr);
         if (x->right == nullptr)
           return x;
         else
@@ -637,8 +637,8 @@ namespace triqs {
       private:
       // the key of rank k in the subtree rooted at x
       node select(node x, int k) const {
-        _assert(x != nullptr);
-        _assert(k >= 0 && k < size(x));
+        rbt_assert(x != nullptr);
+        rbt_assert(k >= 0 && k < size(x));
         int t = size(x->left);
         if (t > k)
           return select(x->left, k);
@@ -669,7 +669,7 @@ namespace triqs {
    *  DEBUG CODE : Check integrity of red-black BST data structure
    *************************************************************************/
       private:
-      void _assert(bool c) const {
+      void rbt_assert(bool c) const {
         if (!c) TRIQS_RUNTIME_ERROR << "Error";
       }
 

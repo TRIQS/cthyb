@@ -51,23 +51,23 @@ double frobenius_norm2(triqs::arrays::matrix<T> const &a) {
 namespace triqs_cthyb {
 
   // -------- Constructor --------
-  impurity_trace::impurity_trace(configuration &c, atom_diag const &h_diag_, solve_parameters_t const &p, histo_map_t *hist_map)
-     : config(&c),
+  impurity_trace::impurity_trace(double beta, atom_diag const &h_diag_, histo_map_t *hist_map, bool use_norm_as_weight, bool measure_density_matrix, bool performance_analysis)
+     : beta(beta),
        h_diag(&h_diag_),
-       histo(p.performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr),
-       atomic_z(partition_function(*h_diag, config->beta())),
+       histo(performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr),
+       atomic_z(partition_function(*h_diag, beta)),
        atomic_norm(0),
        atomic_rho(n_blocks),
-       density_matrix(n_blocks) {
+       density_matrix(n_blocks),
+       use_norm_as_weight(use_norm_as_weight),
+       measure_density_matrix(measure_density_matrix) {
 
-    use_norm_as_weight     = p.use_norm_as_weight;
-    measure_density_matrix = p.measure_density_matrix;
     // init density_matrix block + bool
     for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix_t(get_block_dim(bl), get_block_dim(bl))};
 
     // prepare atomic_rho and atomic_norm
     if (use_norm_as_weight) {
-      auto rho = atomic_density_matrix(h_diag_, config->beta());
+      auto rho = atomic_density_matrix(h_diag_, beta);
       for (int bl = 0; bl < n_blocks; ++bl) {
         atomic_rho[bl] = bool_and_matrix{true, rho[bl] * atomic_z};
         for (int u = 0; u < get_block_dim(bl); ++u) {
@@ -273,7 +273,7 @@ namespace triqs_cthyb {
 
     auto root = tree.get_root();
     // beta - tmax + tmin ! the tree is in REVERSE order
-    double dtau_beta = config->beta() - tree.min_key();
+    double dtau_beta = beta - tree.min_key();
     double dtau_0    = double(tree.max_key());
     double dtau      = dtau_beta + dtau_0;
 

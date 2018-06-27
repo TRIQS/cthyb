@@ -40,12 +40,14 @@ namespace triqs_cthyb {
  ********************************************/
   class impurity_trace {
 
+    double beta;
     bool use_norm_as_weight;
     bool measure_density_matrix;
 
     public:
     // construct from the config, the diagonalization of h_loc, and parameters
-    impurity_trace(configuration &c, atom_diag const &h_diag, solve_parameters_t const &p, histo_map_t *hist_map);
+    impurity_trace(double beta, atom_diag const &h_diag, histo_map_t *hist_map,
+		   bool use_norm_as_weight=false, bool measure_density_matrix=false, bool performance_analysis=false);
 
     ~impurity_trace() {
       cancel_insert_impl(); // in case of an exception, we need to remove any trial nodes before cleaning the tree!

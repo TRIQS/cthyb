@@ -221,7 +221,7 @@ namespace triqs_cthyb {
         auto &r = inserted_nodes[i];
         if (r.first != nullptr) (r.second ? r.first->left : r.first->right)= nullptr;
       }
-      if (tree_size == trial_nodes.index() + 1) tree.get_root() = nullptr;
+      if (tree_size <= trial_nodes.index() + 1) tree.get_root() = nullptr;
     }
 
     /*************************************************************************

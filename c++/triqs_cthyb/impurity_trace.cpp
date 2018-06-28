@@ -441,6 +441,14 @@ namespace triqs_cthyb {
     return {norm_trace, rw};
   }
 
+  /// Stream insertion
+  std::ostream &operator<<(std::ostream &out, impurity_trace const & imp_trace) {
+    out << "Impurity trace: size = " << imp_trace.tree_size << "\n";
+    out << "Trial nodes: index = " << imp_trace.trial_nodes.index() << "\n"; 
+    imp_trace.tree.graphviz(out);
+    return out;
+  }
+
 // code for check/debug
 #include "./impurity_trace.checks.cpp"
 

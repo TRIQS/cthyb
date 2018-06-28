@@ -469,5 +469,8 @@ namespace triqs_cthyb {
 #undef ADD_HISTO
     };
     std::unique_ptr<histograms_t> histo;
+
+    /// Stream insertion
+    friend std::ostream &operator<<(std::ostream &out, impurity_trace const & imp_trace);
   };
 } // namespace triqs_cthyb

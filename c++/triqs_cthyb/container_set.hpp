@@ -41,6 +41,9 @@ namespace triqs_cthyb {
     /// Single-particle Green's function :math:`G_l` in Legendre polynomial representation.
     std::optional<G_l_t> G_l;
 
+    /// General operator Green's function :math:`O(\tau)` in imaginary time.
+    std::optional<gf<imtime, scalar_valued>> O_tau;
+
     // -- Two-particle Green's functions
 
     /// Two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` (three Fermionic imaginary times)

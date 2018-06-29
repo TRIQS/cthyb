@@ -47,6 +47,11 @@ c.add_member(c_name = "G_tau",
              read_only= True,
              doc = """Single-particle Green\'s function :math:`G(\\tau)` in imaginary time.""")
 
+c.add_member(c_name = "O_tau",
+             c_type = "std::optional<gf<imtime, scalar_valued>>",
+             read_only= True,
+             doc = """Test""")
+
 c.add_member(c_name = "G_tau_accum",
              c_type = "std::optional<G_tau_G_target_t>",
              read_only= True,

@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
     moves/double_remove.cpp
     measures/density_matrix.cpp
     measures/G_tau.cpp
+    measures/O_tau_ins.cpp
     measures/G_l.cpp
     )
 

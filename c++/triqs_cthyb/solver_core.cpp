@@ -37,6 +37,7 @@
 #include "./moves/global.hpp"
 #include "./measures/G_tau.hpp"
 #include "./measures/G_l.hpp"
+#include "./measures/O_tau_ins.hpp"
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
@@ -306,6 +307,8 @@ namespace triqs_cthyb {
 
     // --------------------------------------------------------------------------
     // Single-particle correlators
+
+    qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, n("up",0), n("do",0)}, "O_tau insertion measure");
 
     if (params.measure_G_tau) {
       G_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};

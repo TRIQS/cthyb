@@ -39,7 +39,7 @@ def make_calc():
         epsilon2 = 4.0,
         mu = 2.0,
         U = 5.0,
-        n_cycles = 1e6,
+        n_cycles = 1e7,
         )
 
     p.init = ParameterCollection(

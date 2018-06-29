@@ -27,7 +27,7 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
 
   measure_O_tau_ins::measure_O_tau_ins(std::optional<gf<imtime, scalar_valued>> &O_tau_opt, qmc_data const &data, int n_tau,
-				       many_body_op_t const &op1, many_body_op_t const &op2)
+                                       many_body_op_t const &op1, many_body_op_t const &op2)
      : data(data), average_sign(0), op1(op1), op2(op2) {
     O_tau_opt = gf<imtime, scalar_valued>{{data.config.beta(), Fermion, n_tau}};
     O_tau.rebind(*O_tau_opt);
@@ -44,35 +44,40 @@ namespace triqs_cthyb {
     s *= data.atomic_reweighting;
     average_sign += s;
 
+    double eps = 1e-14;
     double beta = O_tau.mesh().domain().beta;
-    
-    mc_weight_t trace_val, tmp;
 
-    for (auto tau : O_tau.mesh()) {
+    mc_weight_t trace_val;
+    mc_weight_t bare_trace_val = data.imp_trace.compute().first;
 
-      double eps = 0;
-      if (tau == 0.) eps = -1e-14;  // This should not be needed FIXME
-      if (tau == beta) eps = 1e-14; // This should not be needed FIXME
+    {
 
-      auto tau1 = data.tau_seg.make_time_pt(0.);
-      auto tau2 = data.tau_seg.make_time_pt(tau - eps);
+      double t1 = 0.;
+      auto tau1 = data.tau_seg.make_time_pt(t1);
 
-      try {
+      for (auto t2 : O_tau.mesh()) {
 
-        data.imp_trace.try_insert(tau1, op1_d);
-        data.imp_trace.try_insert(tau2, op2_d);
+        double eps = 0;
+        if (t2 == 0.) eps = -1e-14;  // This should not be needed FIXME
+        if (t2 == beta) eps = 1e-14; // This should not be needed FIXME
 
-        std::tie(trace_val, tmp) = data.imp_trace.compute();
+        auto tau2 = data.tau_seg.make_time_pt(t2 - eps);
 
-      } catch (rbt_insert_error const &) {
-        std::cerr << "Insert error : recovering ... " << std::endl;
-        trace_val = 0.;
+        try {
+
+          data.imp_trace.try_insert(tau1, op1_d);
+          data.imp_trace.try_insert(tau2, op2_d);
+
+          trace_val = data.imp_trace.compute().first;
+
+        } catch (rbt_insert_error const &) {
+          //std::cerr << "Insert error : recovering ... " << std::endl;
+          trace_val = 0.;
+        }
+
+        data.imp_trace.cancel_insert();
+        O_tau[t2] += trace_val / bare_trace_val;
       }
-
-      data.imp_trace.cancel_insert();
-
-      O_tau[tau] += trace_val;
-      
     }
   }
 
@@ -80,9 +85,7 @@ namespace triqs_cthyb {
 
     O_tau        = mpi_all_reduce(O_tau, c);
     average_sign = mpi_all_reduce(average_sign, c);
-
-    double beta = O_tau.mesh().domain().beta;
-    O_tau /= -real(average_sign) * beta * O_tau.mesh().delta();
+    O_tau /= -real(average_sign);
   }
 
 } // namespace triqs_cthyb

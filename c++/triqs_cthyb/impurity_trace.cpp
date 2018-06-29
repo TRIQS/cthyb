@@ -85,10 +85,10 @@ namespace triqs_cthyb {
   //
   //               node current: b_current
   //               /          \
-//              /            \
-//             /              \
-//            /                \
-//           node: b_left     node right: b_right
+  //              /            \
+  //             /              \
+  //            /                \
+  //           node: b_left     node right: b_right
   // tau=beta  <========<=========<   tau=0
   // That is, quantities are always updated from right -> left,
   // following the time-ordering of beta (left) <- 0 (right).

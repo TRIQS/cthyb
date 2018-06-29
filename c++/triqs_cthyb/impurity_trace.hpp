@@ -106,6 +106,8 @@ namespace triqs_cthyb {
 #endif
     rb_tree_t tree; // the red black tree and its nodes
 
+    std::vector<atom_diag::op_block_mat_t> aux_operators;
+    
     // ---------------- Cache machinery ----------------
     void update_cache();
 
@@ -121,12 +123,22 @@ namespace triqs_cthyb {
 
     // node, block -> image of the block by n->op (the operator)
     int get_op_block_map(node n, int b) const {
-      return (n->op.dagger ? h_diag->cdag_connection(n->op.linear_index, b) : h_diag->c_connection(n->op.linear_index, b));
+      if( n->op.linear_index >= 0 )
+	return (n->op.dagger ? h_diag->cdag_connection(n->op.linear_index, b) : h_diag->c_connection(n->op.linear_index, b));
+      else {
+	int aux_idx = -n->op.linear_index - 1;
+	return aux_operators[aux_idx].connection(b);
+      }
     }
 
     // the matrix of n->op, from block b to its image
     matrix<h_scalar_t> const &get_op_block_matrix(node n, int b) const {
-      return (n->op.dagger ? h_diag->cdag_matrix(n->op.linear_index, b) : h_diag->c_matrix(n->op.linear_index, b));
+      if( n->op.linear_index >= 0 )
+	return (n->op.dagger ? h_diag->cdag_matrix(n->op.linear_index, b) : h_diag->c_matrix(n->op.linear_index, b));
+      else {
+	int aux_idx = -n->op.linear_index - 1;
+	return aux_operators[aux_idx].block_mat[b];
+      }
     }
 
     // recursive function for tree traversal
@@ -188,9 +200,16 @@ namespace triqs_cthyb {
     };
 
     public:
+
+    // add auxiliary operators
+    int add_aux_operator(many_body_op_t const &op) {
+      aux_operators.push_back(h_diag->get_op_mat(op));
+      return -aux_operators.size();
+    }
+
     /*************************************************************************
-  *  Ordinary binary search tree (BST) insertion of the trial nodes
-  *************************************************************************/
+     *  Ordinary binary search tree (BST) insertion of the trial nodes
+     *************************************************************************/
     // We have a set of trial nodes, which we can glue, un-glue in the tree at will.
     // This avoids allocations.
 
@@ -225,8 +244,8 @@ namespace triqs_cthyb {
     }
 
     /*************************************************************************
-  * Node Insertion
-  *************************************************************************/
+     * Node Insertion
+     *************************************************************************/
 
     public:
     // Put a trial node at tau for operator op using an ordinary BST insertion (ie. not red black)
@@ -266,8 +285,8 @@ namespace triqs_cthyb {
     }
 
     /*************************************************************************
-  * Node Removal
-  *************************************************************************/
+     * Node Removal
+     *************************************************************************/
     private:
     std::vector<node> removed_nodes;
     std::vector<time_pt> removed_keys;
@@ -312,8 +331,8 @@ namespace triqs_cthyb {
     }
 
     /*************************************************************************
-  * Node shift (=insertion+deletion)
-  *************************************************************************/
+     * Node shift (=insertion+deletion)
+     *************************************************************************/
 
     // No try_shift implemented. Use combination of try_insert and try_delete instead.
 
@@ -361,8 +380,8 @@ namespace triqs_cthyb {
     }
 
     /*************************************************************************
-  * Node replacement (replace op_desc according to a substitution table)
-  *************************************************************************/
+     * Node replacement (replace op_desc according to a substitution table)
+     *************************************************************************/
     private:
     // Store copies of the nodes to be replaced
     nodes_storage backup_nodes = {n_blocks};

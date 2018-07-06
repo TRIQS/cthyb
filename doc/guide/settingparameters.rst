@@ -33,12 +33,12 @@ Examples
 * For a single-band Hubbard model with a local Coulomb interaction, the Green's function
   can be cut in two up/down blocks of size 1. We would have::
 
-    gf_struct = [ ['up',[0]], ['down',[0]] ]
+    gf_struct = [ ('up',[0]), ('down',[0]) ]
 
 * For a two-band Hubbard model with a hybridization between the bands, the Green's function
   can be cut in two up/down blocks, but there are off-diagonal orbital elements. We have::
 
-    gf_struct = [ ['up',[0, 1]], ['down',[0, 1]] ]
+    gf_struct = [ ('up',[0, 1]), ('down',[0, 1]) ]
 
 
 Step 2 - the Hamiltonian

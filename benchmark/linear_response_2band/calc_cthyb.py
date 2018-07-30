@@ -1,5 +1,5 @@
 
-  """ Test calculation for two-band Hubbard atom with two bath sites.
+""" Test calculation for two-band Hubbard atom with two bath sites.
 
 Use cthyb to compute one- and two-particle Green's function in 
 unitary transformed basis with off-diagonal hybridization.
@@ -33,9 +33,9 @@ if __name__ == '__main__':
     else: p = None
     p = mpi.bcast(p)
     
-    S = SolverCore(beta=p.beta, gf_struct=p.gf_struct, n_tau=10001, n_iw=500)
+    S = SolverCore(beta=p.beta, gf_struct=p.gf_struct, n_tau=p.ntau, n_iw=p.nw)
 
-    S.G0_iw << p.g0t_iw
+    S.G0_iw['0'] << p.g0t_iw
 
     solve_parameters = dict(
         h_int = p.Ht_int,

@@ -82,8 +82,8 @@ if __name__ == '__main__':
         crystal_field = 1.0,
         num_orbitals = 2,
         num_spins = 2,
-        nw = 500,
-        ntau = 2000,
+        nw = 400,
+        ntau = 801,
         )
     
     up, do = '0', '1'
@@ -119,8 +119,8 @@ if __name__ == '__main__':
     p.diag_ops = [c('0_0',0), c('0_1',0), c('0_2',0), c('0_3',0)]
     p.diag_ops += [ dagger(op) for op in p.diag_ops ]
     
-    p.gf_struct = {'0':[0, 1, 2, 3]}
-    p.gf_struct_diag = {'0_0':[0], '0_1':[0], '0_2':[0], '0_3':[0]}
+    p.gf_struct = [['0', [0, 1, 2, 3]]]
+    p.gf_struct_diag = [['0_0',[0]], ['0_1',[0]], ['0_2',[0]], ['0_3',[0]]]
 
     p.index_converter = {
         ('0', 0) : ('loc', 0, 'up'),

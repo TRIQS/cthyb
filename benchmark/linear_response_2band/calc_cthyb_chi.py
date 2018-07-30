@@ -1,5 +1,5 @@
 
-  """ Test calculation for two-band Hubbard atom with two bath sites.
+""" Test calculation for two-band Hubbard atom with two bath sites.
 
 Use cthyb one- and two-particle Green's function to costruct the 
 generalized susceptibility trasformed back to the original basis.
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     p.g_iw = GfImFreq(
         name=r'$g$', beta=p.beta,
-        statistic='Fermion', n_points=500,
+        statistic='Fermion', n_points=400,
         target_shape=(4, 4))
     
     p.g_iw << Fourier(p.g_tau)

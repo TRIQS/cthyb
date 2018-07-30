@@ -40,7 +40,7 @@ def make_calc(beta=2.0, h_field=0.0):
         h_field = h_field,
         mu = 2.0,
         U = 5.0,
-        ntau = 40,
+        ntau = 400,
         niw = 15,
         )
 
@@ -100,4 +100,4 @@ def make_calc(beta=2.0, h_field=0.0):
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
 
-    make_calc(beta=1.0, h_field=0.0)
+    make_calc(beta=2.1, h_field=0.0)

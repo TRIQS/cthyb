@@ -32,21 +32,22 @@ from pyed.ParameterCollection import ParameterCollection
 def make_calc():
 
     p = ParameterCollection(
-        beta = 1.0,
+        beta = 2.1,
         V1 = 2.0,
         V2 = 5.0,
         epsilon1 = 0.0,
         epsilon2 = 4.0,
         mu = 2.0,
         U = 5.0,
-        n_cycles = 1e8,
+        #n_cycles = 1e8,
+        n_cycles = 1e7,
         )
 
     p.init = ParameterCollection(
         beta = p.beta,
         gf_struct = [['up',[0]],['do',[0]]],
-        n_iw = 40,
-        n_tau = 2*40+1,
+        n_iw = 100,
+        n_tau = 2*100+1,
         n_l = 20,
         )
 
@@ -54,7 +55,8 @@ def make_calc():
         h_int = p.U*n('up',0)*n('do',0),
         max_time = -1,
         random_name = "",
-        random_seed = 123 * mpi.rank + 22222, # default uses mpi.rank
+        #random_seed = 123 * mpi.rank + 22222, # default uses mpi.rank
+        random_seed = 123 * mpi.rank + 42211, # default uses mpi.rank
         measure_G_l = True,
         measure_G_tau = True,
         move_double = True,

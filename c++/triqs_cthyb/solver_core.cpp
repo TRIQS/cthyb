@@ -308,7 +308,10 @@ namespace triqs_cthyb {
     // --------------------------------------------------------------------------
     // Single-particle correlators
 
-    qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, n("up",0), n("do",0)}, "O_tau insertion measure");
+    if (params.measure_O_tau) {
+      auto [O1, O2] = *params.measure_O_tau;
+      qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, O1, O2}, "O_tau insertion measure");
+    }
 
     if (params.measure_G_tau) {
       G_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};

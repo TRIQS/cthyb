@@ -31,6 +31,7 @@ namespace triqs_cthyb {
     h5_write(grp, "G_tau", c.G_tau);
     h5_write(grp, "G_tau_accum", c.G_tau_accum);
     h5_write(grp, "G_l", c.G_l);
+    h5_write(grp, "O_tau", c.O_tau);
 
     h5_write(grp, "G2_tau", c.G2_tau);
     h5_write(grp, "G2_iw", c.G2_iw);
@@ -51,6 +52,7 @@ namespace triqs_cthyb {
     h5_read(grp, "G_tau", c.G_tau);
     h5_read(grp, "G_tau_accum", c.G_tau_accum);
     h5_read(grp, "G_l", c.G_l);
+    if( grp.has_key("O_tau") ) h5_read(grp, "O_tau", c.O_tau);
 
     h5_read(grp, "G2_tau", c.G2_tau);
     h5_read(grp, "G2_iw", c.G2_iw);

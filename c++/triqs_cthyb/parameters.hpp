@@ -113,6 +113,9 @@ namespace triqs_cthyb {
     /// Measure G_l (Legendre)?
     bool measure_G_l = false;
 
+    /// Measure O_tau by insertion
+    std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = std::optional<std::pair<many_body_op_t, many_body_op_t>>{};
+
     /// Measure G^4(tau,tau',tau'') with three fermionic times.
     bool measure_G2_tau = false;
 

@@ -8,7 +8,7 @@ set(all_tests setup_Delta_tau_and_h_loc single_site_bethe atomic_observables kan
 if(Local_hamiltonian_is_complex)
  list(APPEND all_tests atomic_gf_complex atomdiag_ed complex_bug81)
  if(Hybridisation_is_complex)
-  list(APPEND all_tests complex_Gtau_ED)
+  list(APPEND all_tests complex_Gtau_ED setup_Delta_tau_and_h_loc_complex)
  endif()
 endif()
 

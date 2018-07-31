@@ -13,6 +13,7 @@ using namespace triqs::operators;
 
 // -----------------------------------------------------------------------------
 
+#include <triqs_cthyb/types.hpp>
 #include <triqs_cthyb/impurity_trace.hpp>
 #include <triqs_cthyb/configuration.hpp> // for op_desc
 
@@ -50,7 +51,7 @@ TEST(atom_diag, op_matrix) {
   many_body_operator_real H;
   H += -mu * (n("up", 0) + n("dn", 0)) + U * n("up", 0) * n("dn", 0);
 
-  auto ad = triqs::atom_diag::atom_diag<false>(H, fops);
+  auto ad = triqs::atom_diag::atom_diag<triqs_cthyb::is_h_scalar_complex>(H, fops);
   std::cout << "Found " << ad.n_subspaces() << " subspaces." << std::endl;
 
   // -----------------------------------------------------------------------------
@@ -61,7 +62,7 @@ TEST(atom_diag, op_matrix) {
   double beta = 2.0;
   triqs_cthyb::impurity_trace imp_trace(beta, ad, nullptr);
 
-  double atomic_z, tmp;
+  triqs_cthyb::h_scalar_t atomic_z, tmp;
   std::tie(atomic_z, tmp) = imp_trace.compute();
 
   std::cout << "Z = " << atomic_z << "\n";
@@ -81,7 +82,7 @@ TEST(atom_diag, op_matrix) {
   auto op2_d = triqs_cthyb::op_desc{0, 0, true, aux_idx2};
 
   triqs_cthyb::time_segment tau_seg(beta);
-  double new_atomic_weight, new_atomic_reweighting;
+  triqs_cthyb::h_scalar_t new_atomic_weight, new_atomic_reweighting;
 
   // -----------------------------------------------------------------------------
 
@@ -105,7 +106,7 @@ TEST(atom_diag, op_matrix) {
   imp_trace.cancel_insert();
   std::cout << new_atomic_weight << ", " << new_atomic_reweighting << "\n";
 
-  double exp_val = new_atomic_weight / atomic_z;
+  triqs_cthyb::h_scalar_t exp_val = new_atomic_weight / atomic_z;
   std::cout << "exp_val = " << exp_val << "\n";
 
   // -----------------------------------------------------------------------------

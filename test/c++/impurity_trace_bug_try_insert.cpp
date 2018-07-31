@@ -15,6 +15,7 @@ using namespace triqs::operators;
 
 // -----------------------------------------------------------------------------
 
+#include <triqs_cthyb/types.hpp>
 #include <triqs_cthyb/impurity_trace.hpp>
 #include <triqs_cthyb/configuration.hpp> // for op_desc
 
@@ -51,7 +52,7 @@ TEST(impurity_trace, try_insert_cancel_bug) {
   many_body_operator_real H;
   H +=  - mu * ( n("up", 0 ) + n("dn", 0) ) + U * n("up", 0 ) * n("dn", 0);
 
-  auto ad   = triqs::atom_diag::atom_diag<false>(H, fops);
+  auto ad   = triqs::atom_diag::atom_diag<triqs_cthyb::is_h_scalar_complex>(H, fops);
   std::cout << "Found " << ad.n_subspaces() << " subspaces." << std::endl;
 
   // -----------------------------------------------------------------------------

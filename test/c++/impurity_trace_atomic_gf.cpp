@@ -22,6 +22,7 @@ using namespace triqs::operators;
 
 // -----------------------------------------------------------------------------
 
+#include <triqs_cthyb/types.hpp>
 #include <triqs_cthyb/impurity_trace.hpp>
 #include <triqs_cthyb/configuration.hpp> // for op_desc
 
@@ -104,7 +105,7 @@ TEST(impurity_trace, atomic_gf) {
   double J  = 0.2;
   double mu = 0.5 * U;
   auto H    = make_hamiltonian<many_body_operator_real>(n_orb, mu, U, J);
-  auto ad   = triqs::atom_diag::atom_diag<false>(H, fops);
+  auto ad   = triqs::atom_diag::atom_diag<triqs_cthyb::is_h_scalar_complex>(H, fops);
   std::cout << "Found " << ad.n_subspaces() << " subspaces." << std::endl;
 
   // -----------------------------------------------------------------------------
@@ -113,7 +114,7 @@ TEST(impurity_trace, atomic_gf) {
   double beta = 1.0;
   triqs_cthyb::impurity_trace imp_trace(beta, ad, nullptr);
 
-  double atomic_z, tmp;
+  triqs_cthyb::h_scalar_t atomic_z, tmp;
   std::tie(atomic_z, tmp) = imp_trace.compute();
 
   // -----------------------------------------------------------------------------
@@ -126,7 +127,7 @@ TEST(impurity_trace, atomic_gf) {
 
   triqs_cthyb::time_segment tau_seg(beta);
 
-  double new_atomic_weight, new_atomic_reweighting;
+  triqs_cthyb::h_scalar_t new_atomic_weight, new_atomic_reweighting;
 
   // -----------------------------------------------------------------------------
   // gf eval, using the imp_trace

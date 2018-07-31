@@ -81,17 +81,22 @@ namespace triqs_cthyb {
       dets.clear();
       for (auto const &bl : range(delta.size())) {
 #ifdef HYBRIDISATION_IS_COMPLEX
-        dets.emplace_back(delta_block_adaptor(delta[bl]), 100);
+        dets.emplace_back(delta_block_adaptor(delta[bl]), p.det_init_size);
 #else
         if (!is_gf_real(delta[bl], 1e-10)) {
-	  //TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
-	  if (p.verbosity >= 2) {
-	    std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
-	    std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
-	  }
-	}
-        dets.emplace_back(delta_block_adaptor(real(delta[bl])), 100);
+          //TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
+          if (p.verbosity >= 2) {
+            std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
+            std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
+            std::cerr << "WARNING: Dissregarding the imaginary component in the calculation.\n";
+          }
+        }
+        dets.emplace_back(delta_block_adaptor(real(delta[bl])), p.det_init_size);
 #endif
+        dets.back().set_singular_threshold(p.det_singular_threshold);
+        dets.back().set_n_operations_before_check(p.det_n_operations_before_check);
+        dets.back().set_precision_warning(p.det_precision_warning);
+        dets.back().set_precision_error(p.det_precision_error);
       }
     }
 
@@ -186,4 +191,4 @@ namespace triqs_cthyb {
       tau = det.get_y(ic).first;
     }
   }
-}
+} // namespace triqs_cthyb

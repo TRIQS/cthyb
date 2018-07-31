@@ -131,6 +131,12 @@ namespace triqs_cthyb {
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
     h5_write(grp, "imag_threshold", sp.imag_threshold);
+
+    h5_write(grp, "det_init_size", sp.det_init_size);
+    h5_write(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);
+    h5_write(grp, "det_precision_warning", sp.det_precision_warning);
+    h5_write(grp, "det_precision_error", sp.det_precision_error);
+    h5_write(grp, "det_singular_threshold", sp.det_singular_threshold);
   }
 
   void h5_read(triqs::h5::group h5group, std::string name, solve_parameters_t &sp) {
@@ -187,6 +193,12 @@ namespace triqs_cthyb {
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);
+
+    h5_read(grp, "det_init_size", sp.det_init_size);
+    h5_read(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);
+    h5_read(grp, "det_precision_warning", sp.det_precision_warning);
+    h5_read(grp, "det_precision_error", sp.det_precision_error);
+    h5_read(grp, "det_singular_threshold", sp.det_singular_threshold);
   }
   
 } // namespace triqs_cthyb

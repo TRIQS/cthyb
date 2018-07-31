@@ -198,6 +198,21 @@ namespace triqs_cthyb {
     /// Threshold below which imaginary components of Delta and h_loc are set to zero
     double imag_threshold = 1.e-15;
 
+    /// The maximum size of the determinant matrix before a resize
+    int det_init_size = 100;
+    
+    /// Max number of ops before the test of deviation of the det, M^-1 is performed.
+    int det_n_operations_before_check = 100;
+
+    /// Threshold for determinant precision warnings
+    double det_precision_warning = 1.e-8;
+
+    /// Threshold for determinant precision error
+    double det_precision_error = 1.e-5;
+
+    /// Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
+    double det_singular_threshold = -1;    
+
     solve_parameters_t() {}
 
     solve_parameters_t(many_body_op_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}

@@ -51,6 +51,18 @@ This measurement is controlled through the switch ``measure_G_l``.
 The result of accumulation is accessible as ``G_l`` attribute of the solver object.
 The number of Legendre coefficients to be measured is specified through constructor's parameter ``n_l``.
 
+Local susceptibility and other operator pairs
+---------------------------------------------
+
+Higher order response functions like local susceptibilities
+
+.. math::
+   \chi_{\hat{O}_1, \hat{O}_2}(\tau) \equiv \langle \hat{O}_1(\tau) \hat{O}_2 \rangle
+
+can be sampled (by insertion) in the trace. This approach is limited to operators :math:`\hat{O}_1` and :math:`\hat{O}_2` that commutes with the local Hamiltonian :math:`[\hat{O}_i, H_{loc}]=0`.
+
+This measurement is controlled by the argument ``measure_O_tau``. To enable the measurement pass a tuple of the operators to be sampled, e.g. ``measure_O_tau = (n('up',0), n('do',0))`` will measure the response function :math:`\langle \hat{n}_\uparrow(\tau) \hat{n}_\downarrow \rangle`. The resulting response function is accessible as the ``O_tau`` attribute of the solver object.
+
 Two-particle Green's functions
 ------------------------------
 

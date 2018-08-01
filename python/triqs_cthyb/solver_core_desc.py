@@ -220,6 +220,16 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | imag_threshold                | double                                                    | 1.e-15                                                    | Threshold below which imaginary components of Delta and h_loc are set to zero                                                                                                   |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| det_init_size                 | int                                                       | 100                                                       | The maximum size of the determinant matrix before a resize                                                                                                                      |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| det_n_operations_before_check | int                                                       | 100                                                       | Max number of ops before the test of deviation of the det, M^-1 is performed.                                                                                                   |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| det_precision_warning         | double                                                    | 1.e-8                                                     | Threshold for determinant precision warnings                                                                                                                                    |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| det_precision_error           | double                                                    | 1.e-5                                                     | Threshold for determinant precision error                                                                                                                                       |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| det_singular_threshold        | double                                                    | -1                                                        | Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))                                                                |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 """)
 
 c.add_property(name = "h_loc",
@@ -486,6 +496,31 @@ c.add_member(c_name = "imag_threshold",
              c_type = "double",
              initializer = """ 1.e-15 """,
              doc = """Threshold below which imaginary components of Delta and h_loc are set to zero""")
+
+c.add_member(c_name = "det_init_size",
+             c_type = "int",
+             initializer = """ 100 """,
+             doc = """The maximum size of the determinant matrix before a resize""")
+
+c.add_member(c_name = "det_n_operations_before_check",
+             c_type = "int",
+             initializer = """ 100 """,
+             doc = """Max number of ops before the test of deviation of the det, M^-1 is performed.""")
+
+c.add_member(c_name = "det_precision_warning",
+             c_type = "double",
+             initializer = """ 1.e-8 """,
+             doc = """Threshold for determinant precision warnings""")
+
+c.add_member(c_name = "det_precision_error",
+             c_type = "double",
+             initializer = """ 1.e-5 """,
+             doc = """Threshold for determinant precision error""")
+
+c.add_member(c_name = "det_singular_threshold",
+             c_type = "double",
+             initializer = """ -1 """,
+             doc = """Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))""")
 
 module.add_converter(c)
 

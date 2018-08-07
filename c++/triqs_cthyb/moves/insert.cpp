@@ -114,7 +114,7 @@ namespace triqs_cthyb {
     }
     auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
     if (!isfinite(atomic_weight_ratio))
-      TRIQS_RUNTIME_ERROR << "trace_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " "
+      TRIQS_RUNTIME_ERROR << "(insert) trace_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " "
                           << new_atomic_weight / data.atomic_weight << " in config " << config.get_id();
 
     mc_weight_t p = atomic_weight_ratio * det_ratio;
@@ -127,8 +127,16 @@ namespace triqs_cthyb {
     std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight << std::endl;
 #endif
 
-    if (!isfinite(p * t_ratio))
-      TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio : " << t_ratio << " in config " << config.get_id();
+    if (!isfinite(p * t_ratio)) {
+      std::cerr << "Insert move info:\n";
+      std::cerr << "Atomic ratio: " << atomic_weight_ratio << '\t';
+      std::cerr << "Det ratio: " << det_ratio << '\t';
+      std::cerr << "Prefactor: " << t_ratio << '\t';
+      std::cerr << "Weight: " << p * t_ratio << std::endl;
+      std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight << std::endl;
+      
+      TRIQS_RUNTIME_ERROR << "(insert) p * t_ratio not finite p : " << p << " t_ratio : " << t_ratio << " in config " << config.get_id();
+    }
     return p * t_ratio;
   }
 

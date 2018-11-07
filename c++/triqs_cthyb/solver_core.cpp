@@ -311,7 +311,7 @@ namespace triqs_cthyb {
 
     if (params.measure_O_tau) {
       auto [O1, O2] = *params.measure_O_tau;
-      qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, O1, O2}, "O_tau insertion measure");
+      qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, O1, O2, qmc.get_rng()}, "O_tau insertion measure");
     }
 
     if (params.measure_G_tau) {

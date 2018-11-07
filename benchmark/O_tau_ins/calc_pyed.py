@@ -35,10 +35,10 @@ def make_calc(beta=2.0, h_field=0.0):
         beta = beta,
         V1 = 2.0,
         V2 = 5.0,
-        epsilon1 = 0.00,
-        epsilon2 = 4.00,
+        epsilon1 = 0.10,
+        epsilon2 = 3.00,
         h_field = h_field,
-        mu = 2.0,
+        mu = 0.0,
         U = 5.0,
         ntau = 400,
         niw = 15,
@@ -100,4 +100,4 @@ def make_calc(beta=2.0, h_field=0.0):
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
 
-    make_calc(beta=2.1, h_field=0.0)
+    make_calc(beta=5., h_field=0.0)

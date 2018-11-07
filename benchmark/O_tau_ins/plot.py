@@ -27,22 +27,23 @@ if __name__ == '__main__':
     with HDFArchive(filename, 'r') as s:
         cthyb = s['p']
 
-    filename = '../../test/python/O_tau_ins.ref.h5'
-    print '--> Loading:', filename
-    with HDFArchive(filename, 'r') as s:
-        O_tau_regr = s['O_tau']
+    if False:
+        filename = '../../test/python/O_tau_ins.ref.h5'
+        print '--> Loading:', filename
+        with HDFArchive(filename, 'r') as s:
+            O_tau_regr = s['O_tau']
         
     filename = 'data_pyed_h_field_0.0000.h5'
     print '--> Loading:', filename
     with HDFArchive(filename, 'r') as s:
         pyed = s['p']
         
-    plt.figure(figsize=(3.25*2, 5*2))
+    plt.figure(figsize=(3.25*2, 8))
     
     subp = [3, 1, 1]
     plt.subplot(*subp); subp[-1] += 1
     
-    oplotr(O_tau_regr, '-', label=r'cthyb regr $-\langle n_\uparrow(\tau) n_\downarrow \rangle$ (should be bad)', alpha=1.0, lw=1.0, zorder=100)
+    #oplotr(O_tau_regr, '-', label=r'cthyb regr $-\langle n_\uparrow(\tau) n_\downarrow \rangle$ (should be bad)', alpha=1.0, lw=1.0, zorder=100)
     oplotr(cthyb.O_tau, '-', label=r'cthyb $-\langle n_\uparrow(\tau) n_\downarrow \rangle$', alpha=1.0, lw=1.0, zorder=100)
     oplotr(pyed.O_tau, label=r'pyed $-\langle n_\uparrow(\tau) n_\downarrow \rangle$')
 
@@ -61,9 +62,9 @@ if __name__ == '__main__':
     
     plt.subplot(*subp); subp[-1] += 1
 
-    oplotr(cthyb.G_tau, '.', label='cthyb G_tau', alpha=0.05)
+    oplotr(cthyb.G_tau, '.', label='cthyb G_tau', alpha=0.2)
     oplotr(pyed.G_tau, label='pyed G_tau')
-    oplotr(cthyb.Gl_tau, '-', label='cthyb Gl_tau', alpha=0.75)
+    #oplotr(cthyb.Gl_tau, '-', label='cthyb Gl_tau', alpha=0.75)
 
     plt.legend(loc='best')
     plt.tight_layout()

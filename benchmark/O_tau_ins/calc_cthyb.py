@@ -32,22 +32,23 @@ from pyed.ParameterCollection import ParameterCollection
 def make_calc():
 
     p = ParameterCollection(
-        beta = 2.1,
+        beta = 5.,
         V1 = 2.0,
         V2 = 5.0,
-        epsilon1 = 0.0,
-        epsilon2 = 4.0,
-        mu = 2.0,
+        epsilon1 = 0.1,
+        epsilon2 = 3.0,
+        mu = 0.0,
         U = 5.0,
         #n_cycles = 1e8,
-        n_cycles = 1e7,
+        #n_cycles = 1e7,
+        n_cycles = 1e5,
         )
 
     p.init = ParameterCollection(
         beta = p.beta,
         gf_struct = [['up',[0]],['do',[0]]],
-        n_iw = 100,
-        n_tau = 2*100+1,
+        n_iw = 200,
+        n_tau = 2*200+1,
         n_l = 20,
         )
 
@@ -57,7 +58,7 @@ def make_calc():
         random_name = "",
         #random_seed = 123 * mpi.rank + 22222, # default uses mpi.rank
         random_seed = 123 * mpi.rank + 42211, # default uses mpi.rank
-        measure_G_l = True,
+        #measure_G_l = True,
         measure_G_tau = True,
         move_double = True,
         # -- measurements
@@ -90,18 +91,19 @@ def make_calc():
     # -- Solve the impurity model
     solv.solve(**p.solve.dict())
 
-    p.Gl_iw = solv.G0_iw.copy()
-    p.Gl_tau = solv.G_tau.copy()
-    for name, g0 in solv.G0_iw:
-        p.Gl_iw[name] << LegendreToMatsubara(solv.G_l[name])
-        p.Gl_tau[name] << InverseFourier(p.Gl_iw[name])
+    #p.Gl_iw = solv.G0_iw.copy()
+    #p.Gl_tau = solv.G_tau.copy()
+    #for name, g0 in solv.G0_iw:
+    #    p.Gl_iw[name] << LegendreToMatsubara(solv.G_l[name])
+    #    p.Gl_tau[name] << InverseFourier(p.Gl_iw[name])
 
     # ------------------------------------------------------------------
     # -- Collect results
 
     attribs = [
         'G0_iw',
-        'G_tau', 'G_l', 'G_iw',
+        'G_tau',
+        #'G_l', 'G_iw',
         'O_tau',
         ]
     

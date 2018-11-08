@@ -84,7 +84,7 @@ namespace triqs_cthyb {
 
         data.imp_trace.cancel_insert();
 
-        O_tau[closest_mesh_pt(dtau)] += atomic_weight / bare_atomic_weight;
+        O_tau[closest_mesh_pt(dtau)] += s * atomic_weight * atomic_reweighting / bare_atomic_weight / bare_atomic_reweighting;
       }
     }
   }

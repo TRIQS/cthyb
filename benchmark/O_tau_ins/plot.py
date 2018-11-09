@@ -44,9 +44,12 @@ if __name__ == '__main__':
     plt.subplot(*subp); subp[-1] += 1
     
     #oplotr(O_tau_regr, '-', label=r'cthyb regr $-\langle n_\uparrow(\tau) n_\downarrow \rangle$ (should be bad)', alpha=1.0, lw=1.0, zorder=100)
-    oplotr(cthyb.O_tau, '-', label=r'cthyb $-\langle n_\uparrow(\tau) n_\downarrow \rangle$', alpha=1.0, lw=1.0, zorder=100)
+    oplotr(cthyb.O_tau, '-', label=r'cthyb $-\langle n_\uparrow(\tau) n_\downarrow \rangle$', alpha=0.5, lw=0.5)
     oplotr(pyed.O_tau, label=r'pyed $-\langle n_\uparrow(\tau) n_\downarrow \rangle$')
 
+    plt.plot(0, -cthyb.exp_val, 'or', alpha=0.25, clip_on=False)
+    plt.plot(0, -pyed.exp_val, 'xg', alpha=0.25, clip_on=False)
+    
     plt.subplot(*subp); subp[-1] += 1
     tau = np.array([ float(t) for t in cthyb.O_tau.mesh])
 
@@ -64,6 +67,9 @@ if __name__ == '__main__':
 
     oplotr(cthyb.G_tau, '.', label='cthyb G_tau', alpha=0.2)
     oplotr(pyed.G_tau, label='pyed G_tau')
+    plt.plot(0, -1 + cthyb.n_exp * 0.5, 'ob', alpha=0.25, clip_on=False)
+    plt.plot(cthyb.G_tau.mesh.beta, -cthyb.n_exp * 0.5, 'ob', alpha=0.25, clip_on=False)
+    
     #oplotr(cthyb.Gl_tau, '-', label='cthyb Gl_tau', alpha=0.75)
 
     plt.legend(loc='best')

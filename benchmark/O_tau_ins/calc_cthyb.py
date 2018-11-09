@@ -32,7 +32,7 @@ from pyed.ParameterCollection import ParameterCollection
 def make_calc():
 
     p = ParameterCollection(
-        beta = 5.,
+        beta = 10.,
         V1 = 2.0,
         V2 = 5.0,
         epsilon1 = 0.1,
@@ -40,18 +40,20 @@ def make_calc():
         mu = 0.0,
         U = 5.0,
         #n_cycles = 1e8,
-        #n_cycles = 1e7,
-        n_cycles = 1e5,
+        n_cycles = 1e6,
+        #n_cycles = 1e5,
         )
 
     p.init = ParameterCollection(
         beta = p.beta,
         gf_struct = [['up',[0]],['do',[0]]],
-        n_iw = 200,
-        n_tau = 2*200+1,
+        n_iw = 1000,
+        n_tau = 2*1000+1,
         n_l = 20,
         )
 
+    ops = (n('up',0), n('do',0))
+    
     p.solve = ParameterCollection(
         h_int = p.U*n('up',0)*n('do',0),
         max_time = -1,
@@ -62,10 +64,13 @@ def make_calc():
         measure_G_tau = True,
         move_double = True,
         # -- measurements
-        length_cycle = 20,
-        n_warmup_cycles = int(1e4),
+        length_cycle = 200,
+        n_warmup_cycles = int(1e3),
         n_cycles = int(p.n_cycles / mpi.size),
-        measure_O_tau = (n('up',0), n('do',0)),
+        measure_O_tau = ops,
+        # --
+        measure_density_matrix = True,
+        use_norm_as_weight = True,
         )
 
     print 'p.solve.random_seed =', p.solve.random_seed
@@ -89,14 +94,17 @@ def make_calc():
 
     # ------------------------------------------------------------------
     # -- Solve the impurity model
+
     solv.solve(**p.solve.dict())
 
-    #p.Gl_iw = solv.G0_iw.copy()
-    #p.Gl_tau = solv.G_tau.copy()
-    #for name, g0 in solv.G0_iw:
-    #    p.Gl_iw[name] << LegendreToMatsubara(solv.G_l[name])
-    #    p.Gl_tau[name] << InverseFourier(p.Gl_iw[name])
+    from pytriqs.atom_diag import trace_rho_op, AtomDiagReal
 
+    o1, o2 = ops
+    p.exp_val = trace_rho_op(solv.density_matrix, o1 * o2, solv.h_loc_diagonalization)
+    p.n_exp = trace_rho_op(solv.density_matrix, n('up', 0) + n('do', 0), solv.h_loc_diagonalization)
+
+    print 'p.exp_val =', p.exp_val
+    
     # ------------------------------------------------------------------
     # -- Collect results
 
@@ -105,6 +113,8 @@ def make_calc():
         'G_tau',
         #'G_l', 'G_iw',
         'O_tau',
+        'density_matrix',
+        'h_loc_diagonalization',
         ]
     
     for key in attribs:

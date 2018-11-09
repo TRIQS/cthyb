@@ -310,7 +310,18 @@ namespace triqs_cthyb {
     // Single-particle correlators
 
     if (params.measure_O_tau) {
+
       auto [O1, O2] = *params.measure_O_tau;
+      auto comm_1 = O1 * _h_loc - _h_loc * O1;
+      auto comm_2 = O2 * _h_loc - _h_loc * O2;
+      
+      if( !comm_1.is_zero() || !comm_2.is_zero() ) {
+	if (params.verbosity >= 2) {
+	   TRIQS_RUNTIME_ERROR << "Error: measure_O_tau, supplied operators does not commute with the local Hamiltonian.\n"
+			       << "[O1, H_loc] = " << comm_1 << "\n"
+			       << "[O2, H_loc] = " << comm_2 << "\n";
+	}
+      }
       qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, O1, O2, qmc.get_rng()}, "O_tau insertion measure");
     }
 

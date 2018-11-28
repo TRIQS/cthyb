@@ -26,9 +26,6 @@ set(BUILD_SHARED_LIBS ON)
 find_package(TRIQS 2.0 REQUIRED)
 find_package(Cpp2Py 1.5 REQUIRED)
 
-# We will need the FindNNFT of triqs, so we adjust CMake Module Path to find it
-list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake)
-
 # 2-particle GF measurement requires NFFT
 if(MeasureG2)
  find_package(NFFT REQUIRED)

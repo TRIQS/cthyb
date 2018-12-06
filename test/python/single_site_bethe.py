@@ -72,10 +72,11 @@ if mpi.is_master_node():
         assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
         assert_block_gfs_are_close(Results["G_l"], S.G_l)
 
-        assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
         assert_block_gfs_are_close(Results["G_iw_raw"], S.G_iw_raw)
-        
         assert_block_gfs_are_close(Results["Sigma_iw"], S.Sigma_iw)
+
+        assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
+        
         #assert_block_gfs_are_close(Results["Sigma_iw_raw"], S.Sigma_iw_raw)
         
 # Redundant with previous check

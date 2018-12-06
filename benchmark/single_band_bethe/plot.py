@@ -16,11 +16,12 @@ def plot_full_iter(iter_no, filename):
         Delta_tau = a['Delta_tau-%i' % i]
 
         G_iw = a['G_iw-%i' % i]
-        G_iw_raw = a['G_iw_raw-%i' % i]
+        key = 'G_iw_raw-%i' % i
+        G_iw_raw = a[key] if key in a.keys() else G_iw
 
         Sigma_iw = a['Sigma_iw-%i' % i]
-        Sigma_iw_raw = a['Sigma_iw_raw-%i' % i]
-
+        key = 'Sigma_iw_raw-%i' % i
+        Sigma_iw_raw = a[key] if key in a.keys() else Sigma_iw
 
     Delta_0_iw = G_iw.copy()
     for name, d in Delta_0_iw:
@@ -68,6 +69,12 @@ def plot_full_iter(iter_no, filename):
     ax.legend_ = None
 
     plt.subplot(*subp); subp[-1] += 1
+    plt.title('Sigma_iw')
+    oplot(Sigma_iw)
+    ax = plt.gca()
+    ax.legend_ = None
+    
+    plt.subplot(*subp); subp[-1] += 1
     plt.title('Sigma_iw_raw')
     oplot(Sigma_iw_raw)
     ax = plt.gca()
@@ -80,6 +87,8 @@ def plot_full_iter(iter_no, filename):
     oplot(Sigma_iw)
     ax = plt.gca()
     ax.legend_ = None
+    plt.ylim([-6, 6])
+    plt.xlim([-15, 15])
     
     plt.subplot(*subp); subp[-1] += 1
     plt.title('Delta_0_iw, Delta_1_iw')
@@ -137,10 +146,28 @@ def plot_all_iter(iter_min=0, iter_max=0, filename=None):
             oploti(Sigma_iw['up'], label=i, alpha=0.5)
 
     plt.tight_layout()
+
+def plot_all_iter_Delta_tau(filename1, filename2, iter_min=0, iter_max=0):
+
+    plt.figure(figsize=(10, 10))
+
+    for filename in [filename1, filename2]:
+        with HDFArchive(filename, 'r') as a:
+            U = a['U']
+            for i in xrange(iter_min, iter_max):
+
+                Delta_tau = a['Delta_tau-%i' % i]
+                oplotr(Delta_tau['up'], label=i, alpha=0.25)
+                oplotr(Delta_tau['down'], label=i, alpha=0.25)
+
+    plt.tight_layout()
     
-#filename = 'data-U5.00_tail_fit_False.h5'
 filename = 'data-U5.00_tail_fit_True.h5'
-plot_full_iter(iter_no=8, filename=filename)
-plot_all_iter(iter_min=3, iter_max=6, filename=filename)
+plot_full_iter(iter_no=9, filename=filename)
+plot_all_iter(iter_min=0, iter_max=9, filename=filename)
+
+#filename_ref = 'res_1.4.2/data-U5.00_tail_fit_True.h5'
+filename_ref = 'data-U5.00_tail_fit_False.h5'
+plot_all_iter_Delta_tau(filename, filename_ref, iter_min=0, iter_max=9)
 
 plt.show()

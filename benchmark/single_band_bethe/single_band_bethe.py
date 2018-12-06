@@ -20,12 +20,12 @@ S.G_iw << SemiCircular(2*t)
 tail_fit = dict(
     perform_tail_fit = True,
     fit_max_moment = 3,
-    fit_min_w = 1.2,
-    fit_max_w = 3.0,
+    fit_min_w = 3.0,
+    fit_max_w = 7.0,
     )
 
 # DMFT loop with self-consistency
-for do_tail in [False, True]:
+for do_tail in [True, False]:
     for i in range(n_loops):
 
         print "\n\nIteration = %i / %i" % (i+1, n_loops)

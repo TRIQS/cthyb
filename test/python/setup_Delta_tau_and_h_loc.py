@@ -53,7 +53,8 @@ Delta_iw << inverse( iOmega_n - Ek ) + inverse( iOmega_n + Ek )
 Delta_iw.from_L_G_R(V, Delta_iw, V)
 
 Delta_tau = Gf(mesh=tmesh, target_shape=target_shape)
-Delta_tau << InverseFourier(Delta_iw)
+Delta_tail, Delta_tail_err = Delta_iw.fit_hermitian_tail()
+Delta_tau << InverseFourier(Delta_iw, Delta_tail)
 
 G0_iw = Gf(mesh=wmesh, target_shape=target_shape)
 G0_iw << inverse( iOmega_n - Delta_iw - E_loc )
@@ -74,7 +75,8 @@ print 'h_loc_ref =\n', h_loc_ref
 
 Delta_tau_ref = S.Delta_tau['0']
 Delta_iw_ref = Delta_iw.copy()
-Delta_iw_ref << Fourier(Delta_tau_ref)
+Delta_tail_ref, Delta_tail_err_ref = Delta_iw_ref.fit_hermitian_tail()
+Delta_iw_ref << Fourier(Delta_tau_ref, Delta_tail_ref)
 
 diff = h_loc - h_loc_ref
 print 'h_loc diff =', diff
@@ -95,7 +97,20 @@ assert( diff < 1e-7 )
 
 if False:
     from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
+    plt.figure()
+    oplotr(Delta_tau - Delta_tau_ref)
+    plt.show()
+    
+    plt.figure()
     oplotr(Delta_tau)
     oplotr(Delta_tau_ref)
-    plt.show(); exit()
 
+    plt.figure()
+    oplotr(Delta_iw)
+    oplotr(Delta_iw_ref)
+
+    plt.figure()
+    oploti(Delta_iw)
+    oploti(Delta_iw_ref)
+    
+    plt.show()

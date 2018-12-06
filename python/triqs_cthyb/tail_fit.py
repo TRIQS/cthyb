@@ -22,7 +22,7 @@
 
 import numpy as np
 
-from pytriqs.gf.gf_fnt import fit_tail_on_window, replace_by_tail
+from pytriqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
 
 def tail_fit(
         Sigma_iw,
@@ -77,7 +77,7 @@ def tail_fit(
     # Now fit the tails of Sigma_iw and replace the high frequency part with the tail expansion
     for name, sig in Sigma_iw:
 
-        tail, err = fit_tail_on_window(
+        tail, err = fit_hermitian_tail_on_window(
             sig,
             n_min = fit_min_n,
             n_max = fit_max_n,

@@ -120,7 +120,7 @@ namespace triqs_cthyb {
     Delta_infty_vec = map(
        // Compute 0th moment of one block
        [](gf_const_view<imfreq> d) {
-         auto [tail, err] = fit_tail(d);
+         auto [tail, err] = fit_hermitian_tail(d);
 	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
 #ifndef HYBRIDISATION_IS_COMPLEX
@@ -170,7 +170,8 @@ namespace triqs_cthyb {
     for (auto const &bl : gf_struct) {
       // Remove constant quadratic part
       for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
-      _Delta_tau[b]() = fourier(Delta_iw[b]);
+      auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
+      _Delta_tau[b]() = fourier(Delta_iw[b], Delta_tail_b);
       // Force all diagonal elements to be real
       for (int i : range(bl.second.size())) _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
       // If off-diagonal elements are below threshold, set to real

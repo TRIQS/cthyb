@@ -311,13 +311,15 @@ namespace triqs_cthyb {
 
     if (params.measure_O_tau) {
 
-      auto [O1, O2] = *params.measure_O_tau;
+      const auto & [O1, O2] = *params.measure_O_tau;
+      auto comm_0 = O1 * O2 - O2 * O1;
       auto comm_1 = O1 * _h_loc - _h_loc * O1;
       auto comm_2 = O2 * _h_loc - _h_loc * O2;
       
-      if( !comm_1.is_zero() || !comm_2.is_zero() ) {
+      if( !comm_0.is_zero() || !comm_1.is_zero() || !comm_2.is_zero() ) {
 	if (params.verbosity >= 2) {
 	   TRIQS_RUNTIME_ERROR << "Error: measure_O_tau, supplied operators does not commute with the local Hamiltonian.\n"
+			       << "[O1, O2] = " << comm_0 << "\n"	     
 			       << "[O1, H_loc] = " << comm_1 << "\n"
 			       << "[O2, H_loc] = " << comm_2 << "\n";
 	}

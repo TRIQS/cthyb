@@ -40,8 +40,8 @@ def make_calc():
         mu = 0.0,
         U = 5.0,
         #n_cycles = 1e8,
-        n_cycles = 1e6,
-        #n_cycles = 1e5,
+        #n_cycles = 1e6,
+        n_cycles = 1e5,
         )
 
     p.init = ParameterCollection(

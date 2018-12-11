@@ -46,70 +46,44 @@ namespace triqs_cthyb {
     s *= data.atomic_reweighting;
     average_sign += s;
 
+    int pto = 0;
+    for (const auto &det : data.dets) pto += det.size();
+    int nsamples = pto * pto;
+
     mc_weight_t atomic_weight, atomic_reweighting;
-    auto [bare_atomic_weight, bare_atomic_reweighting]  = data.imp_trace.compute();
-    
-    {
+    auto [bare_atomic_weight, bare_atomic_reweighting] = data.imp_trace.compute();
+    const double prefactor = s / bare_atomic_weight / bare_atomic_reweighting / double(nsamples);
+
+    for (int i : range(nsamples)) {
       auto tau1 = data.tau_seg.get_random_pt(rng);
+      auto tau2 = data.tau_seg.get_random_pt(rng);
+      double dtau = double(tau2 - tau1);
 
-      // {
-      
-      for( int i = 0; i < 100; i++ ) {
+      try {
+        data.imp_trace.try_insert(tau1, op1_d);
+        data.imp_trace.try_insert(tau2, op2_d);
+        std::tie(atomic_weight, atomic_reweighting) = data.imp_trace.compute();
+      } catch (rbt_insert_error const &) { atomic_weight = 0.; }
 
-      /*
-      for (auto t2 : O_tau.mesh()) {
-
-	// skip tau = 0, but use tau = beta
-	// to avoid double counting!
-	if( t2 == 0. ) continue;
-        auto tau2 = data.tau_seg.make_time_pt(t2);
-	
-      */
-
-        auto tau2 = data.tau_seg.get_random_pt(rng);
-	  
-	double dtau = double(tau2 - tau1);
-
-        try {
-	  data.imp_trace.try_insert(tau1, op1_d);
-	  data.imp_trace.try_insert(tau2, op2_d);
-
-	  //trace_val = data.imp_trace.compute().first;
-	  std::tie(atomic_weight, atomic_reweighting) = data.imp_trace.compute();
-	  
-        } catch (rbt_insert_error const &) {
-          //std::cerr << "Insert error : recovering ... " << std::endl;
-          atomic_weight = 0.;
-        }
-
-        data.imp_trace.cancel_insert();
-
-        O_tau[closest_mesh_pt(dtau)] += s * atomic_weight * atomic_reweighting / bare_atomic_weight / bare_atomic_reweighting;
-      }
+      data.imp_trace.cancel_insert();
+      O_tau[closest_mesh_pt(dtau)] += prefactor * atomic_weight * atomic_reweighting;
     }
   }
 
   void measure_O_tau_ins::collect_results(triqs::mpi::communicator const &c) {
-
     O_tau        = mpi_all_reduce(O_tau, c);
     average_sign = mpi_all_reduce(average_sign, c);
-    O_tau /= -real(average_sign);
 
-    //O_tau *= O_tau.mesh().size() / 100.;
-    O_tau *= O_tau.mesh().size() - 1;
-    O_tau /= 100.;
+    O_tau *= double(O_tau.mesh().size() - 1) / real(average_sign);
 
-    // Multiply first and last bins by 2 to account for full bins
-    int last = O_tau.mesh().size() - 1;
+    // Assuming commuting operators so that O(0) = O(beta)
+    // use that to counter the half-sized edge bind, by taking the average
+    // on the boundary
 
-    auto avg = O_tau[0] + O_tau[last];
-    O_tau[0] = avg;
-    O_tau[last] = avg;
-    
-    /*
-    O_tau[0] *= 2;
-    O_tau[last] *= 2;
-    */
+    int last     = O_tau.mesh().size() - 1;
+    auto average = O_tau[0] + O_tau[last];
+
+    O_tau[0]    = average;
+    O_tau[last] = average;
   }
-
 } // namespace triqs_cthyb

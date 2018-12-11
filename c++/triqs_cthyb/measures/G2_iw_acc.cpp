@@ -51,16 +51,16 @@ namespace triqs_cthyb {
           + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
     */
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-        for (auto const &n2 : f_mesh)
-	  for (auto const i : range(G2.target_shape()[0]))
-	  for (auto const j : range(G2.target_shape()[1]))
-	  for (auto const k : range(G2.target_shape()[2]))
-	  for (auto const l : range(G2.target_shape()[3]))
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+        for (const auto &n2 : f_mesh)
+	  for (const auto i : range(G2.target_shape()[0]))
+	  for (const auto j : range(G2.target_shape()[1]))
+	  for (const auto k : range(G2.target_shape()[2]))
+	  for (const auto l : range(G2.target_shape()[3]))
 	  G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1 + w](i, j) * M_kl[n2 + w, n2](k, l);
 
     //G2[w, n1, n2](i, j, k, l) << G2[w, n1, n2](i, j, k, l)
@@ -76,16 +76,16 @@ namespace triqs_cthyb {
           - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
     */
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-        for (auto const &n2 : f_mesh)
-	  for (auto const i : range(G2.target_shape()[0]))
-	  for (auto const j : range(G2.target_shape()[1]))
-	  for (auto const k : range(G2.target_shape()[2]))
-	  for (auto const l : range(G2.target_shape()[3]))
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+        for (const auto &n2 : f_mesh)
+	  for (const auto i : range(G2.target_shape()[0]))
+	  for (const auto j : range(G2.target_shape()[1]))
+	  for (const auto k : range(G2.target_shape()[2]))
+	  for (const auto l : range(G2.target_shape()[3]))
 	  G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
 
     //G2[w, n1, n2](i, j, k, l) << G2[w, n1, n2](i, j, k, l)
@@ -103,31 +103,31 @@ namespace triqs_cthyb {
 
     /*
 
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto f_mesh = std::get<1>(G2.mesh());
 
     auto g2 = G2.data();
     auto m_ij = M_ij.data();
     auto m_kl = M_kl.data();
 
-    for (auto const w1 : range(g2.shape()[1]))
-    for (auto const w2 : range(g2.shape()[2]))
-    for (auto const i : range(g2.shape()[3]))
-    for (auto const j : range(g2.shape()[4]))
-    for (auto const k : range(g2.shape()[5]))
-    for (auto const l : range(g2.shape()[6]))
+    for (const auto w1 : range(g2.shape()[1]))
+    for (const auto w2 : range(g2.shape()[2]))
+    for (const auto i : range(g2.shape()[3]))
+    for (const auto j : range(g2.shape()[4]))
+    for (const auto k : range(g2.shape()[5]))
+    for (const auto l : range(g2.shape()[6]))
       g2(0, w1, w2, i, j, k, l) += s * m_ij(w1, w1, i, j) * m_kl(w2, w2, k, l);
     */
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-        for (auto const &n2 : f_mesh)
-	  for (auto const i : range(G2.target_shape()[0]))
-	  for (auto const j : range(G2.target_shape()[1]))
-	  for (auto const k : range(G2.target_shape()[2]))
-	  for (auto const l : range(G2.target_shape()[3]))
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+        for (const auto &n2 : f_mesh)
+	  for (const auto i : range(G2.target_shape()[0]))
+	  for (const auto j : range(G2.target_shape()[1]))
+	  for (const auto k : range(G2.target_shape()[2]))
+	  for (const auto l : range(G2.target_shape()[3]))
 	  G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1](i, j) * M_kl[n2, n2](k, l);
   }
 
@@ -136,31 +136,31 @@ namespace triqs_cthyb {
     // gaint speed by not doing matsubara frequency arithmetic ...
 
     /*
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto f_mesh = std::get<1>(G2.mesh());
 
     auto g2 = G2.data();
     auto m_il = M_il.data();
     auto m_kj = M_kj.data();
     
-    for (auto const w1 : range(g2.shape()[1]))
-    for (auto const w2 : range(g2.shape()[2]))
-    for (auto const i : range(g2.shape()[3]))
-    for (auto const j : range(g2.shape()[4]))
-    for (auto const k : range(g2.shape()[5]))
-    for (auto const l : range(g2.shape()[6]))
+    for (const auto w1 : range(g2.shape()[1]))
+    for (const auto w2 : range(g2.shape()[2]))
+    for (const auto i : range(g2.shape()[3]))
+    for (const auto j : range(g2.shape()[4]))
+    for (const auto k : range(g2.shape()[5]))
+    for (const auto l : range(g2.shape()[6]))
       g2(0, w1, w2, i, j, k, l) -= s * m_il(w1, w2, i, l) * m_kj(w2, w1, k, j);
     */
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-        for (auto const &n2 : f_mesh)
-	  for (auto const i : range(G2.target_shape()[0]))
-	  for (auto const j : range(G2.target_shape()[1]))
-	  for (auto const k : range(G2.target_shape()[2]))
-	  for (auto const l : range(G2.target_shape()[3]))
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+        for (const auto &n2 : f_mesh)
+	  for (const auto i : range(G2.target_shape()[0]))
+	  for (const auto j : range(G2.target_shape()[1]))
+	  for (const auto k : range(G2.target_shape()[2]))
+	  for (const auto l : range(G2.target_shape()[3]))
 	  G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2, n1](k, j);    
   }
 
@@ -180,18 +180,18 @@ namespace triqs_cthyb {
     // gaint speed by not doing matsubara frequency arithmetic ...
 
     /*
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &n1 : range(f_mesh.size()))
-      for (auto const &n2 : range(f_mesh.size()))
+    for (const auto &n1 : range(f_mesh.size()))
+      for (const auto &n2 : range(f_mesh.size()))
 	G2.data()(0, n1, n2, 0, 0, 0, 0) += s * M_ij.data()(n1, n1, 0, 0) * M_kl.data()(n2, n2, 0, 0);
     */
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-        for (auto const &n2 : f_mesh)
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+        for (const auto &n2 : f_mesh)
 	  G2[w, n1, n2](0, 0, 0, 0) += s * M_ij[n1, n1](0, 0) * M_kl[n2, n2](0, 0);
     
   }
@@ -201,19 +201,19 @@ namespace triqs_cthyb {
     // gaint speed by not doing matsubara frequency arithmetic ...
 
     /*
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &n1 : range(f_mesh.size()))
-      for (auto const &n2 : range(f_mesh.size()))
+    for (const auto &n1 : range(f_mesh.size()))
+      for (const auto &n2 : range(f_mesh.size()))
 	G2.data()(0, n1, n2, 0, 0, 0, 0) -= s * M_il.data()(n1, n2, 0, 0) * M_kj.data()(n2, n1, 0, 0);
     */
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
 
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-        for (auto const &n2 : f_mesh)
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+        for (const auto &n2 : f_mesh)
 	  G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2, n1](0, 0);
     
   }
@@ -231,21 +231,21 @@ namespace triqs_cthyb {
     
   template <> void accumulate_impl_AABB_opt<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-	for (auto const &n2 : f_mesh)
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+	for (const auto &n2 : f_mesh)
 	  G2[w, n1, n2](0, 0, 0, 0) += s * M_ij[n1, n1 + w](0, 0) * M_kl[n2 + w, n2](0, 0);
   }
 
   template <> void accumulate_impl_ABBA_opt<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
 
-    auto const b_mesh = std::get<0>(G2.mesh());
-    auto const f_mesh = std::get<1>(G2.mesh());
-    for (auto const &w : b_mesh)
-      for (auto const &n1 : f_mesh)
-	for (auto const &n2 : f_mesh)
+    const auto & b_mesh = std::get<0>(G2.mesh());
+    const auto & f_mesh = std::get<1>(G2.mesh());
+    for (const auto &w : b_mesh)
+      for (const auto &n1 : f_mesh)
+	for (const auto &n2 : f_mesh)
 	  G2[w, n1, n2](0, 0, 0, 0) += -s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);   
   }
     
@@ -271,12 +271,12 @@ namespace triqs_cthyb {
     int size_ij = M_ij.target_shape()[0];
     int size_kl = M_kl.target_shape()[0];
 
-    auto const iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
+    const auto & iw_mesh = std::get<0>(G2.mesh());
+    using mesh_point_t = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
 
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
+    for (const auto &n1 : iw_mesh)
+      for (const auto &n2 : iw_mesh)
+        for (const auto &n3 : iw_mesh) {
           mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
           for (int i : range(size_ij))
             for (int j : range(size_ij))
@@ -293,12 +293,12 @@ namespace triqs_cthyb {
     int size_il = M_il.target_shape()[0];
     int size_kj = M_kj.target_shape()[0];
 
-    auto const iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
+    const auto & iw_mesh = std::get<0>(G2.mesh());
+    using mesh_point_t = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
     
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
+    for (const auto &n1 : iw_mesh)
+      for (const auto &n2 : iw_mesh)
+        for (const auto &n3 : iw_mesh) {
           mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
           for (int i : range(size_il))
             for (int j : range(size_kj))
@@ -350,12 +350,12 @@ namespace triqs_cthyb {
     int size_ij = M_ij.target_shape()[0];
     int size_kl = M_kl.target_shape()[0];
 
-    auto const iw_mesh = std::get<0>(G2.mesh());
+    const auto iw_mesh = std::get<0>(G2.mesh());
     using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
 
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
+    for (const auto &n1 : iw_mesh)
+      for (const auto &n2 : iw_mesh)
+        for (const auto &n3 : iw_mesh) {
           mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
           for (int i : range(size_ij))
             for (int j : range(size_ij))
@@ -373,12 +373,12 @@ namespace triqs_cthyb {
     int size_il = M_il.target_shape()[0];
     int size_kj = M_kj.target_shape()[0];
 
-    auto const iw_mesh = std::get<0>(G2.mesh());
+    const auto iw_mesh = std::get<0>(G2.mesh());
     using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
 
-    for (auto const &n1 : iw_mesh)
-      for (auto const &n2 : iw_mesh)
-        for (auto const &n3 : iw_mesh) {
+    for (const auto &n1 : iw_mesh)
+      for (const auto &n2 : iw_mesh)
+        for (const auto &n3 : iw_mesh) {
           mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
           for (int i : range(size_il))
             for (int j : range(size_kj))

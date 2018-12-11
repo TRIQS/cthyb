@@ -92,7 +92,7 @@ namespace triqs_cthyb {
         double t1 = double(x.first);
         double t2 = double(y.first);
 
-        for (auto const & [ w1, w2 ] : M_ww.mesh()) { M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * exp(t2 * w2); }
+        for (auto const & [ w1, w2 ] : M_ww.mesh()) { M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * std::exp(t2 * w2); }
       })
         ;
     };
@@ -119,20 +119,20 @@ namespace triqs_cthyb {
         double t1 = double(x.first);
         double t2 = double(y.first);
 
-        auto mesh1 = std::get<0>(M_mesh.components());
-        auto mesh2 = std::get<1>(M_mesh.components());
+        const auto & mesh1 = std::get<0>(M_mesh.components());
+        const auto & mesh2 = std::get<1>(M_mesh.components());
 
         std::complex<double> dWt1(0., 2 * pi_beta * (beta - t1));
         std::complex<double> dWt2(0., 2 * pi_beta * t2);
 
-        auto dexp1 = exp(dWt1);
-        auto dexp2 = exp(dWt2);
+        auto dexp1 = std::exp(dWt1);
+        auto dexp2 = std::exp(dWt2);
 
-        auto exp1 = exp(dWt1 * (mesh1.first_index() + 0.5));
+        auto exp1 = std::exp(dWt1 * (mesh1.first_index() + 0.5));
 
         for (auto const i1 : range(M_arr.shape()[2])) {
 
-          auto exp2      = exp(dWt2 * (mesh2.first_index() + 0.5));
+          auto exp2      = std::exp(dWt2 * (mesh2.first_index() + 0.5));
           auto exp1_M_xy = exp1 * M_xy;
 
           for (auto const i2 : range(M_arr.shape()[3])) {
@@ -210,7 +210,7 @@ namespace triqs_cthyb {
     G2_iw        = mpi_all_reduce(G2_iw, com);
     G2_iw = G2_iw / (real(average_sign) * data.config.beta());
 
-    if(triqs::mpi::communicator().rank() == 0) {
+    if(com.rank() == 0) {
       std::cout << "measure/G2_iw: timer_M  = " << double(timer_M) << "\n";
       std::cout << "measure/G2_iw: timer_G2 = " << double(timer_G2) << "\n";
     }

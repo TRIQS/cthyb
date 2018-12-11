@@ -80,5 +80,5 @@ if mpi.is_master_node():
         
 # Redundant with previous check
 from pytriqs.utility.h5diff import h5diff
-h5diff("single_site_bethe.out.h5","single_site_bethe.ref.h5")
+h5diff("single_site_bethe.out.h5","single_site_bethe.ref.h5", precision=1e-5)
 

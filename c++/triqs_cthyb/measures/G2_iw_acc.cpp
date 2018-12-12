@@ -25,456 +25,193 @@
 namespace triqs_cthyb {
   namespace G2_iw {
 
-  namespace {
-
-    // Index placeholders
-    clef::placeholder<0> i;
-    clef::placeholder<1> j;
-    clef::placeholder<2> k;
-    clef::placeholder<3> l;
-
-    // Frequency placeholders
-    clef::placeholder<4> w;
-    clef::placeholder<5> n1;
-    clef::placeholder<6> n2;
-    clef::placeholder<7> n3;
-
-  } // namespace
-
-  // -- Particle-hole
-
-  template <> void accumulate_impl_AABB<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-
-    /*
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
-    */
-
-    /*
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  for (const auto i : range(G2.target_shape()[0]))
-	  for (const auto j : range(G2.target_shape()[1]))
-	  for (const auto k : range(G2.target_shape()[2]))
-	  for (const auto l : range(G2.target_shape()[3]))
-	  G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1 + w](i, j) * M_kl[n2 + w, n2](k, l);
-
-    //G2[w, n1, n2](i, j, k, l) << G2[w, n1, n2](i, j, k, l)
-    //	    + s * M_ij[n1, n1 + w](i, j) * M_kl[n2 + w, n2](k, l);
-
-    */
-
-    for (const auto &[w, n1, n2] : G2.mesh())
-      for (const auto [i, j, k, l] : G2.target_indices())
-	G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1 + w](i, j) * M_kl[n2 + w, n2](k, l);
-    
-  }
-
-  template <> void accumulate_impl_ABBA<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-
-    triqs::utility::timer timer_clef;    
-    triqs::utility::timer timer_1loop;
-    triqs::utility::timer timer_2loop;
-    triqs::utility::timer timer_3loop;
-    triqs::utility::timer timer_5loop;
-    triqs::utility::timer timer_7loop;
-
-    timer_clef.start();
-    
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
-
-    timer_clef.stop();
-    
-    // --
-
-    timer_7loop.start();
-    
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  for (const auto i : range(G2.target_shape()[0]))
-	  for (const auto j : range(G2.target_shape()[1]))
-	  for (const auto k : range(G2.target_shape()[2]))
-	  for (const auto l : range(G2.target_shape()[3]))
-	  G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-    //G2[w, n1, n2](i, j, k, l) << G2[w, n1, n2](i, j, k, l)
-    //     - s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-    timer_7loop.stop();
-
-    // --
-    
-    timer_5loop.start();
-    
-    for (const auto &[w, n1, n2] : G2.mesh())
-	  for (const auto i : range(G2.target_shape()[0]))
-	  for (const auto j : range(G2.target_shape()[1]))
-	  for (const auto k : range(G2.target_shape()[2]))
-	  for (const auto l : range(G2.target_shape()[3]))
-	  G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-    //G2[w, n1, n2](i, j, k, l) << G2[w, n1, n2](i, j, k, l)
-    //     - s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-    timer_5loop.stop();
-
-    // --
-
-    timer_3loop.start();
-    
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);
-
-    timer_3loop.stop();
-
-    // --
-
-    timer_2loop.start();
-
-    for (const auto &[w, n1, n2] : G2.mesh())
-      for (const auto [i, j, k, l] : G2.target_indices())
-	G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-    timer_2loop.stop();
-
-    // --
-
-    timer_1loop.start();
-    
-    for (const auto &[w, n1, n2] : G2.mesh()) // 2 times slower than 3lvl nested loop!?!?!
-      G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);
-
-    timer_1loop.stop();
-
-    // --
-    
-
-    //std::cout << "target_shape = " << G2.target_shape() << "\n";
-    std::cout << "clef, 7, 5, 3, 2, 1loop, 2loop/7loop, 1loop/3loop, 2loop/5loop = "
-	      << double(timer_clef) << ", "
-	      << double(timer_7loop) << ", "
-	      << double(timer_5loop) << ", "
-	      << double(timer_3loop) << ", "
-	      << double(timer_2loop) << ", "
-	      << double(timer_1loop) << ", "
-	      << double(timer_2loop) / double(timer_7loop) << ", "
-	      << double(timer_1loop) / double(timer_3loop) << ", "
-	      << double(timer_2loop) / double(timer_5loop) << ", "
-	      << std::endl;
-  }
-
-
-// -------------------------------------------------------------------------------------
-// W=0 and arbitrary size of target space
-// -------------------------------------------------------------------------------------
-
-/*
-
-    template <> void accumulate_impl_AABB_w0<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-
-    // gain speed by not doing matsubara frequency arithmetic ...
-
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  for (const auto i : range(G2.target_shape()[0]))
-	  for (const auto j : range(G2.target_shape()[1]))
-	  for (const auto k : range(G2.target_shape()[2]))
-	  for (const auto l : range(G2.target_shape()[3]))
-	  G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1](i, j) * M_kl[n2, n2](k, l);
-  }
-
-  template <> void accumulate_impl_ABBA_w0<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-
-    // gain speed by not doing matsubara frequency arithmetic ...
-
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  for (const auto i : range(G2.target_shape()[0]))
-	  for (const auto j : range(G2.target_shape()[1]))
-	  for (const auto k : range(G2.target_shape()[2]))
-	  for (const auto l : range(G2.target_shape()[3]))
-	  G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2, n1](k, j);    
-  }
-
-    template <> void accumulate_impl_AABB_w0<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_AABB_w0<G2_channel::PP> not implemented"; }
-    template <> void accumulate_impl_ABBA_w0<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_ABBA_w0<G2_channel::PP> not implemented";}
-    
-    template <> void accumulate_impl_AABB_w0<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_AABB_w0<G2_channel::AllFermionic> not implemented"; }
-    template <> void accumulate_impl_ABBA_w0<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_ABBA_w0<G2_channel::AllFermionic> not implemented";}
-    
-*/
-    
-// -------------------------------------------------------------------------------------
-// W=0 and size 1 target space
-// -------------------------------------------------------------------------------------
-
-/*    
-
-  template <> void accumulate_impl_AABB_opt_w0<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-
-    // gain speed by not doing matsubara frequency arithmetic ...
-
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  G2[w, n1, n2](0, 0, 0, 0) += s * M_ij[n1, n1](0, 0) * M_kl[n2, n2](0, 0);
-    
-  }
-
-  template <> void accumulate_impl_ABBA_opt_w0<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-
-    // gain speed by not doing matsubara frequency arithmetic ...
-
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-        for (const auto &n2 : f_mesh)
-	  G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2, n1](0, 0);
-    
-  }
-
-    template <> void accumulate_impl_AABB_opt_w0<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_AABB_opt_w0<G2_channel::PP> not implemented"; }
-    template <> void accumulate_impl_ABBA_opt_w0<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_ABBA_opt_w0<G2_channel::PP> not implemented";}
-    
-    template <> void accumulate_impl_AABB_opt_w0<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_AABB_opt_w0<G2_channel::AllFermionic> not implemented"; }
-    template <> void accumulate_impl_ABBA_opt_w0<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) { TRIQS_RUNTIME_ERROR << "accumulate_impl_ABBA_opt_w0<G2_channel::AllFermionic> not implemented";}
-
-*/
-
-// -------------------------------------------------------------------------------------
-// General frequency but size 1 target space
-// -------------------------------------------------------------------------------------
-
-/*
-  template <> void accumulate_impl_AABB_opt<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-	for (const auto &n2 : f_mesh)
-	  G2[w, n1, n2](0, 0, 0, 0) += s * M_ij[n1, n1 + w](0, 0) * M_kl[n2 + w, n2](0, 0);
-  }
-
-  template <> void accumulate_impl_ABBA_opt<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-
-    const auto & b_mesh = std::get<0>(G2.mesh());
-    const auto & f_mesh = std::get<1>(G2.mesh());
-    for (const auto &w : b_mesh)
-      for (const auto &n1 : f_mesh)
-	for (const auto &n2 : f_mesh)
-	  G2[w, n1, n2](0, 0, 0, 0) += -s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);   
-  }
-    
-*/
-    
-  // -- Particle-particle
-
-  template <> void accumulate_impl_AABB<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-
-    /*
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
-    */
-
-    for (const auto &[w, n1, n2] : G2.mesh())
-      for (const auto [i, j, k, l] : G2.target_indices())
-	G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, w - n2](i, j) * M_kl[w - n1, n2](k, l);
-    
-  }
-
-  template <> void accumulate_impl_ABBA<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-
-    /*
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
-    */
-
-    for (const auto &[w, n1, n2] : G2.mesh())
-      for (const auto [i, j, k, l] : G2.target_indices())
-	G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[w - n1, w - n2](k, j);
-}
-
-  // -- Fermionic
-
-  template <>
-  void accumulate_impl_AABB<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-
-    /*
-    int size_ij = M_ij.target_shape()[0];
-    int size_kl = M_kl.target_shape()[0];
-
-    const auto & iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
-
-    for (const auto &n1 : iw_mesh)
-      for (const auto &n2 : iw_mesh)
-        for (const auto &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_ij))
-            for (int j : range(size_ij))
-              for (int k : range(size_kl))
-                for (int l : range(size_kl)) G2[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
-        }
-
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
-    */
-
-    const auto & iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
-    
-    for (const auto &[n1, n2, n3] : G2.mesh()) {
-      mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-      for (const auto [i, j, k, l] : G2.target_indices())
-	G2[n1, n2, n3](i, j, k, l) += s * M_ij[n2, n1](j, i) * M_kl[n4, n3](l, k);
-    }
-    
-  }
-
-  template <>
-  void accumulate_impl_ABBA<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-
-    /*
-    int size_il = M_il.target_shape()[0];
-    int size_kj = M_kj.target_shape()[0];
-
-    const auto & iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
-    
-    for (const auto &n1 : iw_mesh)
-      for (const auto &n2 : iw_mesh)
-        for (const auto &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_il))
-            for (int j : range(size_kj))
-              for (int k : range(size_kj))
-                for (int l : range(size_il)) G2[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
-        }
-
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
-    */
-
-    const auto & iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
-    
-    for (const auto &[n1, n2, n3] : G2.mesh()) {
-      mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-      for (const auto [i, j, k, l] : G2.target_indices())
-	G2[n1, n2, n3](i, j, k, l) -= s * M_il[n4, n1](l, i) * M_kj[n2, n3](j, k);
-    }
-
-  }
-    
-    /*
-    
-    template <>
-  inline void accumulate_impl_AABB<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l); // sign in lhs in fft
-  }
+    namespace {
+
+      // Index placeholders
+      clef::placeholder<0> i;
+      clef::placeholder<1> j;
+      clef::placeholder<2> k;
+      clef::placeholder<3> l;
+
+      // Frequency placeholders
+      clef::placeholder<4> w;
+      clef::placeholder<5> n1;
+      clef::placeholder<6> n2;
+      clef::placeholder<7> n3;
+
+    } // namespace
+
+    // -- Particle-hole
 
     template <>
-  inline void accumulate_impl_ABBA<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j); // sign in lhs in fft
-  }
+    void accumulate_impl_AABB<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
+                                              M_t const &M_ij, M_t const &M_kl) {
 
-  // -- Particle-particle
+      //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l);
 
-  template <>
-  inline void accumulate_impl_AABB<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l); // sign in lhs in fft
-  }
+      for (const auto &[w, n1, n2] : G2.mesh())
+        for (const auto [i, j, k, l] : G2.target_indices())
+          G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1 + w](i, j) * M_kl[n2 + w, n2](k, l);
+    }
 
-  template <>
-  inline void accumulate_impl_ABBA<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il, M_t const &M_kj) {
-    G2(w, n1, n2)
-    (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)                    //
-          - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j); // sign in lhs in fft
-  }
+    template <>
+    void accumulate_impl_ABBA<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
+                                              M_t const &M_il, M_t const &M_kj) {
 
-  // -- Fermionic
+      //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j);
+      
+      /*
+      triqs::utility::timer timer_clef;
+      triqs::utility::timer timer_1loop;
+      triqs::utility::timer timer_2loop;
+      triqs::utility::timer timer_3loop;
+      triqs::utility::timer timer_5loop;
+      triqs::utility::timer timer_7loop;
 
-  template <>
-  inline void accumulate_impl_AABB<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij,
-                                                                            M_t const &M_kl) {
+      // --
 
-    int size_ij = M_ij.target_shape()[0];
-    int size_kl = M_kl.target_shape()[0];
+      timer_clef.start();
 
-    const auto iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
+      G2(w, n1, n2)
+         (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)
+            - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j);
 
-    for (const auto &n1 : iw_mesh)
-      for (const auto &n2 : iw_mesh)
-        for (const auto &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_ij))
-            for (int j : range(size_ij))
-              for (int k : range(size_kl))
-                for (int l : range(size_kl)) G2[{n1, n2, n3}](i, j, k, l) += s * M_ij[{n2, n1}](j, i) * M_kl[{n4, n3}](l, k);
-        }
+      timer_clef.stop();
 
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
-  }
+      // --
 
-  template <>
-  inline void accumulate_impl_ABBA<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_il,
-                                                                            M_t const &M_kj) {
+      timer_7loop.start();
 
-    int size_il = M_il.target_shape()[0];
-    int size_kj = M_kj.target_shape()[0];
+      const auto &b_mesh = std::get<0>(G2.mesh());
+      const auto &f_mesh = std::get<1>(G2.mesh());
 
-    const auto iw_mesh = std::get<0>(G2.mesh());
-    using mesh_point_t = typename decltype(iw_mesh)::mesh_point_t;
+      for (const auto &w : b_mesh)
+        for (const auto &n1 : f_mesh)
+          for (const auto &n2 : f_mesh)
+            for (const auto i : range(G2.target_shape()[0]))
+              for (const auto j : range(G2.target_shape()[1]))
+                for (const auto k : range(G2.target_shape()[2]))
+                  for (const auto l : range(G2.target_shape()[3]))
+                    G2[w, n1, n2](i, j, k, l) -=
+                       s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
 
-    for (const auto &n1 : iw_mesh)
-      for (const auto &n2 : iw_mesh)
-        for (const auto &n3 : iw_mesh) {
-          mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
-          for (int i : range(size_il))
-            for (int j : range(size_kj))
-              for (int k : range(size_kj))
-                for (int l : range(size_il)) G2[{n1, n2, n3}](i, j, k, l) += -s * M_il[{n4, n1}](l, i) * M_kj[{n2, n3}](j, k);
-        }
+      timer_7loop.stop();
 
-    //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
-  }
-    */
+      // --
 
+      timer_5loop.start();
 
-    
+      for (const auto &[w, n1, n2] : G2.mesh())
+        for (const auto i : range(G2.target_shape()[0]))
+          for (const auto j : range(G2.target_shape()[1]))
+            for (const auto k : range(G2.target_shape()[2]))
+              for (const auto l : range(G2.target_shape()[3]))
+                G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
+
+      timer_5loop.stop();
+
+      // --
+
+      timer_3loop.start();
+
+      for (const auto &w : b_mesh)
+        for (const auto &n1 : f_mesh)
+          for (const auto &n2 : f_mesh)
+            G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);
+
+      timer_3loop.stop();
+
+      // --
+
+      timer_2loop.start();
+
+      */
+      
+      for (const auto &[w, n1, n2] : G2.mesh())
+        for (const auto [i, j, k, l] : G2.target_indices())
+          G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
+
+      /*
+      timer_2loop.stop();
+
+      // --
+
+      timer_1loop.start();
+
+      for (const auto &[w, n1, n2] : G2.mesh()) // 2 times slower than 3lvl nested loop!?!?!
+        G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);
+
+      timer_1loop.stop();
+
+      // --
+
+      std::cout << "clef, 7, 5, 3, 2, 1loop, 2loop/7loop, 1loop/3loop, "
+                   "2loop/5loop = "
+                << double(timer_clef) << ", " << double(timer_7loop) << ", " << double(timer_5loop)
+                << ", " << double(timer_3loop) << ", " << double(timer_2loop) << ", "
+                << double(timer_1loop) << ", " << double(timer_2loop) / double(timer_7loop) << ", "
+                << double(timer_1loop) / double(timer_3loop) << ", "
+                << double(timer_2loop) / double(timer_5loop) << ", " << std::endl;
+      */
+    }
+
+    // -- Particle-particle
+
+    template <>
+    void accumulate_impl_AABB<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
+                                              M_t const &M_ij, M_t const &M_kl) {
+
+      //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l);
+
+      for (const auto &[w, n1, n2] : G2.mesh())
+        for (const auto [i, j, k, l] : G2.target_indices())
+          G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, w - n2](i, j) * M_kl[w - n1, n2](k, l);
+    }
+
+    template <>
+    void accumulate_impl_ABBA<G2_channel::PP>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
+                                              M_t const &M_il, M_t const &M_kj) {
+
+      //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) - s * M_il(n1, n2)(i, l) * M_kj(w - n1, w - n2)(k, j);
+
+      for (const auto &[w, n1, n2] : G2.mesh())
+        for (const auto [i, j, k, l] : G2.target_indices())
+          G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[w - n1, w - n2](k, j);
+    }
+
+    // -- Fermionic
+
+    template <>
+    void accumulate_impl_AABB<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
+                                                        M_t const &M_ij, M_t const &M_kl) {
+
+      //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
+
+      const auto &iw_mesh = std::get<0>(G2.mesh());
+      using mesh_point_t  = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
+
+      for (const auto &[n1, n2, n3] : G2.mesh()) {
+        mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
+        for (const auto [i, j, k, l] : G2.target_indices())
+          G2[n1, n2, n3](i, j, k, l) += s * M_ij[n2, n1](j, i) * M_kl[n4, n3](l, k);
+      }
+    }
+
+    template <>
+    void accumulate_impl_ABBA<G2_channel::AllFermionic>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
+                                                        M_t const &M_il, M_t const &M_kj) {
+
+      //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
+
+      const auto &iw_mesh = std::get<0>(G2.mesh());
+      using mesh_point_t  = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
+
+      for (const auto &[n1, n2, n3] : G2.mesh()) {
+        mesh_point_t n4{iw_mesh, n1.index() + n3.index() - n2.index()};
+        for (const auto [i, j, k, l] : G2.target_indices())
+          G2[n1, n2, n3](i, j, k, l) -= s * M_il[n4, n1](l, i) * M_kj[n2, n3](j, k);
+      }
+    }
+
   } // namespace G2_iw
 } // namespace triqs_cthyb

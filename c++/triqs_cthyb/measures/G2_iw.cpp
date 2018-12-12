@@ -20,13 +20,17 @@
  *
  ******************************************************************************/
 
+#include <triqs/arrays.hpp>
+#include <triqs/utility/itertools.hpp>
+
 #include "./G2_iw.hpp"
 #include "./G2_iw_acc.hpp"
 
 namespace triqs_cthyb {
 
   template <G2_channel Channel>
-  measure_G2_iw<Channel>::measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures)
+  measure_G2_iw<Channel>::measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data,
+                                        G2_measures_t const &G2_measures)
      : data(data), average_sign(0), G2_measures(G2_measures) {
 
     const double beta = data.config.beta();
@@ -114,36 +118,35 @@ namespace triqs_cthyb {
     const double pi_beta = M_PI / beta;
 
     auto M_arr_fill = [pi_beta, beta](det_type const &det, M_arr_t &M_arr, M_mesh_t const &M_mesh) {
-      foreach (det, [&M_mesh, &M_arr, pi_beta, beta](op_t const &x, op_t const &y, det_scalar_t M_xy) {
+      foreach (det,
+               [&M_mesh, &M_arr, pi_beta, beta](op_t const &x, op_t const &y, det_scalar_t M_xy) {
+                 double t1 = double(x.first);
+                 double t2 = double(y.first);
 
-        double t1 = double(x.first);
-        double t2 = double(y.first);
+                 const auto &mesh1 = std::get<0>(M_mesh.components());
+                 const auto &mesh2 = std::get<1>(M_mesh.components());
 
-        const auto & mesh1 = std::get<0>(M_mesh.components());
-        const auto & mesh2 = std::get<1>(M_mesh.components());
+                 std::complex<double> dWt1(0., 2 * pi_beta * (beta - t1));
+                 std::complex<double> dWt2(0., 2 * pi_beta * t2);
 
-        std::complex<double> dWt1(0., 2 * pi_beta * (beta - t1));
-        std::complex<double> dWt2(0., 2 * pi_beta * t2);
+                 auto dexp1 = std::exp(dWt1);
+                 auto dexp2 = std::exp(dWt2);
 
-        auto dexp1 = std::exp(dWt1);
-        auto dexp2 = std::exp(dWt2);
+                 auto exp1 = std::exp(dWt1 * (mesh1.first_index() + 0.5));
 
-        auto exp1 = std::exp(dWt1 * (mesh1.first_index() + 0.5));
+                 for (auto const i1 : range(M_arr.shape()[2])) {
 
-        for (auto const i1 : range(M_arr.shape()[2])) {
+                   auto exp2      = std::exp(dWt2 * (mesh2.first_index() + 0.5));
+                   auto exp1_M_xy = exp1 * M_xy;
 
-          auto exp2      = std::exp(dWt2 * (mesh2.first_index() + 0.5));
-          auto exp1_M_xy = exp1 * M_xy;
+                   for (auto const i2 : range(M_arr.shape()[3])) {
 
-          for (auto const i2 : range(M_arr.shape()[3])) {
-
-            M_arr(x.second, y.second, i1, i2) += exp1_M_xy * exp2;
-            exp2 *= dexp2;
-          }
-          exp1 *= dexp1;
-        }
-
-      })
+                     M_arr(x.second, y.second, i1, i2) += exp1_M_xy * exp2;
+                     exp2 *= dexp2;
+                   }
+                   exp1 *= dexp1;
+                 }
+               })
         ;
     };
 
@@ -163,7 +166,6 @@ namespace triqs_cthyb {
           clef::placeholder<1> n2;
           clef::placeholder<2> i;
           clef::placeholder<3> j;
-
           M[bidx].data()(n1, n2, i, j) << M_block_arr[bidx](i, j, n1, n2);
         }
       }
@@ -175,53 +177,27 @@ namespace triqs_cthyb {
     // Recombine products of scattering matrices
     // to accumulate two particle quantities
 
-    {
-      timer_G2.start();
-
-      for (auto &m : G2_measures()) {
-        auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
-        bool diag_block  = (m.b1.idx == m.b2.idx);
-
-        //if (Channel == G2_channel::PH && m.target_shape[0] == 1) {
-
-        if (false) { // DISABLE
-	  /*
-	  if (n_bosonic == 1) {
-            if (order == block_order::AABB || diag_block) accumulate_impl_AABB_opt_w0<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-            if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA_opt_w0<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-          } else {
-            if (order == block_order::AABB || diag_block) accumulate_impl_AABB_opt<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-            if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA_opt<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-	    }
-	  */
-        } else {
-	  
-          //if (n_bosonic == 1) {
-          if (false) {
-	    /*
-            if (order == block_order::AABB || diag_block) accumulate_impl_AABB_w0<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-            if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA_w0<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-	    */
-          } else {
-            if (order == block_order::AABB || diag_block) accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-            if (order == block_order::ABBA || diag_block) accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
-	  }
-
-        }
-
-      }
-
-      timer_G2.stop();
+    timer_G2.start();
+    for (auto &m : G2_measures()) {
+      auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
+      bool diag_block  = (m.b1.idx == m.b2.idx);
+      if (order == block_order::AABB || diag_block)
+	accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
+      if (order == block_order::ABBA || diag_block)
+	accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
     }
+    timer_G2.stop();
   }
 
-  template <G2_channel Channel> void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
+  template <G2_channel Channel>
+  void measure_G2_iw<Channel>::collect_results(triqs::mpi::communicator const &com) {
 
     average_sign = mpi_all_reduce(average_sign, com);
     G2_iw        = mpi_all_reduce(G2_iw, com);
+
     G2_iw = G2_iw / (real(average_sign) * data.config.beta());
 
-    if(com.rank() == 0) {
+    if (com.rank() == 0) {
       std::cout << "measure/G2_iw: timer_M  = " << double(timer_M) << "\n";
       std::cout << "measure/G2_iw: timer_G2 = " << double(timer_G2) << "\n";
     }

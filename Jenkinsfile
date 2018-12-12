@@ -1,8 +1,12 @@
 def projectName = "cthyb"
+
+/* which platform to build documentation on */
 def documentationPlatform = "ubuntu-clang"
+/* depend on triqs upstream branch/project */
 def triqsBranch = env.CHANGE_TARGET ?: env.BRANCH_NAME
 def triqsProject = '/TRIQS/triqs/' + triqsBranch.replaceAll('/', '%2F')
-def publish = !env.BRANCH_NAME.startsWith("PR-")
+/* whether to publish the results (disabled for template project) */
+def publish = !env.BRANCH_NAME.startsWith("PR-") && projectName != "app4triqs"
 
 properties([
   disableConcurrentBuilds(),
@@ -18,6 +22,8 @@ properties([
 /* map of all builds to run, populated below */
 def platforms = [:]
 
+/****************** linux builds (in docker) */
+/* Each platform must have a cooresponding Dockerfile.PLATFORM in triqs/packaging */
 def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "centos-gcc"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
@@ -40,6 +46,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
   } }
 }
 
+/****************** osx builds (on host) */
 def osxPlatforms = [
   ["gcc", ['CC=gcc-7', 'CXX=g++-7']],
   ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
@@ -68,7 +75,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir"
         sh "make -j3"
         try {
-          sh "make test CTEST_OUTPUT_ON_FAILURE=1"
+          sh "make test"
         } catch (exc) {
           archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
           throw exc

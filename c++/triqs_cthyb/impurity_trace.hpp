@@ -201,12 +201,13 @@ namespace triqs_cthyb {
 
     public:
 
-    // add auxiliary operators
-    int add_aux_operator(many_body_op_t const &op) {
+    // attach auxiliary operators
+    op_desc attach_aux_operator(many_body_op_t const &op) {
       aux_operators.push_back(h_diag->get_op_mat(op));
-      return -aux_operators.size();
+      op_desc operator_desc{0, 0, true, -static_cast<int>(aux_operators.size())};
+      return std::move(operator_desc);
     }
-
+    
     /*************************************************************************
      *  Ordinary binary search tree (BST) insertion of the trial nodes
      *************************************************************************/

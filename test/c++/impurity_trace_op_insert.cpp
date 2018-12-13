@@ -72,24 +72,17 @@ TEST(atom_diag, op_matrix) {
   many_body_operator_real op1 = c_dag("up", 0);
   many_body_operator_real op2 = n("dn", 0) * c("up", 0);
 
-  auto aux_idx1 = imp_trace.add_aux_operator(op1);
-  auto aux_idx2 = imp_trace.add_aux_operator(op2);
+  auto op1_d = imp_trace.attach_aux_operator(op1);
+  auto op2_d = imp_trace.attach_aux_operator(op2);
   
-  std::cout << "aux_idx1 = " << aux_idx1 << "\n";
-  std::cout << "aux_idx2 = " << aux_idx2 << "\n";
-
-  auto op1_d = triqs_cthyb::op_desc{0, 0, true, aux_idx1};
-  auto op2_d = triqs_cthyb::op_desc{0, 0, true, aux_idx2};
-
   triqs_cthyb::time_segment tau_seg(beta);
   triqs_cthyb::h_scalar_t new_atomic_weight, new_atomic_reweighting;
 
   // -----------------------------------------------------------------------------
 
   many_body_operator_real op = n("dn", 0) * n("up", 0);
-  auto aux_idx = imp_trace.add_aux_operator(op);
-  
-  auto op_d = triqs_cthyb::op_desc{0, 0, true, aux_idx};
+
+  auto op_d = imp_trace.attach_aux_operator(op);
 
   auto tau1 = tau_seg.make_time_pt(0.);
 

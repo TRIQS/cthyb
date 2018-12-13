@@ -35,11 +35,8 @@ namespace triqs_cthyb {
     O_tau.rebind(*O_tau_opt);
     O_tau() = 0.0;
 
-    int aux_idx1 = data.imp_trace.add_aux_operator(op1);
-    int aux_idx2 = data.imp_trace.add_aux_operator(op2);
-
-    op1_d = op_desc{0, 0, true, aux_idx1};
-    op2_d = op_desc{0, 0, true, aux_idx2};
+    op1_d = data.imp_trace.attach_aux_operator(op1);
+    op2_d = data.imp_trace.attach_aux_operator(op2);
   }
 
   void measure_O_tau_ins::accumulate(mc_weight_t s) {

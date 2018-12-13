@@ -58,101 +58,11 @@ namespace triqs_cthyb {
     void accumulate_impl_ABBA<G2_channel::PH>(G2_iw_t::g_t::view_type G2, mc_weight_t s,
                                               M_t const &M_il, M_t const &M_kj) {
 
-      //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j);
-      
-      /*
-      triqs::utility::timer timer_clef;
-      triqs::utility::timer timer_1loop;
-      triqs::utility::timer timer_2loop;
-      triqs::utility::timer timer_3loop;
-      triqs::utility::timer timer_5loop;
-      triqs::utility::timer timer_7loop;
-
-      // --
-
-      timer_clef.start();
-
-      G2(w, n1, n2)
-         (i, j, k, l) << G2(w, n1, n2)(i, j, k, l)
-            - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j);
-
-      timer_clef.stop();
-
-      // --
-
-      timer_7loop.start();
-
-      const auto &b_mesh = std::get<0>(G2.mesh());
-      const auto &f_mesh = std::get<1>(G2.mesh());
-
-      for (const auto &w : b_mesh)
-        for (const auto &n1 : f_mesh)
-          for (const auto &n2 : f_mesh)
-            for (const auto i : range(G2.target_shape()[0]))
-              for (const auto j : range(G2.target_shape()[1]))
-                for (const auto k : range(G2.target_shape()[2]))
-                  for (const auto l : range(G2.target_shape()[3]))
-                    G2[w, n1, n2](i, j, k, l) -=
-                       s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-      timer_7loop.stop();
-
-      // --
-
-      timer_5loop.start();
-
-      for (const auto &[w, n1, n2] : G2.mesh())
-        for (const auto i : range(G2.target_shape()[0]))
-          for (const auto j : range(G2.target_shape()[1]))
-            for (const auto k : range(G2.target_shape()[2]))
-              for (const auto l : range(G2.target_shape()[3]))
-                G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-      timer_5loop.stop();
-
-      // --
-
-      timer_3loop.start();
-
-      for (const auto &w : b_mesh)
-        for (const auto &n1 : f_mesh)
-          for (const auto &n2 : f_mesh)
-            G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);
-
-      timer_3loop.stop();
-
-      // --
-
-      timer_2loop.start();
-
-      */
+      //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j);      
       
       for (const auto &[w, n1, n2] : G2.mesh())
         for (const auto [i, j, k, l] : G2.target_indices())
           G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
-
-      /*
-      timer_2loop.stop();
-
-      // --
-
-      timer_1loop.start();
-
-      for (const auto &[w, n1, n2] : G2.mesh()) // 2 times slower than 3lvl nested loop!?!?!
-        G2[w, n1, n2](0, 0, 0, 0) -= s * M_il[n1, n2](0, 0) * M_kj[n2 + w, n1 + w](0, 0);
-
-      timer_1loop.stop();
-
-      // --
-
-      std::cout << "clef, 7, 5, 3, 2, 1loop, 2loop/7loop, 1loop/3loop, "
-                   "2loop/5loop = "
-                << double(timer_clef) << ", " << double(timer_7loop) << ", " << double(timer_5loop)
-                << ", " << double(timer_3loop) << ", " << double(timer_2loop) << ", "
-                << double(timer_1loop) << ", " << double(timer_2loop) / double(timer_7loop) << ", "
-                << double(timer_1loop) / double(timer_3loop) << ", "
-                << double(timer_2loop) / double(timer_5loop) << ", " << std::endl;
-      */
     }
 
     // -- Particle-particle

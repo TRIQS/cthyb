@@ -20,13 +20,9 @@
  ******************************************************************************/
 #pragma once
 
-#include <vector>
-#include <triqs/mpi/base.hpp>
-#include <triqs/utility/timer.hpp> // DEBUG
 #include <triqs/experimental/nfft_array.hpp>
 
-#include "../qmc_data.hpp"
-#include "util.hpp"
+#include "G2_iw_acc.hpp"
 
 namespace triqs_cthyb {
 
@@ -34,28 +30,18 @@ namespace triqs_cthyb {
   using namespace triqs::experimental;
 
   // Measure the two-particle Green's function in Matsubara frequency
-  template <G2_channel Channel> struct measure_G2_iw_nfft {
+  template <G2_channel Channel> class measure_G2_iw_nfft : public G2_iw::measure_G2_iw_base<Channel> {
 
     public:
     measure_G2_iw_nfft(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
 
+    using B = G2_iw::measure_G2_iw_base<Channel>;
+    using B::collect_results;
+    
     private:
-    using M_block_type = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
-    using M_type       = M_block_type::g_t;
-
-    qmc_data const &data;
-    G2_iw_t::view_type G2_iw;
-    mc_weight_t average_sign;
-    block_order order;
-    G2_measures_t G2_measures;
-
-    M_block_type M;
     array<nfft_array_t<2, 2>, 1> M_nfft;
-
-    triqs::utility::timer timer_M;
-    triqs::utility::timer timer_G2;    
+    using B::M, B::M_mesh, B::G2_measures, B::data, B::timer_M, B::accumulate_G2;
   };
 
 } // namespace triqs_cthyb

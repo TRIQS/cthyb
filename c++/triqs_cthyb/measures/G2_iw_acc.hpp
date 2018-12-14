@@ -21,24 +21,49 @@
  ******************************************************************************/
 #pragma once
 
-#include "./G2_iw.hpp"
+#include <vector>
+#include <triqs/mpi/base.hpp>
+#include <triqs/utility/timer.hpp> // DEBUG
+
+#include "../qmc_data.hpp"
+#include "util.hpp"
 
 namespace triqs_cthyb {
+
   namespace G2_iw {
 
-    template<G2_channel Channel> void accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
-    template<G2_channel Channel> void accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
+    using namespace triqs::arrays;
 
-    /*
-    template<G2_channel Channel> void accumulate_impl_AABB_opt(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
-    template<G2_channel Channel> void accumulate_impl_ABBA_opt(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
+    using M_block_t = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
+    using M_t       = M_block_t::g_t;
+    using M_mesh_t  = M_block_t::g_t::mesh_t;
 
-    template<G2_channel Channel> void accumulate_impl_AABB_w0(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
-    template<G2_channel Channel> void accumulate_impl_ABBA_w0(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
+    using M_arr_t       = array<std::complex<double>, 4>;
+    using M_block_arr_t = std::vector<M_arr_t>;
 
-    template<G2_channel Channel> void accumulate_impl_AABB_opt_w0(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
-    template<G2_channel Channel> void accumulate_impl_ABBA_opt_w0(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_t const &M_ij, M_t const &M_kl);
-    */
-    
+    // Measure the two-particle Green's function in Matsubara frequency
+    template <G2_channel Channel> class measure_G2_iw_base {
+
+      public:
+      measure_G2_iw_base(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data,
+                         G2_measures_t const &G2_measures);
+      void accumulate_G2(mc_weight_t s);
+      void collect_results(triqs::mpi::communicator const &c);
+
+      protected:
+      qmc_data const &data;
+      G2_iw_t::view_type G2_iw;
+      mc_weight_t average_sign;
+      block_order order;
+      G2_measures_t G2_measures;
+
+      M_block_t M;
+      M_mesh_t M_mesh;
+
+      triqs::utility::timer timer_M;
+      triqs::utility::timer timer_G2;
+    };
+
   } // namespace G2_iw
+
 } // namespace triqs_cthyb

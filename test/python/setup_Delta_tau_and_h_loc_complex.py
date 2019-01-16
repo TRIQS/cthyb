@@ -17,8 +17,8 @@ beta = 10.0
 gf_struct = [['0', [0, 1]]]
 target_shape = [2, 2]
 
-nw = 48
-nt = 3 * nw
+nw = 124
+nt = 6 * nw + 1
 
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt)
 

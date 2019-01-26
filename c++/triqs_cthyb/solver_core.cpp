@@ -3,7 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
- * Copyright (C) 2017, H. UR Strand, P. Seth, I. Krivenko, 
+ * Copyright (C) 2017, H. UR Strand, P. Seth, I. Krivenko,
  *                     M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
@@ -188,7 +188,14 @@ namespace triqs_cthyb {
     // Determine block structure
     if (params.partition_method == "autopartition") {
       if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
-      h_diag = {_h_loc, fops};
+      if(params.loc_n_min == 0 && params.loc_n_max == INT_MAX)
+        h_diag = {_h_loc, fops};
+      else {
+        if (params.verbosity >= 2)
+          std::cout << "Restricting the local Hilbert space to states with ["
+                    << params.loc_n_min << ";" << params.loc_n_max << "] particles" << std::endl;
+        h_diag = {_h_loc, fops, params.loc_n_min, params.loc_n_max};
+      }
     } else if (params.partition_method == "quantum_numbers") {
       if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
       if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
@@ -293,7 +300,7 @@ namespace triqs_cthyb {
     if (params.measure_G2_iw_ph_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::PH>{G2_iw_ph_nfft, data, G2_measures}, "G2_iw_ph nfft particle-hole measurement");
 
     // Direct Matsubara frequency measurement
-    
+
     if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
     if (params.measure_G2_iw_pp)
       qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
@@ -315,11 +322,11 @@ namespace triqs_cthyb {
       auto comm_0 = O1 * O2 - O2 * O1;
       auto comm_1 = O1 * _h_loc - _h_loc * O1;
       auto comm_2 = O2 * _h_loc - _h_loc * O2;
-      
+
       if( !comm_0.is_zero() || !comm_1.is_zero() || !comm_2.is_zero() ) {
 	if (params.verbosity >= 2) {
 	   TRIQS_RUNTIME_ERROR << "Error: measure_O_tau, supplied operators does not commute with the local Hamiltonian.\n"
-			       << "[O1, O2] = " << comm_0 << "\n"	     
+			       << "[O1, O2] = " << comm_0 << "\n"
 			       << "[O1, H_loc] = " << comm_1 << "\n"
 			       << "[O2, H_loc] = " << comm_2 << "\n";
 	}

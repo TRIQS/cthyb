@@ -4,12 +4,12 @@ Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
 1. Documentation
 
 You will find the documentation of this application under
-<http://ipht.cea.fr/triqs/applications/cthyb/>.
+<https://triqs.github.io/cthyb>.
 
 2. Installation
 
 The installation steps are described in
-<http://ipht.cea.fr/triqs/applications/cthyb/install.html>
+<https://triqs.github.io/cthyb/master/install.html>
 
 3. Version
 

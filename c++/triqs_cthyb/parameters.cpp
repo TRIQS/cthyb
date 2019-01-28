@@ -27,7 +27,7 @@ using triqs::utility::enumerate;
 namespace triqs_cthyb {
 
   // -- pair<string, string>
-  
+
   inline void h5_write(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> const &pair) {
     triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "0", std::string(pair.first));
@@ -42,7 +42,7 @@ namespace triqs_cthyb {
   }
 
   // -- set<pair<string, string>>
-  
+
   inline void h5_write(triqs::h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> const &pair_set) {
     triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     for( auto [idx, pair] : enumerate(pair_set) ) {
@@ -58,7 +58,7 @@ namespace triqs_cthyb {
       pair_set.insert(pair);
     }
   }
-  
+
   void h5_write(triqs::h5::group h5group, std::string name, constr_parameters_t const &cp) {
     triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "beta", cp.beta);
@@ -84,6 +84,8 @@ namespace triqs_cthyb {
     h5_write(grp, "n_cycles", sp.n_cycles);
     h5_write(grp, "partition_method", sp.partition_method);
     h5_write(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_write(grp, "loc_n_min", sp.loc_n_min);
+    h5_write(grp, "loc_n_max", sp.loc_n_max);
 
     h5_write(grp, "length_cycle", sp.length_cycle);
     h5_write(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -146,6 +148,8 @@ namespace triqs_cthyb {
     h5_read(grp, "n_cycles", sp.n_cycles);
     h5_read(grp, "partition_method", sp.partition_method);
     h5_read(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_read(grp, "loc_n_min", sp.loc_n_min);
+    h5_read(grp, "loc_n_max", sp.loc_n_max);
 
     h5_read(grp, "length_cycle", sp.length_cycle);
     h5_read(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -200,5 +204,5 @@ namespace triqs_cthyb {
     h5_read(grp, "det_precision_error", sp.det_precision_error);
     h5_read(grp, "det_singular_threshold", sp.det_singular_threshold);
   }
-  
+
 } // namespace triqs_cthyb

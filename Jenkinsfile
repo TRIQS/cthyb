@@ -1,4 +1,4 @@
-def projectName = "cthyb"
+def projectName = "cthyb" /* set to app/repo name */
 
 /* which platform to build documentation on */
 def documentationPlatform = "ubuntu-clang"
@@ -33,7 +33,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       checkout scm
       /* construct a Dockerfile for this base */
       sh """
-        ( echo "FROM flatironinstitute/triqs:${triqsBranch}-${env.STAGE_NAME}" ; sed '0,/^FROM /d' Dockerfile ) > Dockerfile.jenkins
+      ( echo "FROM flatironinstitute/triqs:${triqsBranch}-${env.STAGE_NAME}" ; sed '0,/^FROM /d' Dockerfile ) > Dockerfile.jenkins
         mv -f Dockerfile.jenkins Dockerfile
       """
       /* build and tag */
@@ -75,7 +75,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir"
         sh "make -j3"
         try {
-          sh "make test"
+          sh "make test CTEST_OUTPUT_ON_FAILURE=1"
         } catch (exc) {
           archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
           throw exc
@@ -86,11 +86,14 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
   } }
 }
 
+/****************** wrap-up */
 try {
   parallel platforms
   if (publish) { node("docker") {
+    /* Publish results */
     stage("publish") { timeout(time: 1, unit: 'HOURS') {
       def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
+      def release = sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
       def workDir = pwd()
       /* Update documention on gh-pages branch */
       dir("$workDir/gh-pages") {
@@ -105,23 +108,25 @@ try {
           git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${subdir}' -m '${env.BUILD_TAG} ${commit}'
         """
         // note: credentials used above don't work (need JENKINS-28335)
-        sh "git push origin master"
+        sh "git push origin master || { git pull --rebase origin master && git push origin master ; }"
       }
       /* Update docker repo submodule */
-      dir("$workDir/docker") { try {
+      if (release) { dir("$workDir/docker") { try {
         git(url: "ssh://git@github.com/TRIQS/docker.git", branch: env.BRANCH_NAME, credentialsId: "ssh", changelog: false)
         sh "echo '160000 commit ${commit}\t${projectName}' | git update-index --index-info"
         sh """
           git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Autoupdate ${projectName}' -m '${env.BUILD_TAG}'
         """
         // note: credentials used above don't work (need JENKINS-28335)
-        sh "git push origin ${env.BRANCH_NAME}"
+        sh "git push origin ${env.BRANCH_NAME} || { git pull --rebase origin ${env.BRANCH_NAME} && git push origin ${env.BRANCH_NAME} ; }"
       } catch (err) {
+        /* Ignore, non-critical -- might not exist on this branch */
         echo "Failed to update docker repo"
-      } }
+      } } }
     } }
   } }
 } catch (err) {
+  /* send email on build failure (declarative pipeline's post section would work better) */
   if (env.BRANCH_NAME != "jenkins") emailext(
     subject: "\$PROJECT_NAME - Build # \$BUILD_NUMBER - FAILED",
     body: """\$PROJECT_NAME - Build # \$BUILD_NUMBER - FAILED

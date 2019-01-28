@@ -214,7 +214,7 @@ namespace triqs_cthyb {
 
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
-    auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, 1.0, params.verbosity);
+    auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, params.verbosity);
 
     // --------------------------------------------------------------------------
     // Moves

@@ -23,7 +23,7 @@ endif()
 set(BUILD_SHARED_LIBS ON)
 
 # Load TRIQS and Cpp2Py
-find_package(TRIQS 2.0 REQUIRED)
+find_package(TRIQS 2.1 REQUIRED)
 find_package(Cpp2Py 1.5 REQUIRED)
 
 # 2-particle GF measurement requires NFFT

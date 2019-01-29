@@ -19,26 +19,25 @@ Compiling CTHyb from source
 Prerequisite
 -------------------
 
-#. The :ref:`TRIQS <triqslibs:welcome>` toolbox and Cpp2Py (see :ref:`TRIQS installation instruction <triqslibs:installation>`).
-   In the following, we will suppose that both are installed in the ``path_to_triqs`` directory.
+#. The :ref:`TRIQS <triqslibs:welcome>` library, see :ref:`TRIQS installation instruction <triqslibs:installation>`.
+   In the following, we assume that Triqs is installed in the ``path_to_triqs`` directory.
 
 Installation steps
 ------------------
 
-#. Download the sources of the solver from github::
+#. Download the source code by cloning the ``TRIQS/cthyb`` repository from GitHub::
 
      $ git clone https://github.com/TRIQS/cthyb.git cthyb.src
 
-#. Create an empty build directory where you will compile the code::
+#. Create and move to a new directory where you will compile the code::
 
      $ mkdir cthyb.build && cd cthyb.build
 
-#. Make sure that you have added the TRIQS and Cpp2Py installation to your environment variables::
+#. Ensure that your shell contains the TRIQS environment variables by sourcing the ``triqsvars.sh`` file from your TRIQS installation::
 
-     $ source path_to_triqs/share/cpp2pyvarsh.sh
      $ source path_to_triqs/share/triqsvarsh.sh
 
-#. In the build directory call cmake::
+#. In the build directory call cmake, including any additional custom CMake options, see below::
 
      $ cmake ../cthyb.src
 
@@ -61,7 +60,7 @@ and look at all available versions::
 
 Checkout the version of the code that you want::
 
-     $ git checkout 1.0.0
+     $ git checkout 2.1.0
 
 Then follow the steps 2 to 4 described above to compile the code.
 
@@ -70,7 +69,7 @@ Custom CMake options
 
 Functionality of ``cthyb`` can be tweaked using extra compile-time options passed to CMake::
 
-    cmake -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
+    cmake ../cthyb.src -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
 
 +---------------------------------------------------------------+-----------------------------------------------+
 | Options                                                       | Syntax                                        |
@@ -85,7 +84,7 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
 +---------------------------------------------------------------+-----------------------------------------------+
 | Allow the local Hamiltonian H_loc to be complex               | -DLocal_hamiltonian_is_complex=ON             |
 +---------------------------------------------------------------+-----------------------------------------------+
-| Measure the two particle object (requires the NFFT library)   | -DMeasureG2=ON                                |
+| Measure the two particle object (requires the NFFT library)   | -DMeasureG2=OFF                                |
 +---------------------------------------------------------------+-----------------------------------------------+
 | Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                                |
 +---------------------------------------------------------------+-----------------------------------------------+
@@ -97,4 +96,4 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
     * Combination of options ``HYBRIDISATION_IS_COMPLEX=ON`` and ``LOCAL_HAMILTONIAN_IS_COMPLEX=OFF``
       is not supported.
 
-    * The two-particle Green's function measurement requires the TRIQS library to be built with NFFT support.
+    * The two-particle Green's function measurement requires the NFFT library. To build ``cthyb`` without NFFT pass ``-DMeasureG2=OFF`` to cmake.

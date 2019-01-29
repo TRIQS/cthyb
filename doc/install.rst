@@ -84,7 +84,7 @@ Functionality of ``cthyb`` can be tweaked using extra compile-time options passe
 +---------------------------------------------------------------+-----------------------------------------------+
 | Allow the local Hamiltonian H_loc to be complex               | -DLocal_hamiltonian_is_complex=ON             |
 +---------------------------------------------------------------+-----------------------------------------------+
-| Measure the two particle object (requires the NFFT library)   | -DMeasureG2=OFF                                |
+| Measure the two particle object (requires the NFFT library)   | -DMeasureG2=OFF                               |
 +---------------------------------------------------------------+-----------------------------------------------+
 | Enable extended debugging output (*developers only*)          | -DEXT_DEBUG=ON                                |
 +---------------------------------------------------------------+-----------------------------------------------+

@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
 from pytriqs.operators import n
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
@@ -57,7 +57,7 @@ if mpi.is_master_node():
 
 # Set hybridization function
 for e in epsilon:
-    delta_w = GfImFreq(indices = [0], beta=beta)
+    delta_w = Gf(mesh=S.G0_iw.mesh, target_shape=[1, 1]) 
     delta_w << (V**2) * inverse(iOmega_n - e)
 
     S.G0_iw["up"] << inverse(iOmega_n - ed - delta_w)

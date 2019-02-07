@@ -112,7 +112,7 @@ namespace triqs_cthyb {
     bool move_shift = true;
 
     /// Add double insertions as a move?
-    bool move_double = false;
+    bool move_double = true;
 
     /// Calculate the full trace or use an estimate?
     bool use_trace_estimator = false;

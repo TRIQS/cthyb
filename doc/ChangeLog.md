@@ -28,6 +28,13 @@ Solver Interface
 * Solver object can be stored and loaded directly to/from h5 archive
 * Tail fit functionality is rewritten for the Triqs 2.0 change in how tail coefficients are handled
 
+Changes in behavior
+~~~~~~~~~~~~~~~~~~~
+
+* `move_double` is now enabled by default.
+* The sampled single particle Greens function is modified when tail fitting is enabled.
+* The `gf_struct` should be a list of list of block index and a list of target space indices, e.g. `gf_struct = [['up', [0, 1]], ['down', [0, 1]]]`. When passing a dictionary a warning is printed.
+
 Quality Assurance
 ~~~~~~~~~~~~~~~~~
 

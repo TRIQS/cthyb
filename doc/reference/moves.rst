@@ -40,8 +40,7 @@ Similarly to the one pair insertion, randomly choose two combinations :math:`(A;
 Probability of choosing a particular block index can be adjusted through the parameter ``proposal_prob``.
 :math:`A` and :math:`B` are chosen independently.
 
-This move is disabled by default, because it is more computationally expensive than the single-pair moves.
-It can be enabled by setting ``move_double`` to ``True``.
+This move is enabled by default and can be disabled by setting ``move_double`` to ``False``.
 
 Remove two pairs of operators
 *****************************

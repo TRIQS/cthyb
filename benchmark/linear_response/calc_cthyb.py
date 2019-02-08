@@ -46,8 +46,8 @@ def make_calc(nw=2, nc=1e5, beta=2.0, h_field=0.0, rand=1):
     p.init = ParameterCollection(
         beta = p.beta,
         gf_struct = [['up',[0]],['do',[0]]],
-        n_iw = 500,
-        n_tau = 4*500+1,
+        n_iw = 1000,
+        n_tau = 6*1000+1,
         n_l = 20,
         )
 
@@ -60,8 +60,8 @@ def make_calc(nw=2, nc=1e5, beta=2.0, h_field=0.0, rand=1):
         measure_G_tau = True,
         move_double = True,
         # -- measurements
-        length_cycle = 20,
-        n_warmup_cycles = int(1e3),
+        length_cycle = 50,
+        n_warmup_cycles = int(5e4),
         n_cycles = int(p.n_cycles / mpi.size),
         # -- G2 measurements
         measure_G2_iw_ph = True,
@@ -124,9 +124,9 @@ if __name__ == '__main__':
     #nw_vec = np.array([2, 4, 8])
     #beta_vec = 1./np.array([10., 20., 40., 60., 80., 100.])
 
-    repeats = 5
+    repeats = 10
     nw_vec = np.array([8])
-    nc_vec = np.array([1e7])
+    nc_vec = np.array([5e7])
     beta_vec = 1./np.array([10.])
 
     for nw, nc, beta in itertools.product(nw_vec, nc_vec, beta_vec):

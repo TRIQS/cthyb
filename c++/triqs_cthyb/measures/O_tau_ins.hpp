@@ -33,7 +33,7 @@ namespace triqs_cthyb {
   class measure_O_tau_ins {
 
     public:
-    measure_O_tau_ins(std::optional<gf<imtime, scalar_valued>> &O_tau_opt, qmc_data const &data, int n_tau, many_body_op_t const &op1, many_body_op_t const &op2, mc_tools::random_generator &rng);
+    measure_O_tau_ins(std::optional<gf<imtime, scalar_valued>> &O_tau_opt, qmc_data const &data, int n_tau, many_body_op_t const &op1, many_body_op_t const &op2, int min_ins, mc_tools::random_generator &rng);
     void accumulate(mc_weight_t s);
     void collect_results(mpi::communicator const &c);
 
@@ -43,6 +43,7 @@ namespace triqs_cthyb {
     gf<imtime, scalar_valued>::view_type O_tau;
     many_body_op_t op1, op2;
     op_desc op1_d, op2_d;
+    int min_ins;
     mc_tools::random_generator &rng;
     
   };

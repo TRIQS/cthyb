@@ -61,8 +61,9 @@ namespace triqs_cthyb {
      : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), constr_parameters(p) {
 
     if (p.n_tau < 2 * p.n_iw)
-      TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << p.n_iw << " but n_tau = " << p.n_tau
-                          << ".";
+      TRIQS_RUNTIME_ERROR
+         << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << p.n_iw
+         << " but n_tau = " << p.n_tau << ".";
 
     // Allocate single particle greens functions
     _G0_iw     = block_gf<imfreq>({beta, Fermion, n_iw}, gf_struct);
@@ -121,11 +122,13 @@ namespace triqs_cthyb {
        // Compute 0th moment of one block
        [](gf_const_view<imfreq> d) {
          auto [tail, err] = fit_hermitian_tail(d);
-	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit. The least-square error is " << err << "\n";
+         if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
 #ifndef HYBRIDISATION_IS_COMPLEX
-	 double imag_Delta = max_element(abs(imag(Delta_infty)));
-         if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta << "\n";
+         double imag_Delta = max_element(abs(imag(Delta_infty)));
+         if (imag_Delta > 1e-6)
+           TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is "
+                               << imag_Delta;
 #endif
          return Delta_infty;
        },
@@ -137,7 +140,8 @@ namespace triqs_cthyb {
 
     // Do I have imaginary components in my local Hamiltonian?
     auto max_imag = 0.0;
-    for (int b : range(gf_struct.size())) max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
+    for (int b : range(gf_struct.size()))
+      max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
 
     // Add quadratic terms to h_loc
     int b = 0;
@@ -168,36 +172,43 @@ namespace triqs_cthyb {
     range _;
     for (auto const &bl : gf_struct) {
       // Remove constant quadratic part
-      for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
+      for (auto const &iw : Delta_iw[0].mesh())
+        Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
       auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
-      _Delta_tau[b]() = fourier(Delta_iw[b], Delta_tail_b);
+      _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
       // Force all diagonal elements to be real
-      for (int i : range(bl.second.size())) _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
+      for (int i : range(bl.second.size()))
+        _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
       // If off-diagonal elements are below threshold, set to real
-      if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold) _Delta_tau[b].data() = real(_Delta_tau[b].data());
+      if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
+        _Delta_tau[b].data() = real(_Delta_tau[b].data());
       b++;
     }
 
     // Report what h_loc we are using
-    if (params.verbosity >= 2) std::cout << "The local Hamiltonian of the problem:" << std::endl << _h_loc << std::endl;
+    if (params.verbosity >= 2)
+      std::cout << "The local Hamiltonian of the problem:" << std::endl << _h_loc << std::endl;
     // Reset the histograms
     _performance_analysis.clear();
     histo_map_t *histo_map = params.performance_analysis ? &_performance_analysis : nullptr;
 
     // Determine block structure
     if (params.partition_method == "autopartition") {
-      if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
-      if(params.loc_n_min == 0 && params.loc_n_max == INT_MAX)
+      if (params.verbosity >= 2)
+        std::cout << "Using autopartition algorithm to partition the local Hilbert space"
+                  << std::endl;
+      if (params.loc_n_min == 0 && params.loc_n_max == INT_MAX)
         h_diag = {_h_loc, fops};
       else {
         if (params.verbosity >= 2)
-          std::cout << "Restricting the local Hilbert space to states with ["
-                    << params.loc_n_min << ";" << params.loc_n_max << "] particles" << std::endl;
+          std::cout << "Restricting the local Hilbert space to states with [" << params.loc_n_min
+                    << ";" << params.loc_n_max << "] particles" << std::endl;
         h_diag = {_h_loc, fops, params.loc_n_min, params.loc_n_max};
       }
     } else if (params.partition_method == "quantum_numbers") {
       if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
-      if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
+      if (params.verbosity >= 2)
+        std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
       h_diag = {_h_loc, fops, params.quantum_numbers};
     } else if (params.partition_method == "none") { // give empty quantum numbers list
       std::cout << "Not partitioning the local Hilbert space" << std::endl;
@@ -208,7 +219,8 @@ namespace triqs_cthyb {
     // FIXME save h_loc to be able to rebuild h_diag in an analysis program.
     //if (_comm.rank() ==0) h5_write(h5::file("h_loc.h5",'w'), "h_loc", _h_loc, fops);
 
-    if (params.verbosity >= 2) std::cout << "Found " << h_diag.n_subspaces() << " subspaces." << std::endl;
+    if (params.verbosity >= 2)
+      std::cout << "Found " << h_diag.n_subspaces() << " subspaces." << std::endl;
 
     if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << h_diag;
 
@@ -220,7 +232,8 @@ namespace triqs_cthyb {
 
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
-    auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, params.verbosity);
+    auto qmc =
+       mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, params.verbosity);
 
     // --------------------------------------------------------------------------
     // Moves
@@ -242,18 +255,22 @@ namespace triqs_cthyb {
       int block_size         = _Delta_tau[block].data().shape()[1];
       auto const &block_name = delta_names[block];
       double prop_prob       = get_prob_prop(block_name);
-      inserts.add(move_insert_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map), "Insert Delta_" + block_name, prop_prob);
-      removes.add(move_remove_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map), "Remove Delta_" + block_name, prop_prob);
+      inserts.add(move_insert_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map),
+                  "Insert Delta_" + block_name, prop_prob);
+      removes.add(move_remove_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map),
+                  "Remove Delta_" + block_name, prop_prob);
       if (params.move_double) {
         for (size_t block2 = 0; block2 < _Delta_tau.size(); ++block2) {
           int block_size2         = _Delta_tau[block2].data().shape()[1];
           auto const &block_name2 = delta_names[block2];
           double prop_prob2       = get_prob_prop(block_name2);
           double_inserts.add(
-             move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, block_name, block_name2, data, qmc.get_rng(), histo_map),
+             move_insert_c_c_cdag_cdag(block, block2, block_size, block_size2, block_name,
+                                       block_name2, data, qmc.get_rng(), histo_map),
              "Insert Delta_" + block_name + "_" + block_name2, prop_prob * prop_prob2);
           double_removes.add(
-             move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, block_name, block_name2, data, qmc.get_rng(), histo_map),
+             move_remove_c_c_cdag_cdag(block, block2, block_size, block_size2, block_name,
+                                       block_name2, data, qmc.get_rng(), histo_map),
              "Remove Delta_" + block_name + "_" + block_name2, prop_prob * prop_prob2);
         }
       }
@@ -266,7 +283,8 @@ namespace triqs_cthyb {
       qmc.add_move(std::move(double_removes), "Remove four operators", 1.0);
     }
 
-    if (params.move_shift) qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
+    if (params.move_shift)
+      qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
 
     if (params.move_global.size()) {
       move_set_type global(qmc.get_rng());
@@ -289,27 +307,41 @@ namespace triqs_cthyb {
 
 #ifdef CTHYB_G2_NFFT
     // Imaginary-time binning
-    if (params.measure_G2_tau) qmc.add_measure(measure_G2_tau{G2_tau, data, G2_measures}, "G2_tau imaginary-time measurement");
+    if (params.measure_G2_tau)
+      qmc.add_measure(measure_G2_tau{G2_tau, data, G2_measures},
+                      "G2_tau imaginary-time measurement");
 
     // NFFT Matsubara frequency measures
 
-    if (params.measure_G2_iw_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::AllFermionic>{G2_iw_nfft, data, G2_measures}, "G2_iw nfft fermionic measurement");
+    if (params.measure_G2_iw_nfft)
+      qmc.add_measure(measure_G2_iw_nfft<G2_channel::AllFermionic>{G2_iw_nfft, data, G2_measures},
+                      "G2_iw nfft fermionic measurement");
     if (params.measure_G2_iw_pp_nfft)
-      qmc.add_measure(measure_G2_iw_nfft<G2_channel::PP>{G2_iw_pp_nfft, data, G2_measures}, "G2_iw_pp nfft particle-particle measurement");
-    if (params.measure_G2_iw_ph_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::PH>{G2_iw_ph_nfft, data, G2_measures}, "G2_iw_ph nfft particle-hole measurement");
+      qmc.add_measure(measure_G2_iw_nfft<G2_channel::PP>{G2_iw_pp_nfft, data, G2_measures},
+                      "G2_iw_pp nfft particle-particle measurement");
+    if (params.measure_G2_iw_ph_nfft)
+      qmc.add_measure(measure_G2_iw_nfft<G2_channel::PH>{G2_iw_ph_nfft, data, G2_measures},
+                      "G2_iw_ph nfft particle-hole measurement");
 
     // Direct Matsubara frequency measurement
 
-    if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
+    if (params.measure_G2_iw)
+      qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures},
+                      "G2_iw fermionic measurement");
     if (params.measure_G2_iw_pp)
-      qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
-    if (params.measure_G2_iw_ph) qmc.add_measure(measure_G2_iw<G2_channel::PH>{G2_iw_ph, data, G2_measures}, "G2_iw_ph particle-hole measurement");
+      qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures},
+                      "G2_iw_pp particle-particle measurement");
+    if (params.measure_G2_iw_ph)
+      qmc.add_measure(measure_G2_iw<G2_channel::PH>{G2_iw_ph, data, G2_measures},
+                      "G2_iw_ph particle-hole measurement");
 
     // Legendre mixed basis measurements
     if (params.measure_G2_iwll_pp)
-      qmc.add_measure(measure_G2_iwll<G2_channel::PP>{G2_iwll_pp, data, G2_measures}, "G2_iwll_pp Legendre particle-particle measurement");
+      qmc.add_measure(measure_G2_iwll<G2_channel::PP>{G2_iwll_pp, data, G2_measures},
+                      "G2_iwll_pp Legendre particle-particle measurement");
     if (params.measure_G2_iwll_ph)
-      qmc.add_measure(measure_G2_iwll<G2_channel::PH>{G2_iwll_ph, data, G2_measures}, "G2_iwll_ph Legendre particle-hole measurement");
+      qmc.add_measure(measure_G2_iwll<G2_channel::PH>{G2_iwll_ph, data, G2_measures},
+                      "G2_iwll_ph Legendre particle-hole measurement");
 #endif
 
     // --------------------------------------------------------------------------
@@ -317,20 +349,23 @@ namespace triqs_cthyb {
 
     if (params.measure_O_tau) {
 
-      const auto & [O1, O2] = *params.measure_O_tau;
-      auto comm_0 = O1 * O2 - O2 * O1;
-      auto comm_1 = O1 * _h_loc - _h_loc * O1;
-      auto comm_2 = O2 * _h_loc - _h_loc * O2;
+      const auto &[O1, O2] = *params.measure_O_tau;
+      auto comm_0          = O1 * O2 - O2 * O1;
+      auto comm_1          = O1 * _h_loc - _h_loc * O1;
+      auto comm_2          = O2 * _h_loc - _h_loc * O2;
 
-      if( !comm_0.is_zero() || !comm_1.is_zero() || !comm_2.is_zero() ) {
-	if (params.verbosity >= 2) {
-	   TRIQS_RUNTIME_ERROR << "Error: measure_O_tau, supplied operators does not commute with the local Hamiltonian.\n"
-			       << "[O1, O2] = " << comm_0 << "\n"
-			       << "[O1, H_loc] = " << comm_1 << "\n"
-			       << "[O2, H_loc] = " << comm_2 << "\n";
-	}
+      if (!comm_0.is_zero() || !comm_1.is_zero() || !comm_2.is_zero()) {
+        if (params.verbosity >= 2) {
+          TRIQS_RUNTIME_ERROR << "Error: measure_O_tau, supplied operators does not commute with "
+                                 "the local Hamiltonian.\n"
+                              << "[O1, O2] = " << comm_0 << "\n"
+                              << "[O1, H_loc] = " << comm_1 << "\n"
+                              << "[O2, H_loc] = " << comm_2 << "\n";
+        }
       }
-      qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, O1, O2, qmc.get_rng()}, "O_tau insertion measure");
+      qmc.add_measure(
+         measure_O_tau_ins{O_tau, data, n_tau, O1, O2, params.measure_O_tau_min_ins, qmc.get_rng()},
+         "O_tau insertion measure");
     }
 
     if (params.measure_G_tau) {
@@ -345,15 +380,18 @@ namespace triqs_cthyb {
       auto &g_names = _Delta_tau.block_names();
       for (size_t block = 0; block < _Delta_tau.size(); ++block) {
         auto const &block_name = g_names[block];
-        qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]), "Perturbation order (" + block_name + ")");
+        qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]),
+                        "Perturbation order (" + block_name + ")");
       }
-      qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total), "Perturbation order");
+      qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total),
+                      "Perturbation order");
     }
     if (params.measure_density_matrix) {
       if (!params.use_norm_as_weight)
         TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
                                "use_norm_as_weight to True, i.e. to reweight the QMC";
-      qmc.add_measure(measure_density_matrix{data, _density_matrix}, "Density Matrix for local static observable");
+      qmc.add_measure(measure_density_matrix{data, _density_matrix},
+                      "Density Matrix for local static observable");
     }
 
     qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
@@ -362,7 +400,8 @@ namespace triqs_cthyb {
 
     // Run! The empty (starting) configuration has sign = 1
     _solve_status =
-       qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle, triqs::utility::clock_callback(params.max_time));
+       qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle,
+                                 triqs::utility::clock_callback(params.max_time));
     qmc.collect_results(_comm);
 
     if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;

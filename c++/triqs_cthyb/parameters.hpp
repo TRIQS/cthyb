@@ -126,6 +126,9 @@ namespace triqs_cthyb {
     /// Measure O_tau by insertion
     std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = std::optional<std::pair<many_body_op_t, many_body_op_t>>{};
 
+    /// Minumum of operator insertions in: O_tau by insertion measure
+    int measure_O_tau_min_ins = 10;
+    
     /// Measure G^4(tau,tau',tau'') with three fermionic times.
     bool measure_G2_tau = false;
 

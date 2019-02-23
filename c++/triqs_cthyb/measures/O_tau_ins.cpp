@@ -29,9 +29,9 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
 
   measure_O_tau_ins::measure_O_tau_ins(std::optional<gf<imtime, scalar_valued>> &O_tau_opt, qmc_data const &data, int n_tau,
-                                       many_body_op_t const &op1, many_body_op_t const &op2, mc_tools::random_generator &rng)
-     : data(data), average_sign(0), op1(op1), op2(op2), rng(rng) {
-    O_tau_opt = gf<imtime, scalar_valued>{{data.config.beta(), Fermion, n_tau}};
+                                       many_body_op_t const &op1, many_body_op_t const &op2, int min_ins, mc_tools::random_generator &rng)
+    : data(data), average_sign(0), op1(op1), op2(op2), min_ins(min_ins), rng(rng) {
+    O_tau_opt = gf<imtime, scalar_valued>{{data.config.beta(), Boson, n_tau}};
     O_tau.rebind(*O_tau_opt);
     O_tau() = 0.0;
 
@@ -46,6 +46,7 @@ namespace triqs_cthyb {
     int pto = 0;
     for (const auto &det : data.dets) pto += det.size();
     int nsamples = pto * pto;
+    if( nsamples < min_ins ) nsamples = min_ins;
 
     mc_weight_t atomic_weight, atomic_reweighting;
     auto [bare_atomic_weight, bare_atomic_reweighting] = data.imp_trace.compute();

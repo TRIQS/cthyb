@@ -61,7 +61,7 @@ Higher order response functions like local susceptibilities
 
 can be sampled (by insertion) in the trace. This approach is limited to operators :math:`\hat{O}_1` and :math:`\hat{O}_2` that commutes with each other and the local Hamiltonian, :math:`[\hat{O}_1, \hat{O}_2] = 0`, :math:`[\hat{O}_i, H_{loc}]=0`.
 
-This measurement is controlled by the argument ``measure_O_tau``. To enable the measurement pass a tuple of the operators to be sampled, e.g. ``measure_O_tau = (n('up',0), n('do',0))`` will measure the response function :math:`\langle \hat{n}_\uparrow(\tau) \hat{n}_\downarrow \rangle`. The resulting response function is accessible as the ``O_tau`` attribute of the solver object.
+This measurement is controlled by the argument ``measure_O_tau``. To enable the measurement pass a tuple of the operators to be sampled, e.g. ``measure_O_tau = (n('up',0), n('do',0))`` will measure the response function :math:`\langle \hat{n}_\uparrow(\tau) \hat{n}_\downarrow \rangle`. The resulting response function is accessible as the ``O_tau`` attribute of the solver object. The number of operator insertions is by default taken to be the square of the perturbation order of each configuration, however, for cases with perturbation order lower than the parameter ``measure_O_tau_min_ins`` the number of insertions is kept fixed to this minimum value, the default value is a minimum of 10 insertions.
 
 Two-particle Green's functions
 ------------------------------

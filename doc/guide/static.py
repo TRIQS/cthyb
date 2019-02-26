@@ -34,7 +34,7 @@ rho = S.density_matrix
 # Object containing eigensystem of the local Hamiltonian
 h_loc_diag = S.h_loc_diagonalization
 
-from pytriqs.applications.impurity_solvers.cthyb import trace_rho_op
+from pytriqs.atom_diag import trace_rho_op
 
 # Evaluate occupations
 print "<N_up> =", trace_rho_op(rho, n('up',0), h_loc_diag)

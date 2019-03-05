@@ -51,7 +51,8 @@ double frobenius_norm2(triqs::arrays::matrix<T> const &a) {
 namespace triqs_cthyb {
 
   // -------- Constructor --------
-  impurity_trace::impurity_trace(double beta, atom_diag const &h_diag_, histo_map_t *hist_map, bool use_norm_as_weight, bool measure_density_matrix, bool performance_analysis)
+  impurity_trace::impurity_trace(double beta, atom_diag const &h_diag_, histo_map_t *hist_map, bool use_norm_as_weight, bool measure_density_matrix,
+                                 bool performance_analysis)
      : beta(beta),
        use_norm_as_weight(use_norm_as_weight),
        measure_density_matrix(measure_density_matrix),
@@ -338,7 +339,7 @@ namespace triqs_cthyb {
     // Can tighten bound on trace by using sqrt(dim(B)) in the case of Frobenius norm only.
     bound_cumul[n_bl] = 0;
     if (!use_norm_as_weight) {
-      for (int bl       = n_bl - 1; bl >= 0; --bl)
+      for (int bl = n_bl - 1; bl >= 0; --bl)
         bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
     } else {
       for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
@@ -435,16 +436,16 @@ namespace triqs_cthyb {
     // return {weight, reweighting}
     if (!use_norm_as_weight) return {full_trace, 1};
     // else determine reweighting
-    auto rw               = full_trace / norm_trace;
+    auto rw = full_trace / norm_trace;
     if (!isfinite(rw)) rw = 1;
     //FIXME if (!isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
     return {norm_trace, rw};
   }
 
   /// Stream insertion
-  std::ostream &operator<<(std::ostream &out, impurity_trace const & imp_trace) {
+  std::ostream &operator<<(std::ostream &out, impurity_trace const &imp_trace) {
     out << "Impurity trace: size = " << imp_trace.tree_size << "\n";
-    out << "Trial nodes: index = " << imp_trace.trial_nodes.index() << "\n"; 
+    out << "Trial nodes: index = " << imp_trace.trial_nodes.index() << "\n";
     imp_trace.tree.graphviz(out);
     return out;
   }
@@ -452,4 +453,4 @@ namespace triqs_cthyb {
 // code for check/debug
 #include "./impurity_trace.checks.cpp"
 
-} // namespace
+} // namespace triqs_cthyb

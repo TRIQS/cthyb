@@ -70,13 +70,13 @@ namespace triqs_cthyb {
              block_gf_const_view<imtime> delta, std::vector<int> n_inner, histo_map_t *histo_map)
        : config(beta),
          tau_seg(beta),
-         h_diag(h_diag),
-         delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          linindex(linindex),
+         h_diag(h_diag),
          imp_trace(beta, h_diag, histo_map, p.use_norm_as_weight, p.measure_density_matrix, p.performance_analysis),
+         n_inner(n_inner),
+         delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          current_sign(1),
-         old_sign(1),
-         n_inner(n_inner) {
+         old_sign(1) {
       std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
       dets.clear();
       for (auto const &bl : range(delta.size())) {

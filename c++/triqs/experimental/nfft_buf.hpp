@@ -48,7 +48,7 @@ namespace triqs {
       using freq_mesh_t = gf_mesh<typename imfreq_product<>::type>;
 
       nfft_buf_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, Rank> fiw_arr, int buf_size, bool do_checks = false)
-         : fiw_mesh(fiw_mesh), fiw_arr(fiw_arr), plan_ptr(std::make_unique<nfft_plan>()), buf_counter(0), buf_size(buf_size), do_checks(do_checks) {
+         : fiw_mesh(fiw_mesh), fiw_arr(fiw_arr), buf_size(buf_size), do_checks(do_checks), plan_ptr(std::make_unique<nfft_plan>()), buf_counter(0) {
 
         // Initialize NFFT plans
         all_fermion   = true;

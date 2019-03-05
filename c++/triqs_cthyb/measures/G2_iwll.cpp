@@ -148,6 +148,6 @@ namespace triqs_cthyb {
     }
   }
 
-  template class measure_G2_iwll<G2_channel::PP>;
-  template class measure_G2_iwll<G2_channel::PH>;
+  template struct measure_G2_iwll<G2_channel::PP>;
+  template struct measure_G2_iwll<G2_channel::PH>;
 }

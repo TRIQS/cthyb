@@ -86,7 +86,6 @@ namespace triqs_cthyb {
     // Scattering matrix accumulation with minimal exponent evaluations
     // using product relations for imaginary time + frequenc exponents
 
-    const int n_bosonic  = G2_measures.params.measure_G2_n_bosonic;
     const double beta    = data.config.beta();
     const double pi_beta = M_PI / beta;
 

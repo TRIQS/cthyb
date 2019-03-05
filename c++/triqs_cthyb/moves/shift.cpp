@@ -33,9 +33,9 @@ namespace triqs_cthyb {
      : data(data),
        config(data.config),
        rng(rng),
-       block_index(0),
        histo_proposed(add_histo("shift_length_proposed", histos)),
-       histo_accepted(add_histo("shift_length_accepted", histos)) {}
+       histo_accepted(add_histo("shift_length_accepted", histos)),
+       block_index(0) {}
 
   mc_weight_t move_shift_operator::attempt() {
 

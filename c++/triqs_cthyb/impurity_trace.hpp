@@ -88,7 +88,7 @@ namespace triqs_cthyb {
       std::vector<arrays::matrix<h_scalar_t>> matrices; // partial product of operator/time evolution matrices
       std::vector<double> matrix_lnorms;                // -ln(norm(matrix))
       std::vector<bool> matrix_norm_valid;              // is the norm of the matrix still valid?
-      cache_t(int n_blocks) : block_table(n_blocks), matrix_lnorms(n_blocks), matrices(n_blocks), matrix_norm_valid(n_blocks) {}
+      cache_t(int n_blocks) : block_table(n_blocks), matrices(n_blocks), matrix_lnorms(n_blocks), matrix_norm_valid(n_blocks) {}
     };
 
     struct node_data_t {
@@ -205,7 +205,7 @@ namespace triqs_cthyb {
     op_desc attach_aux_operator(many_body_op_t const &op) {
       aux_operators.push_back(h_diag->get_op_mat(op));
       op_desc operator_desc{0, 0, true, -static_cast<int>(aux_operators.size())};
-      return std::move(operator_desc);
+      return operator_desc;
     }
     
     /*************************************************************************
@@ -426,7 +426,7 @@ namespace triqs_cthyb {
     }
 
     public:
-    void try_replace(configuration::oplist_t const &updated_ops) noexcept {
+    void try_replace(configuration::oplist_t const &updated_ops) {
       if (tree_size == 0) return;
 
       if (!backup_nodes.is_index_reset()) TRIQS_RUNTIME_ERROR << "impurity_trace: improper use of try_replace()";

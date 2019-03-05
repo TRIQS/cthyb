@@ -105,8 +105,8 @@ namespace triqs_cthyb {
     }
 
     private:
-    long id; // configuration id, for debug purposes
     double beta_;
+    long id; // configuration id, for debug purposes
     oplist_t oplist;
 
 #ifdef SAVE_CONFIGS

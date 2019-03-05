@@ -110,22 +110,6 @@ namespace triqs_cthyb {
       }
     }
 
-    namespace {
-
-      // Index placeholders
-      clef::placeholder<0> i;
-      clef::placeholder<1> j;
-      clef::placeholder<2> k;
-      clef::placeholder<3> l;
-
-      // Frequency placeholders
-      clef::placeholder<4> w;
-      clef::placeholder<5> n1;
-      clef::placeholder<6> n2;
-      clef::placeholder<7> n3;
-
-    } // namespace
-
     // -- Particle-hole
 
     template <>

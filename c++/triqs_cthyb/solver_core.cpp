@@ -58,7 +58,7 @@ namespace triqs_cthyb {
   };
 
   solver_core::solver_core(constr_parameters_t const &p)
-     : constr_parameters(p), beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l) {
+     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), constr_parameters(p) {
 
     if (p.n_tau < 2 * p.n_iw)
       TRIQS_RUNTIME_ERROR << "Must use as least twice as many tau points as Matsubara frequencies: n_iw = " << p.n_iw << " but n_tau = " << p.n_tau
@@ -166,7 +166,6 @@ namespace triqs_cthyb {
     // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
     b = 0;
     range _;
-    triqs::clef::placeholder<0> iw_;
     for (auto const &bl : gf_struct) {
       // Remove constant quadratic part
       for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];

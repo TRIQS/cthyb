@@ -26,7 +26,7 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
 
   measure_G2_tau::measure_G2_tau(std::optional<G2_tau_t> &G2_tau_opt, qmc_data const &data, G2_measures_t const &G2_measures)
-     : data(data), G2_measures(G2_measures), average_sign(0) {
+     : data(data), average_sign(0), G2_measures(G2_measures) {
 
     double beta = data.config.beta();
 

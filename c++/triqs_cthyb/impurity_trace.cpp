@@ -53,14 +53,14 @@ namespace triqs_cthyb {
   // -------- Constructor --------
   impurity_trace::impurity_trace(double beta, atom_diag const &h_diag_, histo_map_t *hist_map, bool use_norm_as_weight, bool measure_density_matrix, bool performance_analysis)
      : beta(beta),
+       use_norm_as_weight(use_norm_as_weight),
+       measure_density_matrix(measure_density_matrix),
        h_diag(&h_diag_),
-       histo(performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr),
+       density_matrix(n_blocks),
+       atomic_rho(n_blocks),
        atomic_z(partition_function(*h_diag, beta)),
        atomic_norm(0),
-       atomic_rho(n_blocks),
-       density_matrix(n_blocks),
-       use_norm_as_weight(use_norm_as_weight),
-       measure_density_matrix(measure_density_matrix) {
+       histo(performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr) {
 
     // init density_matrix block + bool
     for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix_t(get_block_dim(bl), get_block_dim(bl))};

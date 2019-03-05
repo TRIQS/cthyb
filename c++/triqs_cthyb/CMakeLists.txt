@@ -27,26 +27,29 @@ if(MeasureG2)
 endif()
 
 add_library(cthyb_c ${LIBRARY_SOURCES})
+
+# Link against the triqs library
 target_link_libraries(cthyb_c PUBLIC triqs)
 
-# Pubic options : any option affecting the headers should go here
-target_compile_options(cthyb_c PUBLIC 
-                     $<$<BOOL:${Hybridisation_is_complex}>:-DHYBRIDISATION_IS_COMPLEX>
-                     $<$<BOOL:${Local_hamiltonian_is_complex}>:-DLOCAL_HAMILTONIAN_IS_COMPLEX>
-		     )
-
-# Private options : any option here shoud affect ONLY the cpp
-target_compile_options(cthyb_c PRIVATE 
-                    -DCTHYB_GIT_HASH=${CTHYB_GIT_HASH} -DTRIQS_GIT_HASH=${TRIQS_GIT_HASH}
-		     #$<$<CONFIG:Debug>:-DDEBUG_CTHYB>
-                     $<$<BOOL:${MeasureG2}>:-DCTHYB_G2_NFFT>
-		     ) 
+target_compile_options(cthyb_c PUBLIC -std=c++17 -fPIC)
+target_include_directories(cthyb_c PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c++>)
+target_compile_definitions(cthyb_c
+			  PUBLIC
+			    $<$<BOOL:${Hybridisation_is_complex}>:HYBRIDISATION_IS_COMPLEX>
+			    $<$<BOOL:${Local_hamiltonian_is_complex}>:LOCAL_HAMILTONIAN_IS_COMPLEX>
+			  PRIVATE
+			    CTHYB_GIT_HASH=${CTHYB_GIT_HASH}
+			    TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
+			    $<$<CONFIG:Debug>:DEBUG_CTHYB>
+			    $<$<BOOL:${MeasureG2}>:CTHYB_G2_NFFT>
+			    $<$<CONFIG:Debug>:TRIQS_DEBUG>
+			    $<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
+			  )
 
 # FIXME : should go ?
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
-
 if(EXT_DEBUG)
- target_compile_options(cthyb_c PRIVATE -DEXT_DEBUG)
+ target_compile_definitions(cthyb_c PRIVATE EXT_DEBUG)
 endif()
 
 # FIXME : To be simplied

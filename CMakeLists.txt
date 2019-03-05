@@ -1,12 +1,15 @@
-# start configuration
+# Start configuration
 cmake_minimum_required(VERSION 2.8.12)
 project(cthyb CXX)
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
 
 # Default to Release build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Type of build" FORCE)
 endif()
-message( STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} -------------")
+message( STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} --------")
 
 # Options for the compilation ...
 option(Hybridisation_is_complex "If ON, the hybridization Delta(tau) is complex" OFF)
@@ -22,6 +25,15 @@ endif()
 # Use shared libraries
 set(BUILD_SHARED_LIBS ON)
 
+# Export the list of compile-commands into compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Enable compiler warnings for the whole project
+add_compile_options(-Wall
+		     $<$<CONFIG:Debug>:-Og>
+		     $<$<CONFIG:Debug>:-ggdb3>
+		     )
+
 # Load TRIQS and Cpp2Py
 find_package(TRIQS 2.1 REQUIRED)
 find_package(Cpp2Py 1.6 REQUIRED)
@@ -31,42 +43,30 @@ if(MeasureG2)
  find_package(NFFT REQUIRED)
 endif()
 
-# Default Install directory to TRIQS_ROOT if not given. Checks an absolute name is given.
+# Default Install directory to TRIQS_ROOT if not given or invalid.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTALL_PREFIX}))
   message(STATUS " No install prefix given (or invalid). Defaulting to TRIQS_ROOT")
   set(CMAKE_INSTALL_PREFIX ${TRIQS_ROOT} CACHE PATH "default install path" FORCE)
 endif()
-message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} -------------")
+message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
 
-# Define the TRIQS Version Numbers
+# Define the cthyb version numbers and get the git hash
 set(CTHYB_VERSION_MAJOR 2)
 set(CTHYB_VERSION_MINOR 1)
 set(CTHYB_VERSION_PATCH 0)
 set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_PATCH})
-
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
-MESSAGE(STATUS "Cthyb version : ${CTHYB_VERSION}")
+message(STATUS "Cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
-option(Build_Tests "Enable Tests" ON)
-option(Build_Documentation "Build documentation" OFF)
-
-# All PRIVATE common options.
-# The std for all targets
-add_compile_options(-std=c++17)
-
-# Common to all targets (ctint, python, tests).
-include_directories(c++)
-
-# To be fixed!!
-triqs_set_rpath_for_all_targets()
-
+# Build and install the cthyb library
 add_subdirectory(c++/triqs_cthyb)
 
 # Tests
-if (${Build_Tests})
- enable_testing()
- add_subdirectory(test)
+option(Build_Tests "Build tests" ON)
+if(Build_Tests)
+  enable_testing()
+  add_subdirectory(test)
 endif()
 
 if (${TRIQS_WITH_PYTHON_SUPPORT})
@@ -75,8 +75,14 @@ if (${TRIQS_WITH_PYTHON_SUPPORT})
  add_subdirectory(python/triqs_cthyb)
 
  # Build the documentation
- if (${Build_Documentation})
-   add_subdirectory(doc)
+ option(Build_Documentation "Build documentation" OFF)
+ if (Build_Documentation)
+  if(NOT TRIQS_WITH_DOCUMENTATION)
+    message(WARNING "TRIQS library has not been compiled with its documentation! Cannot build documentation.")
+  else()
+    message(STATUS "Documentation Build enabled")
+    add_subdirectory(doc)
+  endif()
  endif()
 
 endif()

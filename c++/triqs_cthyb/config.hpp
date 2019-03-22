@@ -27,7 +27,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/state.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
-#include "./array_suppl.hpp"
+//#include "./array_suppl.hpp"
 
 namespace triqs_cthyb {
 

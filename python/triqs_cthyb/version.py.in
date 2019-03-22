@@ -2,7 +2,9 @@
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
-# Copyright (C) 2014 by P. Seth, I. Krivenko, M. Ferrero, O. Parcollet
+# Copyright (C) 2014-2018, P. Seth, I. Krivenko, M. Ferrero, O. Parcollet
+# Copyright (C) 2018-2019, Simons Foundation
+#   author: N. Wentzell
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -24,7 +26,7 @@ triqs_hash = "@TRIQS_GIT_HASH@"
 cthyb_hash = "@CTHYB_GIT_HASH@"
 
 def show_version():
-  print "\nYou are using the cthyb solver version %s, release %s\n"%(version, release)
+  print "\nYou are using the cthyb solver version %s\n"%version
 
 def show_git_hash():
   print "\nYou are using the cthyb solver git hash %s based on triqs git hash %s\n"%(cthyb_hash, triqs_hash)

@@ -54,14 +54,14 @@ p["move_double"] = False
 S.solve(h_int=H, **p)
 
 if mpi.is_master_node():
-    with HDFArchive("kanamori.out.h5",'w') as Results:
+    with HDFArchive("kanamori_py.out.h5",'w') as Results:
         Results["G_tau"] = S.G_tau
         Results["G_leg"] = S.G_l
 
 if mpi.is_master_node():
-    with HDFArchive("kanamori.ref.h5",'r') as Results:
+    with HDFArchive("kanamori_py.ref.h5",'r') as Results:
         assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
         assert_block_gfs_are_close(Results["G_leg"], S.G_l)
 
 from pytriqs.utility.h5diff import h5diff
-h5diff("kanamori.out.h5","kanamori.ref.h5")
+h5diff("kanamori_py.out.h5","kanamori_py.ref.h5")

@@ -1,7 +1,0 @@
-
-For developers : 
-
-- atom_diag is linked to cthyb
-- To detach it, change only the top cmakelist
-   - remove the 4 add_subdir, the link
-   - add a detection

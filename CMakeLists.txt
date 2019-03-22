@@ -22,8 +22,8 @@ if(Hybridisation_is_complex AND NOT Local_hamiltonian_is_complex)
                      "and Local_hamiltonian_is_complex=OFF is not supported.")
 endif()
 
-# Use shared libraries
-set(BUILD_SHARED_LIBS ON)
+# Build static libraries
+set(BUILD_SHARED_LIBS OFF)
 
 # Export the list of compile-commands into compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -34,13 +34,12 @@ add_compile_options(-Wall
 		     $<$<CONFIG:Debug>:-ggdb3>
 		     )
 
-# Load TRIQS and Cpp2Py
+# Load Dependencies
 find_package(TRIQS 2.2 REQUIRED)
 find_package(Cpp2Py 1.6 REQUIRED)
-
-# 2-particle GF measurement requires NFFT
-if(MeasureG2)
+if(MeasureG2) # 2-particle GF measurement requires NFFT
  find_package(NFFT REQUIRED)
+ install(TARGETS nfft EXPORT cthyb-targets)
 endif()
 
 # Default Install directory to TRIQS_ROOT if not given or invalid.
@@ -56,7 +55,7 @@ set(CTHYB_VERSION_MINOR 2)
 set(CTHYB_VERSION_PATCH 0)
 set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_PATCH})
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
-message(STATUS "Cthyb version : ${CTHYB_VERSION}")
+message(STATUS "cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
 # Build and install the cthyb library
@@ -69,24 +68,28 @@ if(Build_Tests)
   add_subdirectory(test)
 endif()
 
-if (${TRIQS_WITH_PYTHON_SUPPORT})
+if(TRIQS_WITH_PYTHON_SUPPORT)
+  # Python interface
+  add_subdirectory(python/triqs_cthyb)
 
- # Python interface
- add_subdirectory(python/triqs_cthyb)
-
- # Build the documentation
- option(Build_Documentation "Build documentation" OFF)
- if (Build_Documentation)
-  if(NOT TRIQS_WITH_DOCUMENTATION)
-    message(WARNING "TRIQS library has not been compiled with its documentation! Cannot build documentation.")
-  else()
-    message(STATUS "Documentation Build enabled")
-    add_subdirectory(doc)
+  # Build the documentation
+  option(Build_Documentation "Build documentation" OFF)
+  if(Build_Documentation)
+    if(NOT TRIQS_WITH_DOCUMENTATION)
+      message(WARNING "TRIQS library has not been compiled with its documentation! Cannot build documentation.")
+    else()
+      message(STATUS "Documentation Build enabled")
+      add_subdirectory(doc)
+    endif()
   endif()
- endif()
-
+else()
+  message(WARNING "TRIQS library has been installed without Python support. Cannot build the Python Interface and Documentation.")
 endif()
 
+# Additional configuration files
+add_subdirectory(share)
+
+# Debian Package
 option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
 if(BUILD_DEBIAN_PACKAGE)
   if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
@@ -96,23 +99,8 @@ if(BUILD_DEBIAN_PACKAGE)
   SET(CPACK_PACKAGE_VERSION ${CTHYB_VERSION})
   SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/cthyb")
   EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, triqs (>= 2.0)")
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 2.1)")
   SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   SET(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   INCLUDE(CPack)
 endif()
-
-#--------------------------------------------------------
-#   Remind the user how to set up his/her variables
-#--------------------------------------------------------
-
-# Configure and install the file to source to setup the environment variables 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cthybvars.sh.in ${CMAKE_CURRENT_BINARY_DIR}/cthybvars.sh @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cthybvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
-
-MESSAGE(STATUS "***************************************************************")
-MESSAGE(STATUS "* Use :                                                        ")
-MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/cthybvars.sh          ")
-MESSAGE(STATUS "*                                                              ") 
-MESSAGE(STATUS "*   to set up the environment variables                        ") 
-MESSAGE(STATUS "***************************************************************")

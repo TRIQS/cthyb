@@ -3,13 +3,13 @@
 The hybridization-expansion solver
 ==================================
 
-.. sidebar:: CTHyb
+.. sidebar:: cthyb 2.2
 
-   This is the homepage CTHyb Version 2.1
+   This is the homepage cthyb Version 2.2
    For changes see, Cf :ref:`changelog page <changelog>`
 
 The :ref:`TRIQS-based <triqslibs:welcome>` hybridization-expansion solver
-allows to solve the generic problem of a quantum impurity embedded in a
+allows to solve the generic problem of a **quantum impurity** embedded in a
 conduction bath for an arbitrary local interaction vertex.  The "impurity" can
 be any set of orbitals, on one or several atoms. To be more specific, the
 Hamiltonian of the problem has the form

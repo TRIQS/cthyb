@@ -3,6 +3,7 @@
 # TRIQS documentation build configuration file
 
 import sys
+sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/autorun")
 sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/numpydoc")
 
 extensions = ['sphinx.ext.autodoc',
@@ -13,12 +14,13 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'plot_directive',
-              'numpydoc']
+              'numpydoc',
+              'autorun']
 
 source_suffix = '.rst'
 
 project = u'TRIQS Hybridization Expansion Solver'
-copyright = u'2014-2017, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
+copyright = u'2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 version = '@CTHYB_VERSION@'
 
 mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
@@ -28,7 +30,7 @@ html_theme = 'triqs'
 html_theme_path = ['@TRIQS_THEMES_PATH@']
 html_show_sphinx = False
 html_context = {'header_title': 'cthyb',
-                'header_subtitle': 'a generic quantum impurity solver based on the <a class="triqs" style="font-size: 12px" href="http://ipht.cea.fr/triqs">TRIQS</a> library',
+                'header_subtitle': 'a generic quantum impurity solver based on the <a class="triqs" style="font-size: 12px" href="https://triqs.github.io">TRIQS</a> library',
                 'header_links': [['Install', 'install'],
                                  ['Documentation', 'documentation'],
                                  ['Issues', 'issues'],

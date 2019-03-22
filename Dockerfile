@@ -3,7 +3,7 @@ FROM flatironinstitute/triqs:master-ubuntu-clang
 
 RUN apt-get install -y libnfft3-dev || yum install -y nfft-devel
 
-ARG APPNAME=cthyb
+ARG APPNAME
 COPY . $SRC/$APPNAME
 WORKDIR $BUILD/$APPNAME
 RUN chown build .

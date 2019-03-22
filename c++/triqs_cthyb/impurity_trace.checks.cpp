@@ -19,6 +19,9 @@
  *
  ******************************************************************************/
 
+#include "impurity_trace.hpp"
+using namespace triqs_cthyb;
+
 //-------------------- Cache integrity check --------------------------------
 
 void impurity_trace::check_cache_integrity(bool print) {

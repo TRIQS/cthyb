@@ -121,11 +121,11 @@ namespace triqs_cthyb {
        // Compute 0th moment of one block
        [](gf_const_view<imfreq> d) {
          auto [tail, err] = fit_hermitian_tail(d);
-	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
+	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit. The least-square error is " << err << "\n";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
 #ifndef HYBRIDISATION_IS_COMPLEX
 	 double imag_Delta = max_element(abs(imag(Delta_infty)));
-         if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta;
+         if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta << "\n";
 #endif
          return Delta_infty;
        },

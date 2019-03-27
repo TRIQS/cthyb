@@ -6,10 +6,7 @@ from cpp2py.wrap_generator import *
 module = module_(full_name = "solver_core", doc = "The TRIQS cthyb solver", app_name = "triqs_cthyb")
 
 # Imports
-import pytriqs.atom_diag
-import pytriqs.gf
-import pytriqs.operators
-import pytriqs.statistics.histograms
+module.add_imports(*['pytriqs.atom_diag', 'pytriqs.gf', 'pytriqs.operators', 'pytriqs.statistics.histograms'])
 
 # Add here all includes
 module.add_include("triqs_cthyb/solver_core.hpp")

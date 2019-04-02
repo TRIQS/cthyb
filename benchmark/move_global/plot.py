@@ -68,8 +68,8 @@ for mg1, mg2 in mg_pairs:
         G_tau_1 = rebinning_tau(arch[mg1]['G_tau'][s], plot_n_tau)
         G_tau_2 = rebinning_tau(arch[mg2]['G_tau'][s], plot_n_tau)
 
-        oplot(G_tau_1[i,i], mode='R', label="%s,%s,%i%i" % (mg1,s,i,i))
-        oplot(G_tau_2[i,i], mode='R', label="%s,%s,%i%i" % (mg2,s,i,i))
+        oplot(G_tau_1[i,i], alpha=0.25, mode='R', label="%s,%s,%i%i" % (mg1,s,i,i))
+        oplot(G_tau_2[i,i], alpha=0.25, mode='R', label="%s,%s,%i%i" % (mg2,s,i,i))
 
     plt.title("Test move_global $\\beta$ = %.0f, move_global_prob = %.3f" % (beta,move_global_prob), fontsize=12)
     plt.ylim(-0.6,0.05)

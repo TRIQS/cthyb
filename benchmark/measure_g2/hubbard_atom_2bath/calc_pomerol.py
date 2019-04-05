@@ -15,7 +15,7 @@ from pytriqs.archive import HDFArchive
 # ----------------------------------------------------------------------
 
 from pytriqs.utility import mpi
-from pytriqs.applications.impurity_solvers.pomerol2triqs import PomerolED
+from pomerol2triqs import PomerolED
 
 # ----------------------------------------------------------------------
 def make_calc():
@@ -82,7 +82,7 @@ def make_calc():
     ed = PomerolED(index_converter, verbose=True)
     ed.diagonalize(d.H) # -- Diagonalize H
 
-    gf_struct = {up : [0], do : [0]}
+    gf_struct = [[up, [0]], [do, [0]]]
 
     # -- Single-particle Green's functions
     G_iw = ed.G_iw(gf_struct, beta, n_iw=niw)

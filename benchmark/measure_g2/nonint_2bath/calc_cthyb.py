@@ -42,10 +42,11 @@ if __name__ == '__main__':
     d = Dummy() # storage space
     d.params = params
 
-    print '--> Solving SIAM with parameters'
-    for key, value in params.items():
-        print '%10s = %-10s' % (key, str(value))
-        globals()[key] = value # populate global namespace
+    if mpi.is_master_node():
+        print '--> Solving SIAM with parameters'
+        for key, value in params.items():
+            print '%10s = %-10s' % (key, str(value))
+            globals()[key] = value # populate global namespace
 
     # ------------------------------------------------------------------
 

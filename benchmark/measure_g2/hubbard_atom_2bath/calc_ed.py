@@ -1,4 +1,3 @@
-  
 """ Exact diagonalization test calculation 
     for Hubbard atom with two bath sites.
 
@@ -13,19 +12,18 @@ import numpy as np
 # ----------------------------------------------------------------------
 
 from pytriqs.gf import Gf, BlockGf, Block2Gf
-from pytriqs.gf import MeshImTime, MeshProduct
-from pytriqs.gf import GfImTime, GfImFreq
+from pytriqs.gf import MeshImTime, MeshImFreq, MeshProduct
 
 from pytriqs.operators import c, c_dag
 from pytriqs.archive import HDFArchive
 
 # ----------------------------------------------------------------------
 
-from pytriqs.applications.susceptibility.Dummy import Dummy
-from pytriqs.applications.susceptibility.fourier import chi4_iw_from_tau
-from pytriqs.applications.susceptibility.fourier import chi3_iw_from_tau
-from pytriqs.applications.susceptibility.fourier import chi2_iw_from_tau
-from pytriqs.applications.susceptibility.fourier import g_iw_from_tau
+#from pytriqs.applications.susceptibility.Dummy import Dummy
+#from pytriqs.applications.susceptibility.fourier import chi4_iw_from_tau
+#from pytriqs.applications.susceptibility.fourier import chi3_iw_from_tau
+#from pytriqs.applications.susceptibility.fourier import chi2_iw_from_tau
+#from pytriqs.applications.susceptibility.fourier import g_iw_from_tau
 
 # ----------------------------------------------------------------------
 
@@ -88,70 +86,32 @@ def make_calc(U=10):
     # ------------------------------------------------------------------
     # -- Single-particle Green's functions
 
-    Gopt = dict(beta=beta, statistic='Fermion', indices=[1])    
-    d.G_tau = GfImTime(name=r'$G(\tau)$', n_points=ntau, **Gopt)
-    d.G_iw = GfImFreq(name='$G(i\omega_n)$', n_points=niw, **Gopt)
+    d.G_tau = Gf(mesh=MeshImTime(beta, 'Fermion', ntau), target_shape=[])
+    d.G_iw = Gf(mesh=MeshImFreq(beta, 'Fermion', niw), target_shape=[])
     
     ed.set_g2_tau(d.G_tau, c(up,0), c_dag(up,0))
     ed.set_g2_iwn(d.G_iw, c(up,0), c_dag(up,0))
-
-    # chi2pp = + < c^+_u(\tau^+) c_u(0^+) c^+_d(\tau) c_d(0) >
-    #        = - < c^+_u(\tau^+) c^+_d(\tau) c_u(0^+) c_d(0) >
-
-    chi2opt = dict(beta=beta, statistic='Fermion', indices=[1], n_points=ntau)    
-    d.chi2pp_tau = GfImTime(name=r'$\chi^{(2)}_{PP}(\tau)$', **chi2opt)
-    ed.set_g2_tau(d.chi2pp_tau, c_dag(up,0)*c_dag(do,0), c(up,0)*c(do,0))
-    d.chi2pp_tau *= -1.0 * -1.0 # commutation sign and gf sign
-    d.chi2pp_iw = g_iw_from_tau(d.chi2pp_tau, niw)
-
-    # chi2ph = < c^+_u(\tau^+) c_u(\tau) c^+_d(0^+) c_d(0) >
-    
-    d.chi2ph_tau = GfImTime(name=r'$\chi^{(2)}_{PH}(\tau)$', **chi2opt)
-    #d.chi2ph_tau = Gf(name=r'$\chi^{(2)}_{PH}(\tau)$', **chi2opt)    
-    ed.set_g2_tau(d.chi2ph_tau, c_dag(up,0)*c(up,0), c_dag(do,0)*c(do,0))
-    d.chi2ph_tau *= -1.0 # gf sign
-    d.chi2ph_iw = g_iw_from_tau(d.chi2ph_tau, niw)
     
     # ------------------------------------------------------------------
     # -- Two particle Green's functions
     
     imtime = MeshImTime(beta, 'Fermion', ntau)
     prodmesh = MeshProduct(imtime, imtime, imtime)
-    G2opt = dict(mesh=prodmesh, target_shape=[1, 1, 1, 1])
+    G2opt = dict(mesh=prodmesh, target_shape=[])
 
-    d.G02_tau = Gf(name='$G^{(2)}_0(\tau_1, \tau_2, \tau_3)$', **G2opt)
-    ed.set_g40_tau(d.G02_tau, d.G_tau)
-    d.G02_iw = chi4_iw_from_tau(d.G02_tau, niw)
+    G02_tau = Gf(name='$G^{(2)}_0(\tau_1, \tau_2, \tau_3)$', **G2opt)
+    ed.set_g40_tau(G02_tau, d.G_tau)
 
-    d.G2_tau = Gf(name='$G^{(2)}(\tau_1, \tau_2, \tau_3)$', **G2opt)
-    ed.set_g4_tau(d.G2_tau, c_dag(up,0), c(up,0), c_dag(do,0), c(do,0))
-    #ed.set_g4_tau(d.G2_tau, c(up,0), c_dag(up,0), c(do,0), c_dag(do,0)) # <cc^+cc^+>
-    d.G2_iw = chi4_iw_from_tau(d.G2_tau, niw)
+    G2_tau = Gf(name='$G^{(2)}(\tau_1, \tau_2, \tau_3)$', **G2opt)
+    ed.set_g4_tau(G2_tau, c_dag(up,0), c(up,0), c_dag(do,0), c(do,0))
 
-    # -- trying to fix the bug in the fft for w2
-
-    d.G02_iw.data[:] = d.G02_iw.data[:, ::-1, ...].conj()
-    d.G2_iw.data[:] = d.G2_iw.data[:, ::-1, ...].conj()
-
-    # ------------------------------------------------------------------
-    # -- 3/2-particle Green's functions (equal times)
-
-    prodmesh = MeshProduct(imtime, imtime)
-    chi3opt = dict(mesh=prodmesh, target_shape=[1, 1, 1, 1])
-
-    # chi3pp = <c^+_u(\tau) c_u(0^+) c^+_d(\tau') c_d(0) >
-    #        = - <c^+_u(\tau) c^+_d(\tau') c_u(0^+) c_d(0) >
+    G2opt_1111 = dict(mesh=prodmesh, target_shape=[1, 1, 1, 1])
     
-    d.chi3pp_tau = Gf(name='$\Chi^{(3)}_{PP}(\tau_1, \tau_2, \tau_3)$', **chi3opt)
-    ed.set_g3_tau(d.chi3pp_tau, c_dag(up,0), c_dag(do,0), c(up,0)*c(do,0))
-    d.chi3pp_tau *= -1.0 # from commutation
-    d.chi3pp_iw = chi3_iw_from_tau(d.chi3pp_tau, niw)
+    d.G02_tau = Gf(**G2opt_1111)
+    d.G2_tau = Gf(**G2opt_1111)
 
-    # chi3ph = <c^+_u(\tau) c_u(\tau') c^+_d(0^+) c_d(0) >
-    
-    d.chi3ph_tau = Gf(name='$\Chi^{(3)}_{PH}(\tau_1, \tau_2, \tau_3)$', **chi3opt)
-    ed.set_g3_tau(d.chi3ph_tau, c_dag(up,0), c(up,0), c_dag(do,0)*c(do,0))
-    d.chi3ph_iw = chi3_iw_from_tau(d.chi3ph_tau, niw)
+    d.G02_tau.data[:, :, :, 0, 0, 0, 0] = G02_tau.data
+    d.G2_tau.data[:, :, :, 0, 0, 0, 0] = G2_tau.data
     
     # ------------------------------------------------------------------
     # -- Store to hdf5

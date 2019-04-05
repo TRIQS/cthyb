@@ -9,12 +9,12 @@ from pytriqs.operators.util.U_matrix import cubic_names, U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
 from triqs_cthyb import SolverCore
 import triqs_cthyb.version as version
-from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
 from itertools import product
 
 def five_plus_five(use_interaction=True):
 
-    results_file_name = "5_plus_5.h5"
+    results_file_name = "5_plus_5." + ("int." if use_interaction else "") + "h5"
 
     # Block structure of GF
     L = 2 # d-orbital
@@ -65,11 +65,15 @@ def five_plus_five(use_interaction=True):
     p["random_name"] = ""
     p["random_seed"] = 123 * mpi.rank + 567
     p["length_cycle"] = 50
-    p["n_warmup_cycles"] = 1000
-    p["n_cycles"] = 30000
+    #p["n_warmup_cycles"] = 5000
+    p["n_warmup_cycles"] = 500
+    p["n_cycles"] = int(1.e1 / mpi.size)
+    #p["n_cycles"] = int(5.e5 / mpi.size)
+    #p["n_cycles"] = int(5.e6 / mpi.size)
     p["partition_method"] = "autopartition"
     p["measure_G_tau"] = True
     p["move_shift"] = True
+    p["move_double"] = True
     p["measure_pert_order"] = False
     p["performance_analysis"] = False
     p["use_trace_estimator"] = False
@@ -80,10 +84,15 @@ def five_plus_five(use_interaction=True):
     gf_struct = set_operator_structure(spin_names,orb_names,False)
     mkind = get_mkind(False,None)
 
-    # Local Hamiltonian
-    U_mat = U_matrix(L,[F0,F2,F4],basis='cubic')
-    H = h_int_slater(spin_names,orb_names,U_mat,False,H_dump=H_dump)
+    H = Operator()
 
+    if use_interaction:
+        # Local Hamiltonian
+        U_mat = U_matrix(L,[F0,F2,F4],basis='cubic')
+        H += h_int_slater(spin_names,orb_names,U_mat,False,H_dump=H_dump)
+    else:
+        mu = 0.
+        
     p["h_int"] = H
 
     # Quantum numbers (N_up and N_down)
@@ -100,6 +109,8 @@ def five_plus_five(use_interaction=True):
 
     mpi.report("Preparing the hybridization function...")
 
+    H_hyb = Operator()
+
     # Set hybridization function
     if Delta_dump: Delta_dump_file = open(Delta_dump,'w')
     for sn, cn in product(spin_names,orb_names):
@@ -107,16 +118,30 @@ def five_plus_five(use_interaction=True):
         V = delta_params[cn]['V']
         e = delta_params[cn]['e']
 
-        delta_w = GfImFreq(indices = [i], beta=beta)
+        delta_w = Gf(mesh=MeshImFreq(beta, 'Fermion', n_iw), target_shape=[])
         delta_w << (V**2) * inverse(iOmega_n - e)
 
         S.G0_iw[bn][i,i] << inverse(iOmega_n +mu - atomic_levels[(bn,i)] - delta_w)
 
+        cnb = cn + '_b' # bath level
+        a = sn + '_' + cn
+        b = sn + '_' + cn + '_b'
+        
+        H_hyb += ( atomic_levels[(bn,i)] - mu ) * n(a, 0) + \
+            n(b,0) * e + V * ( c(a,0) * c_dag(b,0) + c(b,0) * c_dag(a,0) )
+        
         # Dump Delta parameters
         if Delta_dump:
             Delta_dump_file.write(bn + '\t')
             Delta_dump_file.write(str(V) + '\t')
             Delta_dump_file.write(str(e) + '\n')
+
+    if mpi.is_master_node():
+        filename_ham = 'data_Ham%s.h5' % ('_int' if use_interaction else '')
+        with HDFArchive(filename_ham, 'w') as arch:
+            arch['H'] = H_hyb + H
+            arch['gf_struct'] = gf_struct
+            arch['beta'] = beta
 
     mpi.report("Running the simulation...")
 
@@ -127,6 +152,7 @@ def five_plus_five(use_interaction=True):
     if mpi.is_master_node():
         Results = HDFArchive(results_file_name,'w')
         Results['G_tau'] = S.G_tau
+        Results['G0_iw'] = S.G0_iw
         Results['use_interaction'] = use_interaction
         Results['delta_params'] = delta_params
         Results['spin_names'] = spin_names

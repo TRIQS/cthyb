@@ -1,5 +1,5 @@
 
-  """ Test calculation for two-band Hubbard atom with two bath sites.
+""" Test calculation for two-band Hubbard atom with two bath sites.
 
 Plotter for the different types of two particle propagators in the 
 calculation. Nb, slow!, plots 16x16 subplots per propagator. Used for 

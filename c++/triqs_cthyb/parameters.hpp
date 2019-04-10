@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <climits>
+
 #include "./config.hpp"
 #include "./types.hpp"
 
@@ -31,7 +33,7 @@ namespace triqs_cthyb {
 
   // All the arguments of the solver_core constructor
   struct constr_parameters_t {
-    
+
     /// Inverse temperature
     double beta;
 
@@ -52,9 +54,9 @@ namespace triqs_cthyb {
 
     /// Read constr_parameters_t from hdf5
     friend void h5_read(triqs::h5::group h5group, std::string subgroup_name, constr_parameters_t &sp);
-    
+
   };
-  
+
   // All the arguments of the solve function
   struct solve_parameters_t {
 
@@ -73,6 +75,14 @@ namespace triqs_cthyb {
     /// type: list(Operator)
     /// default: []
     std::vector<many_body_op_t> quantum_numbers = std::vector<many_body_op_t>{};
+
+    /// Restrict local Hilbert space to states with at least this number of particles
+    /// default: 0
+    int loc_n_min = 0;
+
+    /// Restrict local Hilbert space to states with at most this number of particles
+    /// default: INT_MAX
+    int loc_n_max = INT_MAX;
 
     /// Length of a single QMC cycle
     /// default: 50
@@ -102,7 +112,7 @@ namespace triqs_cthyb {
     bool move_shift = true;
 
     /// Add double insertions as a move?
-    bool move_double = false;
+    bool move_double = true;
 
     /// Calculate the full trace or use an estimate?
     bool use_trace_estimator = false;
@@ -113,17 +123,29 @@ namespace triqs_cthyb {
     /// Measure G_l (Legendre)?
     bool measure_G_l = false;
 
+    /// Measure O_tau by insertion
+    std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = std::optional<std::pair<many_body_op_t, many_body_op_t>>{};
+
     /// Measure G^4(tau,tau',tau'') with three fermionic times.
     bool measure_G2_tau = false;
 
     /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
     bool measure_G2_iw = false;
 
+    /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
+    bool measure_G2_iw_nfft = false;
+
     /// Measure G^4(iomega,inu,inu') within the particle-particle channel.
     bool measure_G2_iw_pp = false;
 
+    /// Measure G^4(iomega,inu,inu') within the particle-particle channel.
+    bool measure_G2_iw_pp_nfft = false;
+
     /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
     bool measure_G2_iw_ph = false;
+
+    /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
+    bool measure_G2_iw_ph_nfft = false;
 
     /// Measure G^2(iomega,l,l') within the particle-particle channel.
     bool measure_G2_iwll_pp = false;
@@ -185,6 +207,21 @@ namespace triqs_cthyb {
 
     /// Threshold below which imaginary components of Delta and h_loc are set to zero
     double imag_threshold = 1.e-15;
+
+    /// The maximum size of the determinant matrix before a resize
+    int det_init_size = 100;
+
+    /// Max number of ops before the test of deviation of the det, M^-1 is performed.
+    int det_n_operations_before_check = 100;
+
+    /// Threshold for determinant precision warnings
+    double det_precision_warning = 1.e-8;
+
+    /// Threshold for determinant precision error
+    double det_precision_error = 1.e-5;
+
+    /// Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
+    double det_singular_threshold = -1;
 
     solve_parameters_t() {}
 

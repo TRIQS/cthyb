@@ -75,7 +75,7 @@ namespace triqs {
         //nfft_init(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size);
 
         /// compute the next highest power of 2 of 32-bit v
-        auto next_highest_power_of_two = [](unsigned int v) {
+        auto next_power_of_two = [](unsigned int v) {
           v--;
           v |= v >> 1;
           v |= v >> 2;
@@ -88,7 +88,7 @@ namespace triqs {
 
         // Init nfft_plan
         mini_vector<int, Rank> extents_fftw;
-        for (int i = 0; i < Rank; i++) extents_fftw[i] = 2 * next_highest_power_of_two(buf_extents[i]);
+        for (int i = 0; i < Rank; i++) extents_fftw[i] = 2 * next_power_of_two(buf_extents[i]);
 
         unsigned nfft_flags = PRE_PHI_HUT | PRE_PSI | MALLOC_X | MALLOC_F_HAT | MALLOC_F | FFTW_INIT | FFT_OUT_OF_PLACE | NFFT_SORT_NODES;
         unsigned fftw_flags = FFTW_ESTIMATE | FFTW_DESTROY_INPUT;

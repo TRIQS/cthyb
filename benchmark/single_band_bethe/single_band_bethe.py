@@ -2,6 +2,7 @@
 from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import *
+import pytriqs.utility.mpi as mpi
 from triqs_cthyb import Solver
 import numpy as np
 
@@ -20,12 +21,12 @@ S.G_iw << SemiCircular(2*t)
 tail_fit = dict(
     perform_tail_fit = True,
     fit_max_moment = 3,
-    fit_min_w = 1.2,
-    fit_max_w = 3.0,
+    fit_min_w = 3.0,
+    fit_max_w = 7.0,
     )
 
 # DMFT loop with self-consistency
-for do_tail in [False, True]:
+for do_tail in [True, False]:
     for i in range(n_loops):
 
         print "\n\nIteration = %i / %i" % (i+1, n_loops)
@@ -44,18 +45,19 @@ for do_tail in [False, True]:
             )
 
         # Save iteration in archive
-        with HDFArchive("data-U%.2f_tail_fit_%s.h5" % (U, do_tail)) as A:
+        if mpi.is_master_node():
+            with HDFArchive("data-U%.2f_tail_fit_%s.h5" % (U, do_tail)) as A:
 
-            A['niter'] = i
+                A['niter'] = i
 
-            A['U'] = U
-            A['beta'] = beta
+                A['U'] = U
+                A['beta'] = beta
 
-            A['G0_iw-%i'%i] = S.G0_iw
-            A['Delta_tau-%i'%i] = S.Delta_tau
+                A['G0_iw-%i'%i] = S.G0_iw
+                A['Delta_tau-%i'%i] = S.Delta_tau
 
-            A['G_iw-%i'%i] = S.G_iw
-            A['G_iw_raw-%i'%i] = S.G_iw_raw
+                A['G_iw-%i'%i] = S.G_iw
+                A['G_iw_raw-%i'%i] = S.G_iw_raw
 
-            A['Sigma_iw-%i'%i] = S.Sigma_iw
-            A['Sigma_iw_raw-%i'%i] = S.Sigma_iw_raw
+                A['Sigma_iw-%i'%i] = S.Sigma_iw
+                A['Sigma_iw_raw-%i'%i] = S.Sigma_iw_raw

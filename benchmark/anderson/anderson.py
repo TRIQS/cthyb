@@ -6,7 +6,7 @@ from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from triqs_cthyb import SolverCore
 from pytriqs.atom_diag import trace_rho_op
-from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
 
 def anderson(use_qn=True, use_blocks=True):
 
@@ -18,7 +18,8 @@ def anderson(use_qn=True, use_blocks=True):
     U = 2.0
     mu = 1.0
     h = 0.1
-    V = 0.5
+    #V = 0.5
+    V = 1.0
     epsilon = 2.3
 
     n_iw = 1025
@@ -64,7 +65,7 @@ def anderson(use_qn=True, use_blocks=True):
     mpi.report("Preparing the hybridization function...")
 
     # Set hybridization function
-    delta_w = GfImFreq(indices = [0], beta=beta)
+    delta_w = Gf(mesh=MeshImFreq(beta, 'Fermion', n_iw), target_shape=[])
     delta_w << (V**2) * inverse(iOmega_n - epsilon) + (V**2) * inverse(iOmega_n + epsilon)
     for spin in spin_names:
         bn, i = mkind(spin)

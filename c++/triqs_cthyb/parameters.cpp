@@ -27,7 +27,7 @@ using triqs::utility::enumerate;
 namespace triqs_cthyb {
 
   // -- pair<string, string>
-  
+
   inline void h5_write(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> const &pair) {
     triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "0", std::string(pair.first));
@@ -42,7 +42,7 @@ namespace triqs_cthyb {
   }
 
   // -- set<pair<string, string>>
-  
+
   inline void h5_write(triqs::h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> const &pair_set) {
     triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     for( auto [idx, pair] : enumerate(pair_set) ) {
@@ -58,7 +58,7 @@ namespace triqs_cthyb {
       pair_set.insert(pair);
     }
   }
-  
+
   void h5_write(triqs::h5::group h5group, std::string name, constr_parameters_t const &cp) {
     triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "beta", cp.beta);
@@ -84,6 +84,8 @@ namespace triqs_cthyb {
     h5_write(grp, "n_cycles", sp.n_cycles);
     h5_write(grp, "partition_method", sp.partition_method);
     h5_write(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_write(grp, "loc_n_min", sp.loc_n_min);
+    h5_write(grp, "loc_n_max", sp.loc_n_max);
 
     h5_write(grp, "length_cycle", sp.length_cycle);
     h5_write(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -98,10 +100,14 @@ namespace triqs_cthyb {
 
     h5_write(grp, "measure_G_tau", sp.measure_G_tau);
     h5_write(grp, "measure_G_l", sp.measure_G_l);
+    h5_write(grp, "measure_O_tau", sp.measure_O_tau);
     h5_write(grp, "measure_G2_tau", sp.measure_G2_tau);
     h5_write(grp, "measure_G2_iw", sp.measure_G2_iw);
+    h5_write(grp, "measure_G2_iw_nfft", sp.measure_G2_iw_nfft);
     h5_write(grp, "measure_G2_iw_pp", sp.measure_G2_iw_pp);
+    h5_write(grp, "measure_G2_iw_pp_nfft", sp.measure_G2_iw_pp_nfft);
     h5_write(grp, "measure_G2_iw_ph", sp.measure_G2_iw_ph);
+    h5_write(grp, "measure_G2_iw_ph_nfft", sp.measure_G2_iw_ph_nfft);
     h5_write(grp, "measure_G2_iwll_pp", sp.measure_G2_iwll_pp);
     h5_write(grp, "measure_G2_iwll_ph", sp.measure_G2_iwll_ph);
     h5_write(grp, "measure_G2_block_order", sp.measure_G2_block_order);
@@ -127,6 +133,12 @@ namespace triqs_cthyb {
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
     h5_write(grp, "imag_threshold", sp.imag_threshold);
+
+    h5_write(grp, "det_init_size", sp.det_init_size);
+    h5_write(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);
+    h5_write(grp, "det_precision_warning", sp.det_precision_warning);
+    h5_write(grp, "det_precision_error", sp.det_precision_error);
+    h5_write(grp, "det_singular_threshold", sp.det_singular_threshold);
   }
 
   void h5_read(triqs::h5::group h5group, std::string name, solve_parameters_t &sp) {
@@ -136,6 +148,8 @@ namespace triqs_cthyb {
     h5_read(grp, "n_cycles", sp.n_cycles);
     h5_read(grp, "partition_method", sp.partition_method);
     h5_read(grp, "quantum_numbers", sp.quantum_numbers);
+    h5_read(grp, "loc_n_min", sp.loc_n_min);
+    h5_read(grp, "loc_n_max", sp.loc_n_max);
 
     h5_read(grp, "length_cycle", sp.length_cycle);
     h5_read(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -150,10 +164,14 @@ namespace triqs_cthyb {
 
     h5_read(grp, "measure_G_tau", sp.measure_G_tau);
     h5_read(grp, "measure_G_l", sp.measure_G_l);
+    if( grp.has_key("measure_O_tau") ) h5_read(grp, "measure_O_tau", sp.measure_O_tau);
     h5_read(grp, "measure_G2_tau", sp.measure_G2_tau);
     h5_read(grp, "measure_G2_iw", sp.measure_G2_iw);
+    h5_read(grp, "measure_G2_iw_nfft", sp.measure_G2_iw_nfft);
     h5_read(grp, "measure_G2_iw_pp", sp.measure_G2_iw_pp);
+    h5_read(grp, "measure_G2_iw_pp_nfft", sp.measure_G2_iw_pp_nfft);
     h5_read(grp, "measure_G2_iw_ph", sp.measure_G2_iw_ph);
+    h5_read(grp, "measure_G2_iw_ph_nfft", sp.measure_G2_iw_ph_nfft);
     h5_read(grp, "measure_G2_iwll_pp", sp.measure_G2_iwll_pp);
     h5_read(grp, "measure_G2_iwll_ph", sp.measure_G2_iwll_ph);
     h5_read(grp, "measure_G2_block_order", sp.measure_G2_block_order);
@@ -179,6 +197,12 @@ namespace triqs_cthyb {
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);
+
+    h5_read(grp, "det_init_size", sp.det_init_size);
+    h5_read(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);
+    h5_read(grp, "det_precision_warning", sp.det_precision_warning);
+    h5_read(grp, "det_precision_error", sp.det_precision_error);
+    h5_read(grp, "det_singular_threshold", sp.det_singular_threshold);
   }
-  
+
 } // namespace triqs_cthyb

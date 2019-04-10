@@ -3,8 +3,8 @@ from pytriqs.archive import HDFArchive
 from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
-from pytriqs.applications.impurity_solvers.cthyb import *
-from pytriqs.applications.impurity_solvers.cthyb.util import estimate_nfft_buf_size
+from triqs_cthyb import SolverCore
+from triqs_cthyb.util import estimate_nfft_buf_size
 from pytriqs.gf import *
 import numpy as np
 
@@ -33,33 +33,34 @@ p["random_name"] = ""
 p["random_seed"] = 12345 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 50000
-p["n_cycles"] = 5000
+p["n_cycles"] = 5
 p["use_norm_as_weight"] = False
 p["move_double"] = True
 p["measure_density_matrix"] = False
-p["measure_g_tau"] = False
-p["measure_g_l"] = False
+p["measure_G_tau"] = False
+p["measure_G_l"] = False
 p["measure_pert_order"] = False
 
 # Parameters for the preliminary run
 preliminary_only = False # Skip G2 accumulation?
 p_pre = p.copy()
 p_pre["n_warmup_cycles"] = 50000
-p_pre["n_cycles"] = 500000
+p_pre["n_cycles"] = 5000
 p_pre["measure_pert_order"] = True
-p_pre["measure_g_tau"] = True
+p_pre["measure_G_tau"] = True
 
-p["measure_g2_inu"] = True
-p["measure_g2_legendre"] = True
-p["measure_g2_pp"] = True
-p["measure_g2_ph"] = True
-p["measure_g2_block_order"] = "AABB"
-p["measure_g2_blocks"] = g2_blocks
-p["measure_g2_n_iw"] = g2_n_iw
-p["measure_g2_n_inu"] = g2_n_inu
-p["measure_g2_n_l"] = g2_n_l
+p["measure_G2_iw"] = True
+p["measure_G2_iw_ph"] = True
+p["measure_G2_iw_pp"] = True
+p["measure_G2_iwll_ph"] = True
+p["measure_G2_iwll_pp"] = True
+p["measure_G2_block_order"] = "block_order::AABB"
+p["measure_G2_blocks"] = g2_blocks
+p["measure_G2_n_bosonic"] = g2_n_iw
+p["measure_G2_n_fermionic"] = g2_n_inu
+p["measure_G2_n_l"] = g2_n_l
 
-mpi.report("Welcome to measure_g2 benchmark.")
+mpi.report("Welcome to the measure_G2 benchmark.")
 
 gf_struct = set_operator_structure(spin_names, orb_names, True)
 mkind = get_mkind(True, None)
@@ -92,7 +93,7 @@ mpi.report("Preliminary run...")
 S.solve(h_int = H, **p_pre)
 
 if mpi.is_master_node():
-    with HDFArchive("measure_g2.h5", 'w') as ar:
+    with HDFArchive("data_measure_g2.h5", 'w') as ar:
         ar['beta'] = beta
         ar['U'] = U
         ar['mu'] = mu
@@ -116,17 +117,18 @@ ref_shape_inu = (2*g2_n_iw-1, 2*g2_n_inu, 2*g2_n_inu,
 ref_shape_l = (2*g2_n_iw-1, g2_n_l, g2_n_l,
                num_orb, num_orb, num_orb, num_orb)
 for bn in g2_blocks:
-    assert S.G2_iw_inu_inup_pp[bn].data.shape == ref_shape_inu
-    assert S.G2_iw_inu_inup_ph[bn].data.shape == ref_shape_inu
-    assert S.G2_iw_l_lp_pp[bn].data.shape == ref_shape_l
-    assert S.G2_iw_l_lp_ph[bn].data.shape == ref_shape_l
+    assert S.G2_iw_pp[bn].data.shape == ref_shape_inu
+    assert S.G2_iw_ph[bn].data.shape == ref_shape_inu
+    assert S.G2_iwll_pp[bn].data.shape == ref_shape_l
+    assert S.G2_iwll_ph[bn].data.shape == ref_shape_l
 
 # Save the results
 if mpi.is_master_node():
-    with HDFArchive("measure_g2.h5", 'a') as ar:
-        p['measure_g2_blocks'] = list(p['measure_g2_blocks'])
+    with HDFArchive("data_measure_g2.h5", 'a') as ar:
+        p['measure_G2_blocks'] = list(p['measure_G2_blocks'])
         ar['solve_params'] = p
-        ar['G2_iw_inu_inup_pp'] = S.G2_iw_inu_inup_pp
-        ar['G2_iw_inu_inup_ph'] = S.G2_iw_inu_inup_ph
-        ar['G2_iw_l_lp_pp'] = S.G2_iw_l_lp_pp
-        ar['G2_iw_l_lp_ph'] = S.G2_iw_l_lp_ph
+        ar['G2_iw'] = S.G2_iw
+        ar['G2_iw_pp'] = S.G2_iw_pp
+        ar['G2_iw_ph'] = S.G2_iw_ph
+        ar['G2_iwll_pp'] = S.G2_iwll_pp
+        ar['G2_iwll_ph'] = S.G2_iwll_ph

@@ -27,9 +27,9 @@
 
 namespace triqs_cthyb {
 
-  /// Containers for measurements
+  // Containers for measurements
   struct container_set_t {
-
+    
     // -- Single particle Green's functions
 
     /// Single-particle Green's function :math:`G(\tau)` in imaginary time.
@@ -41,6 +41,9 @@ namespace triqs_cthyb {
     /// Single-particle Green's function :math:`G_l` in Legendre polynomial representation.
     std::optional<G_l_t> G_l;
 
+    /// General operator Green's function :math:`O(\tau)` in imaginary time.
+    std::optional<gf<imtime, scalar_valued>> O_tau;
+
     // -- Two-particle Green's functions
 
     /// Two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` (three Fermionic imaginary times)
@@ -49,11 +52,20 @@ namespace triqs_cthyb {
     /// Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
     std::optional<G2_iw_t> G2_iw;
 
+    /// Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` (three Fermionic frequencies)
+    std::optional<G2_iw_t> G2_iw_nfft;
+
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel (one bosonic matsubara and two fermionic)
     std::optional<G2_iw_t> G2_iw_pp;
 
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the pp-channel (one bosonic matsubara and two fermionic)
+    std::optional<G2_iw_t> G2_iw_pp_nfft;
+
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel (one bosonic matsubara and two fermionic)
     std::optional<G2_iw_t> G2_iw_ph;
+
+    /// Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the ph-channel (one bosonic matsubara and two fermionic)
+    std::optional<G2_iw_t> G2_iw_ph_nfft;
 
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the pp-channel (one bosonic matsubara and two legendre)
     std::optional<G2_iwll_t> G2_iwll_pp;

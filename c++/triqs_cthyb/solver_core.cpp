@@ -3,7 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
- * Copyright (C) 2017, H. UR Strand, P. Seth, I. Krivenko, 
+ * Copyright (C) 2017, H. UR Strand, P. Seth, I. Krivenko,
  *                     M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
@@ -37,12 +37,14 @@
 #include "./moves/global.hpp"
 #include "./measures/G_tau.hpp"
 #include "./measures/G_l.hpp"
+#include "./measures/O_tau_ins.hpp"
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
 #ifdef CTHYB_G2_NFFT
 #include "./measures/G2_tau.hpp"
 #include "./measures/G2_iw.hpp"
+#include "./measures/G2_iw_nfft.hpp"
 #include "./measures/G2_iwll.hpp"
 #endif
 #include "./measures/util.hpp"
@@ -118,12 +120,12 @@ namespace triqs_cthyb {
     Delta_infty_vec = map(
        // Compute 0th moment of one block
        [](gf_const_view<imfreq> d) {
-         auto [tail, err] = fit_tail(d);
-	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
+         auto [tail, err] = fit_hermitian_tail(d);
+	 if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit. The least-square error is " << err << "\n";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
 #ifndef HYBRIDISATION_IS_COMPLEX
 	 double imag_Delta = max_element(abs(imag(Delta_infty)));
-         if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta;
+         if (imag_Delta > 1e-6) TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is " << imag_Delta << "\n";
 #endif
          return Delta_infty;
        },
@@ -168,7 +170,8 @@ namespace triqs_cthyb {
     for (auto const &bl : gf_struct) {
       // Remove constant quadratic part
       for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
-      _Delta_tau[b]() = fourier(Delta_iw[b]);
+      auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
+      _Delta_tau[b]() = fourier(Delta_iw[b], Delta_tail_b);
       // Force all diagonal elements to be real
       for (int i : range(bl.second.size())) _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
       // If off-diagonal elements are below threshold, set to real
@@ -185,7 +188,14 @@ namespace triqs_cthyb {
     // Determine block structure
     if (params.partition_method == "autopartition") {
       if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
-      h_diag = {_h_loc, fops};
+      if(params.loc_n_min == 0 && params.loc_n_max == INT_MAX)
+        h_diag = {_h_loc, fops};
+      else {
+        if (params.verbosity >= 2)
+          std::cout << "Restricting the local Hilbert space to states with ["
+                    << params.loc_n_min << ";" << params.loc_n_max << "] particles" << std::endl;
+        h_diag = {_h_loc, fops, params.loc_n_min, params.loc_n_max};
+      }
     } else if (params.partition_method == "quantum_numbers") {
       if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
       if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
@@ -211,7 +221,7 @@ namespace triqs_cthyb {
 
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
-    auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, 1.0, params.verbosity);
+    auto qmc = mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, params.verbosity);
 
     // --------------------------------------------------------------------------
     // Moves
@@ -283,6 +293,14 @@ namespace triqs_cthyb {
     if (params.measure_G2_tau) qmc.add_measure(measure_G2_tau{G2_tau, data, G2_measures}, "G2_tau imaginary-time measurement");
 
     // NFFT Matsubara frequency measures
+
+    if (params.measure_G2_iw_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::AllFermionic>{G2_iw_nfft, data, G2_measures}, "G2_iw nfft fermionic measurement");
+    if (params.measure_G2_iw_pp_nfft)
+      qmc.add_measure(measure_G2_iw_nfft<G2_channel::PP>{G2_iw_pp_nfft, data, G2_measures}, "G2_iw_pp nfft particle-particle measurement");
+    if (params.measure_G2_iw_ph_nfft) qmc.add_measure(measure_G2_iw_nfft<G2_channel::PH>{G2_iw_ph_nfft, data, G2_measures}, "G2_iw_ph nfft particle-hole measurement");
+
+    // Direct Matsubara frequency measurement
+
     if (params.measure_G2_iw) qmc.add_measure(measure_G2_iw<G2_channel::AllFermionic>{G2_iw, data, G2_measures}, "G2_iw fermionic measurement");
     if (params.measure_G2_iw_pp)
       qmc.add_measure(measure_G2_iw<G2_channel::PP>{G2_iw_pp, data, G2_measures}, "G2_iw_pp particle-particle measurement");
@@ -297,6 +315,24 @@ namespace triqs_cthyb {
 
     // --------------------------------------------------------------------------
     // Single-particle correlators
+
+    if (params.measure_O_tau) {
+
+      const auto & [O1, O2] = *params.measure_O_tau;
+      auto comm_0 = O1 * O2 - O2 * O1;
+      auto comm_1 = O1 * _h_loc - _h_loc * O1;
+      auto comm_2 = O2 * _h_loc - _h_loc * O2;
+
+      if( !comm_0.is_zero() || !comm_1.is_zero() || !comm_2.is_zero() ) {
+	if (params.verbosity >= 2) {
+	   TRIQS_RUNTIME_ERROR << "Error: measure_O_tau, supplied operators does not commute with the local Hamiltonian.\n"
+			       << "[O1, O2] = " << comm_0 << "\n"
+			       << "[O1, H_loc] = " << comm_1 << "\n"
+			       << "[O2, H_loc] = " << comm_2 << "\n";
+	}
+      }
+      qmc.add_measure(measure_O_tau_ins{O_tau, data, n_tau, O1, O2, qmc.get_rng()}, "O_tau insertion measure");
+    }
 
     if (params.measure_G_tau) {
       G_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};

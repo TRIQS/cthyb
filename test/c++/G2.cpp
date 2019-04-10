@@ -84,19 +84,31 @@ TEST(CtHyb, G2_measurments) {
   p.measure_G2_tau   = true;
   p.measure_G2_n_tau = 3;
 
-  p.measure_G2_iw          = true;
-  p.measure_G2_n_fermionic = 3;
+  p.measure_G2_iw      = true;
+  p.measure_G2_iw_nfft = true;
 
-  p.measure_G2_iw_ph     = true;
-  p.measure_G2_iw_pp     = true;
-  p.measure_G2_n_bosonic = 5;
+  p.measure_G2_iw_ph      = true;
+  p.measure_G2_iw_ph_nfft = true;
+  p.measure_G2_iw_pp      = true;
+  p.measure_G2_iw_pp_nfft = true;
+
+  p.measure_G2_n_fermionic = 3;
+  p.measure_G2_n_bosonic   = 5;
 
   p.measure_G2_iwll_pp = true;
-  p.measure_G2_n_l  = 3;
+  p.measure_G2_n_l     = 3;
+
+  p.nfft_buf_sizes = {{"up", 100}, {"down", 100}};
 
   // Solve!
   solver.solve(p);
 
+  // Compare standard and nfft measures
+
+  EXPECT_GF_NEAR((*solver.G2_iw)(0, 1), (*solver.G2_iw_nfft)(0, 1));
+  EXPECT_GF_NEAR((*solver.G2_iw_ph)(0, 1), (*solver.G2_iw_ph_nfft)(0, 1));
+  EXPECT_GF_NEAR((*solver.G2_iw_pp)(0, 1), (*solver.G2_iw_pp_nfft)(0, 1));
+  
   std::cout << "--> solver done, now writing and reading the results.\n";
 
   // Save the results
@@ -105,10 +117,10 @@ TEST(CtHyb, G2_measurments) {
   if (rank == 0) {
     triqs::h5::file G_file(filename + ".out.h5", 'w');
     if (solver.G2_tau) h5_write(G_file, "G2_tau", (*solver.G2_tau)(0, 1));
-    if(solver.G2_iw) h5_write(G_file, "G2_iw", (*solver.G2_iw)(0, 1));
-    if(solver.G2_iw_ph) h5_write(G_file, "G2_iw_ph", (*solver.G2_iw_ph)(0, 1));
-    if(solver.G2_iw_ph) h5_write(G_file, "G2_iw_pp", (*solver.G2_iw_pp)(0, 1));
-    if(solver.G2_iwll_pp) h5_write(G_file, "G2_iwll_pp", (*solver.G2_iwll_pp)(0, 1));
+    if (solver.G2_iw) h5_write(G_file, "G2_iw", (*solver.G2_iw)(0, 1));
+    if (solver.G2_iw_ph) h5_write(G_file, "G2_iw_ph", (*solver.G2_iw_ph)(0, 1));
+    if (solver.G2_iw_pp) h5_write(G_file, "G2_iw_pp", (*solver.G2_iw_pp)(0, 1));
+    if (solver.G2_iwll_pp) h5_write(G_file, "G2_iwll_pp", (*solver.G2_iwll_pp)(0, 1));
   }
 
   if (rank == 0) {
@@ -123,25 +135,25 @@ TEST(CtHyb, G2_measurments) {
     {
       G2_iw_t::g_t G2_iw;
       h5_read(G_file, "G2_iw", G2_iw);
-      if(solver.G2_iw) EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw)(0, 1));
+      if (solver.G2_iw) EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw)(0, 1));
     }
 
     {
       G2_iw_t::g_t G2_iw;
       h5_read(G_file, "G2_iw_ph", G2_iw);
-      if(solver.G2_iw_ph) EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw_ph)(0, 1));
+      if (solver.G2_iw_ph) EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw_ph)(0, 1));
     }
 
     {
       G2_iw_t::g_t G2_iw;
       h5_read(G_file, "G2_iw_pp", G2_iw);
-      if(solver.G2_iw_pp) EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw_pp)(0, 1));
+      if (solver.G2_iw_pp) EXPECT_GF_NEAR(G2_iw, (*solver.G2_iw_pp)(0, 1));
     }
 
     {
       G2_iwll_t::g_t G2_iwll_pp;
       h5_read(G_file, "G2_iwll_pp", G2_iwll_pp);
-      if(solver.G2_iwll_pp) EXPECT_GF_NEAR(G2_iwll_pp, (*solver.G2_iwll_pp)(0, 1));
+      if (solver.G2_iwll_pp) EXPECT_GF_NEAR(G2_iwll_pp, (*solver.G2_iwll_pp)(0, 1));
     }
   }
 }

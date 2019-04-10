@@ -37,12 +37,12 @@ class Solver(SolverCore):
         ----------
         beta : scalar
                Inverse temperature.
-        gf_struct : list of pairs [ [str,[int,...]], ...]
+        gf_struct : list of pairs [ (str,[int,...]), ...]
                     Structure of the Green's functions. It must be a
                     list of pairs, each containing the name of the
                     Green's function block as a string and a list of integer
                     indices.
-                    For example: ``[ ['up', [0, 1, 2]], ['down', [0, 1, 2]] ]``.
+                    For example: ``[ ('up', [0, 1, 2]), ('down', [0, 1, 2]) ]``.
         n_iw : integer, optional
                Number of Matsubara frequencies used for the Green's functions.
         n_tau : integer, optional
@@ -51,7 +51,7 @@ class Solver(SolverCore):
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
         if isinstance(gf_struct,dict):
-            print "WARNING: gf_struct should be a list of pairs [ [str,[int,...]], ...], not a dict"
+            print "WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict"
             gf_struct = [ [k, v] for k, v in gf_struct.iteritems() ]
 
         # Initialise the core solver

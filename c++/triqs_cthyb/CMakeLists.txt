@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
     moves/double_remove.cpp
     measures/density_matrix.cpp
     measures/G_tau.cpp
+    measures/O_tau_ins.cpp
     measures/G_l.cpp
     )
 
@@ -19,6 +20,8 @@ if(MeasureG2)
   list(APPEND LIBRARY_SOURCES
        measures/G2_tau.cpp
        measures/G2_iw.cpp
+       measures/G2_iw_acc.cpp
+       measures/G2_iw_nfft.cpp
        measures/G2_iwll.cpp
        )
 endif()

@@ -18,7 +18,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.archive import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import *
+from triqs_cthyb import Solver
 
 # ----------------------------------------------------------------------    
 if __name__ == '__main__':
@@ -42,16 +42,17 @@ if __name__ == '__main__':
     d = Dummy() # storage space
     d.params = params
 
-    print '--> Solving SIAM with parameters'
-    for key, value in params.items():
-        print '%10s = %-10s' % (key, str(value))
-        globals()[key] = value # populate global namespace
+    if mpi.is_master_node():
+        print '--> Solving SIAM with parameters'
+        for key, value in params.items():
+            print '%10s = %-10s' % (key, str(value))
+            globals()[key] = value # populate global namespace
 
     # ------------------------------------------------------------------
 
     solv = Solver(
         beta=beta,
-        gf_struct={'up':[0],'do':[0]},
+        gf_struct=[['up', [0]], ['do', [0]]],
         n_iw=15,
         n_tau=4*128+1,
         n_l=20,
@@ -76,7 +77,7 @@ if __name__ == '__main__':
         max_time=-1,
         random_name="",
         #random_seed=123 * mpi.rank + 567, # default uses mpi.rank
-        measure_g_l=True,
+        measure_G_l=True,
         move_double=True,
         measure_pert_order=True,
         use_norm_as_weight=True, # needed for density matrix
@@ -86,14 +87,14 @@ if __name__ == '__main__':
         n_warmup_cycles=int(1e3),
         n_cycles=int(4e3),
         # -- g2 measurements
-        measure_g4_tau=True,
-        measure_g4_iw=True,
-        measure_g4_iw_pp=True,
-        measure_g4_iw_ph=True,
-        measure_g4_n_tau=40,
-        measure_g4_n_bosonic=15,
-        measure_g4_n_fermionic=15,
-        nfft_buf_sizes=dict(up=64, do=64),
+        measure_G2_tau=True,
+        measure_G2_iw=True,
+        measure_G2_iw_pp=True,
+        measure_G2_iw_ph=True,
+        measure_G2_n_tau=40,
+        measure_G2_n_bosonic=15,
+        measure_G2_n_fermionic=15,
+        #nfft_buf_sizes=dict(up=64, do=64),
         )
 
     runtime = time.time() - starttime
@@ -118,10 +119,10 @@ if __name__ == '__main__':
     d.Gl_tau = G_tau['up']
 
     d.runtime = runtime
-    d.G2_tau = solv.g4_tau[('up', 'do')]
-    d.G2_iw = solv.g4_iw[('up', 'do')]
-    d.G2_iw_pp = solv.g4_iw_pp[('up', 'do')]
-    d.G2_iw_ph = solv.g4_iw_ph[('up', 'do')]
+    d.G2_tau = solv.G2_tau[('up', 'do')]
+    d.G2_iw = solv.G2_iw[('up', 'do')]
+    d.G2_iw_pp = solv.G2_iw_pp[('up', 'do')]
+    d.G2_iw_ph = solv.G2_iw_ph[('up', 'do')]
 
     d.mpi_size = mpi.size
 

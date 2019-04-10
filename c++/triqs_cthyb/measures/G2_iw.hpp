@@ -2,7 +2,8 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2016, P. Seth, I. Krivenko, H. U.R. Strand, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -20,43 +21,25 @@
  ******************************************************************************/
 #pragma once
 
-#include <vector>
-#include <triqs/mpi/base.hpp>
-#include <triqs/statistics/histograms.hpp>
-#include <triqs/experimental/nfft_array.hpp>
-
-#include "../qmc_data.hpp"
-
-#include "util.hpp"
+#include "G2_iw_acc.hpp"
 
 namespace triqs_cthyb {
 
-  using namespace triqs::arrays;
-  using namespace triqs::experimental;
-
   // Measure the two-particle Green's function in Matsubara frequency
-  template <G2_channel Channel> struct measure_G2_iw {
+  template <G2_channel Channel> class measure_G2_iw : public G2_iw::measure_G2_iw_base<Channel> {
 
     public:
-    measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data, G2_measures_t const &G2_measures);
+    measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data,
+                  G2_measures_t const &G2_measures);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void accumulate_M_opt(mc_weight_t s);
 
+    using B = G2_iw::measure_G2_iw_base<Channel>;
+    using B::collect_results;
+    
     private:
-    using M_block_type = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
-    using M_type       = M_block_type::g_t;
-
-    inline void accumulate_impl_AABB(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ab, M_type const &M_cd);
-    inline void accumulate_impl_ABBA(G2_iw_t::g_t::view_type G2, mc_weight_t s, M_type const &M_ad, M_type const &M_cb);
-
-    qmc_data const &data;
-    G2_iw_t::view_type G2_iw;
-    mc_weight_t average_sign;
-    block_order order;
-    G2_measures_t G2_measures;
-
-    M_block_type M;
-    array<nfft_array_t<2, 2>, 1> M_nfft;
+    G2_iw::M_block_arr_t M_block_arr;
+    using B::M, B::M_mesh, B::G2_measures, B::data, B::timer_M, B::accumulate_G2;
   };
 
 } // namespace triqs_cthyb

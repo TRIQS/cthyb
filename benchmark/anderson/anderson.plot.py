@@ -15,6 +15,7 @@ spin_names = ("up","dn")
 
 pp = PdfPages('G.pdf')
 ed_arch = HDFArchive('anderson.ed.h5','r')
+pyed_arch = HDFArchive('anderson.pyed.h5','r')
 
 for use_blocks, use_qn in ((False,False),(True,False),(False,True),(True,True)):
     file_name = "anderson"
@@ -42,6 +43,7 @@ for use_blocks, use_qn in ((False,False),(True,False),(False,True),(True,True)):
                 i = spin_names.index(i)
                 oplot(GF[i,i], name=name + "," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
             oplot(ed_arch[spin], name="ED," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
+            oplot(pyed_arch[spin], name="PYED," + {'up':"$\uparrow\uparrow$",'dn':"$\downarrow\downarrow$"}[spin])
 
         setup_fig()
         pp.savefig(plt.gcf())

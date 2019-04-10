@@ -1,7 +1,7 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf import GfImFreq, SemiCircular, inverse, iOmega_n
-from pytriqs.operators import n
+from pytriqs.operators import n, c, c_dag
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
 
@@ -22,7 +22,7 @@ for name, g0 in solver.G0_iw:
     g0 << inverse(iOmega_n + mu - delta_w)
 
 sp = dict(
-    h_int = n('up',0)*n('do',0),
+    h_int = n('up',0)*n('do',0) + c_dag('up',0)*c('do',0) + c_dag('do',0)*c('up',0),
     max_time = -1,
     length_cycle = 50,
     n_warmup_cycles = 50,
@@ -32,9 +32,6 @@ sp = dict(
     
 solver.solve(**sp)
 
-sp = solver.last_solve_parameters
-cp = solver.last_constr_parameters
-
 filename = 'h5_read_write.h5'
 
 with HDFArchive(filename, 'w') as A:
@@ -43,8 +40,20 @@ with HDFArchive(filename, 'w') as A:
 with HDFArchive(filename, 'r') as A:
     solver_ref = A['solver']
 
-cp_h5_ref = solver_ref.last_constr_parameters
-sp_h5_ref = solver_ref.last_solve_parameters
+assert( solver.last_constr_parameters == solver_ref.last_constr_parameters )
+assert( solver.last_solve_parameters == solver.last_solve_parameters )
+#assert( solver.last_container_set == solver_ref.last_container_set ) # want to write this
 
-assert( cp_h5_ref == cp )
-assert( sp_h5_ref == sp )
+# -- Poor mans version of comparison of the container sets
+for key in dir(solver_ref):
+    if 'G' in key or 'Delta' in key:
+        print 'comparing', key
+        
+        val = getattr(solver, key)
+        val_ref = getattr(solver_ref, key)
+
+        if val is None:
+            assert( val == val_ref )
+        else:
+            for (n1, g1), (n1, g2) in zip(val, val_ref):
+                np.testing.assert_array_almost_equal(g1.data, g2.data)

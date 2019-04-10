@@ -12,6 +12,8 @@ The implementation of the two-particle Green's function measurements
 contains significant contributions from L. Boehnke ([#legendre]_, [#lewin_thesis]_)
 and H. U.R. Strand.
 
+Release v2.1 was authored by H. U.R. Strand, for new features see the :ref:`changelog <changelog>`.
+
 Citation
 ========
 

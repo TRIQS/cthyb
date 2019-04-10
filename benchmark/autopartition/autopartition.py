@@ -32,7 +32,7 @@ def partition(h_int,h_k,gf_struct,QN=None):
     S.solve(h_int=h_int,**p)
     end = time.clock()
 
-    return S.eigensystems, end-start
+    return S.h_loc_diagonalization, end-start
 
 table_format = ("%40s "+"%20s "*3)
 print table_format % ("Model","Dimension of HS","Quantum numbers","Autopartition")
@@ -71,7 +71,7 @@ def run_kanamori(max_orbitals,orbital_mixing):
 
         model = "Kanamori, %i orbitals"%num_orbitals
         if orbital_mixing: model += " (orbital mixing)"
-        print_line(model,2**(2*num_orbitals),(len(eig_qn),time_qn),(len(eig_ap),time_ap))
+        print_line(model,2**(2*num_orbitals),(eig_qn.n_subspaces,time_qn),(eig_ap.n_subspaces,time_ap))
 
 ### Slater Hamiltonians
 def run_slater(L,is_cubic):
@@ -97,7 +97,7 @@ def run_slater(L,is_cubic):
 
         model = "Slater, %i orbitals"%num_orbitals
         model += (" (cubic basis)" if is_cubic else " (spherical basis)")
-        print_line(model,2**(2*num_orbitals),(len(eig_qn),time_qn),(len(eig_ap),time_ap))
+        print_line(model,2**(2*num_orbitals),(eig_qn.n_subspaces,time_qn),(eig_ap.n_subspaces,time_ap))
 
 print
 run_kanamori(7,False)

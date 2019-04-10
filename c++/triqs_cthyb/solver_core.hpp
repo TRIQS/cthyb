@@ -51,22 +51,22 @@ namespace triqs_cthyb {
     mc_weight_t _average_sign;             // average sign of the QMC
     int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
-    // Return reference to container_set
-    container_set_t &result_set() { return static_cast<container_set_t &>(*this); }
-    container_set_t const &result_set() const { return static_cast<container_set_t const &>(*this); }
-
     // Single-particle Green's function containers
     G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
     std::vector<matrix<dcomplex>> Delta_infty_vec; // Quadratic instantaneous part of G0_iw
+
+    // Return reference to container_set
+    container_set_t &container_set() { return static_cast<container_set_t &>(*this); }
+    container_set_t const &container_set() const { return static_cast<container_set_t const &>(*this); }
+ 
+    public:
 
     // Struct containing the parameters relevant for the solver construction
     constr_parameters_t constr_parameters;
 
     // Struct containing the parameters of the last call to the solve method
     solve_parameters_t solve_parameters;
-
-    public:
 
     /**
      * Construct a CTHYB solver
@@ -102,6 +102,14 @@ namespace triqs_cthyb {
     /// :math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara Frequency.
     std::vector<matrix<dcomplex>> Delta_infty() { return Delta_infty_vec; }
 
+    /// Get a copy of the last container set.
+    // HACK TO GET CPP2PY TO WRAP THE container_set_t struct.
+    /*
+    CPP2PY_ARG_AS_DICT
+    void set_container_set(container_set_t &cs) { static_cast<container_set_t &>(*this) = cs; }
+    container_set_t last_container_set() { return static_cast<container_set_t>(*this); }
+    */
+    
     /// :math:`\Delta(\tau)` in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
@@ -132,6 +140,7 @@ namespace triqs_cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
+    CPP2PY_IGNORE
     static std::string hdf5_scheme() { return "CTHYB_SolverCore"; }
 
     // Function that writes the solver_core to hdf5 file
@@ -140,7 +149,7 @@ namespace triqs_cthyb {
       h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", solver_core::hdf5_scheme());
       //h5_write_attribute(grp, "TRIQS_GIT_HASH", std::string(STRINGIZE(TRIQS_GIT_HASH)));
       //h5_write_attribute(grp, "CTHYB_GIT_HASH", std::string(STRINGIZE(CTHYB_GIT_HASH)));
-      h5_write(grp, "", s.result_set());
+      h5_write(grp, "container_set", s.container_set());
       h5_write(grp, "constr_parameters", s.constr_parameters);
       h5_write(grp, "solve_parameters", s.solve_parameters);
       h5_write(grp, "G0_iw", s._G0_iw);
@@ -153,7 +162,7 @@ namespace triqs_cthyb {
       triqs::h5::group grp   = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
       auto constr_parameters = triqs::h5::h5_read<constr_parameters_t>(grp, "constr_parameters");
       auto s                 = solver_core{constr_parameters};
-      h5_read(grp, "", s.result_set());
+      h5_read(grp, "container_set", s.container_set());
       h5_read(grp, "solve_parameters", s.solve_parameters);
       h5_read(grp, "G0_iw", s._G0_iw);
       h5_read(grp, "Delta_tau", s._Delta_tau);

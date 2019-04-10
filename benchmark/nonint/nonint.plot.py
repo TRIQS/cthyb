@@ -25,10 +25,11 @@ for i in arch:
         e2 = e[m] + V[m]
         g_theor_w = GfImFreq(indices = [0], beta=beta)
         g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
-        g_theor[0,0] << InverseFourier(g_theor_w)
+        g_theor << InverseFourier(g_theor_w)
 
         plt.clf()
-        oplot(rebinning_tau(G_tau[b][0,0],200), name="cthyb")
+        G_bin = rebinning_tau(G_tau[b], 200)
+        oplot(G_bin[0,0], name="cthyb")
         oplot(g_theor[0,0], name="Theory")
 
         pp.savefig(plt.gcf())

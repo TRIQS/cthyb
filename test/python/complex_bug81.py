@@ -50,7 +50,8 @@ def check_h_loc(h_loc_ref, h_loc_mat, orb):
 
     print 'diff =', diff
 
-    assert( diff.is_zero() )
+    for op, prefactor in diff:
+        assert( np.abs(prefactor) < 1e-10 )
 
 # ----------------------------------------------------------------------
 

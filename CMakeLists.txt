@@ -23,11 +23,8 @@ endif()
 set(BUILD_SHARED_LIBS ON)
 
 # Load TRIQS and Cpp2Py
-find_package(TRIQS 2.0 REQUIRED)
-find_package(Cpp2Py 1.5 REQUIRED)
-
-# We will need the FindNNFT of triqs, so we adjust CMake Module Path to find it
-list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake)
+find_package(TRIQS 2.1 REQUIRED)
+find_package(Cpp2Py 1.6 REQUIRED)
 
 # 2-particle GF measurement requires NFFT
 if(MeasureG2)
@@ -41,15 +38,12 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} -------------")
 
-# Use git to detect Cthyb version and git hash
-execute_process(COMMAND bash "-c" "${TRIQS_GIT_EXECUTABLE} describe | sed \"s/-\\([0-9]*\\)-.*/.\\1/g\""
- WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
- OUTPUT_VARIABLE   CTHYB_VERSION
- OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if(NOT CTHYB_VERSION)
-  set(CTHYB_VERSION 1.5)
-endif()
+# Define the TRIQS Version Numbers
+set(CTHYB_VERSION_MAJOR 2)
+set(CTHYB_VERSION_MINOR 1)
+set(CTHYB_VERSION_PATCH 0)
+set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_PATCH})
+
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
 MESSAGE(STATUS "Cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
@@ -59,7 +53,7 @@ option(Build_Documentation "Build documentation" OFF)
 
 # All PRIVATE common options.
 # The std for all targets
-add_compile_options(-std=c++17 $<$<CONFIG:Release>:-march=native>)
+add_compile_options(-std=c++17)
 
 # Common to all targets (ctint, python, tests).
 include_directories(c++)
@@ -96,8 +90,23 @@ if(BUILD_DEBIAN_PACKAGE)
   SET(CPACK_PACKAGE_VERSION ${CTHYB_VERSION})
   SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/cthyb")
   EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, cpp2py (>= 1.5), triqs (>= 2.0)")
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, triqs (>= 2.0)")
   SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   SET(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   INCLUDE(CPack)
 endif()
+
+#--------------------------------------------------------
+#   Remind the user how to set up his/her variables
+#--------------------------------------------------------
+
+# Configure and install the file to source to setup the environment variables 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cthybvars.sh.in ${CMAKE_CURRENT_BINARY_DIR}/cthybvars.sh @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cthybvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
+
+MESSAGE(STATUS "***************************************************************")
+MESSAGE(STATUS "* Use :                                                        ")
+MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/cthybvars.sh          ")
+MESSAGE(STATUS "*                                                              ") 
+MESSAGE(STATUS "*   to set up the environment variables                        ") 
+MESSAGE(STATUS "***************************************************************")

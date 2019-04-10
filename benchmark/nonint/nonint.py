@@ -4,7 +4,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
 from pytriqs.operators import Operator, n
-from pytriqs.gf import GfImFreq, inverse, iOmega_n
+from pytriqs.gf import Gf, inverse, iOmega_n
 
 mpi.report("Welcome to nonint (non-interacting many-band systems) test.")
 mpi.report("This test is aimed to reveal excessive state truncation issues.")
@@ -49,7 +49,7 @@ for modes in range(1,N_max+1):
     # Set hybridization function
     #for m, b in enumerate(sorted(gf_struct.keys())):
     for m, (b, idxs) in enumerate(gf_struct):
-        delta_w = GfImFreq(indices = [0], beta=beta)
+        delta_w = Gf(mesh=S.G0_iw.mesh, target_shape=[])
         delta_w << (V[m]**2) * inverse(iOmega_n - e[m])
         S.G0_iw[b][0,0] << inverse(iOmega_n - e[m] - delta_w)
 

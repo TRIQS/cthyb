@@ -39,6 +39,10 @@ add_test_defs(G2)
 
 add_test_defs(rbt)
 
+add_test_defs(impurity_trace_atomic_gf)
+add_test_defs(impurity_trace_bug_try_insert)
+add_test_defs(impurity_trace_op_insert)
+
 # Not ported, should be checked by atom_diag
 #add_test_defs(h_diag_test)
 #add_test_defs(atomic_gf)

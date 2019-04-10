@@ -4,7 +4,7 @@ import pytriqs.utility.mpi as mpi
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
 from pytriqs.operators import n
-from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from pytriqs.gf import Gf, iOmega_n, inverse
 
 spin_names = ("up","dn")
 def mkind(spin): return (spin,0)
@@ -55,7 +55,7 @@ S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw, n_l=n_l)
 mpi.report("Preparing the hybridization function...")
 
 # Set hybridization function    
-delta_w = GfImFreq(indices = [0], beta=beta)
+delta_w = Gf(mesh=S.G0_iw.mesh, target_shape=[])
 delta_w << (V**2) * inverse(iOmega_n - epsilon1) + (V**2) * inverse(iOmega_n - epsilon2)
 for spin in spin_names:
     bn, i = mkind(spin)

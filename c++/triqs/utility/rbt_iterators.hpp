@@ -25,7 +25,7 @@
 namespace triqs {
   namespace utility {
 
-    template <typename RBT> using get_node_t = std14::conditional_t<std::is_const<RBT>::value, typename RBT::node const, typename RBT::node>;
+    template <typename RBT> using get_node_t = std::conditional_t<std::is_const<RBT>::value, typename RBT::node const, typename RBT::node>;
 
     // flatten the tree in ascending order
     template <typename RBT> std::vector<get_node_t<RBT>> flatten2(RBT &tree) {

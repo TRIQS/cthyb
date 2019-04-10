@@ -60,7 +60,7 @@ namespace triqs {
 
       // Add a new element to the NFFT buffer
       void push_back(std::array<double, MeshRank> const &tau_arr, mini_vector<int, TargetRank> const &ind_arr, dcomplex fxy) {
-        select_buffer(ind_arr, std14::make_index_sequence<TargetRank>()).push_back(tau_arr, fxy);
+        select_buffer(ind_arr, std::make_index_sequence<TargetRank>()).push_back(tau_arr, fxy);
       }
 
       // Run transformation
@@ -69,7 +69,7 @@ namespace triqs {
       }
 
       private:
-      template <size_t... Is> inline nfft_buf_t<MeshRank> &select_buffer(mini_vector<int, TargetRank> const &ind_arr, std14::index_sequence<Is...>) {
+      template <size_t... Is> inline nfft_buf_t<MeshRank> &select_buffer(mini_vector<int, TargetRank> const &ind_arr, std::index_sequence<Is...>) {
         return buffers[indexmap(ind_arr[Is]...)];
       }
 

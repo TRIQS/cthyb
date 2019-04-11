@@ -35,7 +35,7 @@ add_compile_options(-Wall
 		     )
 
 # Load TRIQS and Cpp2Py
-find_package(TRIQS 2.1 REQUIRED)
+find_package(TRIQS 2.2 REQUIRED)
 find_package(Cpp2Py 1.6 REQUIRED)
 
 # 2-particle GF measurement requires NFFT
@@ -52,7 +52,7 @@ message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------"
 
 # Define the cthyb version numbers and get the git hash
 set(CTHYB_VERSION_MAJOR 2)
-set(CTHYB_VERSION_MINOR 1)
+set(CTHYB_VERSION_MINOR 2)
 set(CTHYB_VERSION_PATCH 0)
 set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_PATCH})
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)

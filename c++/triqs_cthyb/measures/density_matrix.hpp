@@ -30,6 +30,6 @@ namespace triqs_cthyb {
 
     measure_density_matrix(qmc_data const &data, std::vector<matrix_t> &density_matrix);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void collect_results(mpi::communicator const &c);
   };
 }

@@ -94,7 +94,7 @@ namespace triqs_cthyb {
 
     /// Seed for random number generator
     /// default: 34788 + 928374 * MPI.rank
-    int random_seed = 34788 + 928374 * triqs::mpi::communicator().rank();
+    int random_seed = 34788 + 928374 * mpi::communicator().rank();
 
     /// Name of random number generator
     /// type: str
@@ -106,7 +106,7 @@ namespace triqs_cthyb {
 
     /// Verbosity level
     /// default: 3 on MPI rank 0, 0 otherwise.
-    int verbosity = ((triqs::mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
+    int verbosity = ((mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
     /// Add shifting an operator as a move?
     bool move_shift = true;

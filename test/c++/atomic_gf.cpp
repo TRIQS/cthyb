@@ -16,7 +16,7 @@ using triqs::hilbert_space::gf_struct_t;
 TEST(CtHyb, AtomicGf) {
 
   // Initialize mpi
-  int rank = triqs::mpi::communicator().rank();
+  int rank = mpi::communicator().rank();
 
   // Parameters
   double beta = 10.0;

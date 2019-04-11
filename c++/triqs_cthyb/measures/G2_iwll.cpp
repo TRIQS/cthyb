@@ -127,13 +127,13 @@ namespace triqs_cthyb {
     return dtau;
   }
 
-  template <G2_channel Channel> void measure_G2_iwll<Channel>::collect_results(triqs::mpi::communicator const &c) {
+  template <G2_channel Channel> void measure_G2_iwll<Channel>::collect_results(mpi::communicator const &c) {
 
     for (auto const &m : G2_measures()) { nfft_buf(m.b1.idx, m.b2.idx).flush(); }
 
-    G2_iwll = mpi_all_reduce(G2_iwll, c);
+    G2_iwll = mpi::all_reduce(G2_iwll, c);
 
-    average_sign = mpi_all_reduce(average_sign, c);
+    average_sign = mpi::all_reduce(average_sign, c);
 
     for (auto &G2_iwll_block : G2_iwll) {
 

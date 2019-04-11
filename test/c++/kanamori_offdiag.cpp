@@ -19,7 +19,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   std::cout << "Welcome to the CTHYB solver\n";
 
   // Initialize mpi
-  int rank = triqs::mpi::communicator().rank();
+  int rank = mpi::communicator().rank();
 
   // Parameters
   double beta            = 10.0;

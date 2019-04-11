@@ -97,10 +97,10 @@ namespace triqs_cthyb {
     }
 
     template <G2_channel Channel>
-    void measure_G2_iw_base<Channel>::collect_results(triqs::mpi::communicator const &com) {
+    void measure_G2_iw_base<Channel>::collect_results(mpi::communicator const &com) {
 
-      average_sign = mpi_all_reduce(average_sign, com);
-      G2_iw        = mpi_all_reduce(G2_iw, com);
+      average_sign = mpi::all_reduce(average_sign, com);
+      G2_iw        = mpi::all_reduce(G2_iw, com);
 
       G2_iw = G2_iw / (real(average_sign) * data.config.beta());
 

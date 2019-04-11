@@ -46,7 +46,7 @@ namespace triqs_cthyb {
     histogram _pert_order_total;           // Histogram of the total perturbation order
     histo_map_t _pert_order;               // Histograms of the perturbation order for each block
     std::vector<matrix_t> _density_matrix; // density matrix, when used in Norm mode
-    triqs::mpi::communicator _comm;        // define the communicator, here MPI_COMM_WORLD
+    mpi::communicator _comm;        // define the communicator, here MPI_COMM_WORLD
     histo_map_t _performance_analysis;     // Histograms used for performance analysis
     mc_weight_t _average_sign;             // average sign of the QMC
     int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.

@@ -36,7 +36,7 @@ namespace triqs_cthyb {
     measure_G2_tau(std::optional<G2_tau_t> &G2_tau_opt, qmc_data const &data, G2_measures_t const &G2_measures);
 
     void accumulate(mc_weight_t sign);
-    void collect_results(triqs::mpi::communicator const &comm);
+    void collect_results(mpi::communicator const &comm);
 
     private:
     qmc_data const &data;

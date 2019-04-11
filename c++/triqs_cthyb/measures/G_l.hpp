@@ -33,7 +33,7 @@ namespace triqs_cthyb {
     public:
     measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void collect_results(mpi::communicator const &c);
 
     private:
     qmc_data const &data;

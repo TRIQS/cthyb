@@ -56,10 +56,10 @@ namespace triqs_cthyb {
     } // for block_idx
   }
 
-  void measure_G_l::collect_results(triqs::mpi::communicator const &c) {
+  void measure_G_l::collect_results(mpi::communicator const &c) {
 
-    average_sign = mpi_all_reduce(average_sign, c);
-    G_l          = mpi_all_reduce(G_l, c);
+    average_sign = mpi::all_reduce(average_sign, c);
+    G_l          = mpi::all_reduce(G_l, c);
 
     double beta = data.config.beta();
 

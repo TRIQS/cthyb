@@ -35,7 +35,7 @@ namespace triqs_cthyb {
     public:
     measure_O_tau_ins(std::optional<gf<imtime, scalar_valued>> &O_tau_opt, qmc_data const &data, int n_tau, many_body_op_t const &op1, many_body_op_t const &op2, mc_tools::random_generator &rng);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void collect_results(mpi::communicator const &c);
 
     private:
     qmc_data const &data;

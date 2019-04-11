@@ -43,10 +43,10 @@ namespace triqs_cthyb {
     }
     // ---------------------------------------------
 
-    void collect_results(triqs::mpi::communicator const &c) {
+    void collect_results(mpi::communicator const &c) {
 
-      z            = mpi_all_reduce(z, c);
-      sign         = mpi_all_reduce(sign, c);
+      z            = mpi::all_reduce(z, c);
+      sign         = mpi::all_reduce(sign, c);
       average_sign = sign / z;
     }
   };

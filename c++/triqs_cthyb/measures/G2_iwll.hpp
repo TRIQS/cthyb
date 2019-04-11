@@ -21,7 +21,7 @@
 #pragma once
 
 #include <vector>
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 #include <triqs/statistics/histograms.hpp>
 #include <triqs/experimental/nfft_array.hpp>
 
@@ -64,7 +64,7 @@ namespace triqs_cthyb {
 
     measure_G2_iwll(std::optional<G2_iwll_t> & G2_iwll_opt, qmc_data const &data, G2_measures_t & G2_measures);
     void accumulate(mc_weight_t s);
-    void collect_results(triqs::mpi::communicator const &c);
+    void collect_results(mpi::communicator const &c);
 
     // internal methods 
     double setup_times(tilde_p_gen & p_l1_gen, tilde_p_gen & p_l2_gen, op_t const & i, op_t const & j, op_t const & k, op_t const & l);

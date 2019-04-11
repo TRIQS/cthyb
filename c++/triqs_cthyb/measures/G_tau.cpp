@@ -47,10 +47,10 @@ namespace triqs_cthyb {
     }
   }
 
-  void measure_G_tau::collect_results(triqs::mpi::communicator const &c) {
+  void measure_G_tau::collect_results(mpi::communicator const &c) {
 
-    G_tau        = mpi_all_reduce(G_tau, c);
-    average_sign = mpi_all_reduce(average_sign, c);
+    G_tau        = mpi::all_reduce(G_tau, c);
+    average_sign = mpi::all_reduce(average_sign, c);
 
     for (auto &G_tau_block : G_tau) {
       double beta = G_tau_block.mesh().domain().beta;

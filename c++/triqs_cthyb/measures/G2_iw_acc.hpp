@@ -22,7 +22,7 @@
 #pragma once
 
 #include <vector>
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 #include <triqs/utility/timer.hpp> // DEBUG
 
 #include "../qmc_data.hpp"
@@ -48,7 +48,7 @@ namespace triqs_cthyb {
       measure_G2_iw_base(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data,
                          G2_measures_t const &G2_measures);
       void accumulate_G2(mc_weight_t s);
-      void collect_results(triqs::mpi::communicator const &c);
+      void collect_results(mpi::communicator const &c);
 
       protected:
       qmc_data const &data;

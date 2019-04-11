@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include "./density_matrix.hpp"
-#include <triqs/mpi/vector.hpp>
+#include <mpi/vector.hpp>
 
 #include <iomanip>
 
@@ -52,10 +52,10 @@ namespace triqs_cthyb {
 
   // ---------------------------------------------
 
-  void measure_density_matrix::collect_results(triqs::mpi::communicator const &c) {
+  void measure_density_matrix::collect_results(mpi::communicator const &c) {
 
-    z                          = mpi_all_reduce(z, c);
-    block_dm                   = mpi_all_reduce(block_dm, c);
+    z                          = mpi::all_reduce(z, c);
+    block_dm                   = mpi::all_reduce(block_dm, c);
     for (auto &b : block_dm) b = b / real(z);
 
     if (c.rank() != 0) return;

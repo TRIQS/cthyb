@@ -21,8 +21,8 @@
 
 #include "./parameters.hpp"
 
-#include <triqs/utility/itertools.hpp>
-using triqs::utility::enumerate;
+#include <itertools/itertools.hpp>
+using itertools::enumerate;
 
 namespace triqs_cthyb {
 

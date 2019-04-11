@@ -80,10 +80,10 @@ namespace triqs_cthyb {
     }
   }
 
-  void measure_G2_tau::collect_results(triqs::mpi::communicator const &comm) {
+  void measure_G2_tau::collect_results(mpi::communicator const &comm) {
 
-    average_sign = mpi_all_reduce(average_sign, comm);
-    G2_tau       = mpi_all_reduce(G2_tau, comm);
+    average_sign = mpi::all_reduce(average_sign, comm);
+    G2_tau       = mpi::all_reduce(G2_tau, comm);
 
     // Rescale sampled Green's function
     double beta = data.config.beta();

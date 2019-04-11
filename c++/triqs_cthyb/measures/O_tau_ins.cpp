@@ -67,9 +67,9 @@ namespace triqs_cthyb {
     }
   }
 
-  void measure_O_tau_ins::collect_results(triqs::mpi::communicator const &c) {
-    O_tau        = mpi_all_reduce(O_tau, c);
-    average_sign = mpi_all_reduce(average_sign, c);
+  void measure_O_tau_ins::collect_results(mpi::communicator const &c) {
+    O_tau        = mpi::all_reduce(O_tau, c);
+    average_sign = mpi::all_reduce(average_sign, c);
 
     O_tau *= double(O_tau.mesh().size() - 1) / real(average_sign);
 

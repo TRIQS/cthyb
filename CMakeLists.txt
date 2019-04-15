@@ -1,6 +1,6 @@
 # Start configuration
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-project(app4triqs CXX)
+project(triqs_cthyb CXX)
 if(POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
@@ -34,17 +34,17 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
 
-# Define the app4triqs version numbers and get the git hash
-set(APP4TRIQS_VERSION_MAJOR 0)
-set(APP4TRIQS_VERSION_MINOR 1)
-set(APP4TRIQS_VERSION_PATCH 0)
-set(APP4TRIQS_VERSION ${APP4TRIQS_VERSION_MAJOR}.${APP4TRIQS_VERSION_MINOR}.${APP4TRIQS_VERSION_PATCH})
-triqs_get_git_hash_of_source_dir(APP4TRIQS_GIT_HASH)
-message(STATUS "app4triqs version : ${APP4TRIQS_VERSION}")
-message(STATUS "Git hash: ${APP4TRIQS_GIT_HASH}")
+# Define the triqs_cthyb version numbers and get the git hash
+set(CTHYB_VERSION_MAJOR 0)
+set(CTHYB_VERSION_MINOR 1)
+set(CTHYB_VERSION_PATCH 0)
+set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_PATCH})
+triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
+message(STATUS "triqs_cthyb version : ${CTHYB_VERSION}")
+message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
-# Build and install the app4triqs library
-add_subdirectory(c++/app4triqs)
+# Build and install the triqs_cthyb library
+add_subdirectory(c++/triqs_cthyb)
 
 # Tests
 option(Build_Tests "Build tests" ON)
@@ -55,7 +55,7 @@ endif()
 
 if(TRIQS_WITH_PYTHON_SUPPORT)
   # Python interface
-  add_subdirectory(python/app4triqs)
+  add_subdirectory(python/triqs_cthyb)
 
   # Build the documentation
   option(Build_Documentation "Build documentation" OFF)
@@ -81,8 +81,8 @@ if(BUILD_DEBIAN_PACKAGE)
     message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
   endif()
   SET(CPACK_GENERATOR "DEB")
-  SET(CPACK_PACKAGE_VERSION ${APP4TRIQS_VERSION})
-  SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/app4triqs")
+  SET(CPACK_PACKAGE_VERSION ${CTHYB_VERSION})
+  SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/triqs_cthyb")
   EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
   SET(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 2.1)")
   SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)

@@ -2,7 +2,7 @@
 
 import unittest
 
-from app4triqs import chain
+from triqs_cthyb import chain
 
 class test_chain(unittest.TestCase):
 

@@ -1,11 +1,11 @@
 .. _welcome:
 
-app4triqs
+triqs_cthyb
 =========
 
-.. sidebar:: app4triqs 0.1
+.. sidebar:: triqs_cthyb 0.1
 
-   This is the homepage app4triqs Version 0.1
+   This is the homepage triqs_cthyb Version 0.1
    For changes see, Cf :ref:`changelog page <changelog>`
 
 An example application using cpp2py and triqs.

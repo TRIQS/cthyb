@@ -1,6 +1,6 @@
 # Start configuration
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-project(cthyb CXX)
+project(triqs_cthyb CXX)
 if(POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
@@ -39,7 +39,7 @@ find_package(TRIQS 2.2 REQUIRED)
 find_package(Cpp2Py 1.6 REQUIRED)
 if(MeasureG2) # 2-particle GF measurement requires NFFT
  find_package(NFFT REQUIRED)
- install(TARGETS nfft EXPORT cthyb-targets)
+ install(TARGETS nfft EXPORT triqs_cthyb-targets)
 endif()
 
 # Default Install directory to TRIQS_ROOT if not given or invalid.
@@ -49,13 +49,13 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
 
-# Define the cthyb version numbers and get the git hash
+# Define the triqs_cthyb version numbers and get the git hash
 set(CTHYB_VERSION_MAJOR 2)
 set(CTHYB_VERSION_MINOR 2)
 set(CTHYB_VERSION_PATCH 0)
 set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_PATCH})
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
-message(STATUS "cthyb version : ${CTHYB_VERSION}")
+message(STATUS "triqs_cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
 
 # Build and install the cthyb library

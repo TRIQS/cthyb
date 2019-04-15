@@ -7,4 +7,4 @@ install(
   DESTINATION lib/cmake/triqs_cthyb
 )
 
-install(EXPORT cthyb-targets DESTINATION lib/cmake/triqs_cthyb)
+install(EXPORT triqs_cthyb-targets DESTINATION lib/cmake/triqs_cthyb)

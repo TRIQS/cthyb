@@ -1,6 +1,6 @@
 # Build the python module
 add_cpp2py_module(solver_core)
-target_link_libraries(solver_core cthyb_c)
+target_link_libraries(solver_core triqs_cthyb_c)
 
 # Configure the version
 configure_file(version.py.in version.py)

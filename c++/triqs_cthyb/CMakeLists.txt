@@ -3,10 +3,10 @@ list(FILTER sources EXCLUDE REGEX "impurity_trace.checks.cpp")
 if(NOT MeasureG2)
   list(FILTER sources EXCLUDE REGEX "G2_*.cpp")
 endif()
-add_library(cthyb_c ${sources})
+add_library(triqs_cthyb_c ${sources})
 
 # Link against dependencies
-target_link_libraries(cthyb_c PUBLIC triqs $<$<BOOL:${MeasureG2}>:nfft>)
+target_link_libraries(triqs_cthyb_c PUBLIC triqs $<$<BOOL:${MeasureG2}>:nfft>)
 
 # Additional compilation options
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
@@ -14,9 +14,9 @@ option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]
 set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
 
 # Configure compilation
-target_compile_options(cthyb_c PUBLIC -std=c++17 -fPIC)
-target_include_directories(cthyb_c PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c++>)
-target_compile_definitions(cthyb_c PUBLIC
+target_compile_options(triqs_cthyb_c PUBLIC -std=c++17 -fPIC)
+target_include_directories(triqs_cthyb_c PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c++>)
+target_compile_definitions(triqs_cthyb_c PUBLIC
   				CTHYB_GIT_HASH=${CTHYB_GIT_HASH}
 				TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
 				$<$<CONFIG:Debug>:CTHYB_DEBUG>
@@ -31,7 +31,7 @@ target_compile_definitions(cthyb_c PUBLIC
 			  )
 
 # Install library and headers
-install(TARGETS cthyb_c EXPORT cthyb-targets DESTINATION lib)
+install(TARGETS triqs_cthyb_c EXPORT triqs_cthyb-targets DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
 
 
@@ -47,7 +47,7 @@ if(ANALYZE_SOURCES)
   # Run clang-tidy if found
   if(CLANG_TIDY_EXECUTABLE)
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXECUTABLE}")
-    set_target_properties(cthyb_c PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+    set_target_properties(triqs_cthyb_c PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
   else()
     message(STATUS "clang-tidy not found in $PATH. Please consider installing clang-tidy for additional checks!")
   endif()
@@ -56,7 +56,7 @@ if(ANALYZE_SOURCES)
   if(CPPCHECK_EXECUTABLE)
     message(STATUS "cppcheck found: ${CPPCHECK_EXECUTABLE}")
     add_custom_command(
-	TARGET cthyb_c
+	TARGET triqs_cthyb_c
 	COMMAND ${CPPCHECK_EXECUTABLE}
 	  --enable=warning,style,performance,portability
 	  --std=c++14
@@ -79,8 +79,8 @@ set(sanitizers "")
 option(ASAN OFF "Compile library and executables with LLVM Address Sanitizer")
 if(ASAN)
   list(APPEND sanitizers asan)
-  target_compile_options(cthyb_c PRIVATE -fsanitize=address -fno-omit-frame-pointer -ggdb3)
-  target_link_libraries(cthyb_c INTERFACE "-fsanitize=address -fno-omit-frame-pointer")
+  target_compile_options(triqs_cthyb_c PRIVATE -fsanitize=address -fno-omit-frame-pointer -ggdb3)
+  target_link_libraries(triqs_cthyb_c INTERFACE "-fsanitize=address -fno-omit-frame-pointer")
   if(NOT DEFINED ENV{ASAN_OPTIONS})
     message(WARNING "ASAN_OPTIONS is not set. Consider setting ASAN_OPTIONS=symbolize=1:detect_leaks=0 when running tests")
   endif()
@@ -90,8 +90,8 @@ endif()
 option(UBSAN OFF "Compile library and executables with LLVM Undefined Behavior Sanitizer")
 if(UBSAN)
   list(APPEND sanitizers ubsan)
-  target_compile_options(cthyb_c PUBLIC -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer -ggdb3)
-  target_link_libraries(cthyb_c INTERFACE "-fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer")
+  target_compile_options(triqs_cthyb_c PUBLIC -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer -ggdb3)
+  target_link_libraries(triqs_cthyb_c INTERFACE "-fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer")
   if(NOT DEFINED ENV{UBSAN_OPTIONS})
     message(WARNING "UBSAN_OPTIONS is not set. Consider setting UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 when running tests")
   endif()
@@ -100,6 +100,6 @@ endif()
 if(sanitizers)
   find_package(sanitizer REQUIRED ${sanitizers})
   if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-    target_link_libraries(cthyb_c INTERFACE "-fuse-ld=gold")
+    target_link_libraries(triqs_cthyb_c INTERFACE "-fuse-ld=gold")
   endif()
 endif()

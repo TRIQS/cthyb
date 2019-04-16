@@ -49,7 +49,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
 
-<<<<<<< HEAD
 # Define the triqs_cthyb version numbers and get the git hash
 set(CTHYB_VERSION_MAJOR 2)
 set(CTHYB_VERSION_MINOR 2)
@@ -58,16 +57,6 @@ set(CTHYB_VERSION ${CTHYB_VERSION_MAJOR}.${CTHYB_VERSION_MINOR}.${CTHYB_VERSION_
 triqs_get_git_hash_of_source_dir(CTHYB_GIT_HASH)
 message(STATUS "triqs_cthyb version : ${CTHYB_VERSION}")
 message(STATUS "Git hash: ${CTHYB_GIT_HASH}")
-=======
-# Define the app4triqs version numbers and get the git hash
-set(APP4TRIQS_VERSION_MAJOR 2)
-set(APP4TRIQS_VERSION_MINOR 2)
-set(APP4TRIQS_VERSION_PATCH 0)
-set(APP4TRIQS_VERSION ${APP4TRIQS_VERSION_MAJOR}.${APP4TRIQS_VERSION_MINOR}.${APP4TRIQS_VERSION_PATCH})
-triqs_get_git_hash_of_source_dir(APP4TRIQS_GIT_HASH)
-message(STATUS "app4triqs version : ${APP4TRIQS_VERSION}")
-message(STATUS "Git hash: ${APP4TRIQS_GIT_HASH}")
->>>>>>> app4triqs-remote/master
 
 # Build and install the cthyb library
 add_subdirectory(c++/triqs_cthyb)

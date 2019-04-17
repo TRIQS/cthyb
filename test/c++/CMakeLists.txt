@@ -35,7 +35,9 @@ add_test_defs(kanamori_offdiag)
 add_test_defs(kanamori_offdiag _qn "QN")
 
 add_test_defs(legendre)
-add_test_defs(G2)
+if(MeasureG2)
+  add_test_defs(G2)
+endif()
 
 add_test_defs(rbt)
 

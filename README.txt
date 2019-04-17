@@ -1,22 +1,18 @@
 TRIQS continuous-time hybridization-expansion solver
 Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+Copyright (C) 2017, H. U.R. Strand, N. Wentzell
+Copyright (C) 2018, The Simons Foundation
 
 1. Documentation
 
-You will find the documentation of this application under
-<https://triqs.github.io/cthyb>.
+For documentation and installation instructions see <https://triqs.github.io/cthyb>.
 
-2. Installation
+2. Version
 
-The installation steps are described in
-<https://triqs.github.io/cthyb/master/install.html>
+You can find the version of the application in the CMakeLists.txt file in this directory,
+see the variable CTHYB_VERSION.
 
-3. Version
-
-You can find the version and release number of the application on the top of
-the CMakeLists.txt file in this directory.
-
-4. License
+3. License
 
 This application is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

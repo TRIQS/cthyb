@@ -10,7 +10,7 @@ A Docker image including the latest version of CTHyb is available `here <https:/
 
 We further provide a Debian package for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 (bionic), which can be installed by following the steps outlined :ref:`here <triqslibs:triqs_debian>`, and the subsequent command::
 
-        sudo apt-get install -y cthyb
+        sudo apt-get install -y triqs_cthyb
 
 
 Compiling CTHYB from source

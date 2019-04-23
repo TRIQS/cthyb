@@ -1,7 +1,7 @@
-file(GLOB_RECURSE sources *.cpp)
+file(GLOB_RECURSE sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 list(FILTER sources EXCLUDE REGEX "impurity_trace.checks.cpp")
 if(NOT MeasureG2)
-  list(FILTER sources EXCLUDE REGEX "G2_*.cpp")
+  list(REMOVE_ITEM sources measures/G2_iw_acc.cpp measures/G2_iw.cpp measures/G2_iwll.cpp measures/G2_iw_nfft.cpp measures/G2_tau.cpp)
 endif()
 add_library(triqs_cthyb_c ${sources})
 

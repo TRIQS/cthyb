@@ -1,8 +1,8 @@
 #%Module1.0
 #
-# To be installed as ${MODULEPATH}/cthyb/@CTHYB_VERSION@
+# To be installed as ${MODULEPATH}/triqs_cthyb/@CTHYB_VERSION@
 
-set     name        cthyb
+set     name        triqs_cthyb
 set     version     @CTHYB_VERSION@
 set     root        @CMAKE_INSTALL_PREFIX@
 set     git_hash    @CTHYB_GIT_HASH@

@@ -149,10 +149,22 @@ In Matsubara frequency space there are three different measurements:
 
   Accumulation result is available via ``G2_iw_pp`` solver attribute.
 
-The number of Bosonic and Fermionic Matsubara frequencies are set by the ``measure_G2_n_iw``
-and ``measure_G2_n_inu`` parameters respectively.
+The number of Bosonic and Fermionic Matsubara frequencies are set by the ``measure_G2_n_bosonic``
+and ``measure_G2_n_fermionic`` parameters respectively.
 
-All frequency measurements use non-equidistant fast fourier transform (NFFT) to speed up the sampling procedure. Depending on the impurity model the NFFT buffer can be adjusted for maximum performance by setting ``nfft_buf_sizes``.
+All these frequency measurements use direct evaluation in frequency space, using an optimized frequency spreader that avoids the re-evaluation of exponential functions. This implementation performs well for low perturbation order and small number of sampled Matsubara frequencies.
+
+As an alternative all frequency measurements are also implemented using non-equidistant fast fourier transform (NFFT) to speed up the sampling procedure. The corresponding flags and attributes are:
+
+* (``measure_G2_iw_nfft``, ``G2_iw_nfft``),
+
+* (``measure_G2_iw_ph_nfft``, ``G2_iw_ph_nfft``), and
+
+* (``measure_G2_pp_nfft``, ``G2_iw_ph_nfft``).
+
+Depending on the impurity model the NFFT buffer can be adjusted for maximum performance by setting ``nfft_buf_sizes``.
+
+Whether the direct frequency evaluation or NFFT performs better is problem dependent and has to be tested case by case.
 
 Mixed Matsubara Frequency and Legendre measurements
 ***************************************************

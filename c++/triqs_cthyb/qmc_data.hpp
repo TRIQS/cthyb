@@ -100,7 +100,7 @@ namespace triqs_cthyb {
       }
     }
 
-    qmc_data(qmc_data const &) = default;
+    qmc_data(qmc_data const &) = delete; // Member imp_trace is not copyable
     qmc_data &operator=(qmc_data const &) = delete;
 
     void update_sign() {

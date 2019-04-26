@@ -426,7 +426,7 @@ namespace triqs_cthyb {
     }
 
     public:
-    void try_replace(configuration::oplist_t const &updated_ops) noexcept {
+    void try_replace(configuration::oplist_t const &updated_ops) {
       if (tree_size == 0) return;
 
       if (!backup_nodes.is_index_reset()) TRIQS_RUNTIME_ERROR << "impurity_trace: improper use of try_replace()";

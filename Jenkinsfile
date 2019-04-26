@@ -6,7 +6,7 @@ def documentationPlatform = "ubuntu-clang"
 def triqsBranch = env.CHANGE_TARGET ?: env.BRANCH_NAME
 def triqsProject = '/TRIQS/triqs/' + triqsBranch.replaceAll('/', '%2F')
 /* whether to publish the results (disabled for template project) */
-def publish = !env.BRANCH_NAME.startsWith("PR-") && projectName != "app4triqs"
+def publish = !env.BRANCH_NAME.startsWith("PR-")
 
 properties([
   disableConcurrentBuilds(),
@@ -93,7 +93,7 @@ try {
     /* Publish results */
     stage("publish") { timeout(time: 1, unit: 'HOURS') {
       def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
-      def release = sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
+      def release = env.BRANCH_NAME == "master" || env.BRANCH_NAME == "unstable" || sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
       def workDir = pwd()
       /* Update documention on gh-pages branch */
       dir("$workDir/gh-pages") {
@@ -113,7 +113,8 @@ try {
       /* Update docker repo submodule */
       if (release) { dir("$workDir/docker") { try {
         git(url: "ssh://git@github.com/TRIQS/docker.git", branch: env.BRANCH_NAME, credentialsId: "ssh", changelog: false)
-        sh "echo '160000 commit ${commit}\t${projectName}' | git update-index --index-info"
+        sh "test -d ${projectName}"
+        sh "echo '160000 commit ${commit}\ttriqs_${projectName}' | git update-index --index-info"
         sh """
           git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Autoupdate ${projectName}' -m '${env.BUILD_TAG}'
         """

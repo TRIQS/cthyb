@@ -3,9 +3,9 @@
 The hybridization-expansion solver
 ==================================
 
-.. sidebar:: cthyb 2.2
+.. sidebar:: cthyb 2.2.0
 
-   This is the homepage cthyb Version 2.2
+   This is the homepage cthyb Version 2.2.0
    For changes see, Cf :ref:`changelog page <changelog>`
 
 The :ref:`TRIQS-based <triqslibs:welcome>` hybridization-expansion solver

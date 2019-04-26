@@ -16,11 +16,11 @@ We further provide a Debian package for the Ubuntu LTS Versions 16.04 (xenial) a
 Compiling CTHYB from source
 ===========================
 
-Prerequisite
--------------------
+Prerequisites
+-------------
 
 #. The :ref:`TRIQS <triqslibs:welcome>` library, see :ref:`TRIQS installation instruction <triqslibs:installation>`.
-   In the following, we assume that Triqs is installed in the ``path_to_triqs`` directory.
+   In the following, we assume that TRIQS is installed in the directory ``path_to_triqs``.
 
 Installation steps
 ------------------
@@ -50,25 +50,23 @@ Installation steps
 Version compatibility
 ---------------------
 
-Be careful that the version of the TRIQS library and of the solver must be
-compatible (more information on the :ref:`TRIQS website <triqslibs:versions>`).
-In particular you should make sure that the Major and Minor Version number
-of the application and TRIQS agree.
-If you want to use a particular version of the solver, go into the directory with the sources
-and look at all available versions::
+Keep in mind that the version of ``cthyb`` must be compatible with your TRIQS library version,
+see :ref:`TRIQS website <triqslibs:versions>`.
+In particular the Major and Minor Version numbers have to be the same.
+To use a particular version, go into the directory with the sources, and look at all available versions::
 
      $ cd cthyb.src && git tag
 
 Checkout the version of the code that you want::
 
-     $ git checkout 2.1.0
+     $ git checkout 2.2.0
 
-Then follow the steps 2 to 4 described above to compile the code.
+and follow steps 2 to 4 above to compile the code.
 
 Custom CMake options
 --------------------
 
-Functionality of ``cthyb`` can be tweaked using extra compile-time options passed to CMake::
+The compilation of ``cthyb`` can be configured using CMake-options::
 
     cmake ../cthyb.src -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
 

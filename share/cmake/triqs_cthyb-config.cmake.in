@@ -14,9 +14,9 @@ set(CTHYB_GIT_HASH @CTHYB_GIT_HASH@)
 set(CTHYB_ROOT  @CMAKE_INSTALL_PREFIX@)
 
 # Include the exported targets of this project
-include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs_cthyb-targets.cmake)
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs_cthyb/triqs_cthyb-targets.cmake)
 
-MESSAGE(STATUS "Found triqs_cthyb-config.cmake with version ${CTHYB_VERSION}, hash = ${CTHYB_GIT_HASH}")
+message(STATUS "Found triqs_cthyb-config.cmake with version ${CTHYB_VERSION}, hash = ${CTHYB_GIT_HASH}")
 
 # Was the Project built with Documentation?
 set(CTHYB_WITH_DOCUMENTATION @Build_Documentation@)

@@ -29,10 +29,12 @@ set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Enable compiler warnings for the whole project
-add_compile_options(-Wall
-		     $<$<CONFIG:Debug>:-Og>
-		     $<$<CONFIG:Debug>:-ggdb3>
-		     )
+add_compile_options(
+		-Wall
+		-Wextra
+		$<$<CONFIG:Debug>:-Og>
+		$<$<CONFIG:Debug>:-ggdb3>
+		)
 
 # Load Dependencies
 find_package(TRIQS 2.2 REQUIRED)
@@ -44,7 +46,7 @@ endif()
 
 # Default Install directory to TRIQS_ROOT if not given or invalid.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTALL_PREFIX}))
-  message(STATUS " No install prefix given (or invalid). Defaulting to TRIQS_ROOT")
+  message(STATUS "No install prefix given (or invalid). Defaulting to TRIQS_ROOT")
   set(CMAKE_INSTALL_PREFIX ${TRIQS_ROOT} CACHE PATH "default install path" FORCE)
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")

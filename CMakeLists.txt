@@ -1,6 +1,6 @@
 # start configuration
 cmake_minimum_required(VERSION 2.8.12)
-project(cthyb CXX)
+project(triqs_cthyb CXX)
 
 # Default to Release build type
 if(NOT CMAKE_BUILD_TYPE)

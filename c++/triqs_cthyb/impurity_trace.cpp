@@ -426,7 +426,7 @@ namespace triqs_cthyb {
       histo->trace_over_norm << std::abs(full_trace) / norm_trace;
       histo->trace_abs_over_norm << trace_abs / norm_trace;
       histo->trace_over_trace_abs << real(full_trace / trace_abs);
-      std::sort(trace_contrib_block.begin(), trace_contrib_block.end(), std::c14::greater<>());
+      std::sort(trace_contrib_block.begin(), trace_contrib_block.end(), std::greater<>());
       histo->dominant_block_trace << begin(trace_contrib_block)->second;
       histo->dominant_block_energy_trace << get_block_emin(begin(trace_contrib_block)->second);
       histo->n_block_kept << bl;

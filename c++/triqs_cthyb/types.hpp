@@ -53,7 +53,7 @@ namespace triqs_cthyb {
   using G_tau_t          = block_gf<imtime, matrix_valued>;
   using G_tau_G_target_t = block_gf<imtime, G_target_t>;
   using G_iw_t           = block_gf<imfreq, matrix_valued>;
-  using G_l_t            = block_gf<legendre, matrix_valued>;
+  using G_l_t            = block_gf<triqs::gfs::legendre, matrix_valued>;
 
   // Two-particle Green's function types
   using imtime_cube_mesh_t = cartesian_product<imtime, imtime, imtime>;
@@ -62,7 +62,7 @@ namespace triqs_cthyb {
   using imfreq_cube_mesh_t = cartesian_product<imfreq, imfreq, imfreq>;
   using G2_iw_t            = block2_gf<imfreq_cube_mesh_t, tensor_valued<4>>;
 
-  using imfreq_legendre_mesh_t = cartesian_product<imfreq, legendre, legendre>;
+  using imfreq_legendre_mesh_t = cartesian_product<imfreq, triqs::gfs::legendre, triqs::gfs::legendre>;
   using G2_iwll_t              = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
   enum class G2_channel { PP, PH, AllFermionic }; // G2 sampling channels

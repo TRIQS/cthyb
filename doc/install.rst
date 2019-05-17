@@ -79,7 +79,7 @@ The compilation of ``cthyb`` can be configured using CMake-options::
 +-----------------------------------------------------------------+-----------------------------------------------+
 | Allow the local Hamiltonian H_loc to be complex                 | -DLocal_hamiltonian_is_complex=ON             |
 +-----------------------------------------------------------------+-----------------------------------------------+
-| Measure the two particle object (requires the NFFT library)     | -DMeasureG2=OFF                               |
+| Measure the two particle object (requires the NFFT library)     | -DMeasureG2=ON                                |
 +-----------------------------------------------------------------+-----------------------------------------------+
 | Save visited configurations to configs.h5 (*developers only*)   | -DSAVE_CONFIGS=ON                             |
 +-----------------------------------------------------------------+-----------------------------------------------+

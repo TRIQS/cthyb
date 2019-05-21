@@ -3,7 +3,7 @@
 import numpy as np
 
 from pytriqs.archive import *
-from pytriqs.gf import GfImTime, GfImFreq, Gf, MeshImFreq, inverse, iOmega_n, InverseFourier
+from pytriqs.gf import GfImTime, GfImFreq, Gf, MeshImFreq, inverse, iOmega_n, Fourier
 from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import *
 from pytriqs.operators.util.op_struct import get_mkind
@@ -52,7 +52,7 @@ for filename in ["5_plus_5.int.h5", "5_plus_5.h5"]:
             #g_theor_w = GfImFreq(indices = [0], beta=beta, n_points=1000)
             g_theor_w = Gf(mesh=MeshImFreq(beta, 'Fermion', 100), target_shape=[])
             g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
-            g_theor[nc,nc] << InverseFourier(g_theor_w)
+            g_theor[nc,nc] << Fourier(g_theor_w)
 
     pp = PdfPages('G%s.pdf' % ('int' if use_interaction else ''))
 
@@ -70,7 +70,7 @@ for filename in ["5_plus_5.int.h5", "5_plus_5.h5"]:
             else:
                 g0_iw = arch['G0_iw']
                 g0_tau = arch['G_tau']
-                g0_tau << InverseFourier(g0_iw)
+                g0_tau << Fourier(g0_iw)
 
                 oplot(g_theor[nc,nc], name="Analytic")
                 oplot(g0_tau[sn + '_' + cn], name="G0")

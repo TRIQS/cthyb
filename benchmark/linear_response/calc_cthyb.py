@@ -96,7 +96,7 @@ def make_calc(nw=2, nc=1e5, beta=2.0, h_field=0.0, rand=1):
     p.Gl_tau = solv.G_tau.copy()
     for name, g0 in solv.G0_iw:
         p.Gl_iw[name] << LegendreToMatsubara(solv.G_l[name])
-        p.Gl_tau[name] << InverseFourier(p.Gl_iw[name])
+        p.Gl_tau[name] << Fourier(p.Gl_iw[name])
 
     # ------------------------------------------------------------------
     # -- Collect results

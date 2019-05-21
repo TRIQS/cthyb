@@ -18,7 +18,7 @@ import numpy as np
 from pytriqs.utility import mpi
 from pytriqs.archive import HDFArchive
 
-from pytriqs.gf import Gf, inverse, iOmega_n, InverseFourier
+from pytriqs.gf import Gf, inverse, iOmega_n, Fourier
 from pytriqs.gf import MeshImTime, MeshProduct
 from pytriqs.gf import GfImTime, GfImFreq
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     p.g0_tau = GfImTime(beta=p.beta, statistic='Fermion',
                         n_points=p.ntau, target_shape=(4, 4))
 
-    p.g0_tau << InverseFourier(p.g0_iw)
+    p.g0_tau << Fourier(p.g0_iw)
     p.g0t_tau = g2_single_particle_transform(p.g0_tau, p.T.H)
 
     p.g0_tau_ref = g2_single_particle_transform(p.g0t_tau, p.T)

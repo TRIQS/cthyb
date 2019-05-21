@@ -41,7 +41,7 @@ using std::isfinite;
 inline bool isfinite(dcomplex const &x) { return std::isfinite(real(x)) && std::isfinite(imag(x)); }
 
 inline double real(double x) { return x; }
-inline double imag(double x) { return 0; }
+inline double imag(double) { return 0; }
 
 // FIXME when moved into the lib, we have to template of h_scalar_t = double and complex
 // consider moving this into the class, under the template

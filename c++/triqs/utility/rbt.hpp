@@ -62,9 +62,9 @@ namespace triqs {
              key(n.key),
              color(n.color),
              N(n.N),
-             modified(n.modified),
              left(n.left ? new node_t(*n.left) : nullptr),
              right(n.right ? new node_t(*n.right) : nullptr),
+             modified(n.modified),
              delete_flag(n.delete_flag) {}
         node_t &operator=(node_t const &) = delete;
         template <typename... T> void reset(Key const &k, T &&... x) {

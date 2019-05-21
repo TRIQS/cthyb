@@ -15,7 +15,7 @@ import numpy as np
 
 from pytriqs.operators import Operator
 from pytriqs.archive import HDFArchive
-from pytriqs.gf import Gf, inverse, iOmega_n, InverseFourier, Fourier, GfImFreq
+from pytriqs.gf import Gf, inverse, iOmega_n, Fourier, GfImFreq
 
 from pyed.ParameterCollection import ParameterCollection
 from pyed.GfUtils import g2_single_particle_transform

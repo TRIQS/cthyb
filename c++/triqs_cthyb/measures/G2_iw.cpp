@@ -46,7 +46,7 @@ namespace triqs_cthyb {
   template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate(mc_weight_t s) {
 
     if (true)
-      accumulate_M_opt(s); // FLOPS Optimized scattering matrix accumulation
+      accumulate_M_opt(); // FLOPS Optimized scattering matrix accumulation
     else {
 
       // ---------------------------------------------------------------
@@ -80,7 +80,7 @@ namespace triqs_cthyb {
     accumulate_G2(s);
   }
 
-  template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate_M_opt(mc_weight_t s) {
+  template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate_M_opt() {
 
     // ---------------------------------------------------------------
     // Scattering matrix accumulation with minimal exponent evaluations

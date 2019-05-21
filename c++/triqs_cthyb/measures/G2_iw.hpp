@@ -32,7 +32,7 @@ namespace triqs_cthyb {
     measure_G2_iw(std::optional<G2_iw_t> &G2_iw_opt, qmc_data const &data,
                   G2_measures_t const &G2_measures);
     void accumulate(mc_weight_t s);
-    void accumulate_M_opt(mc_weight_t s);
+    void accumulate_M_opt();
 
     using B = G2_iw::measure_G2_iw_base<Channel>;
     using B::collect_results;

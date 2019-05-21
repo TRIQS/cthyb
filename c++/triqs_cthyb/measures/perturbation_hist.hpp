@@ -35,7 +35,7 @@ namespace triqs_cthyb {
       histo_perturbation_order = {0, 1000};
     }
 
-    void accumulate(mc_weight_t s) { histo_perturbation_order << data.dets[block_index].size(); }
+    void accumulate(mc_weight_t) { histo_perturbation_order << data.dets[block_index].size(); }
 
     void collect_results(mpi::communicator const &c) { histo_perturbation_order = mpi::all_reduce(histo_perturbation_order, c); }
   };
@@ -50,7 +50,7 @@ namespace triqs_cthyb {
       histo_perturbation_order = {0, 1000};
     }
 
-    void accumulate(mc_weight_t s) { histo_perturbation_order << data.config.size() / 2; }
+    void accumulate(mc_weight_t) { histo_perturbation_order << data.config.size() / 2; }
 
     void collect_results(mpi::communicator const &c) { histo_perturbation_order = mpi::all_reduce(histo_perturbation_order, c); }
   };

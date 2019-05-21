@@ -8,7 +8,7 @@ import itertools
 import numpy as np
 
 from pytriqs.archive import HDFArchive
-from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier, InverseFourier
+from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 nw = 512
 beta = 50.0

@@ -10,7 +10,7 @@ from triqs_cthyb import SolverCore
 
 from pytriqs.operators import n, c, c_dag, Operator
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier, InverseFourier
+from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 beta = 10.0
 
@@ -53,7 +53,7 @@ Delta_iw << inverse( iOmega_n - Ek ) + inverse( iOmega_n + Ek )
 Delta_iw.from_L_G_R(V, Delta_iw, V)
 
 Delta_tau = Gf(mesh=tmesh, target_shape=target_shape)
-Delta_tau << InverseFourier(Delta_iw)
+Delta_tau << Fourier(Delta_iw)
 
 G0_iw = Gf(mesh=wmesh, target_shape=target_shape)
 G0_iw << inverse( iOmega_n - Delta_iw - E_loc )

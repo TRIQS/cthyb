@@ -25,7 +25,7 @@ for i in arch:
         e2 = e[m] + V[m]
         g_theor_w = GfImFreq(indices = [0], beta=beta)
         g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
-        g_theor << InverseFourier(g_theor_w)
+        g_theor << Fourier(g_theor_w)
 
         plt.clf()
         G_bin = rebinning_tau(G_tau[b], 200)

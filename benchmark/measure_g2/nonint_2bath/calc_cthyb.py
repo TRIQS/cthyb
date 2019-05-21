@@ -105,7 +105,7 @@ if __name__ == '__main__':
     G_tau = solv.G_tau.copy()
     for name, g0 in solv.G0_iw:
         G_iw[name] << LegendreToMatsubara(solv.G_l[name])
-        G_tau[name] << InverseFourier(G_iw[name])
+        G_tau[name] << Fourier(G_iw[name])
 
     # ------------------------------------------------------------------
     # -- Collect results

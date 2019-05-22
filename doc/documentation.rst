@@ -23,6 +23,7 @@ User guide
    guide/dmft
    guide/slater_five_band
    guide/static
+   guide/dynamic_susceptibility_notebook
 
 Reference manual
 ----------------

@@ -24,6 +24,7 @@ User guide
    guide/slater_five_band
    guide/static
    guide/dynamic_susceptibility_notebook
+   guide/perturbation_order_notebook
 
 Reference manual
 ----------------

@@ -22,6 +22,9 @@ Prerequisites
 #. The :ref:`TRIQS <triqslibs:welcome>` library, see :ref:`TRIQS installation instruction <triqslibs:installation>`.
    In the following, we assume that TRIQS is installed in the directory ``path_to_triqs``.
 
+#. The NFFT3 library for non-uniform Fourier transformations https://www-user.tu-chemnitz.de/~potts/nfft/.
+   To compile without NFFT3 the two-particle measurements has to be disabled by passing the cmake flag: ``-DMeasureG2=OFF``.
+   
 Installation steps
 ------------------
 

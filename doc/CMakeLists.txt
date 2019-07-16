@@ -32,8 +32,7 @@ execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY
 # Install
 # ---------------------------------
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs_cthyb
- FILES_MATCHING
- REGEX "\\.(html|pdf|png|gif|jpg|js|xsl|css|py|txt|inv|bib|ipynb)$"
- PATTERN "_*"
- )
-
+  FILES_MATCHING
+  REGEX "\\.(html|pdf|png|gif|jpg|svg|js|xsl|css|py|txt|inv|bib)$"
+  PATTERN "_*"
+)

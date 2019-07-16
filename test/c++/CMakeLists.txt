@@ -13,7 +13,7 @@ endif()
 foreach(test ${all_tests})
   get_filename_component(test_name ${test} NAME_WE)
   add_executable(${test_name} ${test})
-  target_link_libraries(${test_name} triqs_cthyb_c triqs::gtest)
+  target_link_libraries(${test_name} triqs_cthyb_c triqs::gtest project_warnings)
   add_test(${test_name} ${test_name})
   # Run clang-tidy if found
   if(CLANG_TIDY_EXECUTABLE)

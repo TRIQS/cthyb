@@ -6,7 +6,7 @@ endif()
 add_library(triqs_cthyb_c ${sources})
 
 # Link against dependencies
-target_link_libraries(triqs_cthyb_c PUBLIC triqs $<$<BOOL:${MeasureG2}>:nfft>)
+target_link_libraries(triqs_cthyb_c PUBLIC triqs $<$<BOOL:${MeasureG2}>:nfft> PRIVATE project_warnings)
 
 # Additional compilation options
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
@@ -17,7 +17,7 @@ set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to 
 target_compile_options(triqs_cthyb_c PUBLIC -fPIC)
 target_include_directories(triqs_cthyb_c PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c++>)
 target_compile_definitions(triqs_cthyb_c PUBLIC
-  				CTHYB_GIT_HASH=${CTHYB_GIT_HASH}
+				CTHYB_GIT_HASH=${PROJECT_GIT_HASH}
 				TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
 				$<$<CONFIG:Debug>:CTHYB_DEBUG>
 				$<$<CONFIG:Debug>:TRIQS_DEBUG>

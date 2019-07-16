@@ -29,7 +29,7 @@ copyright = u'2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcoll
 version = '@CTHYB_VERSION@'
 
 mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
-templates_path = ['@CMAKE_SOURCE_DIR@/doc/_templates']
+templates_path = ['@PROJECT_SOURCE_DIR@/doc/_templates']
 
 html_theme = 'triqs'
 html_theme_path = ['@TRIQS_THEMES_PATH@']
@@ -40,9 +40,9 @@ html_context = {'header_title': 'cthyb',
                                  ['Documentation', 'documentation'],
                                  ['Issues', 'issues'],
                                  ['About CTHYB', 'about']]}
-html_static_path = ['@CMAKE_SOURCE_DIR@/doc/_static']
+html_static_path = ['@PROJECT_SOURCE_DIR@/doc/_static']
 html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 
-htmlhelp_basename = 'TRIQSCTHYBdoc'
+htmlhelp_basename = 'CTHYBdoc'
 
 intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None), 'triqslibs': ('https://triqs.github.io/triqs/master', None)}

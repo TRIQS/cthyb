@@ -5,7 +5,7 @@
 set     name        triqs_cthyb
 set     version     @CTHYB_VERSION@
 set     root        @CMAKE_INSTALL_PREFIX@
-set     git_hash    @CTHYB_GIT_HASH@
+set     git_hash    @PROJECT_GIT_HASH@
 
 set     url         "https://github.com/TRIQS/cthyb"
 set     description "An example application using cpp2py and triqs."
@@ -24,7 +24,7 @@ proc ModulesHelp { } {
 # is installed under a different name in your setup.
 prereq triqs/@TRIQS_VERSION@
 
-# Only one version of cthyb can be loaded at a time
+# Only one version of triqs_cthyb can be loaded at a time
 conflict $name
 
 setenv          CTHYB_ROOT      $root

@@ -18,7 +18,7 @@ add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
 # -----------------------------------------------------------------------------
 # Create an optional target that allows us to regenerate the C++ doc with c++2rst
 # -----------------------------------------------------------------------------
-foreach(t app4triqs_c triqs)
+foreach(t triqs_cthyb_c triqs)
   get_property(INCLUDE_DIRS TARGET ${t} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   get_property(SYSTEM_INCLUDE_DIRS TARGET ${t} PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
   if(SYTEM_INCLUDE_DIRS)
@@ -42,19 +42,19 @@ macro(generate_docs header_file)
     COMMAND
       c++2rst
       ${header_file}
-      -N app4triqs
+      -N triqs_cthyb
       --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/cpp2rst_generated
       --cxxflags="${CPP2RST_CXXFLAGS}"
       ${CPP2RST_INCLUDE_FLAGS}
   )
 endmacro(generate_docs)
 
-generate_docs(${PROJECT_SOURCE_DIR}/c++/app4triqs/toto.hpp)
+generate_docs(${PROJECT_SOURCE_DIR}/c++/triqs_cthyb/toto.hpp)
 
 # ---------------------------------
 # Install
 # ---------------------------------
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/app4triqs
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs_cthyb
   FILES_MATCHING
   REGEX "\\.(html|pdf|png|gif|jpg|svg|js|xsl|css|py|txt|inv|bib)$"
   PATTERN "_*"

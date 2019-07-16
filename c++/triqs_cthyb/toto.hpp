@@ -1,7 +1,7 @@
 #pragma once
 #include <triqs/gfs.hpp>
 
-namespace app4triqs {
+namespace triqs_cthyb {
 
   /**
    * A very useful and important class
@@ -95,4 +95,4 @@ namespace app4triqs {
    */
   int chain(int i);
 
-} // namespace app4triqs
+} // namespace triqs_cthyb

@@ -27,17 +27,17 @@ C++ reference manual
 .. toctree::
    :maxdepth: 5
 
-   cpp2rst_generated/app4triqs/toto
-   cpp2rst_generated/app4triqs/chain
+   cpp2rst_generated/triqs_cthyb/toto
+   cpp2rst_generated/triqs_cthyb/chain
 
 Python reference manual
 -----------------------
 
-.. automodule:: app4triqs 
+.. automodule:: triqs_cthyb 
    :members:
 
-.. autoclass:: app4triqs.toto_module.Toto
+.. autoclass:: triqs_cthyb.toto_module.Toto
    :members:
 
-.. autofunction:: app4triqs.toto_module.chain
+.. autofunction:: triqs_cthyb.toto_module.chain
       

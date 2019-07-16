@@ -1,7 +1,7 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <app4triqs/toto.hpp>
+#include <triqs_cthyb/toto.hpp>
 
-using namespace app4triqs;
+using namespace triqs_cthyb;
 
 TEST(Toto, Add) { // NOLINT
 

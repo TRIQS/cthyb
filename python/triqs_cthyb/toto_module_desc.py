@@ -1,29 +1,29 @@
 # Generated automatically using the command :
-# c++2py ../../c++/app4triqs/toto.hpp -p --members_read_only -N app4triqs -a app4triqs -m toto_module -o toto_module -C pytriqs --cxxflags="-std=c++17 "
+# c++2py ../../c++/triqs_cthyb/toto.hpp -p --members_read_only -N triqs_cthyb -a triqs_cthyb -m toto_module -o toto_module -C pytriqs --cxxflags="-std=c++17 "
 from cpp2py.wrap_generator import *
 
 # The module
-module = module_(full_name = "toto_module", doc = "", app_name = "app4triqs")
+module = module_(full_name = "toto_module", doc = "", app_name = "triqs_cthyb")
 
 # Imports
 module.add_imports(*[])
 
 # Add here all includes
-module.add_include("app4triqs/toto.hpp")
+module.add_include("triqs_cthyb/toto.hpp")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
 #include <cpp2py/converters/string.hpp>
 #include <triqs/cpp2py_converters/h5.hpp>
 
-using namespace app4triqs;
+using namespace triqs_cthyb;
 """)
 
 
 # The class toto
 c = class_(
         py_type = "Toto",  # name of the python class
-        c_type = "app4triqs::toto",   # name of the C++ class
+        c_type = "triqs_cthyb::toto",   # name of the C++ class
         doc = r"""A very useful and important class""",   # doc of the C++ class
         hdf5 = True,
         arithmetic = ("add_only"),
@@ -58,7 +58,7 @@ c.add_property(name = "i",
 
 module.add_class(c)
 
-module.add_function ("int app4triqs::chain (int i, int j)", doc = r"""Chain digits of two integers
+module.add_function ("int triqs_cthyb::chain (int i, int j)", doc = r"""Chain digits of two integers
 
  Chain the decimal digits of two integers i and j, and return the result
 

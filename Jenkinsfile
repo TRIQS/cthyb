@@ -1,4 +1,4 @@
-def projectName = "app4triqs" /* set to app/repo name */
+def projectName = "triqs_cthyb" /* set to app/repo name */
 
 /* which platform to build documentation on */
 def documentationPlatform = "ubuntu-clang"

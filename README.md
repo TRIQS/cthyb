@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/TRIQS/app4triqs.svg?branch=unstable)](https://travis-ci.org/TRIQS/app4triqs)
+[![Build Status](https://travis-ci.org/TRIQS/triqs_cthyb.svg?branch=unstable)](https://travis-ci.org/TRIQS/triqs_cthyb)
 
-# app4triqs
+# triqs_cthyb
 
 A skeleton for a TRIQS application
 ----------------------------------
@@ -12,14 +12,14 @@ To adapt this skeleton for a new triqs application, the following steps are nece
 * Run the following commands (replacing myuser and mynewapp accordingly)
 
 ```bash
-git clone https://github.com/triqs/app4triqs --branch unstable mynewapp
+git clone https://github.com/triqs/triqs_cthyb --branch unstable mynewapp
 cd mynewapp
 git remote set-url origin https://github.com/myuser/mynewapp
-find . -type f | grep -v .git | xargs sed -i 's/app4triqs/mynewapp/g; s/APP4TRIQS/MYNEWAPP/g'
-find . -type d | grep -v .git | xargs rename app4triqs mynewapp
-find . -type f | grep -v .git | xargs rename app4triqs mynewapp
+find . -type f | grep -v .git | xargs sed -i 's/triqs_cthyb/mynewapp/g; s/CTHYB/MYNEWAPP/g'
+find . -type d | grep -v .git | xargs rename triqs_cthyb mynewapp
+find . -type f | grep -v .git | xargs rename triqs_cthyb mynewapp
 git add -A
-git commit -m "Create mynewapp from github.com/triqs/app4triqs skeleton"
+git commit -m "Create mynewapp from github.com/triqs/triqs_cthyb skeleton"
 git push
 ```
 
@@ -27,8 +27,8 @@ Depending on which version of the rename command you are using you may
 need to replace the aforementioned rename commands as follows
 
 ```bash
-find . -type d | grep -v .git | xargs rename 's/app4triqs/mynewapp/'
-find . -type f | grep -v .git | xargs rename 's/app4triqs/mynewapp/'
+find . -type d | grep -v .git | xargs rename 's/triqs_cthyb/mynewapp/'
+find . -type f | grep -v .git | xargs rename 's/triqs_cthyb/mynewapp/'
 ```
 
 If you prefer to use the SSH interface to the remote repository,

@@ -1,6 +1,6 @@
 import numpy as np
 import pytriqs.utility.mpi as mpi
-from pytriqs.gf import GfImFreq, SemiCircular, inverse, iOmega_n
+from pytriqs.gf import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
 from pytriqs.operators import n, c, c_dag
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
@@ -52,8 +52,10 @@ for key in dir(solver_ref):
         val = getattr(solver, key)
         val_ref = getattr(solver_ref, key)
 
-        if val is None:
-            assert( val == val_ref )
-        else:
+        if isinstance(val, BlockGf):
             for (n1, g1), (n1, g2) in zip(val, val_ref):
                 np.testing.assert_array_almost_equal(g1.data, g2.data)
+        elif val == None or isinstance(val, list):
+            assert(val == val_ref)
+        else:
+            raise Exception("Invalid type in comparison")

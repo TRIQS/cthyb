@@ -147,13 +147,20 @@ namespace triqs_cthyb {
     friend void h5_write(triqs::h5::group h5group, std::string subgroup_name, solver_core const &s) {
       triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
       h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", solver_core::hdf5_scheme());
-      //h5_write_attribute(grp, "TRIQS_GIT_HASH", std::string(STRINGIZE(TRIQS_GIT_HASH)));
-      //h5_write_attribute(grp, "CTHYB_GIT_HASH", std::string(STRINGIZE(CTHYB_GIT_HASH)));
+      h5_write_attribute(grp, "TRIQS_GIT_HASH", std::string(STRINGIZE(TRIQS_GIT_HASH)));
+      h5_write_attribute(grp, "CTHYB_GIT_HASH", std::string(STRINGIZE(CTHYB_GIT_HASH)));
       h5_write(grp, "container_set", s.container_set());
       h5_write(grp, "constr_parameters", s.constr_parameters);
       h5_write(grp, "solve_parameters", s.solve_parameters);
       h5_write(grp, "G0_iw", s._G0_iw);
       h5_write(grp, "Delta_tau", s._Delta_tau);
+
+      h5_write(grp, "h_diag", s.h_diag);
+      h5_write(grp, "h_loc", s._h_loc);
+      h5_write(grp, "density_matrix", s._density_matrix);
+      h5_write(grp, "average_sign", s._average_sign);
+      h5_write(grp, "solve_status", s._solve_status);
+      h5_write(grp, "Delta_infty_vec", s.Delta_infty_vec);
     }
 
     // Function that read all containers to hdf5 file
@@ -166,6 +173,14 @@ namespace triqs_cthyb {
       h5_read(grp, "solve_parameters", s.solve_parameters);
       h5_read(grp, "G0_iw", s._G0_iw);
       h5_read(grp, "Delta_tau", s._Delta_tau);
+
+      h5_try_read(grp, "h_diag", s.h_diag);
+      h5_try_read(grp, "h_loc", s._h_loc);
+      h5_try_read(grp, "density_matrix", s._density_matrix);
+      h5_try_read(grp, "average_sign", s._average_sign);
+      h5_try_read(grp, "solve_status", s._solve_status);
+      h5_try_read(grp, "Delta_infty_vec", s.Delta_infty_vec);
+
       return s;
     }
   };

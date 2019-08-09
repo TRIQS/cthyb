@@ -106,6 +106,9 @@ endif()
 # #############
 # Build Project
 
+# Install additional triqs headers provided by cthyb
+add_subdirectory(c++/triqs)
+
 # Build and install the triqs_cthyb library
 add_subdirectory(c++/triqs_cthyb)
 

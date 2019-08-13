@@ -51,7 +51,7 @@ class Solver(SolverCore):
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
         if isinstance(gf_struct,dict):
-            print "WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict"
+            if mpi.is_master_node(): print "WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict"
             gf_struct = [ [k, v] for k, v in gf_struct.iteritems() ]
 
         # Initialise the core solver
@@ -126,6 +126,16 @@ class Solver(SolverCore):
             fit_max_moment = params_kw.pop("fit_max_moment", None)
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
+        # Check fundamental Green function property G(iw)[i,j] = G(-iw)*[j,i]
+        if not is_gf_hermitian(self.G0_iw):
+            if mpi.is_master_node():
+                warning = ( "!-------------------------------------------------------------------------------------------!\n"
+                            "! WARNING: S.G0_iw violates fundamental Green Function property G0(iw)[i,j] = G0(-iw)*[j,i] !\n"
+                            "! Symmetrizing S.G0_iw ...                                                                  !\n"
+                            "!-------------------------------------------------------------------------------------------!")
+                print warning
+            self.G0_iw = make_hermitian(self.G0_iw)
+
         # Call the core solver's solve routine
         solve_status = SolverCore.solve(self, **params_kw)
 
@@ -135,12 +145,15 @@ class Solver(SolverCore):
             # Fourier transform G_tau to obtain G_iw
             for name, g in self.G_tau:
                 bl_size = g.target_shape[0]
-                known_moments = np.zeros((4, bl_size, bl_size), dtype=np.complex)
-                for i in range(bl_size):
-                    known_moments[1,i,i] = 1
-
+                known_moments = make_zero_tail(g, 4)
+                known_moments[1,...] = np.eye(bl_size)
                 self.G_iw[name].set_from_fourier(g, known_moments)
 
+            # We enforce the fundamental Green function property G(iw)[i,j] = G(-iw)*[j,i]
+            # for the output Green function and store the symmetry violation to self.hermiticity_violation_G_iw
+            G_iw_hermitized = make_hermitian(self.G_iw)
+            self.hermiticity_violation_G_iw = self.G_iw - G_iw_hermitized
+            self.G_iw = G_iw_hermitized
             self.G_iw_raw = self.G_iw.copy()
 
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail

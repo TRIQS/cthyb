@@ -64,14 +64,4 @@ endif()
 
 # Install
 install(TARGETS cthyb_c DESTINATION lib)
-
-#triqs_set_rpath_for_target(cthyb_c)
-
-# FIXME : WHY DO WE INSTALL HEADERS HERE ??
-set(HEADERS_TO_INSTALL
- #array_suppl.hpp # FIXME
-    parameters.hpp
-    solver_core.hpp
-    config.hpp
-)
-install(FILES ${HEADERS_TO_INSTALL} DESTINATION include/triqs/cthyb)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")

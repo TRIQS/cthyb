@@ -26,8 +26,7 @@ endif()
 
 # ############
 # Define Project
-
-project(CTHYB VERSION 2.2.0 LANGUAGES CXX)
+project(CTHYB VERSION 2.2.0 LANGUAGES C CXX)
 
 # ############
 # Load TRIQS and CPP2PY
@@ -93,15 +92,8 @@ target_compile_options(project_warnings
     -Wshadow
     -Wpedantic
     -Wno-sign-compare
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-gcc-compat>
 )
-
-# #############
-# Load non-TRIQS Dependencies
-
-if(MeasureG2) # 2-particle GF measurement requires NFFT
- find_package(NFFT REQUIRED)
- install(TARGETS nfft EXPORT triqs_cthyb-targets)
-endif()
 
 # #############
 # Build Project

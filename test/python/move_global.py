@@ -52,8 +52,8 @@ p["random_seed"] = 123 * mpi.rank + 567
 p["length_cycle"] = 50
 p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 5000
-p["measure_g_tau"] = True
-p["measure_g_l"] = False
+p["measure_G_tau"] = True
+p["measure_G_l"] = False
 p["move_double"] = False
 
 # Global moves

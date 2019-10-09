@@ -20,7 +20,7 @@ S.solve(h_int = U * n('up',0) * n('down',0),     # Local Hamiltonian
         n_cycles  = 500000,                      # Number of QMC cycles
         length_cycle = 200,                      # Length of one cycle
         n_warmup_cycles = 10000,                 # Warmup cycles
-        measure_g_l = True)                      # Measure G_l
+        measure_G_l = True)                      # Measure G_l
 
 # Save the results in an HDF5 file (only on the master node)
 if mpi.is_master_node():

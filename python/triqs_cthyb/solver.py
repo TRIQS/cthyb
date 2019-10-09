@@ -69,7 +69,7 @@ class Solver(SolverCore):
     def solve(self, **params_kw):
         """
         Solve the impurity problem.
-        If ``measure_g_tau`` (default = ``True``), ``G_iw`` and ``Sigma_iw`` will be calculated and their tails fitted.
+        If ``measure_G_tau`` (default = ``True``), ``G_iw`` and ``Sigma_iw`` will be calculated and their tails fitted.
         In addition to the solver parameters, parameters to control the tail fitting can be provided.
 
         Parameters
@@ -95,8 +95,8 @@ class Solver(SolverCore):
         # -- Deprecation checks for measure parameters
         
         depr_params = dict(
-            measure_g_tau='measure_G_tau',
-            measure_g_l='measure_G_l',
+            measure_G_tau='measure_G_tau',
+            measure_G_l='measure_G_l',
             )
         
         for key in depr_params.keys():

@@ -40,6 +40,7 @@ packaging
 ---------
 * update package name to triqs_cthyb and conflict with cthyb
 
+
 Version 2.1.0
 -------------
 

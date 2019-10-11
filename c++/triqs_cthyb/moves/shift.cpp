@@ -161,7 +161,6 @@ namespace triqs_cthyb {
     // --- Compute the det ratio
 
     // Do we need to roll the determinant?
-    using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
     roll_direction = det_type::None;
 
     // Check if we went through \tau = 0 or \tau = \beta

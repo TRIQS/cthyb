@@ -155,7 +155,7 @@ namespace triqs_cthyb {
     void check_cache_integrity(bool print = false);
     void check_cache_integrity_one_node(node n, bool print);
     int check_one_block_table_linear(node n, int b, bool print);       // compare block table to that of a linear method (ie. no tree)
-    matrix_t check_one_block_matrix_linear(node n, int b, bool print); // compare matrix to that of a linear method (ie. no tree)
+    matrix_t check_one_block_matrix_linear(node n, int b);             // compare matrix to that of a linear method (ie. no tree)
 
     // Pool of detached nodes
     class nodes_storage {

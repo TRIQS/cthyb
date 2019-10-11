@@ -365,7 +365,7 @@ namespace triqs_cthyb {
       if (b_mat.first == -1) TRIQS_RUNTIME_ERROR << " Internal error : B = -1 after compute matrix : " << block_index;
 
 #ifdef CHECK_AGAINST_LINEAR_COMPUTATION
-      auto b_mat2 = check_one_block_matrix_linear(root, block_index, false);
+      auto b_mat2 = check_one_block_matrix_linear(root, block_index);
       if (max_element(abs(b_mat.second - b_mat2)) > 1.e-10) TRIQS_RUNTIME_ERROR << " Matrix failed against linear computation";
 #endif
 

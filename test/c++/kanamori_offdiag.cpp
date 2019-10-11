@@ -7,12 +7,11 @@
 #include <triqs/utility/itertools.hpp>
 
 using namespace triqs_cthyb;
+using namespace triqs::gfs;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
-using namespace triqs::gfs;
 using triqs::hilbert_space::gf_struct_t;
-using indices_type = triqs::operators::indices_t;
 
 TEST(CtHyb, KanamoriOffDiag) {
 

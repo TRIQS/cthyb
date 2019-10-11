@@ -29,7 +29,7 @@ namespace triqs_cthyb {
     mc_weight_t &average_sign;
     mc_weight_t sign, z;
 
-    measure_average_sign(qmc_data const &data, mc_weight_t &average_sign) : data(data), average_sign(average_sign) {
+    measure_average_sign(qmc_data const &_data, mc_weight_t &_average_sign) : data(_data), average_sign(_average_sign) {
       average_sign = 1.0;
       z            = 0;
       sign         = 0;
@@ -50,4 +50,4 @@ namespace triqs_cthyb {
       average_sign = sign / z;
     }
   };
-}
+} // namespace triqs_cthyb

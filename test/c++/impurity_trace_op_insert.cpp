@@ -69,45 +69,44 @@ TEST(atom_diag, op_matrix) {
 
   // -----------------------------------------------------------------------------
 
-  many_body_operator_real op1 = c_dag("up", 0);
-  many_body_operator_real op2 = n("dn", 0) * c("up", 0);
-
-  auto op1_d = imp_trace.attach_aux_operator(op1);
-  auto op2_d = imp_trace.attach_aux_operator(op2);
-  
   triqs_cthyb::time_segment tau_seg(beta);
   triqs_cthyb::h_scalar_t new_atomic_weight, new_atomic_reweighting;
 
   // -----------------------------------------------------------------------------
 
-  many_body_operator_real op = n("dn", 0) * n("up", 0);
+  {
+    many_body_operator_real op = n("dn", 0) * n("up", 0);
+    auto op_d                  = imp_trace.attach_aux_operator(op);
+    auto tau1                  = tau_seg.make_time_pt(0.);
 
-  auto op_d = imp_trace.attach_aux_operator(op);
+    try {
+      imp_trace.try_insert(tau1, op_d);
+      std::cout << imp_trace << "\n";
+      std::tie(new_atomic_weight, new_atomic_reweighting) = imp_trace.compute();
+    } catch (rbt_insert_error const &) {
+      std::cerr << "Insert error : recovering ... " << std::endl;
+      new_atomic_weight      = std::nan("");
+      new_atomic_reweighting = std::nan("");
+    }
 
-  auto tau1 = tau_seg.make_time_pt(0.);
+    imp_trace.cancel_insert();
+    std::cout << new_atomic_weight << ", " << new_atomic_reweighting << "\n";
 
-  try {
-    imp_trace.try_insert(tau1, op_d);
-    std::cout << imp_trace << "\n";
-    std::tie(new_atomic_weight, new_atomic_reweighting) = imp_trace.compute();
-  } catch (rbt_insert_error const &) {
-    std::cerr << "Insert error : recovering ... " << std::endl;
-    new_atomic_weight      = std::nan("");
-    new_atomic_reweighting = std::nan("");
+    triqs_cthyb::h_scalar_t exp_val = new_atomic_weight / atomic_z;
+    std::cout << "exp_val = " << exp_val << "\n";
   }
-
-  imp_trace.cancel_insert();
-  std::cout << new_atomic_weight << ", " << new_atomic_reweighting << "\n";
-
-  triqs_cthyb::h_scalar_t exp_val = new_atomic_weight / atomic_z;
-  std::cout << "exp_val = " << exp_val << "\n";
 
   // -----------------------------------------------------------------------------
   // gf eval, using the imp_trace
 
   int ntau = 10;
-
   auto g = gf<imtime>{{beta, Fermion, ntau}, {1, 1}};
+
+  many_body_operator_real op1 = c_dag("up", 0);
+  many_body_operator_real op2 = n("dn", 0) * c("up", 0);
+
+  auto op1_d = imp_trace.attach_aux_operator(op1);
+  auto op2_d = imp_trace.attach_aux_operator(op2);
 
   for (auto tau : g.mesh()) {
 

@@ -1,6 +1,45 @@
 Version 2.2.0
 -------------
 
+CTHYB version 2.2.0 is a compatibility release
+for TRIQS version 2.2.0. It provides improvements to
+the documentation and fixes various compiler warnings.
+
+We provide a more detailed description of the changes below.
+
+cmake
+-----
+* Install additional triqs namespace headers provided by cthyb
+* Synchronize project structure with app4triqs
+* Bump cthyb version to 2.2.0 and adjust triqs version requirement
+* Minor adjustments in cmake to restore cmake version 3.0.2 compatibility
+
+doc
+---
+* Update install instructions for nfft
+* Install svg files used by tutorials
+* Add tutorial for pert order histogram
+* Add tutoria for dynamic suscept
+* Fix import statements -> static observables (import from atom_diag)
+
+General
+-------
+* Use std::vector over triqs::arrays::vector for density containers
+* Fix various compiler warnings and deprecation messages
+* Consistently use std:: namespace instead of std::c14::
+* Remove remainders of separate cpp2py install from modulefile
+* Bump cmake version requirement to 3.0.2
+* Port cthyb after latest changes to triqs mpi/itertools functionality
+* Add measurement O_tau_min_ins
+
+h5
+--
+* Store additional member variables when storing solver object, FIX #115
+
+packaging
+---------
+* update package name to triqs_cthyb and conflict with cthyb
+
 Version 2.1.0
 -------------
 

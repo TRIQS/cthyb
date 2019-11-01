@@ -22,7 +22,6 @@
 #include "impurity_trace.hpp"
 #include <triqs/gfs.hpp>
 #include <triqs/det_manip.hpp>
-#include <triqs/utility/serialization.hpp>
 
 namespace triqs_cthyb {
   using namespace triqs::gfs;

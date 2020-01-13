@@ -4,11 +4,12 @@ Version 3.0.0
 Fundamental Green Function Symmetries
 -------------------------------------
 
-We now enforce the fundamental Green function property `G[iw](i,j) = G[-iw](j,i)*`
-for both the solver-input S.G0_iw as well as the solver output S.G_iw.
+We now enforce the fundamental Green function properties `G[iw](i,j) = G[-iw](j,i)*`
+and `G[tau](i,j) = G[tau](j,i)*` for both the solver-input S.G0_iw as well as the
+solver outputs S.G_tau and S.G_iw.
 If the input violates the relation a warning will be issued and the input will
-be automatically symmetrized. The output will always be symmetrized and the
-symmetry violation `G[iw](i,j) -  G[-iw](j,i)` is stored in S.hermiticity_violation_G_iw
+be automatically symmetrized. The output will always be symmetrized
+in the collect_results section of the G_tau measurement.
 
 
 Version 2.2.0

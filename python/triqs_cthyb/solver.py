@@ -126,31 +126,12 @@ class Solver(SolverCore):
             fit_max_moment = params_kw.pop("fit_max_moment", None)
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
-        # Check fundamental Green function property G(iw)[i,j] = G(-iw)*[j,i]
-        if not is_gf_hermitian(self.G0_iw):
-            if mpi.is_master_node():
-                warning = ( "!-------------------------------------------------------------------------------------------!\n"
-                            "! WARNING: S.G0_iw violates fundamental Green Function property G0(iw)[i,j] = G0(-iw)*[j,i] !\n"
-                            "! Symmetrizing S.G0_iw ...                                                                  !\n"
-                            "!-------------------------------------------------------------------------------------------!")
-                print warning
-            self.G0_iw << make_hermitian(self.G0_iw)
-
         # Call the core solver's solve routine
         solve_status = SolverCore.solve(self, **params_kw)
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
-
-            self.G_tau_raw = self.G_tau.copy()
-
-            # We enforce the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i]
-            # for the output Green function and store the symmetry violation to self.hermiticity_violation_G_tau
-            self.G_tau << make_hermitian(self.G_tau_raw)
-
-            # Check that the hermiticity violations originate purely from noise
-            self.hermiticity_violation_G_tau = self.G_tau_raw - self.G_tau
 
             # Fourier transform G_tau to obtain G_iw
             for bl, g in self.G_tau:

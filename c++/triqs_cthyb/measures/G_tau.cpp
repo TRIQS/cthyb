@@ -61,6 +61,9 @@ namespace triqs_cthyb {
       G_tau_block[0] *= 2;
       G_tau_block[last] *= 2;
 
+      // We enforce the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i]
+      G_tau_block = make_hermitian(G_tau_block);
+
       // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
       auto d= max_element(abs(G_tau_block[0] + G_tau_block[last] + 1));
       if(d > 1e-2 && c.rank() == 0)

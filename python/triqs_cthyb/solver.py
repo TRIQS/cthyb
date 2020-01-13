@@ -147,7 +147,7 @@ class Solver(SolverCore):
 
             # We enforce the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i]
             # for the output Green function and store the symmetry violation to self.hermiticity_violation_G_tau
-            for bl, g in self.G_tau: g = make_hermitian(self.G_tau_raw[bl])
+            self.G_tau << make_hermitian(self.G_tau_raw)
 
             # Check that the hermiticity violations originate purely from noise
             self.hermiticity_violation_G_tau = self.G_tau_raw - self.G_tau

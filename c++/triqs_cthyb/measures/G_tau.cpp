@@ -75,7 +75,7 @@ namespace triqs_cthyb {
     // We enforce the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i]
     // and store the symmetry violation separately
     asymmetry_G_tau = make_hermitian(G_tau) - G_tau;
-    G_tau           = G_tau + assymmetry_G_tau;
+    G_tau           = G_tau + asymmetry_G_tau;
   }
 
 } // namespace triqs_cthyb

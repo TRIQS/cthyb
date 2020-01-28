@@ -25,11 +25,14 @@ namespace triqs_cthyb {
 
   using namespace triqs::gfs;
 
-  measure_G_tau::measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t const & gf_struct)
-    : data(data), average_sign(0) {
-    G_tau_opt = block_gf<imtime, G_target_t>({data.config.beta(), Fermion, n_tau}, gf_struct);
-    G_tau.rebind(*G_tau_opt);
+  measure_G_tau::measure_G_tau(qmc_data const &data, int n_tau, gf_struct_t const &gf_struct, container_set_t &results)
+     : data(data), average_sign(0) {
+    results.G_tau_accum = block_gf<imtime, G_target_t>({data.config.beta(), Fermion, n_tau}, gf_struct);
+    G_tau.rebind(*results.G_tau_accum);
     G_tau() = 0.0;
+
+    results.asymmetry_G_tau = block_gf{G_tau};
+    asymmetry_G_tau.rebind(*results.asymmetry_G_tau);
   }
 
   void measure_G_tau::accumulate(mc_weight_t s) {
@@ -61,16 +64,18 @@ namespace triqs_cthyb {
       G_tau_block[0] *= 2;
       G_tau_block[last] *= 2;
 
-      // We enforce the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i]
-      G_tau_block = make_hermitian(G_tau_block);
-
       // Set 1/iw behaviour of tails in G_tau to avoid problems when taking FTs later
-      auto d= max_element(abs(G_tau_block[0] + G_tau_block[last] + 1));
-      if(d > 1e-2 && c.rank() == 0)
-	std::cerr << "WARNING: Tau discontinuity of G_tau deviates appreciably from -1\n     .... max_element |g(0) + g(beta) + 1| = "<<d<<"\n";
+      auto d = max_element(abs(G_tau_block[0] + G_tau_block[last] + 1));
+      if (d > 1e-2 && c.rank() == 0)
+        std::cerr << "WARNING: Tau discontinuity of G_tau deviates appreciably from -1\n     .... max_element |g(0) + g(beta) + 1| = " << d << "\n";
 
       G_tau_block[last] = -1. - G_tau_block[0]; // Enforce 1/iw discontinuity (nb. matrix eq.)
     }
+
+    // We enforce the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i]
+    // and store the symmetry violation separately
+    asymmetry_G_tau = make_hermitian(G_tau) - G_tau;
+    G_tau           = G_tau + assymmetry_G_tau;
   }
 
 } // namespace triqs_cthyb

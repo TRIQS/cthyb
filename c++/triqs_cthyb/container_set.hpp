@@ -38,6 +38,9 @@ namespace triqs_cthyb {
     /// Intermediate Green's function to accumulate g(tau), either real or complex
     std::optional<G_tau_G_target_t> G_tau_accum;
 
+    /// Violation of the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i] after the measurement
+    std::optional<G_tau_G_target_t> asymmetry_G_tau;
+
     /// Single-particle Green's function :math:`G_l` in Legendre polynomial representation.
     std::optional<G_l_t> G_l;
 

@@ -381,7 +381,7 @@ namespace triqs_cthyb {
 
     if (params.measure_G_tau) {
       G_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
-      qmc.add_measure(measure_G_tau{G_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
+      qmc.add_measure(measure_G_tau{data, n_tau, gf_struct, container_set()}, "G_tau measure");
     }
 
     if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");

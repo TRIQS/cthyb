@@ -68,9 +68,11 @@ class Solver(SolverCore):
 
     def solve(self, **params_kw):
         """
-        Solve the impurity problem.
+        Solve the impurity problem for a given G0_iw.
         If ``measure_G_tau`` (default = ``True``), ``G_iw`` and ``Sigma_iw`` will be calculated and their tails fitted.
         In addition to the solver parameters, parameters to control the tail fitting can be provided.
+
+        Moreover, the fundamental property G0(iw)[i,j] = G0(-iw)*[j,i] of the input G0_iw is enforced within C++, and a warning is printed if the property was not satisfied. Additionally, if ``measure_G_tau`` is set to ``True``, the property G(tau)[i,j] = G(tau)*[j,i] will be also ensured for the measured G_tau.
 
         Parameters
         ----------

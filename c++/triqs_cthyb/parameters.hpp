@@ -117,7 +117,7 @@ namespace triqs_cthyb {
     /// Calculate the full trace or use an estimate?
     bool use_trace_estimator = false;
 
-    /// Measure G(tau)? G(tau)[i,j] = G(tau)*[j,i] is enforced for the resulting G(tau)
+    /// Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)
     bool measure_G_tau = true;
 
     /// Measure G_l (Legendre)? Note, no hermiticity in G_l is ensured

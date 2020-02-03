@@ -27,6 +27,7 @@ endif()
 # ############
 # Define Project
 project(CTHYB VERSION 2.2.0 LANGUAGES C CXX)
+get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
 # Load TRIQS and CPP2PY
@@ -47,6 +48,7 @@ endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTALL_PREFIX}))
   message(STATUS "No install prefix given (or invalid). Defaulting to TRIQS_ROOT")
   set(CMAKE_INSTALL_PREFIX ${TRIQS_ROOT} CACHE PATH "default install path" FORCE)
+  set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE)
 endif()
 message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
 
@@ -70,9 +72,6 @@ if(Hybridisation_is_complex AND NOT Local_hamiltonian_is_complex)
                      "and Local_hamiltonian_is_complex=OFF is not supported.")
 endif()
 
-# Build static libraries
-set(BUILD_SHARED_LIBS OFF)
-
 # Export the list of compile-commands into compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -83,7 +82,9 @@ add_compile_options(
 )
 
 # Create an Interface target for compiler warnings
-add_library(project_warnings INTERFACE)
+if(NOT TARGET project_warnings)
+  add_library(project_warnings INTERFACE)
+endif()
 install(TARGETS project_warnings EXPORT triqs_cthyb-targets)
 target_compile_options(project_warnings
   INTERFACE
@@ -92,8 +93,11 @@ target_compile_options(project_warnings
     -Wpedantic
     -Wno-sign-compare
     $<$<CXX_COMPILER_ID:GNU>:-Wshadow=local>
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-attributes>
     $<$<CXX_COMPILER_ID:Clang>:-Wshadow>
     $<$<CXX_COMPILER_ID:Clang>:-Wno-gcc-compat>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wshadow>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-gcc-compat>
 )
 
 # #############
@@ -107,7 +111,7 @@ add_subdirectory(c++/triqs_cthyb)
 
 # Tests
 option(Build_Tests "Build tests" ON)
-if(Build_Tests)
+if(Build_Tests AND NOT IS_SUBPROJECT)
   enable_testing()
   add_subdirectory(test)
 endif()
@@ -118,7 +122,7 @@ if(TRIQS_WITH_PYTHON_SUPPORT)
 
   # Build the documentation
   option(Build_Documentation "Build documentation" OFF)
-  if(Build_Documentation)
+  if(Build_Documentation AND NOT IS_SUBPROJECT)
     if(NOT TRIQS_WITH_DOCUMENTATION)
       message(WARNING "TRIQS was installed without documentation! Cannot build documentation.")
     else()
@@ -137,7 +141,7 @@ add_subdirectory(share)
 # Debian Package
 
 option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
-if(BUILD_DEBIAN_PACKAGE)
+if(BUILD_DEBIAN_PACKAGE AND NOT IS_SUBPROJECT)
   if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
   endif()

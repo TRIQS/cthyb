@@ -21,7 +21,7 @@
 #
 ################################################################################
 
-version = "@CTHYB_VERSION@"
+version = "@PROJECT_VERSION@"
 triqs_hash = "@TRIQS_GIT_HASH@"
 triqs_cthyb_hash = "@PROJECT_GIT_HASH@"
 

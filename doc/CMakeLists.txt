@@ -50,14 +50,16 @@ endforeach()
 add_custom_target(docs_sphinx ALL)
 add_custom_command(
   TARGET docs_sphinx
-  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH} ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html
+  COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}/python:$ENV{PYTHONPATH} ${TRIQS_SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html
 )
 
 option(Sphinx_Only "When building the documentation, skip the Python Modules and the generation of C++ Api and example outputs" OFF)
 if(NOT Sphinx_Only)
   # Autodoc usage requires the python modules to be built first
   get_property(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
-  add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
+  if(CPP2PY_MODULES_LIST)
+    add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
+  endif()
 
   # Generation of C++ Api and Example Outputs
   add_dependencies(docs_sphinx docs_cpp2rst docs_example_output)

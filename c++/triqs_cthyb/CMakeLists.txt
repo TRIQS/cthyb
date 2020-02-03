@@ -3,7 +3,7 @@ list(REMOVE_ITEM sources impurity_trace.checks.cpp)
 if(NOT MeasureG2)
   list(REMOVE_ITEM sources measures/G2_iw_acc.cpp measures/G2_iw.cpp measures/G2_iwll.cpp measures/G2_iw_nfft.cpp measures/G2_tau.cpp)
 endif()
-add_library(triqs_cthyb_c ${sources})
+add_library(triqs_cthyb_c STATIC ${sources})
 
 # Link against triqs and enable warnings
 target_link_libraries(triqs_cthyb_c PUBLIC triqs PRIVATE project_warnings)
@@ -70,8 +70,11 @@ if(ANALYZE_SOURCES)
 	  --std=c++17
 	  --template=gcc
 	  --verbose
+	  --force
 	  --quiet
           ${sources}
+	WORKING_DIRECTORY
+	  ${CMAKE_CURRENT_SOURCE_DIR}
     )
   else()
     message(STATUS "cppcheck not found in $PATH. Please consider installing cppcheck for additional checks!")
@@ -86,12 +89,16 @@ option(ASAN OFF "Compile library and executables with LLVM Address Sanitizer")
 option(UBSAN OFF "Compile library and executables with LLVM Undefined Behavior Sanitizer")
 
 if(ASAN)
-  find_package(sanitizer REQUIRED "asan")
+  if(NOT TARGET asan)
+    find_package(sanitizer REQUIRED "asan")
+  endif()
   target_link_libraries(triqs_cthyb_c PUBLIC asan)
   install(TARGETS asan EXPORT triqs_cthyb-targets)
 endif()
 if(UBSAN)
-  find_package(sanitizer REQUIRED "ubsan")
+  if(NOT TARGET ubsan)
+    find_package(sanitizer REQUIRED "ubsan")
+  endif()
   target_link_libraries(triqs_cthyb_c PUBLIC ubsan)
   install(TARGETS ubsan EXPORT triqs_cthyb-targets)
 endif()

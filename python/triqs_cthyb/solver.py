@@ -51,7 +51,7 @@ class Solver(SolverCore):
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
         if isinstance(gf_struct,dict):
-            print "WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict"
+            if mpi.is_master_node(): print "WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict"
             gf_struct = [ [k, v] for k, v in gf_struct.iteritems() ]
 
         # Initialise the core solver
@@ -67,10 +67,20 @@ class Solver(SolverCore):
         self.n_tau = n_tau
 
     def solve(self, **params_kw):
-        """
-        Solve the impurity problem.
-        If ``measure_G_tau`` (default = ``True``), ``G_iw`` and ``Sigma_iw`` will be calculated and their tails fitted.
-        In addition to the solver parameters, parameters to control the tail fitting can be provided.
+        r"""
+        Solve the impurity problem for a given G0_iw. If ``measure_G_tau``
+        (default = ``True``), ``G_iw`` and ``Sigma_iw`` will be calculated and
+        their tails fitted. In addition to the solver parameters, parameters to
+        control the tail fitting can be provided.
+
+        Moreover, the fundamental property :math:`G_{ij}(i \omega_n) =
+        G_{ji}^*(- i \omega_n)` of the input G0_iw is enforced within C++, and
+        a warning is printed if the property was not satisfied. Additionally, if
+        ``measure_G_tau`` is set to ``True``, the property :math:`G_{ij}(\tau)=
+        G_{ji}^*(\tau)` will be also ensured for the measured :math:`G(\tau)`.
+	The difference between the original :math:`G(\tau)` and the hermitized
+	:math:`G(\tau)` is stored in the object ``asymmetry_G_tau`` of the solver instance.
+
 
         Parameters
         ----------
@@ -132,15 +142,15 @@ class Solver(SolverCore):
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
+
             # Fourier transform G_tau to obtain G_iw
-            for name, g in self.G_tau:
+            for bl, g in self.G_tau:
                 bl_size = g.target_shape[0]
-                known_moments = np.zeros((4, bl_size, bl_size), dtype=np.complex)
-                for i in range(bl_size):
-                    known_moments[1,i,i] = 1
+                known_moments = make_zero_tail(g, 4)
+                known_moments[1,...] = np.eye(bl_size)
+                self.G_iw[bl].set_from_fourier(g, known_moments)
 
-                self.G_iw[name].set_from_fourier(g, known_moments)
-
+            assert is_gf_hermitian(self.G_iw)
             self.G_iw_raw = self.G_iw.copy()
 
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail

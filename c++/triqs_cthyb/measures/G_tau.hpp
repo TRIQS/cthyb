@@ -23,6 +23,7 @@
 #include <triqs/gfs.hpp>
 
 #include "../qmc_data.hpp"
+#include "../container_set.hpp"
 
 namespace triqs_cthyb {
 
@@ -32,7 +33,7 @@ namespace triqs_cthyb {
   class measure_G_tau {
 
     public:
-    measure_G_tau(std::optional<G_tau_G_target_t> &G_tau_opt, qmc_data const &data, int n_tau, gf_struct_t const &gf_struct);
+    measure_G_tau(qmc_data const &data, int n_tau, gf_struct_t const &gf_struct, container_set_t &results);
     void accumulate(mc_weight_t s);
     void collect_results(mpi::communicator const &c);
 
@@ -40,6 +41,7 @@ namespace triqs_cthyb {
     qmc_data const &data;
     mc_weight_t average_sign;
     G_tau_G_target_t::view_type G_tau;
+    G_tau_G_target_t::view_type asymmetry_G_tau;
   };
 
 } // namespace triqs_cthyb

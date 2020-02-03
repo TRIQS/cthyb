@@ -117,10 +117,10 @@ namespace triqs_cthyb {
     /// Calculate the full trace or use an estimate?
     bool use_trace_estimator = false;
 
-    /// Measure G(tau)?
+    /// Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)
     bool measure_G_tau = true;
 
-    /// Measure G_l (Legendre)?
+    /// Measure G_l (Legendre)? Note, no hermiticity in G_l is ensured
     bool measure_G_l = false;
 
     /// Measure O_tau by insertion
@@ -128,7 +128,7 @@ namespace triqs_cthyb {
 
     /// Minumum of operator insertions in: O_tau by insertion measure
     int measure_O_tau_min_ins = 10;
-    
+
     /// Measure G^4(tau,tau',tau'') with three fermionic times.
     bool measure_G2_tau = false;
 

@@ -109,6 +109,17 @@ namespace triqs_cthyb {
     std::vector<int> n_inner;
     for (auto const &bl : gf_struct) { n_inner.push_back(bl.second.size()); }
 
+    // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
+
+    if (not is_gf_hermitian(_G0_iw)) {
+      if (params.verbosity >= 2)
+        std::cout << "!-------------------------------------------------------------------------------------------!\n"
+                     "! WARNING: S.G0_iw violates fundamental Green Function property G0(iw)[i,j] = G0(-iw)*[j,i] !\n"
+                     "! Symmetrizing S.G0_iw ...                                                                  !\n"
+                     "!-------------------------------------------------------------------------------------------!\n\n";
+      _G0_iw = make_hermitian(_G0_iw);
+    }
+
     // ==== Compute Delta from G0_iw ====
 
     auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw);
@@ -370,7 +381,7 @@ namespace triqs_cthyb {
 
     if (params.measure_G_tau) {
       G_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
-      qmc.add_measure(measure_G_tau{G_tau_accum, data, n_tau, gf_struct}, "G_tau measure");
+      qmc.add_measure(measure_G_tau{data, n_tau, gf_struct, container_set()}, "G_tau measure");
     }
 
     if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");

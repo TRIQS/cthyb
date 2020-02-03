@@ -77,7 +77,9 @@ class Solver(SolverCore):
         G_{ji}^*(- i \omega_n)` of the input G0_iw is enforced within C++, and
         a warning is printed if the property was not satisfied. Additionally, if
         ``measure_G_tau`` is set to ``True``, the property :math:`G_{ij}(\tau)=
-        G_{ji}^*(\tau)` will be also ensured for the measured :math:`G(\tau)`. The difference between the original :math:`G(\tau)` and the hermitized :math:`G(\tau)` is stored in the object ``asymmetry_G_tau`` of the solver instance.
+        G_{ji}^*(\tau)` will be also ensured for the measured :math:`G(\tau)`.
+	The difference between the original :math:`G(\tau)` and the hermitized
+	:math:`G(\tau)` is stored in the object ``asymmetry_G_tau`` of the solver instance.
 
 
         Parameters

@@ -41,8 +41,11 @@ with HDFArchive(filename, 'r') as A:
     solver_ref = A['solver']
 
 assert( solver.last_constr_parameters == solver_ref.last_constr_parameters )
-assert( solver.last_solve_parameters == solver.last_solve_parameters )
+assert( solver.last_solve_parameters == solver_ref.last_solve_parameters )
 #assert( solver.last_container_set == solver_ref.last_container_set ) # want to write this
+assert( solver.perturbation_order == solver_ref.perturbation_order )
+assert( solver.h_loc == solver_ref.h_loc )
+
 
 # -- Poor mans version of comparison of the container sets
 for key in dir(solver_ref):

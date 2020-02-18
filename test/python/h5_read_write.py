@@ -4,6 +4,7 @@ from pytriqs.gf import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
 from pytriqs.operators import n, c, c_dag
 from pytriqs.archive import HDFArchive
 from triqs_cthyb import SolverCore
+from pytriqs.statistics.histograms import Histogram
 
 cp = dict(
     beta=10.0,
@@ -28,6 +29,7 @@ sp = dict(
     n_warmup_cycles = 50,
     n_cycles = 500,
     move_double = False,
+    measure_pert_order = True
     )
     
 solver.solve(**sp)

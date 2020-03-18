@@ -1,5 +1,24 @@
+Version 2.2.1
+=============
+
+CTHYB Version 2.2.1 makes the application available
+through the Anaconda package manager. We adjust
+the install pages of the documentation accordingly.
+It further introduces two minor fixes.
+We provide a more detailed description of the changes below.
+
+doc
+---
+* Add a section on the Anaconda package to the install page
+
+General
+-------
+* Correct error in solve params deprecation warning Fix #124
+* Remove redundant inclusion of triqs/utility/serialization.hpp
+
+
 Version 2.2.0
--------------
+=============
 
 CTHYB version 2.2.0 is a compatibility release
 for TRIQS version 2.2.0. It provides improvements to

@@ -136,7 +136,7 @@ namespace triqs {
 
         // Write f(x) to nfft_plan-> The prefactor accounts for the Pi/beta offset
         // in fermionic Matsubaras
-        fx_arr()[buf_counter] = std::exp(1_j * M_PI * sum_tau_beta) * ftau;
+        fx_arr()[buf_counter] = std::exp(1i * M_PI * sum_tau_beta) * ftau;
 
         ++buf_counter;
 

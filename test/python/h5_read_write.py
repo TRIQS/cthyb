@@ -47,7 +47,7 @@ assert( solver.last_solve_parameters == solver.last_solve_parameters )
 # -- Poor mans version of comparison of the container sets
 for key in dir(solver_ref):
     if 'G' in key or 'Delta' in key:
-        print 'comparing', key
+        print('comparing', key)
         
         val = getattr(solver, key)
         val_ref = getattr(solver_ref, key)

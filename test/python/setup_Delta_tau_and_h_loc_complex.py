@@ -69,26 +69,26 @@ S.solve(
 
 h_loc_ref = S.h_loc - h_int
 
-print 'h_loc =\n', h_loc
-print 'h_loc_ref =\n', h_loc_ref
+print('h_loc =\n', h_loc)
+print('h_loc_ref =\n', h_loc_ref)
 
 Delta_tau_ref = S.Delta_tau['0']
 Delta_iw_ref = Delta_iw.copy()
 Delta_iw_ref << Fourier(Delta_tau_ref)
 
 diff = h_loc - h_loc_ref
-print 'h_loc diff =', diff
+print('h_loc diff =', diff)
 for ops, prefactor in diff:
-    print prefactor, ops
+    print(prefactor, ops)
     assert( np.abs(prefactor) < 1e-10 )
 
 diff = np.max(np.abs(Delta_tau.data - Delta_tau_ref.data))
-print 'Delta_tau diff =', diff
+print('Delta_tau diff =', diff)
 np.testing.assert_array_almost_equal(Delta_tau.data, Delta_tau_ref.data)
 assert( diff < 1e-8 )
 
 diff = np.max(np.abs(Delta_iw.data - Delta_iw_ref.data))
-print 'Delta_iw diff =', diff
+print('Delta_iw diff =', diff)
 np.testing.assert_array_almost_equal(Delta_iw.data, Delta_iw_ref.data)
 assert( diff < 1e-7 )
 

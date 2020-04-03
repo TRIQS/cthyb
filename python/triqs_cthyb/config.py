@@ -10,7 +10,7 @@ class configuration:
 
     def plot(self, beta, conf_offset=0.0):
         fill = lambda dagger : 'full' if dagger else 'none'
-        shape = lambda block : u'<' if block else u'o'
+        shape = lambda block : '<' if block else 'o'
         color = lambda block : 'r' if block else 'b'
         block_offset = lambda block : 0.003 if block else 0.0
         for i in range(self.oplist.shape[0]):
@@ -41,10 +41,10 @@ def count_configs(hdf_file,n_configs):
             down += 1
         elif set(conf.oplist[:,1]) == set([0.0,1.0]):
             updown += 1
-    print 'empty = ',empty
-    print 'up = ',up
-    print 'down = ',down
-    print 'up and down = ',updown
+    print('empty = ',empty)
+    print('up = ',up)
+    print('down = ',down)
+    print('up and down = ',updown)
 
 def plot_configs(hdf_file,beta,n_configs,delta_configs):
     conf_offset = 0.0

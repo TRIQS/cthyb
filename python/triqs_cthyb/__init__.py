@@ -23,9 +23,9 @@ r"""
 DOC
 
 """
-from solver import Solver
-from solver_core import SolverCore
-from util import estimate_nfft_buf_size
+from .solver import Solver
+from .solver_core import SolverCore
+from .util import estimate_nfft_buf_size
 
 __all__ = ['Solver', 'SolverCore',
            'estimate_nfft_buf_size']

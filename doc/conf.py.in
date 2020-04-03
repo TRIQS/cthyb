@@ -24,8 +24,8 @@ extensions = ['sphinx.ext.autodoc',
 
 source_suffix = '.rst'
 
-project = u'TRIQS Hybridization Expansion Solver'
-copyright = u'2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
+project = 'TRIQS Hybridization Expansion Solver'
+copyright = '2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 version = '@PROJECT_VERSION@'
 
 mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"

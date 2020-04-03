@@ -53,14 +53,14 @@ if __name__ == '__main__':
                         assert (g.data == ref_val[b].data).all()
 
                 else:
-                    print '-'*72
-                    print 'Attrib: ', attr
-                    print 'Type:   ', type(val)
+                    print('-'*72)
+                    print('Attrib: ', attr)
+                    print('Type:   ', type(val))
                 
-                    print 'Value:          ', val
-                    print 'Value from hdf5:', ref_val
-                    print 'Error: Values differ!'
-                    print '-'*72
+                    print('Value:          ', val)
+                    print('Value from hdf5:', ref_val)
+                    print('Error: Values differ!')
+                    print('-'*72)
 
                     success = False
 

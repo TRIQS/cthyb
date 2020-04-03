@@ -43,12 +43,12 @@ def check_h_loc(h_loc_ref, h_loc_mat, orb):
     h_int = Operator()
     S.solve(h_int=h_int, n_cycles=1)
 
-    print 'h_loc_ref =', h_loc_ref
-    print 'S.h_loc =', S.h_loc
+    print('h_loc_ref =', h_loc_ref)
+    print('S.h_loc =', S.h_loc)
 
     diff = h_loc_ref - S.h_loc
 
-    print 'diff =', diff
+    print('diff =', diff)
 
     for op, prefactor in diff:
         assert( np.abs(prefactor) < 1e-10 )

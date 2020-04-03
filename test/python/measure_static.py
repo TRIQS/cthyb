@@ -51,7 +51,7 @@ if mpi.is_master_node():
     static_observables = {"N1_up" : n("up",1), "N1_dn" : n("dn",1),
                           "N2_up" : n("up",2), "N2_dn" : n("dn",2)}
     with HDFArchive('measure_static.out.h5','w') as ar:
-        for name,op in static_observables.iteritems():
+        for name,op in static_observables.items():
             ave = trace_rho_op(dm,op,S.h_loc_diagonalization)
             assert( np.abs(ave.imag) < 1e-10 )
             ar[name] = ave.real

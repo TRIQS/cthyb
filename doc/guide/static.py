@@ -37,8 +37,8 @@ h_loc_diag = S.h_loc_diagonalization
 from pytriqs.atom_diag import trace_rho_op
 
 # Evaluate occupations
-print "<N_up> =", trace_rho_op(rho, n('up',0), h_loc_diag)
-print "<N_down> = ", trace_rho_op(rho, n('down',0), h_loc_diag)
+print("<N_up> =", trace_rho_op(rho, n('up',0), h_loc_diag))
+print("<N_down> = ", trace_rho_op(rho, n('down',0), h_loc_diag))
 
 # Evaluate double occupancy
-print "<N_up*N_down> =", trace_rho_op(rho, n('up',0)*n('down',0), h_loc_diag)
+print("<N_up*N_down> =", trace_rho_op(rho, n('up',0)*n('down',0), h_loc_diag))

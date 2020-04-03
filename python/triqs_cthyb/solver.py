@@ -20,12 +20,12 @@
 #
 ################################################################################
 
-from solver_core  import SolverCore
+from .solver_core import SolverCore
 from pytriqs.gf import *
 import pytriqs.utility.mpi as mpi
 import numpy as np
 
-from tail_fit import tail_fit as cthyb_tail_fit
+from .tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
@@ -51,8 +51,8 @@ class Solver(SolverCore):
              Number of legendre polynomials to use in accumulations of the Green's functions.
         """
         if isinstance(gf_struct,dict):
-            if mpi.is_master_node(): print "WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict"
-            gf_struct = [ [k, v] for k, v in gf_struct.iteritems() ]
+            if mpi.is_master_node(): print("WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict")
+            gf_struct = [ [k, v] for k, v in gf_struct.items() ]
 
         # Initialise the core solver
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
@@ -109,10 +109,10 @@ class Solver(SolverCore):
             measure_g_l='measure_G_l',
             )
         
-        for key in depr_params.keys():
-            if key in params_kw.keys():
-                print 'WARNING: cthyb.solve parameter %s is deprecated use %s.' % \
-                    (key, depr_params[key])
+        for key in list(depr_params.keys()):
+            if key in list(params_kw.keys()):
+                print('WARNING: cthyb.solve parameter %s is deprecated use %s.' % \
+                    (key, depr_params[key]))
                 val = params_kw.pop(key)
                 params_kw[depr_params[key]] = val
 
@@ -123,12 +123,12 @@ class Solver(SolverCore):
         if perform_post_proc and perform_tail_fit:
             # If tail parameters provided for Sigma_iw fitting, use them, otherwise use defaults
             if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw) or ("fit_max_w" in params_kw) or ("fit_min_w" in params_kw)):
-	        if mpi.is_master_node():
+                if mpi.is_master_node():
                     warning = ("!------------------------------------------------------------------------------------!\n"
                                "! WARNING: Using default high-frequency tail fitting parameters in the CTHYB solver. !\n"
                                "! You should check that the fitting range is suitable for your calculation!          !\n"
                                "!------------------------------------------------------------------------------------!")
-                    print warning
+                    print(warning)
             fit_min_n = params_kw.pop("fit_min_n", None)
             fit_max_n = params_kw.pop("fit_max_n", None)
             fit_min_w = params_kw.pop("fit_min_w", None)

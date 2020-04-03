@@ -53,12 +53,12 @@ n_min = 20
 n_max = 100
 
 w_vec = np.array([ w for w in wmesh])[nw:]
-print len(w_vec)
+print(len(w_vec))
 
 w_min = w_vec[n_min].value
 w_max = w_vec[n_max].value
 
-print w_min, w_max
+print(w_min, w_max)
 #exit()
 
 # -- triqs/unstable implementation
@@ -77,7 +77,7 @@ elif False:
     from pytriqs.gf.gf_fnt import fit_tail_on_window, replace_by_tail
 
     known_moments = np.zeros((0, 2, 2), dtype=np.complex) # no known moments
-    print 'known_moments.shape =', known_moments.shape
+    print('known_moments.shape =', known_moments.shape)
     
     tail, err = fit_tail_on_window(
         Delta_iw,
@@ -88,14 +88,14 @@ elif False:
         expansion_order=order_max
         )
 
-    print 'tail =', tail
+    print('tail =', tail)
 
     Delta_iw_fit = Delta_iw.copy()
     replace_by_tail(Delta_iw_fit, tail, n_min=n_min)
     filename = 'data_tail_fit_example_new_tail.h5'
     figure_filename = 'figure_tail_fit_example_new_tail.pdf'
-    print tail.shape
-    print err
+    print(tail.shape)
+    print(err)
 
 else:
     from pytriqs.gf import BlockGf

@@ -58,4 +58,4 @@ def hist_pert_order(hdf_file,n_configs):
     for i in range(1,n_configs+1):
         conf = load_configuration(hdf_file,i)
         length.append(len(conf.oplist))
-    plt.hist(length,bins=range(0,20))
+    plt.hist(length,bins=list(range(0,20)))

@@ -20,7 +20,7 @@ half_bandwidth = 1.0
 mu = 32.5  # 3 electrons in 5 bands
 
 spin_names = ("up","down")
-cubic_names = map(str,range(2*L+1))
+cubic_names = [str(i) for i in range(2*L+1)]
 U_mat = U_matrix(L, radial_integrals=[F0,F2,F4], basis="cubic")
 
 # Parameters

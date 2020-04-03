@@ -25,7 +25,7 @@ from math import ceil
 from numpy import argmax
 
 def block_size_from_gf_struct(block_name, gf_struct):
-    bns, idxs = zip(*gf_struct)
+    bns, idxs = list(zip(*gf_struct))
     bidx = bns.index(block_name)
     block_size = len(idxs[bidx])
     return block_size

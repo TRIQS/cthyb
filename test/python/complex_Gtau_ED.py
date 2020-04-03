@@ -24,7 +24,7 @@ H_mat = np.array([[-0.2  , 0.1j , 0.5 ,  0.1 ],
                   [ 0.1  , 0.5  , 0.0 ,  0.0 ]])
 corr_dim = 2
 
-G0_iw = GfImFreq(beta=10,indices=range(len(H_mat)),n_points=101)
+G0_iw = GfImFreq(beta=10,indices=list(range(len(H_mat))),n_points=101)
 G0_iw << inverse(iOmega_n - H_mat)
 
 H_int = 3*n("ud",0)*n("ud",1)
@@ -35,7 +35,7 @@ p["length_cycle"] = 100
 p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 5000
 
-S = Solver(beta=10,gf_struct=[["ud",range(corr_dim)]],n_tau=203,n_iw=101)
+S = Solver(beta=10,gf_struct=[["ud",list(range(corr_dim))]],n_tau=203,n_iw=101)
 S.G0_iw << G0_iw[:corr_dim,:corr_dim]
 S.solve(h_int=H_int,**p)
 

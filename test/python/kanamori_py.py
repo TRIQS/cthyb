@@ -22,7 +22,7 @@ V = 1.0 * np.eye(num_orbitals) + 0.1 * (np.ones(num_orbitals) - np.eye(num_orbit
 
 # Block structure of GF
 spin_names = ('up','down')
-orb_names = range(num_orbitals)
+orb_names = list(range(num_orbitals))
 gf_struct = set_operator_structure(spin_names,orb_names,True)
 
 # Construct solver

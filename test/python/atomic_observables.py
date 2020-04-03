@@ -17,7 +17,7 @@ F0 = 4.0
 F2 = 0.5
 
 spin_names = ("up","dn")
-cubic_names = map(str,range(2*L+1))
+cubic_names = [str(i) for i in range(2*L+1)]
 U_mat = U_matrix(L, radial_integrals=[F0,F2], basis="spherical")
 
 # Parameters

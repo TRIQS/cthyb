@@ -28,7 +28,7 @@ for i in range(H_matrix.shape[0]):
 H+=3*n('ud',0)*n('ud',1)
 
 S = AtomDiag(H,fops)
-G_tau = atomic_g_tau(S,beta=10,gf_struct=[['ud', range(4)]],n_tau=41)
+G_tau = atomic_g_tau(S,beta=10,gf_struct=[['ud', list(range(4))]],n_tau=41)
 
 with HDFArchive('atomdiag_ed.out.h5','w') as ar:
     ar['G_tau']=G_tau

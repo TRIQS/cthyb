@@ -61,7 +61,7 @@ OUT += ("%9s "*7) % ("======","=","===","===","===","===","===")  + '\n'
 
 E_sorted_res = sorted(zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz']),
 #E_sorted_res = sorted(zip(res['E'],res['N'],res['S2'],res['Sz'],res['L2'],res['Lz'],res['LS']),
-                      cmp=lambda r1,r2: cmp(r1[0],r2[0]))
+                      key=lambda r: r[0])
 
 filter_minus_0 = lambda x: 0 if (x<0 and abs(x)<1e-10) else x
 for v in E_sorted_res: OUT += ("%9.4f "*6) % tuple(map(filter_minus_0,v)) + '\n'

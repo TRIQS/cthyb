@@ -92,7 +92,7 @@ TEST(CtHyb, Anderson) {
   
   
   if (rank == 0) {
-    triqs::h5::file G_file(filename + ".out.h5", 'w');
+    h5::file G_file(filename + ".out.h5", 'w');
 #ifdef BLOCK
     h5_write(G_file, "G_up", G_tau[0]);
     h5_write(G_file, "G_down", G_tau[1]);
@@ -103,7 +103,7 @@ TEST(CtHyb, Anderson) {
 
   gf<imtime> g;
   if (rank == 0) {
-    triqs::h5::file G_file(filename + ".ref.h5", 'r');
+    h5::file G_file(filename + ".ref.h5", 'r');
 #ifdef BLOCK
     h5_read(G_file, "G_up", g);
     EXPECT_GF_NEAR(g, G_tau[0]);

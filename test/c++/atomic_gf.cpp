@@ -52,13 +52,13 @@ TEST(CtHyb, AtomicGf) {
 
   // Save the results
   if (rank == 0) {
-    triqs::h5::file G_file("atomic_gf.out.h5", 'w');
+    h5::file G_file("atomic_gf.out.h5", 'w');
     h5_write(G_file, "G_tau", solver.atomic_gf());
   }
 
   block_gf<imtime> g;
   if (rank == 0) {
-    triqs::h5::file G_file("atomic_gf.ref.h5", 'r');
+    h5::file G_file("atomic_gf.ref.h5", 'r');
     h5_read(G_file, "G_tau", g);
     EXPECT_BLOCK_GF_NEAR(g, solver.atomic_gf());
   }

@@ -137,7 +137,7 @@ TEST(atom_diag, op_matrix) {
   // -----------------------------------------------------------------------------
   
   {
-    triqs::h5::file fd("impurity_trace_op_insert.h5", 'w');
+    h5::file fd("impurity_trace_op_insert.h5", 'w');
     h5_write(fd, "g", g);
   }  
   

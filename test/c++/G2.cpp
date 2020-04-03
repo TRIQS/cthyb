@@ -115,7 +115,7 @@ TEST(CtHyb, G2_measurments) {
   std::string filename = "G2";
 
   if (rank == 0) {
-    triqs::h5::file G_file(filename + ".out.h5", 'w');
+    h5::file G_file(filename + ".out.h5", 'w');
     if (solver.G2_tau) h5_write(G_file, "G2_tau", (*solver.G2_tau)(0, 1));
     if (solver.G2_iw) h5_write(G_file, "G2_iw", (*solver.G2_iw)(0, 1));
     if (solver.G2_iw_ph) h5_write(G_file, "G2_iw_ph", (*solver.G2_iw_ph)(0, 1));
@@ -124,7 +124,7 @@ TEST(CtHyb, G2_measurments) {
   }
 
   if (rank == 0) {
-    triqs::h5::file G_file(filename + ".ref.h5", 'r');
+    h5::file G_file(filename + ".ref.h5", 'r');
 
     {
       G2_tau_t::g_t G2_tau;

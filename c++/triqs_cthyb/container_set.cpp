@@ -24,9 +24,9 @@
 namespace triqs_cthyb {
 
   /// Function that writes all containers to hdf5 file
-  void h5_write(triqs::h5::group h5group, std::string subgroup_name, container_set_t const &c) {
+  void h5_write(h5::group h5group, std::string subgroup_name, container_set_t const &c) {
 
-    triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
+    h5::group grp = subgroup_name.empty() ? h5group : h5group.create_group(subgroup_name);
 
     h5_write(grp, "G_tau", c.G_tau);
     h5_write(grp, "G_tau_accum", c.G_tau_accum);
@@ -46,9 +46,9 @@ namespace triqs_cthyb {
   }
 
   /// Function that reads all containers to hdf5 file
-  void h5_read(triqs::h5::group h5group, std::string subgroup_name, container_set_t &c) {
+  void h5_read(h5::group h5group, std::string subgroup_name, container_set_t &c) {
 
-    triqs::h5::group grp = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
+    h5::group grp = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
 
     h5_read(grp, "G_tau", c.G_tau);
     h5_read(grp, "G_tau_accum", c.G_tau_accum);

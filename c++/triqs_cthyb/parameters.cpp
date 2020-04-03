@@ -28,14 +28,14 @@ namespace triqs_cthyb {
 
   // -- pair<string, string>
 
-  inline void h5_write(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> const &pair) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
+  inline void h5_write(h5::group h5group, std::string name, std::pair<std::string, std::string> const &pair) {
+    h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "0", std::string(pair.first));
     h5_write(grp, "1", std::string(pair.second));
   }
 
-  inline void h5_read(triqs::h5::group h5group, std::string name, std::pair<std::string, std::string> &pair) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
+  inline void h5_read(h5::group h5group, std::string name, std::pair<std::string, std::string> &pair) {
+    h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     assert(grp.get_all_subgroup_names().size() == 2);
     h5_read(grp, "0", pair.first);
     h5_read(grp, "1", pair.second);
@@ -43,15 +43,15 @@ namespace triqs_cthyb {
 
   // -- set<pair<string, string>>
 
-  inline void h5_write(triqs::h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> const &pair_set) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
+  inline void h5_write(h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> const &pair_set) {
+    h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     for( auto [idx, pair] : enumerate(pair_set) ) {
       h5_write(grp, std::to_string(idx), pair);
     }
   }
 
-  inline void h5_read(triqs::h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> &pair_set) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
+  inline void h5_read(h5::group h5group, std::string name, std::set<std::pair<std::string, std::string>> &pair_set) {
+    h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     for( auto sgrp_name : grp.get_all_subgroup_names() ) {
       std::pair<std::string, std::string> pair;
       h5_read(grp, sgrp_name, pair);
@@ -59,8 +59,8 @@ namespace triqs_cthyb {
     }
   }
 
-  void h5_write(triqs::h5::group h5group, std::string name, constr_parameters_t const &cp) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
+  void h5_write(h5::group h5group, std::string name, constr_parameters_t const &cp) {
+    h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "beta", cp.beta);
     h5_write(grp, "gf_struct", cp.gf_struct);
     h5_write(grp, "n_iw", cp.n_iw);
@@ -68,8 +68,8 @@ namespace triqs_cthyb {
     h5_write(grp, "n_l", cp.n_l);
   }
 
-  void h5_read(triqs::h5::group h5group, std::string name, constr_parameters_t &cp) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
+  void h5_read(h5::group h5group, std::string name, constr_parameters_t &cp) {
+    h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     h5_read(grp, "beta", cp.beta);
     h5_read(grp, "gf_struct", cp.gf_struct);
     h5_read(grp, "n_iw", cp.n_iw);
@@ -77,8 +77,8 @@ namespace triqs_cthyb {
     h5_read(grp, "n_l", cp.n_l);
   }
 
-  void h5_write(triqs::h5::group h5group, std::string name, solve_parameters_t const &sp) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.create_group(name);
+  void h5_write(h5::group h5group, std::string name, solve_parameters_t const &sp) {
+    h5::group grp = name.empty() ? h5group : h5group.create_group(name);
     h5_write(grp, "h_int", sp.h_int);
 
     h5_write(grp, "n_cycles", sp.n_cycles);
@@ -142,8 +142,8 @@ namespace triqs_cthyb {
     h5_write(grp, "det_singular_threshold", sp.det_singular_threshold);
   }
 
-  void h5_read(triqs::h5::group h5group, std::string name, solve_parameters_t &sp) {
-    triqs::h5::group grp = name.empty() ? h5group : h5group.open_group(name);
+  void h5_read(h5::group h5group, std::string name, solve_parameters_t &sp) {
+    h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     h5_read(grp, "h_int", sp.h_int);
 
     h5_read(grp, "n_cycles", sp.n_cycles);

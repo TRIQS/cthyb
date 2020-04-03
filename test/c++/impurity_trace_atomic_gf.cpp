@@ -10,7 +10,7 @@
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
 using gf_struct_t = triqs::hilbert_space::gf_struct_t;
@@ -171,7 +171,7 @@ TEST(impurity_trace, atomic_gf) {
   EXPECT_GF_NEAR(g, slice_target(g_ref[0], range(0,1), range(0,1)));
   
   {
-    triqs::h5::file fd("impurity_trace_atomic_gf.h5", 'w');
+    h5::file fd("impurity_trace_atomic_gf.h5", 'w');
     h5_write(fd, "g", g);
     h5_write(fd, "g_ref", g_ref);
   }

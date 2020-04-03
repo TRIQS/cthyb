@@ -24,7 +24,6 @@ module.add_preamble("""
 #include <triqs/cpp2py_converters/arrays.hpp>
 #include <triqs/cpp2py_converters/gf.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
-#include <triqs/cpp2py_converters/h5.hpp>
 
 using namespace triqs_cthyb;
 """)

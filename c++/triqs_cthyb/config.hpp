@@ -29,12 +29,13 @@
 #include <triqs/hilbert_space/imperative_operator.hpp>
 //#include "./array_suppl.hpp"
 
+#include <h5/h5.hpp>
+
 namespace triqs_cthyb {
 
 using namespace triqs::arrays;
 using namespace triqs::gfs;
 using namespace triqs::hilbert_space;
-namespace h5 = triqs::h5;
 namespace operators = triqs::operators;
 
 using std::isfinite;

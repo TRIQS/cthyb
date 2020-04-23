@@ -7,7 +7,7 @@ Author: Hugo U.R. Strand """
 import itertools
 import numpy as np
 
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 nw = 512

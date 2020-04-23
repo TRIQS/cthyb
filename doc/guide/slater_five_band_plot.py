@@ -1,6 +1,6 @@
 from pytriqs.gf import *
 from pytriqs.gf.gf_fnt import rebinning_tau
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.plot.mpl_interface import oplot
 
 with HDFArchive('slater_five_band.h5','r') as ar:

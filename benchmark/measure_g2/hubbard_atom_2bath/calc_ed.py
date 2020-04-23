@@ -15,7 +15,7 @@ from pytriqs.gf import Gf, BlockGf, Block2Gf
 from pytriqs.gf import MeshImTime, MeshImFreq, MeshProduct
 
 from pytriqs.operators import c, c_dag
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 
 # ----------------------------------------------------------------------
 

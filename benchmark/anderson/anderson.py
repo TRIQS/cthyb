@@ -2,7 +2,7 @@
 
 import itertools
 import pytriqs.utility.mpi as mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.operators import *
 from triqs_cthyb import SolverCore
 from pytriqs.atom_diag import trace_rho_op

@@ -60,7 +60,7 @@ namespace triqs_cthyb {
     using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
 
 #ifdef SAVE_CONFIGS
-    configuration(double beta) : beta_(beta), id(0), configs_hfile("configs.h5", exists("configs.h5") ? H5F_ACC_RDWR : H5F_ACC_TRUNC) {
+    configuration(double beta) : beta_(beta), id(0), configs_hfile("configs.h5", exists("configs.h5") ? 'a' : 'w') {
       if (NUM_CONFIGS_TO_SAVE > 0) h5_write(configs_hfile, "c_0", *this);
     }
     ~configuration() { configs_hfile.close(); }

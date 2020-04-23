@@ -1,7 +1,7 @@
 from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.applications.impurity_solvers.cthyb import Solver
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 import pytriqs.utility.mpi as mpi
 
 # Parameters

@@ -14,7 +14,7 @@ import itertools
 import numpy as np
 
 from pytriqs.operators import c, c_dag
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 
 # ----------------------------------------------------------------------
 

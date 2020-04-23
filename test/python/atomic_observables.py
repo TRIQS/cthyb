@@ -4,7 +4,7 @@ from pytriqs.operators.util.op_struct import set_operator_structure
 from pytriqs.operators.util.U_matrix import U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
 from pytriqs.operators.util.observables import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.gf import *
 from pytriqs.atom_diag import quantum_number_eigenvalues
 #from atom_diag import * # quantum_number_eigenvalues

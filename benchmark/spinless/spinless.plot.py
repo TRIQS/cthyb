@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 from itertools import product
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.gf import *
 from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import plt, oplot

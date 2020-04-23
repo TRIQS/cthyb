@@ -6,7 +6,7 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 from pytriqs.gf import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 
 # ----------------------------------------------------------------------    
 

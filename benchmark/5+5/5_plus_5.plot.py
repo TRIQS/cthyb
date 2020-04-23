@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.gf import GfImTime, GfImFreq, Gf, MeshImFreq, inverse, iOmega_n, Fourier
 from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import *

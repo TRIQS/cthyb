@@ -13,7 +13,7 @@ import os
 import numpy as np
 
 from pytriqs.operators import c, c_dag
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.gf import GfImTime, GfImFreq, BlockGf
 
 # ----------------------------------------------------------------------

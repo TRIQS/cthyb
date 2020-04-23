@@ -2,7 +2,7 @@ import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.gf import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
 from pytriqs.operators import n, c, c_dag
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from triqs_cthyb import SolverCore
 
 cp = dict(

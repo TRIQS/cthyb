@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from triqs_cthyb import SolverCore
 from pytriqs.operators import Operator, n
 from pytriqs.gf import Gf, inverse, iOmega_n

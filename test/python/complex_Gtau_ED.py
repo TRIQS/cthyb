@@ -2,7 +2,7 @@ import numpy as np
 from pytriqs.operators import *
 from triqs_cthyb import *
 from pytriqs.gf import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.utility.h5diff import h5diff
 
 """ This test was benchmarked against the an ED-solver that is 

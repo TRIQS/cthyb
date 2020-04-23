@@ -1,7 +1,7 @@
 
 import numpy as np
 from pytriqs.gf import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 
 def plot_full_iter(iter_no, filename):

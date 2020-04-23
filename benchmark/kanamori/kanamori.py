@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.operators import n, Operator
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.hamiltonians import h_int_kanamori

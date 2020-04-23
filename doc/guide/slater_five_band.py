@@ -1,5 +1,5 @@
 from pytriqs.gf import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.applications.impurity_solvers.cthyb import Solver
 import pytriqs.operators.util as op
 import pytriqs.utility.mpi as mpi

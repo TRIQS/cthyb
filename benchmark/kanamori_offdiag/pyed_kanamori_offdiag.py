@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 from scipy.linalg import block_diag
 
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.operators import c, c_dag, n
 
 from pytriqs.gf import Gf

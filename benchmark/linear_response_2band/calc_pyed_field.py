@@ -18,7 +18,7 @@ import numpy as np
 # ----------------------------------------------------------------------
 
 from pytriqs.utility import mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.gf import GfImTime, GfImFreq
 from pytriqs.gf import MeshImTime, MeshProduct, Gf
 from pytriqs.operators import n, c, c_dag, Operator, dagger

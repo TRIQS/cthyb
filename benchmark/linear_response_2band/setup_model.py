@@ -16,7 +16,7 @@ import numpy as np
 # ----------------------------------------------------------------------
 
 from pytriqs.utility import mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 
 from pytriqs.gf import Gf, inverse, iOmega_n, Fourier
 from pytriqs.gf import MeshImTime, MeshProduct

@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.operators import *
 from triqs_cthyb import *
 from pytriqs.statistics.histograms import Histogram

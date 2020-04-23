@@ -3,7 +3,7 @@ from pytriqs.atom_diag import AtomDiag, atomic_g_tau
 from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.utility.comparison_tests import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 
 
 # the single-particle Hamiltonian of the problem

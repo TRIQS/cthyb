@@ -3,7 +3,7 @@
 import numpy as np
 
 import pytriqs.utility.mpi as mpi
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from triqs_cthyb import SolverCore
 from pytriqs.operators import n
 from pytriqs.gf import GfImFreq, iOmega_n, inverse

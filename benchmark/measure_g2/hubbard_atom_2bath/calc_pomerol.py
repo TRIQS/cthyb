@@ -10,7 +10,7 @@ Author: Hugo U.R. Strand (2017) hugo.strand@gmail.com
 # ----------------------------------------------------------------------
 
 from pytriqs.operators import c, c_dag
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 
 # ----------------------------------------------------------------------
 

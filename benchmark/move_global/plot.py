@@ -1,6 +1,6 @@
 #!/bin/env pytriqs
 
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.gf import *
 from pytriqs.gf.gf_fnt import rebinning_tau
 from pytriqs.plot.mpl_interface import *

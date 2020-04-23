@@ -1,7 +1,7 @@
 # %load run_single_band.py
 from pytriqs.gf import *
 from pytriqs.operators import *
-from pytriqs.archive import *
+from h5 import *
 import pytriqs.utility.mpi as mpi
 from triqs_cthyb import Solver
 import numpy as np

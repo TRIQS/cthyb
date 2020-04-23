@@ -1,7 +1,7 @@
 #!/bin/env pytriqs
 
 import numpy as np
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.gf import *
 from pytriqs.plot.mpl_interface import plt
 

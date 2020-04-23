@@ -14,7 +14,7 @@ import numpy as np
 # ----------------------------------------------------------------------
 
 from pytriqs.operators import Operator
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pyed.ParameterCollection import ParameterCollection
 from pytriqs.gf import Gf, inverse, iOmega_n, Fourier
 

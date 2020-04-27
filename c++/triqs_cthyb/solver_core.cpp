@@ -131,7 +131,7 @@ namespace triqs_cthyb {
     // Compute the constant part of Delta
     Delta_infty_vec = map(
        // Compute 0th moment of one block
-       [imag_threshold](gf_const_view<imfreq> d) {
+       [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
          auto [tail, err] = fit_hermitian_tail(d);
          if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};

@@ -73,13 +73,13 @@ def make_calc():
         use_norm_as_weight = True,
         )
 
-    print 'p.solve.random_seed =', p.solve.random_seed
+    print('p.solve.random_seed =', p.solve.random_seed)
     
     # ------------------------------------------------------------------
     
     if mpi.is_master_node():
-        print '--> Solving SIAM with parameters'
-        print p
+        print('--> Solving SIAM with parameters')
+        print(p)
 
     # ------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ def make_calc():
     p.exp_val = trace_rho_op(solv.density_matrix, o1 * o2, solv.h_loc_diagonalization)
     p.n_exp = trace_rho_op(solv.density_matrix, n('up', 0) + n('do', 0), solv.h_loc_diagonalization)
 
-    print 'p.exp_val =', p.exp_val
+    print('p.exp_val =', p.exp_val)
     
     # ------------------------------------------------------------------
     # -- Collect results

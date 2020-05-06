@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     style = 'sk'
     for filename in filenames:
-        print '--> Loading:', filename
+        print('--> Loading:', filename)
 
         with HDFArchive(filename, 'r') as s:
             field = s['field']
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     styles = { 2:'.m', 4:'.c', 8:'.y' }
 
     for filename in filenames:
-        print '--> Loading:', filename
+        print('--> Loading:', filename)
         with HDFArchive(filename, 'r') as s:
             p = s['p']
             
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         }
 
     for filename in filenames:
-        print '--> Loading:', filename
+        print('--> Loading:', filename)
         with HDFArchive(filename, 'r') as s:
             p = s['p']
             

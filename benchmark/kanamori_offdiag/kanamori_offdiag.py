@@ -19,7 +19,7 @@ epsilon = [-2.3,2.3]
 V = [1.0*np.eye(num_orbitals) + 0.1*(np.ones((num_orbitals,num_orbitals)) - np.eye(num_orbitals))]*2
 
 spin_names = ("up","dn")
-orb_names = range(num_orbitals)
+orb_names = list(range(num_orbitals))
 
 for use_qn in (True, False):
 

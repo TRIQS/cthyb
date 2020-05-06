@@ -46,8 +46,8 @@ def make_calc(beta=2.0, h_field=0.0):
 
     # ------------------------------------------------------------------
 
-    print '--> Solving SIAM with parameters'
-    print p
+    print('--> Solving SIAM with parameters')
+    print(p)
     
     # ------------------------------------------------------------------
 

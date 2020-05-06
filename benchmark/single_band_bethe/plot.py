@@ -117,7 +117,7 @@ def plot_all_iter(iter_min=0, iter_max=0, filename=None):
 
     with HDFArchive(filename, 'r') as a:
         U = a['U']
-        for i in xrange(iter_min, iter_max):
+        for i in range(iter_min, iter_max):
 
             Delta_tau = a['Delta_tau-%i' % i]
             oplotr(Delta_tau['up'], label=i, alpha=0.25)
@@ -129,7 +129,7 @@ def plot_all_iter(iter_min=0, iter_max=0, filename=None):
 
     with HDFArchive(filename, 'r') as a:
         U = a['U']
-        for i in xrange(iter_min, iter_max):
+        for i in range(iter_min, iter_max):
             G_iw = a['G_iw-%i' % i]
             oplotr(G_iw['up'], label=i, alpha=0.5)
             oploti(G_iw['up'], label=i, alpha=0.5)
@@ -140,7 +140,7 @@ def plot_all_iter(iter_min=0, iter_max=0, filename=None):
 
     with HDFArchive(filename, 'r') as a:
         U = a['U']
-        for i in xrange(iter_min, iter_max):
+        for i in range(iter_min, iter_max):
             Sigma_iw = a['Sigma_iw-%i' % i]
             oplotr(Sigma_iw['up'], label=i, alpha=0.5)
             oploti(Sigma_iw['up'], label=i, alpha=0.5)
@@ -154,7 +154,7 @@ def plot_all_iter_Delta_tau(filename1, filename2, iter_min=0, iter_max=0):
     for filename in [filename1, filename2]:
         with HDFArchive(filename, 'r') as a:
             U = a['U']
-            for i in xrange(iter_min, iter_max):
+            for i in range(iter_min, iter_max):
 
                 Delta_tau = a['Delta_tau-%i' % i]
                 oplotr(Delta_tau['up'], label=i, alpha=0.25)

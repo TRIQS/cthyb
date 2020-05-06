@@ -29,7 +29,7 @@ tail_fit = dict(
 for do_tail in [True, False]:
     for i in range(n_loops):
 
-        print "\n\nIteration = %i / %i" % (i+1, n_loops)
+        print("\n\nIteration = %i / %i" % (i+1, n_loops))
 
         # Symmetrize the Green's function and use self-consistency
         g = 0.5 * ( S.G_iw['up'] + S.G_iw['down'] )

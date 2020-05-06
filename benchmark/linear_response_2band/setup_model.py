@@ -88,7 +88,7 @@ if __name__ == '__main__':
     
     up, do = '0', '1'
     p.spin_names = [up, do]
-    p.orb_names = range(p.num_orbitals)
+    p.orb_names = list(range(p.num_orbitals))
 
     # -- Unitary transform
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     #p.T = unitary_transf_4x4(t_vec=[0.25*np.pi, 0.0, 0.0, 0.0, 0.0, 0.0])
     #p.T = np.eye(4)
     p.T = np.matrix(p.T)
-    print p.T
+    print(p.T)
     
     # -- Different types of operator sets
     

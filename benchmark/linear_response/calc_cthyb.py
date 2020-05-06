@@ -69,13 +69,13 @@ def make_calc(nw=2, nc=1e5, beta=2.0, h_field=0.0, rand=1):
         measure_G2_n_fermionic = nw,
         )
 
-    print 'p.solve.random_seed =', p.solve.random_seed
+    print('p.solve.random_seed =', p.solve.random_seed)
     
     # ------------------------------------------------------------------
     
     if mpi.is_master_node():
-        print '--> Solving SIAM with parameters'
-        print p
+        print('--> Solving SIAM with parameters')
+        print(p)
 
     # ------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     for nw, nc, beta in itertools.product(nw_vec, nc_vec, beta_vec):
 
-        for repeat in xrange(repeats):
+        for repeat in range(repeats):
 
             if mpi.is_master_node():
                 max = 10000
@@ -142,7 +142,7 @@ if __name__ == '__main__':
             rand = mpi.bcast(rand)
 
             path = 'cthyb_nw%i_nc%i_beta%6.6f_rand%i' % (nw, int(np.log10(nc)), beta, rand)
-            print '-->path: ', path
+            print('-->path: ', path)
             if mpi.is_master_node():
                 os.mkdir(path)
 

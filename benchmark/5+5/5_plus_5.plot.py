@@ -20,7 +20,7 @@ for line in open("5_plus_5.ref.dat",'r'):
 beta = tau[-1]
 n_tau = len(tau)
     
-g_ref = GfImTime(indices = range(len(data[0])), beta=beta, n_points=n_tau)
+g_ref = GfImTime(indices = list(range(len(data[0]))), beta=beta, n_points=n_tau)
 for nt, d in enumerate(data):
     for nc, val in enumerate(d):
         g_ref.data[nt,nc,nc] = val
@@ -41,7 +41,7 @@ for filename in ["5_plus_5.int.h5", "5_plus_5.h5"]:
     # Calculate theoretical curves
     if not use_interaction:
         #g_theor = GfImTime(indices = range(len(orb_names)), beta=beta, n_points=n_tau)
-        g_theor = GfImTime(indices = range(len(orb_names)), beta=beta, n_points=1000)
+        g_theor = GfImTime(indices = list(range(len(orb_names))), beta=beta, n_points=1000)
         for nc, cn in enumerate(orb_names):
             V = delta_params[cn]['V']
             e = delta_params[cn]['e']

@@ -39,7 +39,7 @@ namespace triqs_cthyb {
 
     double beta;           // inverse temperature
     atom_diag h_diag;      // diagonalization of the local problem
-    gf_struct_t gf_struct; // Block structure of the Green function FIXME
+    gf_struct_t gf_struct; // Block structure of the Green function
     many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
     int n_iw, n_tau, n_l;
 

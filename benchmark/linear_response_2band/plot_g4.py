@@ -39,7 +39,7 @@ def plot_g2(g, **kwargs):
     
     for i1, i2, i3, i4 in itertools.product(*[range(s) for s in shape]):         
 
-        print i1, i2, i3, i4
+        print(i1, i2, i3, i4)
         
         ax = plt.subplot(*subp); subp[-1] += 1
         if (i1, i2, i3, i4) == (0, 0, 0, 0) and title is not None:
@@ -106,8 +106,8 @@ if __name__ == '__main__':
     opt_r = dict(vmin=-vm_r, vmax=vm_r, cmap=plt.get_cmap('RdBu'))
     opt_i = dict(vmin=-vm_i, vmax=vm_i, cmap=plt.get_cmap('RdBu'))
     
-    print vmin_r, vmax_r
-    print vmin_i, vmax_i
+    print(vmin_r, vmax_r)
+    print(vmin_i, vmax_i)
 
     #exit()
 

@@ -29,7 +29,7 @@ def calc_field(plot=True):
     
     for filename in filenames:
 
-        print '--> Loading:', filename
+        print('--> Loading:', filename)
         
         with HDFArchive(filename, 'r') as s:
             p = s['p']            
@@ -51,7 +51,7 @@ def calc_field(plot=True):
     out.chi = -spl(0, nu=1) # Linear response
     out.beta = p.beta
 
-    print 'beta, chi =', out.beta, out.chi
+    print('beta, chi =', out.beta, out.chi)
 
     filename_out = 'data_pyed_extrap_h_field_beta%6.6f.h5' % out.beta
     with HDFArchive(filename_out, 'w') as s:
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     paths = glob.glob('pyed_*')
 
     for path in paths:
-        print '--> path:', path
+        print('--> path:', path)
         os.chdir(path)
         calc_field()
         os.chdir('../')

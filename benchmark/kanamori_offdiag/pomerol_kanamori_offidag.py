@@ -30,11 +30,11 @@ if __name__ == '__main__':
     fop_bath = fundamental_operators_from_gf_struct(
         [ ['up', bath_idxs], ['do', bath_idxs] ])
 
-    print spin_names
-    print imp_idxs
-    print bath_idxs
-    print fop_imp
-    print fop_bath
+    print(spin_names)
+    print(imp_idxs)
+    print(bath_idxs)
+    print(fop_imp)
+    print(fop_bath)
     
     fop = fop_imp + fop_bath
 
@@ -50,24 +50,24 @@ if __name__ == '__main__':
     
     T_bath = np.diag([-2.3, -2.3, 2.3, 2.3])
  
-    print 'V =\n', V
-    print 'T_imp =\n', T_imp
-    print 'T_bath =\n', T_bath
+    print('V =\n', V)
+    print('T_imp =\n', T_imp)
+    print('T_bath =\n', T_bath)
 
     V = block_diag(V, V)
     T_imp = block_diag(T_imp, T_imp)
     T_bath = block_diag(T_bath, T_bath)
 
-    print 'V =\n', V
-    print 'T_imp =\n', T_imp
-    print 'T_bath =\n', T_bath
+    print('V =\n', V)
+    print('T_imp =\n', T_imp)
+    print('T_bath =\n', T_bath)
     
     T = np.block([
         [ T_imp, V ],
         [ V.T, T_bath]
         ])
     
-    print 'T =\n', T
+    print('T =\n', T)
 
     H_int = h_int_kanamori(
         spin_names, imp_idxs,

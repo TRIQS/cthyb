@@ -23,18 +23,18 @@ from pyed.ParameterCollection import ParameterCollection
 if __name__ == '__main__':
 
     filename = 'data_cthyb.h5'
-    print '--> Loading:', filename
+    print('--> Loading:', filename)
     with HDFArchive(filename, 'r') as s:
         cthyb = s['p']
 
     if False:
         filename = '../../test/python/O_tau_ins.ref.h5'
-        print '--> Loading:', filename
+        print('--> Loading:', filename)
         with HDFArchive(filename, 'r') as s:
             O_tau_regr = s['O_tau']
         
     filename = 'data_pyed_h_field_0.0000.h5'
-    print '--> Loading:', filename
+    print('--> Loading:', filename)
     with HDFArchive(filename, 'r') as s:
         pyed = s['p']
         

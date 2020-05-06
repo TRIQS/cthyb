@@ -39,9 +39,9 @@ if __name__ == '__main__':
     
     import matplotlib.pyplot as plt
 
-    print 'min/max chi =', np.min(pyed.chi.real), np.max(pyed.chi.real)
-    print 'min/max chi_field =', np.min(pyed.chi_field.real), np.max(pyed.chi_field.real)
-    print 'min/max chi_static =', np.min(pyed.chi_static.real), np.max(pyed.chi_static.real)
+    print('min/max chi =', np.min(pyed.chi.real), np.max(pyed.chi.real))
+    print('min/max chi_field =', np.min(pyed.chi_field.real), np.max(pyed.chi_field.real))
+    print('min/max chi_static =', np.min(pyed.chi_static.real), np.max(pyed.chi_static.real))
 
     #exit()
         
@@ -61,8 +61,8 @@ if __name__ == '__main__':
         plt.title(title, fontsize=8)
         plt.imshow(plt_data, **opt)
         plt.axis('equal')
-        plt.xticks(xrange(0, 16, 2))
-        plt.yticks(xrange(0, 16, 2))
+        plt.xticks(range(0, 16, 2))
+        plt.yticks(range(0, 16, 2))
 
     data = [
 

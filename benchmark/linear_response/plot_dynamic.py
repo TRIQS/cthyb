@@ -26,7 +26,7 @@ def calc_dynamic(plot=True):
     assert( len(filenames) == 1 )
     filename = filenames[0]
 
-    print '--> Loading:', filename
+    print('--> Loading:', filename)
     with HDFArchive(filename, 'r') as s:
         p = s['p']
 
@@ -36,7 +36,7 @@ def calc_dynamic(plot=True):
     with HDFArchive(filename, 'w') as s:
         s['p'] = p
     
-    print 'beta, chi =', p.beta, p.chi
+    print('beta, chi =', p.beta, p.chi)
 
     if plot: plot_dynamic(p)
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     #paths = glob.glob('pomerol_nw8_beta0.1000*')
 
     for path in paths:
-        print '--> path:', path
+        print('--> path:', path)
         os.chdir(path)
         calc_dynamic(plot=False)
         os.chdir('../')

@@ -46,8 +46,8 @@ def make_calc(beta=2.0, h_field=0.0):
 
     # ------------------------------------------------------------------
 
-    print '--> Solving SIAM with parameters'
-    print p
+    print('--> Solving SIAM with parameters')
+    print(p)
     
     # ------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     for beta in beta_vec:
         path = 'pyed_beta%6.6f' % beta
-        print '-->path: ', path
+        print('-->path: ', path)
         os.mkdir(path)
         os.chdir(path)
 

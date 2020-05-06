@@ -35,16 +35,16 @@ def partition(h_int,h_k,gf_struct,QN=None):
     return S.h_loc_diagonalization, end-start
 
 table_format = ("%40s "+"%20s "*3)
-print table_format % ("Model","Dimension of HS","Quantum numbers","Autopartition")
-print table_format % ("=====","===============","===============","=============")
+print(table_format % ("Model","Dimension of HS","Quantum numbers","Autopartition"))
+print(table_format % ("=====","===============","===============","============="))
 
 def print_line(model,hs_size,qn,ap):
-    print table_format % (model,hs_size,"%i (%.3f sec)" % qn,"%i (%.3f sec)" % ap)
+    print(table_format % (model,hs_size,"%i (%.3f sec)" % qn,"%i (%.3f sec)" % ap))
 
 ### Kanamori Hamiltonians
 def run_kanamori(max_orbitals,orbital_mixing):
     for num_orbitals in range(2,max_orbitals+1):
-        orb_names = range(num_orbitals)
+        orb_names = list(range(num_orbitals))
         gf_struct = set_operator_structure(spin_names,orb_names,True)
         mkind = get_mkind(True,None)
 
@@ -76,7 +76,7 @@ def run_kanamori(max_orbitals,orbital_mixing):
 ### Slater Hamiltonians
 def run_slater(L,is_cubic):
     for l in L:
-        orb_names = range(2*l+1)
+        orb_names = list(range(2*l+1))
         num_orbitals = len(orb_names)
         gf_struct = set_operator_structure(spin_names,orb_names,True)
         mkind = get_mkind(True,None)
@@ -99,11 +99,11 @@ def run_slater(L,is_cubic):
         model += (" (cubic basis)" if is_cubic else " (spherical basis)")
         print_line(model,2**(2*num_orbitals),(eig_qn.n_subspaces,time_qn),(eig_ap.n_subspaces,time_ap))
 
-print
+print()
 run_kanamori(7,False)
-print
+print()
 run_kanamori(7,True)
-print
+print()
 run_slater([2,3],False)
-print
+print()
 run_slater([2,3],True)

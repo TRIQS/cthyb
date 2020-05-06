@@ -47,8 +47,8 @@ def make_calc(nw=10, beta=2.0, h_field=0.0):
 
     # ------------------------------------------------------------------
 
-    print '--> Solving SIAM with parameters'
-    print p
+    print('--> Solving SIAM with parameters')
+    print(p)
     
     # ------------------------------------------------------------------
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     for nw, beta in itertools.product(nw_vec, beta_vec):
         path = 'pomerol_nw%i_beta%6.6f' % (nw, beta)
-        print '-->path: ', path
+        print('-->path: ', path)
         if mpi.is_master_node():
             os.mkdir(path)
 

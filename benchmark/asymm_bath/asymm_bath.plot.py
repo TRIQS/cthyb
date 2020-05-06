@@ -46,7 +46,7 @@ for e_group_name in arch:
     for w in reversed(e_group['perturbation_order_total'].data):
         if w==0: continue
         opcount_data.insert(0,w)
-    histo_a.bar(range(len(opcount_data)), opcount_data)
+    histo_a.bar(list(range(len(opcount_data))), opcount_data)
     histo_a.set_title('perturbation_order')
 
     pp.savefig(plt.gcf())

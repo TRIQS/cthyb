@@ -48,7 +48,7 @@ S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 def read_histo(f,type_of_col_1):
     histo = []
     for line in f:
-        cols = filter(lambda s: s, line.split(' '))
+        cols = [s for s in line.split(' ') if s]
         histo.append((type_of_col_1(cols[0]),float(cols[1]),float(cols[2])))
     return histo
 

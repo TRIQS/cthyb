@@ -56,9 +56,9 @@ def make_calc(U=10):
     d = Dummy() # storage space
     d.params = params
 
-    print '--> Solving SIAM with parameters'
-    for key, value in params.items():
-        print '%10s = %-10s' % (key, str(value))
+    print('--> Solving SIAM with parameters')
+    for key, value in list(params.items()):
+        print('%10s = %-10s' % (key, str(value)))
         globals()[key] = value # populate global namespace
     
     # ------------------------------------------------------------------
@@ -118,7 +118,7 @@ def make_calc(U=10):
     
     filename = 'data_ed.h5'
     with HDFArchive(filename,'w') as res:
-        for key, value in d.__dict__.items():
+        for key, value in list(d.__dict__.items()):
             res[key] = value
         
 # ----------------------------------------------------------------------

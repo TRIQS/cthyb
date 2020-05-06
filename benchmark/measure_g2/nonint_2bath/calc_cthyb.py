@@ -43,9 +43,9 @@ if __name__ == '__main__':
     d.params = params
 
     if mpi.is_master_node():
-        print '--> Solving SIAM with parameters'
-        for key, value in params.items():
-            print '%10s = %-10s' % (key, str(value))
+        print('--> Solving SIAM with parameters')
+        for key, value in list(params.items()):
+            print('%10s = %-10s' % (key, str(value)))
             globals()[key] = value # populate global namespace
 
     # ------------------------------------------------------------------
@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
     runtime = time.time() - starttime
     if mpi.is_master_node():
-        print '--> runtime:', runtime
+        print('--> runtime:', runtime)
 
     G_iw = solv.G0_iw.copy()
     G_tau = solv.G_tau.copy()

@@ -19,7 +19,7 @@ V = 1.0
 epsilon = 2.3
 
 spin_names = ("up","dn")
-orb_names = range(num_orbitals)
+orb_names = list(range(num_orbitals))
 
 for use_qn in (True, False):
 

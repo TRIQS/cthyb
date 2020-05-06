@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     for i1, i2, i3, i4, in itertools.product(range(4), repeat=4):
 
-        print i1, i2, i3, i4
+        print(i1, i2, i3, i4)
         
         o1, o2, o3, o4 = m.op_imp[i1], m.op_imp[i2], m.op_imp[i3], m.op_imp[i4]
 

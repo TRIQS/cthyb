@@ -18,7 +18,7 @@ epsilon = [-1.3, 1.3]
 V = [2.0*np.eye(num_orb) + 0.2*(np.ones((num_orb, num_orb)) - np.eye(num_orb))]*2
 
 spin_names = ("up", "dn")
-orb_names = range(num_orb)
+orb_names = list(range(num_orb))
 n_iw = 1024
 
 g2_n_iw = 5

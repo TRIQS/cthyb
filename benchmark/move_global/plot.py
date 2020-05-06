@@ -20,7 +20,7 @@ arch = HDFArchive(results_file,'r')
 beta = arch['beta']
 move_global_prob = arch['move_global_prob']
 
-all_mg = arch.keys()
+all_mg = list(arch.keys())
 all_mg.remove('beta')
 all_mg.remove('move_global_prob')
 

@@ -49,8 +49,8 @@ if __name__ == '__main__':
     # -- only calculate upper triangle
     
     index_list = []
-    for i1 in xrange(4):
-        for i2 in xrange(i1, 4):
+    for i1 in range(4):
+        for i2 in range(i1, 4):
             index_list.append((i1, i2))
 
     #F = 0.0001 / m.beta
@@ -90,10 +90,10 @@ if __name__ == '__main__':
             np.testing.assert_almost_equal(chi_tau, chi_field, decimal=3)
 
             if(np.abs(chi_tau.real) > 1e-6):
-                print i1, i2, i3, i4
-                print 'chi_tau   = %+2.6f' % chi_tau.real
-                print 'chi_field = %+2.6f' % chi_field.real
-                print 'diff      = %+2.6E' % (chi_field.real - chi_tau.real)
+                print(i1, i2, i3, i4)
+                print('chi_tau   = %+2.6f' % chi_tau.real)
+                print('chi_field = %+2.6f' % chi_field.real)
+                print('diff      = %+2.6E' % (chi_field.real - chi_tau.real))
 
     p.chi_field = mpi.all_reduce(mpi.world, p.chi_field, lambda x, y : x + y)
 

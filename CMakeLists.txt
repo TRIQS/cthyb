@@ -19,20 +19,23 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
+cmake_policy(VERSION 3.3.2)
 if(POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
+endif()
+if(POLICY CMP0077)
+  cmake_policy(SET CMP0077 NEW)
 endif()
 
 # ############
 # Define Project
-project(CTHYB VERSION 2.2.0 LANGUAGES C CXX)
+project(CTHYB VERSION 3.0.0 LANGUAGES C CXX)
 get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
 # Load TRIQS and CPP2PY
-find_package(TRIQS 2.2 REQUIRED)
-find_package(Cpp2Py 1.6 REQUIRED)
+find_package(TRIQS 3.0 REQUIRED)
 
 # Get the git hash & print status
 triqs_get_git_hash_of_source_dir(PROJECT_GIT_HASH)
@@ -50,7 +53,11 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR (NOT IS_ABSOLUTE ${CMAKE_INSTA
   set(CMAKE_INSTALL_PREFIX ${TRIQS_ROOT} CACHE PATH "default install path" FORCE)
   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE)
 endif()
-message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
+if(NOT IS_SUBPROJECT)
+  message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
+endif()
+set(APP4TRIQS_BINARY_DIR ${PROJECT_BINARY_DIR} CACHE STRING "Binary directory of the APP4TRIQS Project")
+
 
 # ############
 # Options
@@ -59,7 +66,15 @@ message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------"
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Type of build" FORCE)
 endif()
-message(STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} --------")
+if(NOT IS_SUBPROJECT)
+  message(STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} --------")
+endif()
+
+# Testing
+option(Build_Tests "Build tests" ON)
+if(Build_Tests)
+  enable_testing()
+endif()
 
 # Options for the compilation ...
 option(Hybridisation_is_complex "If ON, the hybridization Delta(tau) is complex" OFF)
@@ -76,17 +91,15 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Global compiler options
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 add_compile_options(
   $<$<CONFIG:Debug>:-Og>
   $<$<CONFIG:Debug>:-ggdb3>
 )
 
 # Create an Interface target for compiler warnings
-if(NOT TARGET project_warnings)
-  add_library(project_warnings INTERFACE)
-endif()
-install(TARGETS project_warnings EXPORT triqs_cthyb-targets)
-target_compile_options(project_warnings
+add_library(triqs_cthyb_warnings INTERFACE)
+target_compile_options(triqs_cthyb_warnings
   INTERFACE
     -Wall
     -Wextra
@@ -103,6 +116,9 @@ target_compile_options(project_warnings
 # #############
 # Build Project
 
+# Find / Build dependencies
+add_subdirectory(deps)
+
 # Install additional triqs headers provided by cthyb
 add_subdirectory(c++/triqs)
 
@@ -110,9 +126,7 @@ add_subdirectory(c++/triqs)
 add_subdirectory(c++/triqs_cthyb)
 
 # Tests
-option(Build_Tests "Build tests" ON)
-if(Build_Tests AND NOT IS_SUBPROJECT)
-  enable_testing()
+if(Build_Tests)
   add_subdirectory(test)
 endif()
 
@@ -136,6 +150,7 @@ endif()
 
 # Additional configuration files
 add_subdirectory(share)
+
 
 # #############
 # Debian Package

@@ -1,6 +1,6 @@
 add_subdirectory(cmake)
 
-if(NOT CMAKE_INSTALL_PREFIX STREQUAL TRIQS_ROOT)
+if(NOT CMAKE_INSTALL_PREFIX STREQUAL TRIQS_ROOT AND NOT IS_SUBPROJECT)
 
   configure_file(triqs_cthyb.modulefile.in triqs_cthyb.modulefile @ONLY)
   configure_file(triqs_cthybvars.sh.in triqs_cthybvars.sh @ONLY)

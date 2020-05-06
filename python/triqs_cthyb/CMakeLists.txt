@@ -13,8 +13,7 @@ endforeach()
 foreach(gen ${wrap_generators})
   string(REPLACE "_desc.py" "" module_name ${gen})
   add_cpp2py_module(${module_name})
-  target_link_libraries(${module_name} PRIVATE triqs_cthyb_c)
-  target_compile_options(${module_name} PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-attributes>)
+  target_link_libraries(${module_name} triqs_cthyb_c)
 endforeach()
 
 # Install python modules to proper location

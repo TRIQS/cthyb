@@ -6,7 +6,7 @@ endif()
 add_library(triqs_cthyb_c STATIC ${sources})
 
 # Link against triqs and enable warnings
-target_link_libraries(triqs_cthyb_c PUBLIC triqs PRIVATE project_warnings)
+target_link_libraries(triqs_cthyb_c PUBLIC triqs PRIVATE $<BUILD_INTERFACE:triqs_cthyb_warnings>)
 
 # Additional compilation options
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)

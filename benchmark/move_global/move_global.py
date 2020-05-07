@@ -1,11 +1,11 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from pytriqs.operators import n
-from pytriqs.atom_diag import trace_rho_op
+from triqs.operators import n
+from triqs.atom_diag import trace_rho_op
 from triqs_cthyb import SolverCore
-from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from triqs.gf import GfImFreq, iOmega_n, inverse
 import numpy as np
 
 spin_names = ("up","dn")

@@ -1,7 +1,7 @@
-from pytriqs.gf import *
-from pytriqs.gf.gf_fnt import rebinning_tau
+from triqs.gf import *
+from triqs.gf.gf_fnt import rebinning_tau
 from h5 import *
-from pytriqs.plot.mpl_interface import oplot
+from triqs.plot.mpl_interface import oplot
 
 with HDFArchive('slater_five_band.h5','r') as ar:
     # Calculate orbital- and spin-averaged Green's function

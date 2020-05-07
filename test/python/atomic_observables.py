@@ -1,12 +1,12 @@
-import pytriqs.utility.mpi as mpi
-from pytriqs.operators import *
-from pytriqs.operators.util.op_struct import set_operator_structure
-from pytriqs.operators.util.U_matrix import U_matrix
-from pytriqs.operators.util.hamiltonians import h_int_slater
-from pytriqs.operators.util.observables import *
+import triqs.utility.mpi as mpi
+from triqs.operators import *
+from triqs.operators.util.op_struct import set_operator_structure
+from triqs.operators.util.U_matrix import U_matrix
+from triqs.operators.util.hamiltonians import h_int_slater
+from triqs.operators.util.observables import *
 from h5 import HDFArchive
-from pytriqs.gf import *
-from pytriqs.atom_diag import quantum_number_eigenvalues
+from triqs.gf import *
+from triqs.atom_diag import quantum_number_eigenvalues
 #from atom_diag import * # quantum_number_eigenvalues
 from triqs_cthyb import *
 

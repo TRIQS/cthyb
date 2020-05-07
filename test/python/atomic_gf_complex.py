@@ -1,8 +1,8 @@
 import numpy as np
-from pytriqs.gf import *
-from pytriqs.operators import *
-from pytriqs.atom_diag import AtomDiag, atomic_g_tau
-from pytriqs.utility.comparison_tests import *
+from triqs.gf import *
+from triqs.operators import *
+from triqs.atom_diag import AtomDiag, atomic_g_tau
+from triqs.utility.comparison_tests import *
 
 # for the imaginary GFs
 beta = 40

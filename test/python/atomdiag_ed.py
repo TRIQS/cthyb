@@ -1,8 +1,8 @@
 import numpy as np
-from pytriqs.atom_diag import AtomDiag, atomic_g_tau
-from pytriqs.gf import *
-from pytriqs.operators import *
-from pytriqs.utility.comparison_tests import *
+from triqs.atom_diag import AtomDiag, atomic_g_tau
+from triqs.gf import *
+from triqs.operators import *
+from triqs.utility.comparison_tests import *
 from h5 import HDFArchive
 
 
@@ -33,7 +33,7 @@ G_tau = atomic_g_tau(S,beta=10,gf_struct=[['ud', list(range(4))]],n_tau=41)
 with HDFArchive('atomdiag_ed.out.h5','w') as ar:
     ar['G_tau']=G_tau
 
-from pytriqs.utility.h5diff import h5diff
+from triqs.utility.h5diff import h5diff
 # the reference solution was checked against an external ED result
 h5diff('atomdiag_ed.ref.h5','atomdiag_ed.out.h5')
 

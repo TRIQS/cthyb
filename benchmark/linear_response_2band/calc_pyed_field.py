@@ -17,11 +17,11 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-from pytriqs.utility import mpi
+from triqs.utility import mpi
 from h5 import HDFArchive
-from pytriqs.gf import GfImTime, GfImFreq
-from pytriqs.gf import MeshImTime, MeshProduct, Gf
-from pytriqs.operators import n, c, c_dag, Operator, dagger
+from triqs.gf import GfImTime, GfImFreq
+from triqs.gf import MeshImTime, MeshProduct, Gf
+from triqs.operators import n, c, c_dag, Operator, dagger
 
 # ----------------------------------------------------------------------
 

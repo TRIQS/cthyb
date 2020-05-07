@@ -22,7 +22,7 @@
 
 import numpy as np
 
-from pytriqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
+from triqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
 
 def tail_fit(
         Sigma_iw,

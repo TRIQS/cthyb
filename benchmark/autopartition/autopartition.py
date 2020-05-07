@@ -1,11 +1,11 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
 import time
-from pytriqs.gf import iOmega_n, inverse
-from pytriqs.operators import *
-from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
-from pytriqs.operators.util.U_matrix import U_matrix
-from pytriqs.operators.util.hamiltonians import h_int_kanamori, h_int_slater
+from triqs.gf import iOmega_n, inverse
+from triqs.operators import *
+from triqs.operators.util.op_struct import set_operator_structure, get_mkind
+from triqs.operators.util.U_matrix import U_matrix
+from triqs.operators.util.hamiltonians import h_int_kanamori, h_int_slater
 from triqs_cthyb import *
 import numpy as np
 

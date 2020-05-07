@@ -1,10 +1,10 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore
-from pytriqs.operators import n
-from pytriqs.gf import Gf, iOmega_n, inverse
+from triqs.operators import n
+from triqs.gf import Gf, iOmega_n, inverse
 
 spin_names = ("up","dn")
 def mkind(spin): return (spin,0)

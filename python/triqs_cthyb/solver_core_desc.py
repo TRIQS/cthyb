@@ -1,12 +1,12 @@
 # Generated automatically using the command :
-# c++2py ../../c++/triqs_cthyb/solver_core.hpp -p --members_read_only -N triqs_cthyb -a triqs_cthyb -m solver_core -o solver_core --moduledoc="The TRIQS cthyb solver" --cxxflags="-std=c++17" -C pytriqs --only="solver_core block_order"
+# c++2py ../../c++/triqs_cthyb/solver_core.hpp -p --members_read_only -N triqs_cthyb -a triqs_cthyb -m solver_core -o solver_core --moduledoc="The TRIQS cthyb solver" --cxxflags="-std=c++17" -C triqs --only="solver_core block_order"
 from cpp2py.wrap_generator import *
 
 # The module
 module = module_(full_name = "solver_core", doc = r"The TRIQS cthyb solver", app_name = "triqs_cthyb")
 
 # Imports
-module.add_imports(*['pytriqs.atom_diag', 'pytriqs.gf', 'pytriqs.operators', 'pytriqs.statistics.histograms'])
+module.add_imports(*['triqs.atom_diag', 'triqs.gf', 'triqs.operators', 'triqs.statistics.histograms'])
 
 # Add here all includes
 module.add_include("triqs_cthyb/solver_core.hpp")

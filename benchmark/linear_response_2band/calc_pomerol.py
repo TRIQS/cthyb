@@ -13,7 +13,7 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
 
 from pyed.ParameterCollection import ParameterCollection

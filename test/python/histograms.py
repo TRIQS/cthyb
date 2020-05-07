@@ -1,11 +1,11 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from pytriqs.operators import *
+from triqs.operators import *
 from triqs_cthyb import *
-from pytriqs.statistics.histograms import Histogram
-from pytriqs.gf import *
+from triqs.statistics.histograms import Histogram
+from triqs.gf import *
 import numpy as np
 
 spin_names = ("up","dn")
@@ -48,7 +48,7 @@ for sn in spin_names: S.G0_iw[sn] << inverse(iOmega_n - delta_w)
 # Solve the problem
 S.solve(h_int=H, **p)
 
-from pytriqs.utility.comparison_tests import *
+from triqs.utility.comparison_tests import *
 
 def assert_histograms_are_close(hi1, hi2):
     assert hi1.n_data_pts == hi2.n_data_pts

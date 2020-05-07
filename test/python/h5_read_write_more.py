@@ -5,9 +5,9 @@ Author: Hugo U.R. Strand (2019) """
 
 # ----------------------------------------------------------------------    
 
-import pytriqs.utility.mpi as mpi
-from pytriqs.gf import inverse, iOmega_n, SemiCircular, BlockGf
-from pytriqs.operators import n
+import triqs.utility.mpi as mpi
+from triqs.gf import inverse, iOmega_n, SemiCircular, BlockGf
+from triqs.operators import n
 from h5 import HDFArchive
 
 from triqs_cthyb import Solver

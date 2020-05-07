@@ -12,13 +12,13 @@ Author: Hugo U.R. Strand (2017) hugo.strand@gmail.com
 import os
 import numpy as np
 
-from pytriqs.operators import c, c_dag
+from triqs.operators import c, c_dag
 from h5 import HDFArchive
-from pytriqs.gf import GfImTime, GfImFreq, BlockGf
+from triqs.gf import GfImTime, GfImFreq, BlockGf
 
 # ----------------------------------------------------------------------
 
-from pytriqs.utility import mpi
+from triqs.utility import mpi
 
 # ----------------------------------------------------------------------
 

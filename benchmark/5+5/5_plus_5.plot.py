@@ -1,12 +1,12 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
 import numpy as np
 
 from h5 import *
-from pytriqs.gf import GfImTime, GfImFreq, Gf, MeshImFreq, inverse, iOmega_n, Fourier
-from pytriqs.gf.gf_fnt import rebinning_tau
-from pytriqs.plot.mpl_interface import *
-from pytriqs.operators.util.op_struct import get_mkind
+from triqs.gf import GfImTime, GfImFreq, Gf, MeshImFreq, inverse, iOmega_n, Fourier
+from triqs.gf.gf_fnt import rebinning_tau
+from triqs.plot.mpl_interface import *
+from triqs.operators.util.op_struct import get_mkind
 from matplotlib.backends.backend_pdf import PdfPages
 
 # Read the reference table file

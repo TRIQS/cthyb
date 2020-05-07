@@ -1,10 +1,10 @@
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from pytriqs.operators import *
+from triqs.operators import *
 #from atom_diag import trace_rho_op
-from pytriqs.atom_diag import trace_rho_op
+from triqs.atom_diag import trace_rho_op
 from triqs_cthyb import *
-from pytriqs.gf import *
+from triqs.gf import *
 import numpy as np
 
 # Input parameters
@@ -56,5 +56,5 @@ if mpi.is_master_node():
             assert( np.abs(ave.imag) < 1e-10 )
             ar[name] = ave.real
 
-from pytriqs.utility.h5diff import h5diff
+from triqs.utility.h5diff import h5diff
 h5diff("measure_static.out.h5","measure_static.ref.h5")

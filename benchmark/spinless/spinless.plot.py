@@ -1,10 +1,10 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
 from itertools import product
 from h5 import *
-from pytriqs.gf import *
-from pytriqs.gf.gf_fnt import rebinning_tau
-from pytriqs.plot.mpl_interface import plt, oplot
+from triqs.gf import *
+from triqs.gf.gf_fnt import rebinning_tau
+from triqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 
 spin_names = ("up","dn")

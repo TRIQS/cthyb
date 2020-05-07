@@ -1,8 +1,8 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
-import pytriqs.utility.mpi as mpi
-from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
-from pytriqs.operators import n
+import triqs.utility.mpi as mpi
+from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.operators import n
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore
 

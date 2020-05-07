@@ -8,12 +8,12 @@ Author: Hugo Strand """
 
 # ----------------------------------------------------------------------
 
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 
-from pytriqs.gf import *
-from pytriqs.operators import *
+from triqs.gf import *
+from triqs.operators import *
 from h5 import HDFArchive
-from pytriqs.utility.comparison_tests import *
+from triqs.utility.comparison_tests import *
 
 # ----------------------------------------------------------------------
 

@@ -11,19 +11,19 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-from pytriqs.gf import Gf, BlockGf, Block2Gf
-from pytriqs.gf import MeshImTime, MeshImFreq, MeshProduct
+from triqs.gf import Gf, BlockGf, Block2Gf
+from triqs.gf import MeshImTime, MeshImFreq, MeshProduct
 
-from pytriqs.operators import c, c_dag
+from triqs.operators import c, c_dag
 from h5 import HDFArchive
 
 # ----------------------------------------------------------------------
 
-#from pytriqs.applications.susceptibility.Dummy import Dummy
-#from pytriqs.applications.susceptibility.fourier import chi4_iw_from_tau
-#from pytriqs.applications.susceptibility.fourier import chi3_iw_from_tau
-#from pytriqs.applications.susceptibility.fourier import chi2_iw_from_tau
-#from pytriqs.applications.susceptibility.fourier import g_iw_from_tau
+#from triqs.applications.susceptibility.Dummy import Dummy
+#from triqs.applications.susceptibility.fourier import chi4_iw_from_tau
+#from triqs.applications.susceptibility.fourier import chi3_iw_from_tau
+#from triqs.applications.susceptibility.fourier import chi2_iw_from_tau
+#from triqs.applications.susceptibility.fourier import g_iw_from_tau
 
 # ----------------------------------------------------------------------
 

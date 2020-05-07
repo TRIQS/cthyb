@@ -13,10 +13,10 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-from pytriqs.operators import Operator
+from triqs.operators import Operator
 from h5 import HDFArchive
 from pyed.ParameterCollection import ParameterCollection
-from pytriqs.gf import Gf, inverse, iOmega_n, Fourier
+from triqs.gf import Gf, inverse, iOmega_n, Fourier
 
 # ----------------------------------------------------------------------
 

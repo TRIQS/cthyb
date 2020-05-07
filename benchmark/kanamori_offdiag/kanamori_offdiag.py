@@ -1,12 +1,12 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from pytriqs.operators import n, Operator
-from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
-from pytriqs.operators.util.hamiltonians import h_int_kanamori
+from triqs.operators import n, Operator
+from triqs.operators.util.op_struct import set_operator_structure, get_mkind
+from triqs.operators.util.hamiltonians import h_int_kanamori
 from triqs_cthyb import SolverCore
-from pytriqs.gf import GfImFreq, iOmega_n, inverse
+from triqs.gf import GfImFreq, iOmega_n, inverse
 import numpy as np
 
 # Input parameters

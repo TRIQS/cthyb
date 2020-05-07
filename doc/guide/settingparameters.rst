@@ -12,8 +12,8 @@ Step 1 - construct the solver instance
 At first you need to create an instance of the CTQMC solver class. This is done
 with::
 
-    from pytriqs.operators import *
-    from pytriqs.applications.impurity_solvers.cthyb import Solver
+    from triqs.operators import *
+    from triqs.applications.impurity_solvers.cthyb import Solver
 
     # Create a solver instance
     S = Solver(beta = beta, gf_struct = gf_struct)
@@ -155,7 +155,7 @@ Final Step - analyze the output
 One of the most important checks that needs to be done is to ensure that the
 high-frequency behaviour of your imaginary frequency Green's function and
 self-energy are correct and lead to physically sensible values. You should use
-the fitting function ``tail_fit`` (provided in ``pytriqs.gf``) to determine the
+the fitting function ``tail_fit`` (provided in ``triqs.gf``) to determine the
 optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.
 This post-processing task can also be delegated to the ``Solver`` object by
 setting ``perform_tail_fit = True`` and other :ref:`solve() <ctqmc_ref>`

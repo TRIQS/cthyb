@@ -1,8 +1,8 @@
-from pytriqs.gf import *
-from pytriqs.operators import *
+from triqs.gf import *
+from triqs.operators import *
 from h5 import *
-import pytriqs.utility.mpi as mpi
-from pytriqs.applications.impurity_solvers.cthyb import Solver
+import triqs.utility.mpi as mpi
+from triqs.applications.impurity_solvers.cthyb import Solver
 
 # Set up a few parameters
 U = 2.5

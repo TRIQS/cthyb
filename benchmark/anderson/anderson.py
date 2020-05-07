@@ -1,12 +1,12 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
 import itertools
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from pytriqs.operators import *
+from triqs.operators import *
 from triqs_cthyb import SolverCore
-from pytriqs.atom_diag import trace_rho_op
-from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.atom_diag import trace_rho_op
+from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
 
 def anderson(use_qn=True, use_blocks=True):
 

@@ -1,8 +1,8 @@
 
 import numpy as np
-from pytriqs.gf import *
+from triqs.gf import *
 from h5 import HDFArchive
-from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
+from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 
 def plot_full_iter(iter_no, filename):
 

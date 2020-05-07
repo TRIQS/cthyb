@@ -1,15 +1,15 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
 import inspect
-import pytriqs.utility.mpi as mpi
+import triqs.utility.mpi as mpi
 from h5 import HDFArchive
-from pytriqs.operators import *
-from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
-from pytriqs.operators.util.U_matrix import cubic_names, U_matrix
-from pytriqs.operators.util.hamiltonians import h_int_slater
+from triqs.operators import *
+from triqs.operators.util.op_struct import set_operator_structure, get_mkind
+from triqs.operators.util.U_matrix import cubic_names, U_matrix
+from triqs.operators.util.hamiltonians import h_int_slater
 from triqs_cthyb import SolverCore
 import triqs_cthyb.version as version
-from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
 from itertools import product
 
 def five_plus_five(use_interaction=True):

@@ -10,12 +10,12 @@ import numpy as np
 
 # ----------------------------------------------------------------------    
 
-from pytriqs.gf import *
-from pytriqs.operators import *
+from triqs.gf import *
+from triqs.operators import *
 from h5 import HDFArchive
 
-from pytriqs.utility.h5diff import h5diff
-import pytriqs.utility.mpi as mpi
+from triqs.utility.h5diff import h5diff
+import triqs.utility.mpi as mpi
 
 # ----------------------------------------------------------------------    
 

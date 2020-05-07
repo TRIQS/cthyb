@@ -8,9 +8,9 @@ import numpy as np
 
 from triqs_cthyb import SolverCore
 
-from pytriqs.operators import n, c, c_dag, Operator
-import pytriqs.utility.mpi as mpi
-from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
+from triqs.operators import n, c, c_dag, Operator
+import triqs.utility.mpi as mpi
+from triqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 beta = 10.0
 
@@ -96,7 +96,7 @@ np.testing.assert_array_almost_equal(Delta_iw.data, Delta_iw_ref.data)
 assert( diff < 1e-7 )
 
 if False:
-    from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
+    from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt
     plt.figure()
     oplotr(Delta_tau - Delta_tau_ref)
     plt.show()

@@ -1,6 +1,6 @@
-from pytriqs.gf import *
+from triqs.gf import *
 from h5 import *
-from pytriqs.plot.mpl_interface import oplot, plt
+from triqs.plot.mpl_interface import oplot, plt
 
 with HDFArchive("dmft_solution.h5",'r') as ar:
     for i in range(5):

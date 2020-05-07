@@ -1,8 +1,8 @@
-from pytriqs.gf import *
+from triqs.gf import *
 from h5 import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import Solver
-import pytriqs.operators.util as op
-import pytriqs.utility.mpi as mpi
+from triqs.applications.impurity_solvers.cthyb import Solver
+import triqs.operators.util as op
+import triqs.utility.mpi as mpi
 
 # General parameters
 filename = 'slater_five_band.h5'             # Name of file to save data to

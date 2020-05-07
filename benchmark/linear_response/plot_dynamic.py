@@ -5,15 +5,15 @@ import glob
 import numpy as np
 
 # ----------------------------------------------------------------------
-from pytriqs.gf import *
+from triqs.gf import *
 from h5 import HDFArchive
 
 # ----------------------------------------------------------------------    
 
-from pytriqs.operators import n
-from pytriqs.operators.util.op_struct import set_operator_structure
+from triqs.operators import n
+from triqs.operators.util.op_struct import set_operator_structure
 
-from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
+from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 
 # ----------------------------------------------------------------------
 

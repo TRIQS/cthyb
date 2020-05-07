@@ -4,16 +4,16 @@ import numpy as np
 from scipy.linalg import block_diag
 
 from h5 import HDFArchive
-from pytriqs.operators import c, c_dag, n
+from triqs.operators import c, c_dag, n
 
-from pytriqs.gf import Gf
-from pytriqs.gf import MeshImTime, MeshImFreq
-from pytriqs.operators.util.hamiltonians import h_int_kanamori
+from triqs.gf import Gf
+from triqs.gf import MeshImTime, MeshImFreq
+from triqs.operators.util.hamiltonians import h_int_kanamori
 
 from pyed.OperatorUtils import get_quadratic_operator
 from pyed.OperatorUtils import fundamental_operators_from_gf_struct
 
-from pytriqs.utility import mpi
+from triqs.utility import mpi
 from pomerol2triqs import PomerolED
 
 # ----------------------------------------------------------------------

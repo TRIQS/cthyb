@@ -15,18 +15,18 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-from pytriqs.utility import mpi
+from triqs.utility import mpi
 from h5 import HDFArchive
 
-from pytriqs.gf import Gf, inverse, iOmega_n, Fourier
-from pytriqs.gf import MeshImTime, MeshProduct
-from pytriqs.gf import GfImTime, GfImFreq
+from triqs.gf import Gf, inverse, iOmega_n, Fourier
+from triqs.gf import MeshImTime, MeshProduct
+from triqs.gf import GfImTime, GfImFreq
 
-from pytriqs.operators import n, c, c_dag, Operator, dagger
+from triqs.operators import n, c, c_dag, Operator, dagger
 
-from pytriqs.operators.util.op_struct import set_operator_structure
-from pytriqs.operators.util.U_matrix import U_matrix_kanamori, U_matrix
-from pytriqs.operators.util.hamiltonians import h_int_kanamori
+from triqs.operators.util.op_struct import set_operator_structure
+from triqs.operators.util.U_matrix import U_matrix_kanamori, U_matrix
+from triqs.operators.util.hamiltonians import h_int_kanamori
 
 # ----------------------------------------------------------------------
 

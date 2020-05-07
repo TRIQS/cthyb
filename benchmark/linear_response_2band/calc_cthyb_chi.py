@@ -13,9 +13,9 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-from pytriqs.operators import Operator
+from triqs.operators import Operator
 from h5 import HDFArchive
-from pytriqs.gf import Gf, inverse, iOmega_n, Fourier, GfImFreq
+from triqs.gf import Gf, inverse, iOmega_n, Fourier, GfImFreq
 
 from pyed.ParameterCollection import ParameterCollection
 from pyed.GfUtils import g2_single_particle_transform
@@ -23,7 +23,7 @@ from pyed.GfUtils import g4_single_particle_transform
 
 # ----------------------------------------------------------------------
 
-from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt     
+from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt     
 
 from triqs_tprf.chi_from_gg2 import chi0_from_gg2_PH
 from triqs_tprf.chi_from_gg2 import chi_from_gg2_PH

@@ -15,9 +15,9 @@ import numpy as np
 
 # ----------------------------------------------------------------------    
 
-import pytriqs.utility.mpi as mpi
-from pytriqs.gf import *
-from pytriqs.operators import *
+import triqs.utility.mpi as mpi
+from triqs.gf import *
+from triqs.operators import *
 from h5 import HDFArchive
 
 # ----------------------------------------------------------------------    
@@ -97,7 +97,7 @@ def make_calc():
 
     solv.solve(**p.solve.dict())
 
-    from pytriqs.atom_diag import trace_rho_op, AtomDiagReal
+    from triqs.atom_diag import trace_rho_op, AtomDiagReal
 
     o1, o2 = ops
     p.exp_val = trace_rho_op(solv.density_matrix, o1 * o2, solv.h_loc_diagonalization)

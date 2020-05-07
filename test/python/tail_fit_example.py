@@ -8,7 +8,7 @@ import itertools
 import numpy as np
 
 from h5 import HDFArchive
-from pytriqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
+from triqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 nw = 512
 beta = 50.0
@@ -64,8 +64,8 @@ print(w_min, w_max)
 # -- triqs/unstable implementation
 
 if False:
-    from pytriqs.gf import BlockGf
-    from pytriqs.gf.tools import tail_fit
+    from triqs.gf import BlockGf
+    from triqs.gf.tools import tail_fit
     Delta_iw_fit = Delta_iw.copy()
     Delta_iw_fit_bgf = BlockGf(name_list=[0], block_list=[Delta_iw_fit])
     tail_fit(Delta_iw_fit_bgf, fit_min_n=n_min, fit_max_n=n_max, fit_max_moment=order_max)
@@ -74,7 +74,7 @@ if False:
 
 # -- triqs/new_tail implementation
 elif False:
-    from pytriqs.gf.gf_fnt import fit_tail_on_window, replace_by_tail
+    from triqs.gf.gf_fnt import fit_tail_on_window, replace_by_tail
 
     known_moments = np.zeros((0, 2, 2), dtype=np.complex) # no known moments
     print('known_moments.shape =', known_moments.shape)
@@ -98,7 +98,7 @@ elif False:
     print(err)
 
 else:
-    from pytriqs.gf import BlockGf
+    from triqs.gf import BlockGf
     Delta_iw_fit = Delta_iw.copy()
     Delta_iw_fit_bgf = BlockGf(name_list=['foo'], block_list=[Delta_iw_fit])
 
@@ -120,7 +120,7 @@ with HDFArchive(filename, 'w') as a:
 
 # -- Plot 
 
-from pytriqs.plot.mpl_interface import oplot, oplotr, oploti, plt
+from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 plt.figure(figsize=(10, 10))
 
 ylim = [-4, 4]

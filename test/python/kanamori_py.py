@@ -1,11 +1,11 @@
 import numpy as np
-import pytriqs.utility.mpi as mpi
-from pytriqs.gf import *
-from pytriqs.operators.util.hamiltonians import h_int_kanamori
-from pytriqs.operators.util.op_struct import set_operator_structure
+import triqs.utility.mpi as mpi
+from triqs.gf import *
+from triqs.operators.util.hamiltonians import h_int_kanamori
+from triqs.operators.util.op_struct import set_operator_structure
 from h5 import HDFArchive
 from triqs_cthyb import *
-from pytriqs.utility.comparison_tests import *
+from triqs.utility.comparison_tests import *
 
 # H_loc parameters
 beta = 10.0
@@ -63,5 +63,5 @@ if mpi.is_master_node():
         assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
         assert_block_gfs_are_close(Results["G_leg"], S.G_l)
 
-from pytriqs.utility.h5diff import h5diff
+from triqs.utility.h5diff import h5diff
 h5diff("kanamori_py.out.h5","kanamori_py.ref.h5")

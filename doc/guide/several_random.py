@@ -1,8 +1,8 @@
-from pytriqs.gf import *
-from pytriqs.operators import *
+from triqs.gf import *
+from triqs.operators import *
 from h5 import HDFArchive
-from pytriqs.applications.impurity_solvers.cthyb import Solver
-import pytriqs.utility.mpi as mpi
+from triqs.applications.impurity_solvers.cthyb import Solver
+import triqs.utility.mpi as mpi
 
 D, V, U = 1.0, 0.2, 4.0
 e_f, beta = -U/2.0, 50

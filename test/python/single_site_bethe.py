@@ -1,8 +1,8 @@
-import pytriqs.utility.mpi as mpi
-from pytriqs.gf import *
-from pytriqs.operators import *
+import triqs.utility.mpi as mpi
+from triqs.gf import *
+from triqs.operators import *
 from h5 import HDFArchive
-from pytriqs.utility.comparison_tests import *
+from triqs.utility.comparison_tests import *
 
 from triqs_cthyb import *
 
@@ -79,6 +79,6 @@ if mpi.is_master_node():
         assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
         
 # Redundant with previous check
-from pytriqs.utility.h5diff import h5diff
+from triqs.utility.h5diff import h5diff
 h5diff("single_site_bethe.out.h5","single_site_bethe.ref.h5", precision=5e-5)
 

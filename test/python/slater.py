@@ -1,12 +1,12 @@
-import pytriqs.utility.mpi as mpi
-from pytriqs.operators import *
-from pytriqs.operators.util.op_struct import set_operator_structure
-from pytriqs.operators.util.U_matrix import U_matrix
-from pytriqs.operators.util.hamiltonians import h_int_slater
+import triqs.utility.mpi as mpi
+from triqs.operators import *
+from triqs.operators.util.op_struct import set_operator_structure
+from triqs.operators.util.U_matrix import U_matrix
+from triqs.operators.util.hamiltonians import h_int_slater
 from h5 import HDFArchive
 from triqs_cthyb import *
-from pytriqs.gf import *
-from pytriqs.utility.comparison_tests import *
+from triqs.gf import *
+from triqs.utility.comparison_tests import *
 
 beta = 100.0
 # H_loc parameters
@@ -62,5 +62,5 @@ if mpi.is_master_node():
         assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
         assert_block_gfs_are_close(Results["G_leg"], S.G_l)
 
-from pytriqs.utility.h5diff import h5diff
+from triqs.utility.h5diff import h5diff
 h5diff("slater.out.h5","slater.ref.h5")

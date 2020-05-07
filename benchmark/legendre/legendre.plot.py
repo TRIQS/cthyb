@@ -1,9 +1,9 @@
-#!/bin/env pytriqs
+#!/bin/env python
 
 import numpy as np
 from h5 import *
-from pytriqs.gf import *
-from pytriqs.plot.mpl_interface import plt
+from triqs.gf import *
+from triqs.plot.mpl_interface import plt
 
 arch = HDFArchive('legendre.h5','r')
 ed_arch = HDFArchive('legendre.ed.h5','r')

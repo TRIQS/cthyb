@@ -8,7 +8,7 @@ It is possible (and highly recommended!) to use different random number
 generators with the CTQMC solver. A list of available random generators can be
 obtained with::
 
-  from pytriqs.random_generator import *
+  from triqs.random_generator import *
   print random_generator_names_list()
 
 The names in this list can then be used to set the ``random_name`` keyword

@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from pytriqs.plot.mpl_interface import *
+from triqs.plot.mpl_interface import *
 
 # For the moment this is written for a single band case -- can be easily generalised.
 class configuration:

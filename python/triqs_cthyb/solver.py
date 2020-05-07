@@ -21,8 +21,8 @@
 ################################################################################
 
 from .solver_core import SolverCore
-from pytriqs.gf import *
-import pytriqs.utility.mpi as mpi
+from triqs.gf import *
+import triqs.utility.mpi as mpi
 import numpy as np
 
 from .tail_fit import tail_fit as cthyb_tail_fit

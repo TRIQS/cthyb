@@ -62,6 +62,9 @@ set(APP4TRIQS_BINARY_DIR ${PROJECT_BINARY_DIR} CACHE STRING "Binary directory of
 # ############
 # Options
 
+# Make additional Find Modules available
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/share/cmake/Modules)
+
 # Default to Release build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Type of build" FORCE)
@@ -69,6 +72,15 @@ endif()
 if(NOT IS_SUBPROJECT)
   message(STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} --------")
 endif()
+
+# Python Support
+option(PythonSupport "Build with Python support" ON)
+if(PythonSupport AND NOT TRIQS_WITH_PYTHON_SUPPORT)
+  message(FATAL_ERROR "TRIQS was installed without Python support. Cannot build the Python Interface. Disable the build with -DPythonSupport=OFF")
+endif()
+
+# Documentation
+option(Build_Documentation "Build documentation" OFF)
 
 # Testing
 option(Build_Tests "Build tests" ON)
@@ -130,27 +142,18 @@ if(Build_Tests)
   add_subdirectory(test)
 endif()
 
-if(TRIQS_WITH_PYTHON_SUPPORT)
-  # Python interface
+# Python
+if(PythonSupport)
   add_subdirectory(python/triqs_cthyb)
+endif()
 
-  # Build the documentation
-  option(Build_Documentation "Build documentation" OFF)
-  if(Build_Documentation AND NOT IS_SUBPROJECT)
-    if(NOT TRIQS_WITH_DOCUMENTATION)
-      message(WARNING "TRIQS was installed without documentation! Cannot build documentation.")
-    else()
-      message(STATUS "Documentation Build enabled")
-      add_subdirectory(doc)
-    endif()
-  endif()
-else()
-  message(WARNING "TRIQS was installed without Python support. Cannot build the Python Interface and Documentation.")
+# Docs
+if(Build_Documentation)
+  add_subdirectory(doc)
 endif()
 
 # Additional configuration files
 add_subdirectory(share)
-
 
 # #############
 # Debian Package
@@ -165,10 +168,9 @@ if(BUILD_DEBIAN_PACKAGE AND NOT IS_SUBPROJECT)
   set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
   set(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/cthyb")
   execute_process(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 2.2)")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "triqs (>= 3.0)")
   set(CPACK_DEBIAN_PACKAGE_CONFLICTS "cthyb")
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   include(CPack)
 endif()
-

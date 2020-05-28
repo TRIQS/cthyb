@@ -3,8 +3,8 @@
 # TRIQS documentation build configuration file
 
 import sys
-sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/autorun")
-sys.path.insert(0, "@TRIQS_SPHINXEXT_PATH@/numpydoc")
+sys.path.insert(0, "@CMAKE_CURRENT_SOURCE_DIR@/sphinxext/autorun")
+sys.path.insert(0, "@CMAKE_CURRENT_SOURCE_DIR@/sphinxext/numpydoc")
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
@@ -28,11 +28,11 @@ project = 'TRIQS Hybridization Expansion Solver'
 copyright = '2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 version = '@PROJECT_VERSION@'
 
-mathjax_path = "@TRIQS_MATHJAX_PATH@/MathJax.js?config=default"
-templates_path = ['@PROJECT_SOURCE_DIR@/doc/_templates']
+mathjax_path = "https://raw.githubusercontent.com/mathjax/MathJax/2.7.8/MathJax.js"
+templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_templates']
 
 html_theme = 'triqs'
-html_theme_path = ['@TRIQS_THEMES_PATH@']
+html_theme_path = ['@CMAKE_CURRENT_SOURCE_DIR@/themes']
 html_show_sphinx = False
 html_context = {'header_title': 'cthyb',
                 'header_subtitle': 'a generic quantum impurity solver based on the <a class="triqs" style="font-size: 12px" href="https://triqs.github.io">TRIQS</a> library',
@@ -40,7 +40,7 @@ html_context = {'header_title': 'cthyb',
                                  ['Documentation', 'documentation'],
                                  ['Issues', 'issues'],
                                  ['About CTHYB', 'about']]}
-html_static_path = ['@PROJECT_SOURCE_DIR@/doc/_static']
+html_static_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_static']
 html_sidebars = {'index': ['sideb.html', 'searchbox.html']}
 
 htmlhelp_basename = 'CTHYBdoc'

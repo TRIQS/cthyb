@@ -17,7 +17,7 @@ include(external_dependency.cmake)
 #     to locate the package in the system.
 #     Skip this step if Build_Deps option is set.
 #  2. Try to find a directory containing the sources
-#     at ${CMAKE_SOURCE_DIR}/deps/name. If found
+#     at ${PROJECT_SOURCE_DIR}/deps/name. If found
 #     build it as a cmake sub-project.
 #  3. If GIT_REPO is provided, git clone the sources,
 #     and build them as a cmake sub-project.
@@ -46,18 +46,21 @@ else()
   endif()
 endif()
 
+# -- Cpp2Py --
+if(PythonSupport OR Build_Documentation)
+  external_dependency(Cpp2Py
+    GIT_REPO https://github.com/TRIQS/cpp2py
+    VERSION 2.0
+    GIT_TAG master
+    BUILD_ALWAYS
+    EXCLUDE_FROM_ALL
+  )
+endif()
+
 # -- GTest --
 external_dependency(GTest
   GIT_REPO https://github.com/google/googletest
   GIT_TAG release-1.10.0
   BUILD_ALWAYS
-  EXCLUDE_FROM_ALL
-)
-
-# -- Cpp2Py --
-external_dependency(Cpp2Py
-  GIT_REPO https://github.com/TRIQS/cpp2py
-  VERSION 2.0
-  GIT_TAG master
   EXCLUDE_FROM_ALL
 )

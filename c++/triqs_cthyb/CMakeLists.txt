@@ -14,8 +14,9 @@ option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]
 set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
 
 # Configure compilation
-target_compile_options(triqs_cthyb_c PUBLIC -fPIC)
+set_property(TARGET triqs_cthyb_c PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(triqs_cthyb_c PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c++>)
+target_include_directories(triqs_cthyb_c SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 target_compile_definitions(triqs_cthyb_c PUBLIC
 				CTHYB_GIT_HASH=${PROJECT_GIT_HASH}
 				TRIQS_GIT_HASH=${TRIQS_GIT_HASH}

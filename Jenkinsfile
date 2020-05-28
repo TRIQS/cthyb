@@ -39,6 +39,11 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       """
       /* build and tag */
       def img = docker.build("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_DOC=${platform==documentationPlatform} .")
+      catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+        img.inside() {
+          sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"
+        }
+      }
       if (!keepInstall) {
         sh "docker rmi --no-prune ${img.imageName()}"
       }
@@ -73,15 +78,15 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         "CMAKE_PREFIX_PATH=$triqsDir/lib/cmake/triqs"]) {
         deleteDir()
         /* note: this is installing into the parent (triqs) venv (install dir), which is thus shared among apps and so not be completely safe */
-        sh "pip install -r $srcDir/requirements.txt"
+        sh "pip3 install -r $srcDir/requirements.txt"
         sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir"
         sh "make -j2"
-        try {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"
         } catch (exc) {
           archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
           throw exc
-        }
+        } }
         sh "make install"
       } }
     } }

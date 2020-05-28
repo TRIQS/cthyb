@@ -208,7 +208,7 @@ namespace triqs_cthyb {
     double move_global_prob = 0.05;
 
     /// Threshold below which imaginary components of Delta and h_loc are set to zero
-    double imag_threshold = 1.e-15;
+    double imag_threshold = 1.e-13;
 
     /// The maximum size of the determinant matrix before a resize
     int det_init_size = 100;

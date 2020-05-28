@@ -131,15 +131,15 @@ namespace triqs_cthyb {
     // Compute the constant part of Delta
     Delta_infty_vec = map(
        // Compute 0th moment of one block
-       [](gf_const_view<imfreq> d) {
+       [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
          auto [tail, err] = fit_hermitian_tail(d);
          if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
 #ifndef HYBRIDISATION_IS_COMPLEX
          double imag_Delta = max_element(abs(imag(Delta_infty)));
-         if (imag_Delta > 1e-6)
-           TRIQS_RUNTIME_ERROR << "Delta(infty) is not real. Maximum imaginary part is "
-                               << imag_Delta;
+         if (imag_Delta > imag_threshold)
+           TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: "
+                               << imag_Delta << ", is larger than the set parameter imag_threshold " << imag_threshold;
 #endif
          return Delta_infty;
        },

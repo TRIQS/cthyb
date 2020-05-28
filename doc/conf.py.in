@@ -23,8 +23,9 @@ extensions = ['sphinx.ext.autodoc',
 source_suffix = '.rst'
 
 project = 'TRIQS Hybridization Expansion Solver'
-copyright = '2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 version = '@PROJECT_VERSION@'
+
+copyright = '2014-2018, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 
 mathjax_path = "https://raw.githubusercontent.com/mathjax/MathJax/2.7.8/MathJax.js"
 templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_templates']

@@ -30,7 +30,7 @@ endif()
 
 # ############
 # Define Project
-project(CTHYB VERSION 3.0.0 LANGUAGES C CXX)
+project(triqs_cthyb VERSION 3.0.0 LANGUAGES C CXX)
 get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
@@ -56,7 +56,7 @@ endif()
 if(NOT IS_SUBPROJECT)
   message(STATUS "-------- CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX} --------")
 endif()
-set(APP4TRIQS_BINARY_DIR ${PROJECT_BINARY_DIR} CACHE STRING "Binary directory of the APP4TRIQS Project")
+set(${PROJECT_NAME}_BINARY_DIR ${PROJECT_BINARY_DIR} CACHE STRING "Binary directory of the ${PROJECT_NAME} Project")
 
 
 # ############
@@ -110,8 +110,8 @@ add_compile_options(
 )
 
 # Create an Interface target for compiler warnings
-add_library(triqs_cthyb_warnings INTERFACE)
-target_compile_options(triqs_cthyb_warnings
+add_library(${PROJECT_NAME}_warnings INTERFACE)
+target_compile_options(${PROJECT_NAME}_warnings
   INTERFACE
     -Wall
     -Wextra
@@ -134,8 +134,8 @@ add_subdirectory(deps)
 # Install additional triqs headers provided by cthyb
 add_subdirectory(c++/triqs)
 
-# Build and install the triqs_cthyb library
-add_subdirectory(c++/triqs_cthyb)
+# Build and install the library
+add_subdirectory(c++/${PROJECT_NAME})
 
 # Tests
 if(Build_Tests)
@@ -144,7 +144,7 @@ endif()
 
 # Python
 if(PythonSupport)
-  add_subdirectory(python/triqs_cthyb)
+  add_subdirectory(python/${PROJECT_NAME})
 endif()
 
 # Docs
@@ -163,7 +163,7 @@ if(BUILD_DEBIAN_PACKAGE AND NOT IS_SUBPROJECT)
   if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
   endif()
-  set(CPACK_PACKAGE_NAME triqs_cthyb)
+  set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
   set(CPACK_GENERATOR "DEB")
   set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
   set(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/cthyb")

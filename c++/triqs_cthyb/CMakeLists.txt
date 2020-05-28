@@ -3,21 +3,22 @@ list(REMOVE_ITEM sources impurity_trace.checks.cpp)
 if(NOT MeasureG2)
   list(REMOVE_ITEM sources measures/G2_iw_acc.cpp measures/G2_iw.cpp measures/G2_iwll.cpp measures/G2_iw_nfft.cpp measures/G2_tau.cpp)
 endif()
-add_library(triqs_cthyb_c STATIC ${sources})
+add_library(${PROJECT_NAME}_c ${sources})
+add_library(${PROJECT_NAME}::${PROJECT_NAME}_c ALIAS ${PROJECT_NAME}_c)
 
 # Link against triqs and enable warnings
-target_link_libraries(triqs_cthyb_c PUBLIC triqs PRIVATE $<BUILD_INTERFACE:triqs_cthyb_warnings>)
+target_link_libraries(${PROJECT_NAME}_c PUBLIC triqs PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_warnings>)
 
 # Additional compilation options
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
 set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
 
-# Configure compilation
-set_property(TARGET triqs_cthyb_c PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(triqs_cthyb_c PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c++>)
-target_include_directories(triqs_cthyb_c SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
-target_compile_definitions(triqs_cthyb_c PUBLIC
+# Configure target and compilation
+set_property(TARGET ${PROJECT_NAME}_c PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(${PROJECT_NAME}_c PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
+target_include_directories(${PROJECT_NAME}_c SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+target_compile_definitions(${PROJECT_NAME}_c PUBLIC
 				CTHYB_GIT_HASH=${PROJECT_GIT_HASH}
 				TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
 				$<$<CONFIG:Debug>:CTHYB_DEBUG>
@@ -32,7 +33,7 @@ target_compile_definitions(triqs_cthyb_c PUBLIC
 			  )
 
 # Install library and headers
-install(TARGETS triqs_cthyb_c EXPORT triqs_cthyb-targets DESTINATION lib)
+install(TARGETS ${PROJECT_NAME}_c EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
 
 # ========= Addtional Dependencies ==========
@@ -40,8 +41,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING
 # 2-particle GF measurement requires NFFT
 if(MeasureG2) 
  find_package(NFFT REQUIRED)
- target_link_libraries(triqs_cthyb_c PUBLIC nfft)
- install(TARGETS nfft EXPORT triqs_cthyb-targets)
+ target_link_libraries(${PROJECT_NAME}_c PUBLIC nfft)
+ install(TARGETS nfft EXPORT ${PROJECT_NAME}-targets)
 endif()
 
 # ========= Static Analyzer Checks ==========
@@ -56,7 +57,7 @@ if(ANALYZE_SOURCES)
   # Run clang-tidy if found
   if(CLANG_TIDY_EXECUTABLE)
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXECUTABLE}")
-    set_target_properties(triqs_cthyb_c PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+    set_target_properties(${PROJECT_NAME}_c PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
   else()
     message(STATUS "clang-tidy not found in $PATH. Please consider installing clang-tidy for additional checks!")
   endif()
@@ -65,7 +66,7 @@ if(ANALYZE_SOURCES)
   if(CPPCHECK_EXECUTABLE)
     message(STATUS "cppcheck found: ${CPPCHECK_EXECUTABLE}")
     add_custom_command(
-	TARGET triqs_cthyb_c
+      TARGET ${PROJECT_NAME}_c
 	COMMAND ${CPPCHECK_EXECUTABLE}
 	  --enable=warning,style,performance,portability
 	  --std=c++17
@@ -93,11 +94,11 @@ if(ASAN)
   if(NOT TARGET asan)
     find_package(sanitizer REQUIRED "asan")
   endif()
-  target_link_libraries(triqs_cthyb_c PUBLIC $<BUILD_INTERFACE:asan>)
+  target_link_libraries(${PROJECT_NAME}_c PUBLIC $<BUILD_INTERFACE:asan>)
 endif()
 if(UBSAN)
   if(NOT TARGET ubsan)
     find_package(sanitizer REQUIRED "ubsan")
   endif()
-  target_link_libraries(triqs_cthyb_c PUBLIC $<BUILD_INTERFACE:ubsan>)
+  target_link_libraries(${PROJECT_NAME}_c PUBLIC $<BUILD_INTERFACE:ubsan>)
 endif()

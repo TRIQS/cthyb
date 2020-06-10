@@ -96,7 +96,7 @@ Custom CMake options
 
 The compilation of ``cthyb`` can be configured using CMake-options::
 
-    cmake ../cthyb.src -DOPTION1=value1 -DOPTION2=value2 ... ../cthyb.src
+    cmake ../cthyb.src -DOPTION1=value1 -DOPTION2=value2 ...
 
 +-----------------------------------------------------------------+-----------------------------------------------+
 | Options                                                         | Syntax                                        |

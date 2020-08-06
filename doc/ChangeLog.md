@@ -1,15 +1,53 @@
 Version 3.0.0
 =============
 
+CTHYB version 3.0.0 is a major release that
+
+* is compatible with TRIQS version 3.0.x
+* introduces compatibility with Python 3 (Python 2 is no longer supported)
+* brings new documentation for measuring the impurity density matrix in cthyb
+* fundamental Green function properties are now enforced to increase accuracy
+
+
 Fundamental Green Function Symmetries
 -------------------------------------
 
 We now enforce the fundamental Green function properties `G[iw](i,j) = G[-iw](j,i)*`
 and `G[tau](i,j) = G[tau](j,i)*` for both the solver-input S.G0_iw as well as the
-solver outputs S.G_tau and S.G_iw.
+solver outputs S.G_tau and S.G_iw. The use of this symmetry is enhancing the
+effective accuracy of the solver.
 If the input violates the relation a warning will be issued and the input will
 be automatically symmetrized. The output will always be symmetrized
 in the collect_results section of the G_tau measurement.
+
+Dependency Management
+--------------------
+We are managing the interdependencies of the various library components of triqs now using cmake.
+Per default cmake will pull those dependencies from their corresponding
+GitHub repositories, build them, and install these components together
+with TRIQS, unless they are found in your system.
+This behavior can be altered using the additional cmake options
+
+* `-DBuild_Deps="Always"` - Always build dependencies, do not try to find them
+* `-DBuild_Deps="Never"` - Never build dependencies, but find them instead
+
+during the configuration step. See also the TRIQS documentation for more detailed instructions.
+
+other changes and fixes:
+-------------
+* Run port_to_triqs3 script
+* Port py files to python3
+* Update triqs python module name: pytirqs -> triqs
+* fixes issue #93 by passing correctly imag_threshold when checking Hloc (#129)
+* Fix comparison in atomic_observables test for python3
+* Use std::variant over triqs/utility/variant.hpp
+* Documentation build no longer requires triqs to be build with doc
+* Bump Version number of app4triqs and triqs to 3.0.0
+* Add a section on the Anaconda package to the install page
+* h5: Adjust to hdf5 header and module changes in triqs
+
+Thanks to all commit-contributors (in alphabetical order):
+Alexander Hampel, Nils Wentzell,
 
 
 Version 2.2.1

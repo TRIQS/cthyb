@@ -33,7 +33,7 @@ This behavior can be altered using the additional cmake options
 
 during the configuration step. See also the TRIQS documentation for more detailed instructions.
 
-other changes and fixes:
+Other Changes
 -------------
 * Run port_to_triqs3 script
 * Port py files to python3
@@ -47,7 +47,7 @@ other changes and fixes:
 * h5: Adjust to hdf5 header and module changes in triqs
 
 Thanks to all commit-contributors (in alphabetical order):
-Alexander Hampel, Nils Wentzell,
+Philipp Dumitrescu, Alexander Hampel, Nils Wentzell
 
 
 Version 2.2.1

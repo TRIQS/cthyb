@@ -23,6 +23,7 @@ User guide
    guide/dmft
    guide/slater_five_band
    guide/static_observables_notebook
+   guide/multiplet_analysis_notebook
    guide/dynamic_susceptibility_notebook
    guide/perturbation_order_notebook
 

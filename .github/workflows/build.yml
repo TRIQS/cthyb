@@ -36,6 +36,7 @@ jobs:
         libc++-10-dev
         libc++abi-10-dev
         libfftw3-dev
+        libnfft3-dev
         libgfortran4
         libgmp-dev
         libhdf5-dev
@@ -59,6 +60,7 @@ jobs:
       if: matrix.os == 'macos-10.15'
       run: |
         brew install gcc@10 llvm@10 boost fftw hdf5 open-mpi openblas numpy scipy mpi4py
+        brew install https://raw.githubusercontent.com/brewsci/homebrew-science/master/Formula/nfft.rb
         pip3 install mako
         pip3 install -r requirements.txt
 

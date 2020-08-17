@@ -38,6 +38,7 @@ Reference manual
    reference/solve_parameters
    reference/moves
    reference/measurements
+   reference/utils
 
 FAQs
 ----

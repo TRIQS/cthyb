@@ -294,13 +294,17 @@ namespace triqs_cthyb {
 
       // Check that the final block is the same as the initial block or -1, indicating structural cancellation
       // This guarantees that the density matrix is blockwise diagonal (otherwise the code will have thrown an error).
-      if (measure_density_matrix) {
-        if ((block_lnorm_pair.first != b) && (block_lnorm_pair.first != -1))
-          std::cerr << "WARNING: The product of atomic operators has a matrix element in the off-diagonal block (" << b << ","
-                    << block_lnorm_pair.first << ")\n"
-                    << "You will not be able to use this density matrix to calculate expectations values of operators that do not "
-                       "commute with the local Hamiltonian!"
+      if (measure_density_matrix) { 
+          static bool first_warning_issued = false;
+        if ( (not first_warning_issued) and (block_lnorm_pair.first != b) && (block_lnorm_pair.first != -1)) { 
+            first_warning_issued = true;
+            mpi::communicator world;
+            if (world.rank()== 0)
+            std::cerr << "\nWARNING: The product of atomic operators has a matrix element in the off-diagonal blocks!!! \n"
+                    << "You will not be able to use the measured density matrix to calculate expectations values\n" 
+                    "of operators that do not commute with the local Hamiltonian!\n"
                     << std::endl;
+      }
       }
 
       if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.

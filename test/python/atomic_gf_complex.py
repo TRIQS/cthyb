@@ -16,7 +16,7 @@ G_iw = GfImFreq(beta=beta,indices=[0,1])
 G_iw << iOmega_n - H
 G_iw.invert()
 G_tau = GfImTime(beta=beta,indices=[0,1],n_points=n_tau)
-G_tau.set_from_inverse_fourier(G_iw)
+G_tau.set_from_fourier(G_iw)
 
 # construct the Hamiltonian as operator
 H_op = Operator()

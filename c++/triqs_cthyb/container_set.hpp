@@ -76,6 +76,12 @@ namespace triqs_cthyb {
     /// Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel (one bosonic matsubara and two legendre)
     std::optional<G2_iwll_t> G2_iwll_ph;
 
+    /// Histogram of the total perturbation order
+    std::optional<histogram> perturbation_order_total;
+
+    /// Histograms of the perturbation order for each block
+    std::optional<histo_map_t> perturbation_order;
+
     /// Function that writes all containers to hdf5 file
     friend void h5_write(h5::group h5group, std::string subgroup_name, container_set_t const &c);
 

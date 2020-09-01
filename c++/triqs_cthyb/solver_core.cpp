@@ -389,13 +389,13 @@ namespace triqs_cthyb {
     // Other measurements
     if (params.measure_pert_order) {
       auto &g_names = _Delta_tau.block_names();
+      perturbation_order       = histo_map_t{};
+      perturbation_order_total = histogram{};
       for (size_t block = 0; block < _Delta_tau.size(); ++block) {
         auto const &block_name = g_names[block];
-        qmc.add_measure(measure_perturbation_hist(block, data, _pert_order[block_name]),
-                        "Perturbation order (" + block_name + ")");
+        qmc.add_measure(measure_perturbation_hist(block, data, (*perturbation_order)[block_name]), "Perturbation order (" + block_name + ")");
       }
-      qmc.add_measure(measure_perturbation_hist_total(data, _pert_order_total),
-                      "Perturbation order");
+      qmc.add_measure(measure_perturbation_hist_total(data, *perturbation_order_total), "Perturbation order");
     }
     if (params.measure_density_matrix) {
       if (!params.use_norm_as_weight)

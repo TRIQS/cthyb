@@ -6,7 +6,7 @@ from cpp2py.wrap_generator import *
 module = module_(full_name = "solver_core", doc = r"The TRIQS cthyb solver", app_name = "triqs_cthyb")
 
 # Imports
-module.add_imports(*['triqs.atom_diag', 'triqs.gf', 'triqs.operators', 'triqs.statistics.histograms'])
+module.add_imports(*['triqs.atom_diag', 'triqs.gf', 'triqs.operators', 'triqs.statistics.histograms', '_h5py'])
 
 # Add here all includes
 module.add_include("triqs_cthyb/solver_core.hpp")
@@ -18,6 +18,7 @@ module.add_preamble("""
 #include <cpp2py/converters/optional.hpp>
 #include <cpp2py/converters/pair.hpp>
 #include <cpp2py/converters/set.hpp>
+#include <cpp2py/converters/std_array.hpp>
 #include <cpp2py/converters/string.hpp>
 #include <cpp2py/converters/variant.hpp>
 #include <cpp2py/converters/vector.hpp>
@@ -108,6 +109,16 @@ c.add_member(c_name = "G2_iwll_ph",
              read_only= True,
              doc = r"""Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the ph-channel (one bosonic matsubara and two legendre)""")
 
+c.add_member(c_name = "perturbation_order_total",
+             c_type = "std::optional<histogram>",
+             read_only= True,
+             doc = r"""Histogram of the total perturbation order""")
+
+c.add_member(c_name = "perturbation_order",
+             c_type = "std::optional<histo_map_t>",
+             read_only= True,
+             doc = r"""Histograms of the perturbation order for each block""")
+
 c.add_member(c_name = "constr_parameters",
              c_type = "triqs_cthyb::constr_parameters_t",
              read_only= True,
@@ -175,9 +186,9 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | use_trace_estimator           | bool                                                      | false                                                     | Calculate the full trace or use an estimate?                                                                      |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| measure_G_tau                 | bool                                                      | true                                                      | Measure G(tau)?                                                                                                   |
+| measure_G_tau                 | bool                                                      | true                                                      | Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)                          |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| measure_G_l                   | bool                                                      | false                                                     | Measure G_l (Legendre)?                                                                                           |
+| measure_G_l                   | bool                                                      | false                                                     | Measure G_l (Legendre)? Note, no hermiticity in G_l is ensured                                                    |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | measure_O_tau                 | std::optional<std::pair<many_body_op_t, many_body_op_t> > | std::optional<std::pair<many_body_op_t,many_body_op_t>>{} | Measure O_tau by insertion                                                                                        |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
@@ -276,14 +287,6 @@ c.add_property(name = "density_matrix",
 c.add_property(name = "h_loc_diagonalization",
                getter = cfunction("triqs_cthyb::atom_diag h_loc_diagonalization ()"),
                doc = r"""Diagonalization of :math:`H_{loc}`.""")
-
-c.add_property(name = "perturbation_order_total",
-               getter = cfunction("triqs::statistics::histogram get_perturbation_order_total ()"),
-               doc = r"""Histogram of the total perturbation order.""")
-
-c.add_property(name = "perturbation_order",
-               getter = cfunction("triqs_cthyb::histo_map_t get_perturbation_order ()"),
-               doc = r"""Histograms of the perturbation order for each block.""")
 
 c.add_property(name = "performance_analysis",
                getter = cfunction("triqs_cthyb::histo_map_t get_performance_analysis ()"),
@@ -395,12 +398,12 @@ c.add_member(c_name = "use_trace_estimator",
 c.add_member(c_name = "measure_G_tau",
              c_type = "bool",
              initializer = """ true """,
-             doc = r"""Measure G(tau)?""")
+             doc = r"""Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)""")
 
 c.add_member(c_name = "measure_G_l",
              c_type = "bool",
              initializer = """ false """,
-             doc = r"""Measure G_l (Legendre)?""")
+             doc = r"""Measure G_l (Legendre)? Note, no hermiticity in G_l is ensured""")
 
 c.add_member(c_name = "measure_O_tau",
              c_type = "std::optional<std::pair<many_body_op_t, many_body_op_t> >",

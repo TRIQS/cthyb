@@ -43,10 +43,8 @@ namespace triqs_cthyb {
     many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
     int n_iw, n_tau, n_l;
 
-    histogram _pert_order_total;           // Histogram of the total perturbation order
-    histo_map_t _pert_order;               // Histograms of the perturbation order for each block
     std::vector<matrix_t> _density_matrix; // density matrix, when used in Norm mode
-    mpi::communicator _comm;        // define the communicator, here MPI_COMM_WORLD
+    mpi::communicator _comm;               // define the communicator, here MPI_COMM_WORLD
     histo_map_t _performance_analysis;     // Histograms used for performance analysis
     mc_weight_t _average_sign;             // average sign of the QMC
     int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
@@ -124,12 +122,6 @@ namespace triqs_cthyb {
 
     /// Diagonalization of :math:`H_{loc}`.
     atom_diag const &h_loc_diagonalization() const { return h_diag; }
-
-    /// Histogram of the total perturbation order.
-    histogram const &get_perturbation_order_total() const { return _pert_order_total; }
-
-    /// Histograms of the perturbation order for each block.
-    histo_map_t const &get_perturbation_order() const { return _pert_order; }
 
     /// Histograms related to the performance analysis.
     histo_map_t const &get_performance_analysis() const { return _performance_analysis; }

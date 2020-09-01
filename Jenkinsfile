@@ -59,8 +59,8 @@ def osxPlatforms = [
 for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
   def platform = platformEnv[0]
-  platforms["osx-$platform"] = { -> node('osx && triqs') {
-    stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') {
+  platforms["osx-${platform}-complex"] = { -> node('osx && triqs') {
+    stage("osx-${platform}-complex") { timeout(time: 1, unit: 'HOURS') {
       def srcDir = pwd()
       def tmpDir = pwd(tmp:true)
       def buildDir = "$tmpDir/build"

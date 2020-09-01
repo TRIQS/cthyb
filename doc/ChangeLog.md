@@ -37,7 +37,7 @@ Other Changes
 -------------
 * Run port_to_triqs3 script
 * Port py files to python3
-* Update triqs python module name: pytirqs -> triqs
+* Update triqs python module name: pytriqs -> triqs
 * fixes issue #93 by passing correctly imag_threshold when checking Hloc (#129)
 * Fix comparison in atomic_observables test for python3
 * Use std::variant over triqs/utility/variant.hpp

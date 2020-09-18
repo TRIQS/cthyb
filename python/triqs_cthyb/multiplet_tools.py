@@ -34,7 +34,7 @@ def multiplet_analysis(rho, h_loc_diag, orb_names, spin_names=['up','down'], off
     regarding `Multiplet analysis & particle number histograms`.
 
     Warning: function assumes that N, Sz, and S(S+1) are good
-    quantum numbers.
+    quantum numbers, labeling the eigenstates of the system.
 
     Parameters
     ----------
@@ -92,6 +92,10 @@ def multiplet_analysis(rho, h_loc_diag, orb_names, spin_names=['up','down'], off
         fs_states = []
         for ind, fs in enumerate(h_loc_diag.fock_states[sub]):
             # get state in binary representation
+            # they are ordered from right to left
+            # first half one spin-channel
+            # second half second spin-channel
+            # in the order given in h_loc_diag.fops
             state = bin(int(fs))[2:].rjust(N_max, '0')
             fs_states.append("|"+state+">")
 
@@ -124,6 +128,10 @@ def multiplet_analysis(rho, h_loc_diag, orb_names, spin_names=['up','down'], off
                         "EV#" : ind,
                         "N" : particle_number,
                         "energy" : eng,
+                        # using here the diagonal elements of rho works only for eigenstates
+                        # or operators written in fock basis / commuting with rho!
+                        # otherwise one must rotate rho back to the fock basis first with
+                        # h_loc_diag.unitary_matrices[sub][:,ind] as U*rho*U^dagger
                         "prob": rho[sub][ind,ind],
                         "S2": abs(round(s_square,2)),
                         "m_s": round(ms,1),

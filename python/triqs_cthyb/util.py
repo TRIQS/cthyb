@@ -19,7 +19,7 @@
 #
 ################################################################################
 r"""
-Utility functions
+CTHYB utility functions:
 """
 from math import ceil
 from numpy import argmax
@@ -29,7 +29,7 @@ def block_size_from_gf_struct(block_name, gf_struct):
     bidx = bns.index(block_name)
     block_size = len(idxs[bidx])
     return block_size
-    
+
 def estimate_nfft_buf_size(gf_struct, pert_order_histograms):
     buf_sizes = {}
     for bn, idxs in gf_struct:
@@ -37,7 +37,8 @@ def estimate_nfft_buf_size(gf_struct, pert_order_histograms):
             raise RuntimeError("estimate_nfft_buf_size: no histogram for block '%s' is provided" % bn)
         else:
             max_order = argmax(pert_order_histograms[bn].data)
-            block_size = block_size_from_gf_struct(bn, gf_struct)            
+            block_size = block_size_from_gf_struct(bn, gf_struct)
             buf_sizes[bn] = int(max(ceil((max_order * max_order) / (block_size * block_size)), 1))
 
     return buf_sizes
+

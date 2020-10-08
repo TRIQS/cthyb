@@ -34,7 +34,7 @@ namespace triqs_cthyb {
 
     using namespace triqs::arrays;
 
-    using M_block_t = block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>;
+    using M_block_t = block_gf<prod<imfreq, imfreq>, matrix_valued>;
     using M_t       = M_block_t::g_t;
     using M_mesh_t  = M_block_t::g_t::mesh_t;
 

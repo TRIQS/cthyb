@@ -30,6 +30,7 @@ namespace triqs {
 
     using namespace triqs::arrays;
     using namespace triqs::gfs;
+    using namespace triqs::mesh;
     using triqs::utility::time_pt;
 
     // NFFT transform of an array-valued function of MeshRank tau arguments
@@ -37,7 +38,7 @@ namespace triqs {
 
       public:
       using freq_mesh_t                = typename nfft_buf_t<MeshRank>::freq_mesh_t;
-      using res_gf_t                   = gf<typename freq_mesh_t::var_t, tensor_valued<TargetRank>>;
+      using res_gf_t                   = gf<freq_mesh_t, tensor_valued<TargetRank>>;
       static constexpr int result_rank = MeshRank + TargetRank;
 
       nfft_array_t() = default;

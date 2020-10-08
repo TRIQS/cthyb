@@ -24,6 +24,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/test_tools/gfs.hpp>
 
 using namespace triqs_cthyb;
@@ -31,6 +32,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, G2_measurments) {

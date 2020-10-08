@@ -1,5 +1,6 @@
 #include <random>
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/experimental/nfft_buf.hpp>
 
@@ -211,7 +212,7 @@ void Nfft::test_2d() {
  int buf_size = n_tau * n_tau;
 
  // Create container for Gf from nfft
- auto giw_nfft_2d = gf<cartesian_product<imfreq, imfreq>, scalar_valued>
+ auto giw_nfft_2d = gf<prod<imfreq, imfreq>, scalar_valued>
                     {{{beta, Fermion, n_iw_f}, {beta, Boson, n_iw_b}}, {}};
 
  // nfft_buffer
@@ -256,7 +257,7 @@ void Nfft::test_2d() {
  auto giw_fftw_f = make_gf_from_fourier(gtau_f, n_iw_f);
  auto giw_fftw_b = make_gf_from_fourier(gtau_b, n_iw_b);
  // Create giw_fftw_2d from product of giw_fftw
- auto giw_fftw_2d = gf<cartesian_product<imfreq, imfreq>, scalar_valued>
+ auto giw_fftw_2d = gf<prod<imfreq, imfreq>, scalar_valued>
                     {{{beta, Fermion, n_iw_f}, {beta, Boson, n_iw_b}}, {}};
  for (auto& iw1 : giw_fftw_f.mesh())
   for (auto& iw2 : giw_fftw_b.mesh())
@@ -265,7 +266,7 @@ void Nfft::test_2d() {
  // Init exact reference gf
  triqs::clef::placeholder<0> iw1_;
  triqs::clef::placeholder<1> iw2_;
- auto giw_exact_2d = gf<cartesian_product<imfreq, imfreq>, scalar_valued>
+ auto giw_exact_2d = gf<prod<imfreq, imfreq>, scalar_valued>
                      {{{beta, Fermion, n_iw_f}, {beta, Boson, n_iw_b}}, {}};
  giw_exact_2d(iw1_, iw2_) << 1.0 / (iw1_ - 1.0) / (iw2_ - 1.0);
 

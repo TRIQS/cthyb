@@ -38,7 +38,7 @@ namespace triqs_cthyb {
     {
       gf_mesh<imfreq> mesh_w{beta, Boson, n_bosonic};
       gf_mesh<legendre> mesh_l{beta, Fermion, n_l};
-      gf_mesh<cartesian_product<imfreq, legendre, legendre>> mesh_wll{mesh_w, mesh_l, mesh_l};
+      gf_mesh<prod<imfreq, legendre, legendre>> mesh_wll{mesh_w, mesh_l, mesh_l};
 
       G2_iwll_opt = make_block2_gf(mesh_wll, G2_measures.gf_struct, order);
       G2_iwll.rebind(*G2_iwll_opt);

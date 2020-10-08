@@ -24,6 +24,7 @@
 namespace triqs_cthyb {
 
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
 
   measure_G_l::measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct) : data(data), average_sign(0) {
     G_l_opt = block_gf<legendre>{{data.config.beta(), Fermion, static_cast<size_t>(n_l)}, gf_struct};

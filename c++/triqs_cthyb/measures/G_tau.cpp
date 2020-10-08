@@ -24,6 +24,7 @@
 namespace triqs_cthyb {
 
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
 
   measure_G_tau::measure_G_tau(qmc_data const &data, int n_tau, gf_struct_t const &gf_struct, container_set_t &results)
      : data(data), average_sign(0) {

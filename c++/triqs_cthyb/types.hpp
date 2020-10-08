@@ -25,6 +25,7 @@
 #define STRINGIZE(x) STR(x)
 
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
 #include <triqs/statistics/histograms.hpp>
@@ -37,6 +38,7 @@
 namespace triqs_cthyb {
 
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
   using namespace triqs::utility;
   using namespace triqs::statistics;
 
@@ -57,13 +59,13 @@ namespace triqs_cthyb {
   using G_l_t            = block_gf<triqs::gfs::legendre, matrix_valued>;
 
   // Two-particle Green's function types
-  using imtime_cube_mesh_t = cartesian_product<imtime, imtime, imtime>;
+  using imtime_cube_mesh_t = prod<imtime, imtime, imtime>;
   using G2_tau_t           = block2_gf<imtime_cube_mesh_t, tensor_valued<4>>;
 
-  using imfreq_cube_mesh_t = cartesian_product<imfreq, imfreq, imfreq>;
+  using imfreq_cube_mesh_t = prod<imfreq, imfreq, imfreq>;
   using G2_iw_t            = block2_gf<imfreq_cube_mesh_t, tensor_valued<4>>;
 
-  using imfreq_legendre_mesh_t = cartesian_product<imfreq, triqs::gfs::legendre, triqs::gfs::legendre>;
+  using imfreq_legendre_mesh_t = prod<imfreq, triqs::gfs::legendre, triqs::gfs::legendre>;
   using G2_iwll_t              = block2_gf<imfreq_legendre_mesh_t, tensor_valued<4>>;
 
   enum class G2_channel { PP, PH, AllFermionic }; // G2 sampling channels

@@ -26,6 +26,7 @@
 #include <utility>
 #include <triqs/arrays.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 
 #include <nfft3.h>
@@ -35,6 +36,7 @@ namespace triqs {
 
     using namespace triqs::arrays;
     using namespace triqs::gfs;
+    using namespace triqs::mesh;
 
     using dcomplex = std::complex<double>;
 
@@ -42,7 +44,7 @@ namespace triqs {
     template <int Rank> class nfft_buf_t {
 
       template <typename = std::make_index_sequence<Rank>> struct imfreq_product;
-      template <std::size_t... Is> struct imfreq_product<std::index_sequence<Is...>> { using type = cartesian_product<decltype(Is, imfreq{})...>; };
+      template <std::size_t... Is> struct imfreq_product<std::index_sequence<Is...>> { using type = prod<decltype(Is, imfreq{})...>; };
 
       public:
       using freq_mesh_t = gf_mesh<typename imfreq_product<>::type>;

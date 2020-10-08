@@ -27,6 +27,7 @@
 namespace triqs_cthyb {
 
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
 
   measure_O_tau_ins::measure_O_tau_ins(std::optional<gf<imtime, scalar_valued>> &O_tau_opt, qmc_data const &data, int n_tau,
                                        many_body_op_t const &op1, many_body_op_t const &op2, int min_ins, mc_tools::random_generator &rng)

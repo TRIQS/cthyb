@@ -20,12 +20,14 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/utility/legendre.hpp>
 #include "../qmc_data.hpp"
 
 namespace triqs_cthyb {
 
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
 
   // Measure Legendre Green's function (all blocks)
   struct measure_G_l {

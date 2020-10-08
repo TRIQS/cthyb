@@ -26,6 +26,7 @@
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <fstream>
 #include <variant>
 

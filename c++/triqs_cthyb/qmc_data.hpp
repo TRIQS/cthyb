@@ -21,10 +21,12 @@
 #pragma once
 #include "impurity_trace.hpp"
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <triqs/det_manip.hpp>
 
 namespace triqs_cthyb {
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
   using namespace triqs::arrays;
 
   /************************

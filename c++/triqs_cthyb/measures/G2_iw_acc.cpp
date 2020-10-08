@@ -43,8 +43,8 @@ namespace triqs_cthyb {
         gf_mesh<imfreq> mesh_f{beta, Fermion, n_fermionic};
         gf_mesh<imfreq> mesh_b{beta, Boson, n_bosonic};
 
-        gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> mesh_fff{mesh_f, mesh_f, mesh_f};
-        gf_mesh<cartesian_product<imfreq, imfreq, imfreq>> mesh_bff{mesh_b, mesh_f, mesh_f};
+        gf_mesh<prod<imfreq, imfreq, imfreq>> mesh_fff{mesh_f, mesh_f, mesh_f};
+        gf_mesh<prod<imfreq, imfreq, imfreq>> mesh_bff{mesh_b, mesh_f, mesh_f};
 
         if (Channel == G2_channel::AllFermionic)
           G2_iw_opt = make_block2_gf(mesh_fff, G2_measures.gf_struct, order);
@@ -60,11 +60,11 @@ namespace triqs_cthyb {
         if (Channel == G2_channel::AllFermionic) { // Smaller mesh possible in AllFermionic
           gf_mesh<imfreq> iw_mesh_large{beta, Fermion, 3 * n_fermionic};
           gf_mesh<imfreq> iw_mesh_small{beta, Fermion, n_fermionic};
-          M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh_large, iw_mesh_small};
+          M_mesh = gf_mesh<prod<imfreq, imfreq>>{iw_mesh_large, iw_mesh_small};
         } else {
           int nfreq = n_bosonic + n_fermionic;
           gf_mesh<imfreq> iw_mesh{beta, Fermion, nfreq};
-          M_mesh = gf_mesh<cartesian_product<imfreq, imfreq>>{iw_mesh, iw_mesh};
+          M_mesh = gf_mesh<prod<imfreq, imfreq>>{iw_mesh, iw_mesh};
         }
 
         // Initialize intermediate scattering matrix

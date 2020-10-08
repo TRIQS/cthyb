@@ -21,6 +21,7 @@
 #pragma once
 
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 
 #include "../qmc_data.hpp"
 #include "util.hpp"
@@ -28,6 +29,7 @@
 namespace triqs_cthyb {
 
   using namespace triqs::gfs;
+  using namespace triqs::mesh;
 
   // Measure imaginary time Green's function (all blocks)
   struct measure_G2_tau {

@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/arrays.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/mesh.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -35,6 +36,7 @@ namespace triqs_cthyb {
 
 using namespace triqs::arrays;
 using namespace triqs::gfs;
+using namespace triqs::mesh;
 using namespace triqs::hilbert_space;
 namespace operators = triqs::operators;
 

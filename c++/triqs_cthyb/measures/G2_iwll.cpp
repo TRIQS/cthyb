@@ -47,7 +47,7 @@ namespace triqs_cthyb {
 
     // Allocate the nfft buffers
     {
-      nfft_buf.resize(mini_vector<int, 2>{G2_iwll.size1(), G2_iwll.size2()});
+      nfft_buf.resize(std::array<int, 2>{G2_iwll.size1(), G2_iwll.size2()});
 
       gf_mesh<imfreq> mesh_w = std::get<0>(G2_iwll(0, 0).mesh().components());
 
@@ -81,7 +81,7 @@ namespace triqs_cthyb {
           double p_l1 = p_l1_gen.next();
           for (int l2 : range(n_l)) {
             double p_l2 = p_l2_gen.next();
-            mini_vector<int, 6> vec{l1, l2, i.second, j.second, k.second, l.second};
+            std::array<int, 6> vec{l1, l2, i.second, j.second, k.second, l.second};
             nfft_buf(m.b1.idx, m.b2.idx).push_back({dtau}, vec, val * p_l1 * p_l2);
           }
         }

@@ -31,7 +31,7 @@ namespace triqs_cthyb {
   /// and the resulting target space
   class G2_measure_t {
     public:
-    using target_shape_t = mini_vector<int, 4>;
+    using target_shape_t = std::array<int, 4>;
     struct block_t {
       int idx;
       std::string name;
@@ -94,7 +94,7 @@ namespace triqs_cthyb {
         int s2 = params.measure_G2_block_order == block_order::AABB ? s1 : s3;
         int s4 = params.measure_G2_block_order == block_order::AABB ? s3 : s1;
 
-        mini_vector<int, 4> target_shape{s1, s2, s3, s4};
+        std::array<int, 4> target_shape{s1, s2, s3, s4};
 
         G2_measure_t measure{{b1, bn1}, {b2, bn2}, target_shape};
 

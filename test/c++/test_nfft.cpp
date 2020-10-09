@@ -20,7 +20,7 @@ class Nfft : public ::testing::Test {
  int n_iw_f, n_iw_b;
 
  // gf containers common to multiple tests
- triqs::utility::mini_vector<size_t, 2> shape;
+ std::array<size_t, 2> shape;
  gf<imfreq> giw_exact;
 
  virtual void SetUp() {

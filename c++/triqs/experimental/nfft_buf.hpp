@@ -69,7 +69,7 @@ namespace triqs {
             }
           }
         });
-        mini_vector<int, Rank> buf_extents = fiw_mesh.size_of_components() + index_shifts;
+        std::array<int, Rank> buf_extents = fiw_mesh.size_of_components() + index_shifts;
 
         if (!all_fermion) nfft_indexmap = indexmaps::cuboid::domain_t<Rank>(buf_extents);
 
@@ -89,7 +89,7 @@ namespace triqs {
         };
 
         // Init nfft_plan
-        mini_vector<int, Rank> extents_fftw;
+        std::array<int, Rank> extents_fftw;
         for (int i = 0; i < Rank; i++) extents_fftw[i] = 2 * next_power_of_two(buf_extents[i]);
 
         unsigned nfft_flags = PRE_PHI_HUT | PRE_PSI | MALLOC_X | MALLOC_F_HAT | MALLOC_F | FFTW_INIT | FFT_OUT_OF_PLACE | NFFT_SORT_NODES;
@@ -186,7 +186,7 @@ namespace triqs {
 
       // Bosonic components of fiw_mesh indices must be shifted by 1,
       // since we want to ignore the most negative frequencies in plan_ptr->f_hat
-      mini_vector<std::size_t, Rank> index_shifts;
+      std::array<std::size_t, Rank> index_shifts;
 
       // Common prefactor for the transformation result
       int common_factor;

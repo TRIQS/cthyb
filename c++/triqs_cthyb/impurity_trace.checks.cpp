@@ -66,7 +66,7 @@ matrix_t impurity_trace::check_one_block_matrix_linear(node top, int b) {
     if (n != p) {
       auto dtau = double(n->key - p->key);
       //  M <- exp * M
-      auto dim = first_dim(M); // same as get_block_dim(b1);
+      auto dim = M.shape()[0];
       for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau * get_block_eigenval(b, i));
       // M <- Op * M
     }

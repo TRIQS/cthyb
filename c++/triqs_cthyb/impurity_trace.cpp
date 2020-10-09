@@ -38,8 +38,8 @@ template <typename T>
 // require( is_real_or_complex<T>) FIXME?
 double frobenius_norm2(triqs::arrays::matrix<T> const &a) {
   double r = 0;
-  for (int i = 0; i < first_dim(a); ++i)
-    for (int j = 0; j < second_dim(a); ++j) {
+  for (int i = 0; i < a.shape()[0]; ++i)
+    for (int j = 0; j < a.shape()[1]; ++j) {
       auto ab = std::abs(a(i, j));
       r += ab * ab;
     }
@@ -180,9 +180,9 @@ namespace triqs_cthyb {
 
     if (n->right) { // M <- M * exp * r[b]
       dtau_r   = double(n->key - tree.min_key(n->right));
-      auto dim = second_dim(M);                                                               // same as get_block_dim(b2);
+      auto dim = M.shape()[1];                                                               // same as get_block_dim(b2);
       for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i)); // Create time-evolution matrix e^-H(t'-t)
-      if ((first_dim(r.second) == 1) && (second_dim(r.second) == 1))
+      if ((r.second.shape()[0] == 1) && (r.second.shape()[1] == 1))
         M *= r.second(0, 0);
       else
         M = M * r.second; // FIXME could try to optimise lapack call?
@@ -194,9 +194,9 @@ namespace triqs_cthyb {
       b3     = l.first;
       if (b3 == -1) return {-1, {}};
       dtau_l   = double(tree.max_key(n->left) - n->key);
-      auto dim = first_dim(M); // same as get_block_dim(b1);
+      auto dim = M.shape()[0]; // same as get_block_dim(b1);
       for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b2, i));
-      if ((first_dim(l.second) == 1) && (second_dim(l.second) == 1))
+      if ((l.second.shape()[0] == 1) && (l.second.shape()[1] == 1))
         M *= l.second(0, 0);
       else
         M = l.second * M;

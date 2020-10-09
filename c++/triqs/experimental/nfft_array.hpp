@@ -21,7 +21,6 @@
 #pragma once
 
 #include <vector>
-#include <triqs/clef.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/experimental/nfft_buf.hpp>
 
@@ -60,7 +59,7 @@ namespace triqs {
       }
 
       // Add a new element to the NFFT buffer
-      void push_back(std::array<double, MeshRank> const &tau_arr, mini_vector<int, TargetRank> const &ind_arr, dcomplex fxy) {
+      void push_back(std::array<double, MeshRank> const &tau_arr, std::array<int, TargetRank> const &ind_arr, dcomplex fxy) {
         select_buffer(ind_arr, std::make_index_sequence<TargetRank>()).push_back(tau_arr, fxy);
       }
 
@@ -70,14 +69,14 @@ namespace triqs {
       }
 
       private:
-      template <size_t... Is> inline nfft_buf_t<MeshRank> &select_buffer(mini_vector<int, TargetRank> const &ind_arr, std::index_sequence<Is...>) {
+      template <size_t... Is> inline nfft_buf_t<MeshRank> &select_buffer(std::array<int, TargetRank> const &ind_arr, std::index_sequence<Is...>) {
         return buffers[indexmap(ind_arr[Is]...)];
       }
 
-      mini_vector<int, TargetRank> make_target_shape(mini_vector<int, result_rank> const &shape) {
+      std::array<int, TargetRank> make_target_shape(std::array<int, result_rank> const &shape) {
         std::vector<int> res(TargetRank);
         for (int n = 0; n < TargetRank; ++n) res[n] = shape[n + MeshRank];
-        return mini_vector<int, TargetRank>(res);
+        return std::array<int, TargetRank>(res);
       }
 
       // Index map for the target array

@@ -43,7 +43,7 @@ namespace triqs_cthyb {
         if (G2_measures.params.nfft_buf_sizes.count(bname)) {
           buf_size = G2_measures.params.nfft_buf_sizes.at(bname);
         }
-        array<int, 2> buf_sizes{M(bidx).target_shape()};
+        array<long, 2> buf_sizes{M(bidx).target_shape()};
         buf_sizes() = buf_size;
 
         std::cout << "block_name = " << bname << " nfft_buf_size = " << buf_size << "\n";

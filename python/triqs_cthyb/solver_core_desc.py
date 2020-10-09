@@ -22,7 +22,6 @@ module.add_preamble("""
 #include <cpp2py/converters/string.hpp>
 #include <cpp2py/converters/variant.hpp>
 #include <cpp2py/converters/vector.hpp>
-#include <triqs/cpp2py_converters/arrays.hpp>
 #include <triqs/cpp2py_converters/gf.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 
@@ -226,7 +225,7 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | measure_G2_iwll_nfft_buf_size | int                                                       | 100                                                       | NFFT buffer size for G^4(iomega,l,l') measurement.                                                                |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| nfft_buf_sizes                | std::map<std::string, int>                                | 100 for every block                                       | NFFT buffer sizes for different blocks                                                                            |
+| nfft_buf_sizes                | std::map<std::string, long>                               | 100 for every block                                       | NFFT buffer sizes for different blocks                                                                            |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | measure_pert_order            | bool                                                      | false                                                     | Measure perturbation order?                                                                                       |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
@@ -275,11 +274,11 @@ c.add_property(name = "Delta_infty",
                doc = r""":math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara Frequency.""")
 
 c.add_property(name = "Delta_tau",
-               getter = cfunction("block_gf_view<triqs::gfs::imtime> Delta_tau ()"),
+               getter = cfunction("block_gf_view<triqs::mesh::imtime> Delta_tau ()"),
                doc = r""":math:`\Delta(\tau)` in imaginary time.""")
 
 c.add_property(name = "G0_iw",
-               getter = cfunction("block_gf_view<triqs::gfs::imfreq> G0_iw ()"),
+               getter = cfunction("block_gf_view<triqs::mesh::imfreq> G0_iw ()"),
                doc = r""":math:`G_0(i\omega)` in imaginary frequencies.""")
 
 c.add_property(name = "density_matrix",
@@ -499,8 +498,8 @@ c.add_member(c_name = "measure_G2_iwll_nfft_buf_size",
              doc = r"""NFFT buffer size for G^4(iomega,l,l') measurement.""")
 
 c.add_member(c_name = "nfft_buf_sizes",
-             c_type = "std::map<std::string, int>",
-             initializer = """ (std::map<std::string,int>{}) """,
+             c_type = "std::map<std::string, long>",
+             initializer = """ (std::map<std::string,long>{}) """,
              doc = r"""NFFT buffer sizes for different blocks
      default: 100 for every block""")
 

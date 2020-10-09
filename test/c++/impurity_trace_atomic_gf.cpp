@@ -9,7 +9,6 @@
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
-#include <triqs/arrays/blas_lapack/dot.hpp>
 #include <h5/h5.hpp>
 
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t

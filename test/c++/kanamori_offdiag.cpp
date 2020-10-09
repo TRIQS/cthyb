@@ -13,6 +13,7 @@ using namespace triqs::mesh;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
+using triqs::arrays::matrix;
 using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, KanamoriOffDiag) {
@@ -34,7 +35,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   std::vector<double> epsilon{2.3, -2.3};
 
   // Hybridization matrices
-  std::vector<triqs::arrays::matrix<std::complex<double>>> V{{num_orbitals, num_orbitals}, {num_orbitals, num_orbitals}};
+  auto V = std::vector{matrix<dcomplex>{num_orbitals, num_orbitals}, matrix<dcomplex>{num_orbitals, num_orbitals}};
 
   for (int o1 = 0; o1 < num_orbitals; ++o1)
     for (int o2 = 0; o2 < num_orbitals; ++o2) {
@@ -94,7 +95,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   for (int j = 0; j < epsilon.size(); ++j) {
     term(om_) << 1.0 / (om_ - epsilon[j]);
 
-    matrix<std::complex<double>> m(num_orbitals, num_orbitals);
+    matrix<dcomplex> m(num_orbitals, num_orbitals);
     for (std::size_t w_index = 0; w_index < term.mesh().size(); ++w_index) {
       m                                = term.data()(w_index, ellipsis());
       m                                = conj(V[j]) * m * V[j];

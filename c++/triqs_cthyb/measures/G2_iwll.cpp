@@ -47,7 +47,7 @@ namespace triqs_cthyb {
 
     // Allocate the nfft buffers
     {
-      nfft_buf.resize(std::array<int, 2>{G2_iwll.size1(), G2_iwll.size2()});
+      nfft_buf.resize(std::array<long, 2>{G2_iwll.size1(), G2_iwll.size2()});
 
       gf_mesh<imfreq> mesh_w = std::get<0>(G2_iwll(0, 0).mesh().components());
 

@@ -45,10 +45,10 @@ namespace triqs {
       // fiw_mesh - Matsubara frequency mesh
       // fiw_arr_ - array to contain the final NFFT output
       // buf_sizes - sizes of NFFT buffers
-      nfft_array_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, result_rank> fiw_arr_, array<int, TargetRank> const &buf_sizes)
+      nfft_array_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, result_rank> fiw_arr_, array<long, TargetRank> const &buf_sizes)
          : indexmap(make_target_shape(fiw_arr_.shape())), fiw_arr(fiw_arr_) {
-        buffers.reserve(indexmap.domain().number_of_elements());
-        foreach (buf_sizes, [this, &fiw_mesh, &buf_sizes](auto... ind) {
+        buffers.reserve(indexmap.size());
+        for_each (buf_sizes.shape(), [this, &fiw_mesh, &buf_sizes](auto... ind) {
 #ifdef NDEBUG
           buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), false);
 #else
@@ -73,14 +73,14 @@ namespace triqs {
         return buffers[indexmap(ind_arr[Is]...)];
       }
 
-      std::array<int, TargetRank> make_target_shape(std::array<int, result_rank> const &shape) {
-        std::vector<int> res(TargetRank);
+      std::array<long, TargetRank> make_target_shape(std::array<long, result_rank> const &shape) {
+        std::array<long, TargetRank> res;
         for (int n = 0; n < TargetRank; ++n) res[n] = shape[n + MeshRank];
-        return std::array<int, TargetRank>(res);
+        return std::array<long, TargetRank>(res);
       }
 
       // Index map for the target array
-      indexmaps::cuboid::map<TargetRank> indexmap;
+      nda::idx_map<TargetRank, 0, C_stride_order<TargetRank>, layout_prop_e::none> indexmap;
 
       // NFFT buffers
       std::vector<nfft_buf_t<MeshRank>> buffers;

@@ -34,6 +34,7 @@
 namespace triqs {
   namespace experimental {
 
+    using nda::stdutil::sum;
     using namespace triqs::arrays;
     using namespace triqs::gfs;
     using namespace triqs::mesh;
@@ -69,9 +70,9 @@ namespace triqs {
             }
           }
         });
-        std::array<int, Rank> buf_extents = fiw_mesh.size_of_components() + index_shifts;
+        std::array<long, Rank> buf_extents = fiw_mesh.size_of_components() + index_shifts;
 
-        if (!all_fermion) nfft_indexmap = indexmaps::cuboid::domain_t<Rank>(buf_extents);
+        if (!all_fermion) nfft_indexmap = idx_map_t(buf_extents);
 
         // -- Default init
         //nfft_init(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size);
@@ -89,14 +90,16 @@ namespace triqs {
         };
 
         // Init nfft_plan
-        std::array<int, Rank> extents_fftw;
+        std::array<long, Rank> extents_fftw;
         for (int i = 0; i < Rank; i++) extents_fftw[i] = 2 * next_power_of_two(buf_extents[i]);
 
         unsigned nfft_flags = PRE_PHI_HUT | PRE_PSI | MALLOC_X | MALLOC_F_HAT | MALLOC_F | FFTW_INIT | FFT_OUT_OF_PLACE | NFFT_SORT_NODES;
         unsigned fftw_flags = FFTW_ESTIMATE | FFTW_DESTROY_INPUT;
 
         int m = 6; // Truncation order for the window functions
-        nfft_init_guru(plan_ptr.get(), Rank, buf_extents.ptr(), buf_size, extents_fftw.ptr(), m, nfft_flags, fftw_flags);
+        std::vector<int> buf_extents_int(buf_extents.begin(), buf_extents.end());
+        std::vector<int> extents_fftw_int(extents_fftw.begin(), extents_fftw.end());
+        nfft_init_guru(plan_ptr.get(), Rank, buf_extents_int.data(), buf_size, extents_fftw_int.data(), m, nfft_flags, fftw_flags);
       }
 
       ~nfft_buf_t() {
@@ -182,11 +185,12 @@ namespace triqs {
       bool all_fermion;
 
       // Index map for plan_ptr->f_hat
-      indexmaps::cuboid::map<Rank> nfft_indexmap;
+      using idx_map_t = nda::idx_map<Rank, 0, C_stride_order<Rank>, layout_prop_e::none>;
+      idx_map_t nfft_indexmap;
 
       // Bosonic components of fiw_mesh indices must be shifted by 1,
       // since we want to ignore the most negative frequencies in plan_ptr->f_hat
-      std::array<std::size_t, Rank> index_shifts;
+      std::array<long, Rank> index_shifts;
 
       // Common prefactor for the transformation result
       int common_factor;
@@ -253,7 +257,7 @@ namespace triqs {
           }
         } else {
           for (auto it = fiw_arr.begin(); it != fiw_arr.end(); ++it) {
-            int count  = nfft_indexmap[it.indices() + index_shifts];
+            int count  = std::apply(nfft_indexmap, it.indices() + index_shifts);
             int factor = (sum(it.indices()) % 2 ? -1 : 1);
             *it += fk_arr()[count] * factor * common_factor;
           }

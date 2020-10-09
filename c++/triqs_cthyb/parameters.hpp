@@ -179,7 +179,7 @@ namespace triqs_cthyb {
 
     /// NFFT buffer sizes for different blocks
     /// default: 100 for every block
-    std::map<std::string, int> nfft_buf_sizes = (std::map<std::string, int>{});
+    std::map<std::string, long> nfft_buf_sizes = (std::map<std::string, long>{});
 
     /// Measure perturbation order?
     bool measure_pert_order = false;

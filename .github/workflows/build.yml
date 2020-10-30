@@ -10,6 +10,7 @@ jobs:
   build:
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - {os: ubuntu-20.04, cc: gcc-10, cxx: g++-10}
@@ -59,9 +60,9 @@ jobs:
     - name: Install homebrew dependencies
       if: matrix.os == 'macos-10.15'
       run: |
-        brew install gcc@10 llvm@10 boost fftw hdf5 open-mpi openblas numpy scipy mpi4py
+        brew install gcc@10 llvm boost fftw hdf5 open-mpi openblas
         brew install https://raw.githubusercontent.com/brewsci/homebrew-science/master/Formula/nfft.rb
-        pip3 install mako
+        pip3 install mako numpy scipy mpi4py
         pip3 install -r requirements.txt
 
     - name: Build & Install TRIQS

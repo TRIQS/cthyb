@@ -94,18 +94,15 @@ namespace triqs {
       std::vector<std::vector<gf<Var_t, tensor_valued<4>>>> gf_vecvec;
       std::vector<std::string> block_names;
 
-      for (auto const &bl1 : gf_struct) {
-        auto &bname  = bl1.first;
-        int bl1_size = bl1.second.size();
-        block_names.push_back(bname);
+      for (auto const &[bl1, bl1_size] : gf_struct) {
+        block_names.push_back(bl1);
         std::vector<std::string> indices1;
-        for (auto const &var : bl1.second) visit([&indices1](auto &&arg) { indices1.push_back(std::to_string(arg)); }, var);
+        for (auto idx : range(bl1_size)) indices1.push_back(std::to_string(idx));
 
         std::vector<gf<Var_t, tensor_valued<4>>> gf_vec;
-        for (auto const &bl2 : gf_struct) {
-          int bl2_size = bl2.second.size();
+        for (auto const &[bl2, bl2_size] : gf_struct) {
           std::vector<std::string> indices2;
-          for (auto const &var : bl2.second) visit([&indices2](auto &&arg) { indices2.push_back(std::to_string(arg)); }, var);
+          for (auto idx : range(bl2_size)) indices2.push_back(std::to_string(idx));
           auto I = std::vector<std::vector<std::string>>{indices1, indices1, indices2, indices2};
           switch (order) {
             case triqs_cthyb::block_order::AABB: gf_vec.emplace_back(m, make_shape(bl1_size, bl1_size, bl2_size, bl2_size), I); break;

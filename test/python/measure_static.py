@@ -31,14 +31,14 @@ p["move_double"] = False
 p["use_norm_as_weight"] = True
 p["measure_density_matrix"] = True
 
-H = U*n("up",1)*n("dn",1) + U*n("up",2)*n("dn",2)
-H = H + 0.5*h*(n("up",1) - n("dn",1)) + 0.5*h*(n("up",2) - n("dn",2))
+H = U*n("up",0)*n("dn",0) + U*n("up",1)*n("dn",1)
+H = H + 0.5*h*(n("up",0) - n("dn",0)) + 0.5*h*(n("up",1) - n("dn",1))
 
 # Construct the solver
-S = Solver(beta=beta, gf_struct=[["dn",[1,2]], ["up",[1,2]]], n_tau=n_tau, n_iw=n_iw)
+S = Solver(beta=beta, gf_struct=[["dn",2], ["up",2]], n_tau=n_tau, n_iw=n_iw)
 
 # Set hybridization function
-delta_w = GfImFreq(indices = [1,2], beta=beta)
+delta_w = GfImFreq(beta=beta, target_shape=(2,2))
 delta_w << (V**2)*(inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon))
 for bn, g in S.G0_iw: g << inverse(iOmega_n - np.matrix([[-mu,t],[t,-mu]]) - delta_w)
 
@@ -48,8 +48,8 @@ S.solve(h_int=H, **p)
 if mpi.is_master_node():
     # Measure expectation values
     dm = S.density_matrix
-    static_observables = {"N1_up" : n("up",1), "N1_dn" : n("dn",1),
-                          "N2_up" : n("up",2), "N2_dn" : n("dn",2)}
+    static_observables = {"N1_up" : n("up",0), "N1_dn" : n("dn",0),
+                          "N2_up" : n("up",1), "N2_dn" : n("dn",1)}
     with HDFArchive('measure_static.out.h5','w') as ar:
         for name,op in static_observables.items():
             ave = trace_rho_op(dm,op,S.h_loc_diagonalization)

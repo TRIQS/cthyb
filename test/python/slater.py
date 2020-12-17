@@ -35,7 +35,7 @@ p["measure_G_l"] = True
 p["move_double"] = False
 
 # Block structure of GF
-gf_struct = set_operator_structure(spin_names,cubic_names,False)
+gf_struct = set_operator_structure(spin_names,len(cubic_names),False)
 
 # Local Hamiltonian
 H = h_int_slater(spin_names,cubic_names,U_mat,False)

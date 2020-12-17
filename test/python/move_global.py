@@ -25,7 +25,7 @@ V = 2.0 * np.eye(num_orbitals) + 0.2 * (np.ones(num_orbitals) - np.eye(num_orbit
 # Block structure of GF
 spin_names = ('up','dn')
 orb_names = list(range(num_orbitals))
-gf_struct = set_operator_structure(spin_names,orb_names,True)
+gf_struct = set_operator_structure(spin_names,num_orbitals,True)
 gf_struct.reverse() # the reference data was computed with reversed block order
 
 # Construct solver

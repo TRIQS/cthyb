@@ -80,9 +80,7 @@ TEST(CtHyb, KanamoriOffDiag) {
 #endif
 
   // gf structure
-  indices_t indices{}; 
-  for( int o : range(num_orbitals) ) indices.emplace_back(o); 
-  gf_struct_t gf_struct{{"up", indices}, {"down", indices}};
+  gf_struct_t gf_struct{{"up", num_orbitals}, {"down", num_orbitals}};
 
   // Construct CTQMC solver
   solver_core solver({beta, gf_struct, 1025, 2500});

@@ -60,7 +60,7 @@ in more detail in the section :ref:`ctqmc_ref`. Basically, the constructor
 of the Solver needs two keywords:
 
 - ``beta``: the inverse temperature,
-- ``gf_struct``: a list of pairs [ (str, [int,...]), ...] describing the block structure of the Green's function.
+- ``gf_struct``: a list of pairs [ (str, int), ...] describing the block structure of the Green's function.
 
 This ensures that all quantities within Solver are correctly initialised,
 and in particular that the block structure of all Green's function objects is consistent.

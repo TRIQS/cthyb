@@ -12,7 +12,7 @@ beta = 50       # Inverse temperature
 
 # Construct the impurity solver with the inverse temperature
 # and the structure of the Green's functions
-S = Solver(beta = beta, gf_struct = [ ('up',[0]), ('down',[0]) ])
+S = Solver(beta = beta, gf_struct = [ ('up',1), ('down',1) ])
 
 # Initialize the non-interacting Green's function S.G0_iw
 # External magnetic field introduces Zeeman energy splitting between

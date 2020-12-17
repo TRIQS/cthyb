@@ -90,17 +90,17 @@ namespace triqs_cthyb {
 
     // determine basis of operators to use
     fundamental_operator_set fops;
-    for (auto const &bl : gf_struct) {
-      for (auto const &a : bl.second) { fops.insert(bl.first, a); }
+    for (auto const &[bl, bl_size] : gf_struct) {
+      for (auto idx : range(bl_size)) { fops.insert(bl, idx); }
     }
 
     // setup the linear index map
     std::map<std::pair<int, int>, int> linindex;
     int block_index = 0;
-    for (auto const &bl : gf_struct) {
+    for (auto const &[bl, bl_size] : gf_struct) {
       int inner_index = 0;
-      for (auto const &a : bl.second) {
-        linindex[std::make_pair(block_index, inner_index)] = fops[{bl.first, a}];
+      for (auto idx : range(bl_size)) {
+        linindex[std::make_pair(block_index, inner_index)] = fops[{bl, idx}];
         inner_index++;
       }
       block_index++;
@@ -108,7 +108,7 @@ namespace triqs_cthyb {
 
     // Make list of block sizes
     std::vector<int> n_inner;
-    for (auto const &bl : gf_struct) { n_inner.push_back(bl.second.size()); }
+    for (auto const &[bl, bl_size] : gf_struct) { n_inner.push_back(bl_size); }
 
     // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
 
@@ -157,11 +157,9 @@ namespace triqs_cthyb {
 
     // Add quadratic terms to h_loc
     int b = 0;
-    for (auto const &bl : gf_struct) {
-      int n1 = 0;
-      for (auto const &a1 : bl.second) {
-        int n2 = 0;
-        for (auto const &a2 : bl.second) {
+    for (auto const &[bl, bl_size] : gf_struct) {
+      for (auto n1 : range(bl_size)) {
+        for (auto n2 : range(bl_size)) {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
           dcomplex e_ij;
           if (max_imag > params.imag_threshold)
@@ -175,10 +173,8 @@ namespace triqs_cthyb {
           if(n1 != n2 && abs(Delta_infty_vec[b](n1, n2)) < params.off_diag_threshold) 
             e_ij = 0.0;
 
-          _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
-          n2++;
+          _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl, n1) * c<h_scalar_t>(bl, n2);
         }
-        n1++;
       }
       b++;
     }
@@ -186,15 +182,14 @@ namespace triqs_cthyb {
     // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
     b = 0;
     range _;
-    for (auto const &bl : gf_struct) {
+    for (auto const &[bl, bl_size] : gf_struct) {
       // Remove constant quadratic part
       for (auto const &iw : Delta_iw[0].mesh())
         Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
       auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
       _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
       // Force all diagonal elements to be real
-      for (int i : range(bl.second.size()))
-        _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
+      for (int i : range(bl_size)) _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
       // If off-diagonal elements are below threshold, set to real
       if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
         _Delta_tau[b].data() = real(_Delta_tau[b].data());

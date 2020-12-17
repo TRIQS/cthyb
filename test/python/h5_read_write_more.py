@@ -15,7 +15,7 @@ from triqs_cthyb import Solver
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
 
-    solv = Solver(beta = 10., gf_struct = [['0',[0]]])
+    solv = Solver(beta = 10., gf_struct = [['0',1]])
     solv.G0_iw['0'][0,0] << inverse( iOmega_n - 0.5 - SemiCircular(2.) )
     
     solv.solve(

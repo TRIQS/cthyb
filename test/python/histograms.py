@@ -10,7 +10,7 @@ import numpy as np
 
 spin_names = ("up","dn")
 mkind = lambda sn: (sn,0)
-gf_struct = [["dn",[0]], ["up",[0]]]
+gf_struct = [["dn",1], ["up",1]]
 
 # Input parameters
 beta = 10.0

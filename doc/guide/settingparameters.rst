@@ -25,7 +25,7 @@ You should always try to take advantage of a possible block structure of the
 Green's function. In a spin-conserving system, the Green's function can often
 be (at least) cut into *up* and *down* spin sectors.  When the structure is
 clear you can set the parameter ``gf_struct``, which is a ``list()`` or pairs,
-each containing the name of the block and a list of the indices of the block.
+each containing the name of the block and the size of the block.
 
 Examples
 ........
@@ -33,12 +33,12 @@ Examples
 * For a single-band Hubbard model with a local Coulomb interaction, the Green's function
   can be cut in two up/down blocks of size 1. We would have::
 
-    gf_struct = [ ('up',[0]), ('down',[0]) ]
+    gf_struct = [ ('up', 1), ('down', 1) ]
 
 * For a two-band Hubbard model with a hybridization between the bands, the Green's function
   can be cut in two up/down blocks, but there are off-diagonal orbital elements. We have::
 
-    gf_struct = [ ('up',[0, 1]), ('down',[0, 1]) ]
+    gf_struct = [ ('up', 2), ('down', 2) ]
 
 
 Step 2 - the Hamiltonian

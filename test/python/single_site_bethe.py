@@ -14,7 +14,7 @@ U = 2.5
 mu = (U/2.0)+0.2
 beta = 100.0
 
-gf_struct = [['down',[0]], ['up',[0]]]
+gf_struct = [['down',1], ['up',1]]
 
 # Construct solver
 S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=3000, n_l=30)

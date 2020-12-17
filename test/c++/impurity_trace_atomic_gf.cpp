@@ -28,23 +28,11 @@ using namespace triqs::operators;
 using linindex_t = std::map<std::pair<int, int>, int>;
 
 // -----------------------------------------------------------------------------
-gf_struct_t make_gf_struct(int n_orb) {
-  indices_t indices{};
-  for (int o : range(n_orb)) indices.emplace_back(o);
-  gf_struct_t gf_struct{{"up", indices}, {"dn", indices}};
-  return gf_struct;
-}
-
-// -----------------------------------------------------------------------------
 linindex_t make_linear_index(const gf_struct_t &gf_struct, const fundamental_operator_set &fops) {
   linindex_t linindex;
   int block_index = 0;
-  for (auto const &bl : gf_struct) {
-    int inner_index = 0;
-    for (auto const &a : bl.second) {
-      linindex[std::make_pair(block_index, inner_index)] = fops[{bl.first, a}];
-      inner_index++;
-    }
+  for (auto const &[bl, bl_size] : gf_struct) {
+    for (auto a : range(bl_size)) { linindex[std::make_pair(block_index, a)] = fops[{bl, a}]; }
     block_index++;
   }
   return linindex;
@@ -93,7 +81,7 @@ TEST(impurity_trace, atomic_gf) {
 
   int n_orb = 3;
 
-  auto gf_struct = make_gf_struct(n_orb);
+  auto gf_struct = gf_struct_t{{"up", n_orb}, {"dn", n_orb}};
   auto fops      = fundamental_operator_set(gf_struct);
   auto linindex  = make_linear_index(gf_struct, fops);
 

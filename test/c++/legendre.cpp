@@ -35,7 +35,7 @@ TEST(CtHyb, Legendre) {
   // quantum numbers
   std::vector<many_body_op_t> qn{n("up", 0), n("down", 0)};
   // gf structure
-  gf_struct_t gf_struct{{"up", {0}}, {"down", {0}}};
+  gf_struct_t gf_struct{{"up", 1}, {"down", 1}};
 
   // Construct CTQMC solver
   solver_core solver({beta, gf_struct, 1025, 2500, 50});

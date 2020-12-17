@@ -24,12 +24,8 @@ using linindex_t = std::map<std::pair<int, int>, int>;
 linindex_t make_linear_index(const gf_struct_t &gf_struct, const fundamental_operator_set &fops) {
   linindex_t linindex;
   int block_index = 0;
-  for (auto const &bl : gf_struct) {
-    int inner_index = 0;
-    for (auto const &a : bl.second) {
-      linindex[std::make_pair(block_index, inner_index)] = fops[{bl.first, a}];
-      inner_index++;
-    }
+  for (auto const &[bl, bl_size] : gf_struct) {
+    for (auto a : range(bl_size)) { linindex[std::make_pair(block_index, a)] = fops[{bl, a}]; }
     block_index++;
   }
   return linindex;
@@ -38,7 +34,7 @@ linindex_t make_linear_index(const gf_struct_t &gf_struct, const fundamental_ope
 // -----------------------------------------------------------------------------
 TEST(atom_diag, op_matrix) {
 
-  gf_struct_t gf_struct{{"up", {0}}, {"dn", {0}}};
+  gf_struct_t gf_struct{{"up", 1}, {"dn", 1}};
   fundamental_operator_set fops(gf_struct);
   auto linindex = make_linear_index(gf_struct, fops);
 

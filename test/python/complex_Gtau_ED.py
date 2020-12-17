@@ -35,7 +35,7 @@ p["length_cycle"] = 100
 p["n_warmup_cycles"] = 1000
 p["n_cycles"] = 5000
 
-S = Solver(beta=10,gf_struct=[["ud",list(range(corr_dim))]],n_tau=203,n_iw=101)
+S = Solver(beta=10,gf_struct=[["ud",corr_dim]],n_tau=203,n_iw=101)
 S.G0_iw << G0_iw[:corr_dim,:corr_dim]
 S.solve(h_int=H_int,**p)
 

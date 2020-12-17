@@ -54,7 +54,7 @@ TEST(CtHyb, G2_measurments) {
 
   // GF structure
   enum spin { up, down };
-  gf_struct_t gf_struct{{"up", {0}}, {"down", {0}}};
+  gf_struct_t gf_struct{{"up", 1}, {"down", 1}};
   auto n_up   = n("up", 0);
   auto n_down = n("down", 0);
 

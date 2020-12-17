@@ -68,8 +68,8 @@ TEST(CtHyb, Kanamori) {
 
   // gf structure
   gf_struct_t gf_struct;
-  for (int o = 0; o < num_orbitals; ++o) gf_struct.push_back({"down-" + std::to_string(o),{0}});
-  for (int o = 0; o < num_orbitals; ++o) gf_struct.push_back({"up-" + std::to_string(o),{0}});
+  for (int o = 0; o < num_orbitals; ++o) gf_struct.push_back({"down-" + std::to_string(o), 1});
+  for (int o = 0; o < num_orbitals; ++o) gf_struct.push_back({"up-" + std::to_string(o), 1});
 
   // Construct CTQMC solver
   solver_core solver({beta, gf_struct, 1025, 2500});

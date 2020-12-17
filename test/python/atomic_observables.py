@@ -17,6 +17,7 @@ F0 = 4.0
 F2 = 0.5
 
 spin_names = ("up","dn")
+n_cubic = 2*L+1
 cubic_names = [str(i) for i in range(2*L+1)]
 U_mat = U_matrix(L, radial_integrals=[F0,F2], basis="spherical")
 
@@ -28,7 +29,7 @@ p["n_warmup_cycles"] = 0
 p["n_cycles"] = 0
 
 # Block structure of GF
-gf_struct = set_operator_structure(spin_names,cubic_names,False)
+gf_struct = set_operator_structure(spin_names,len(cubic_names),False)
 
 # Local Hamiltonian
 H = h_int_slater(spin_names,cubic_names,U_mat,False)

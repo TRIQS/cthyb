@@ -10,7 +10,7 @@ e_f, beta = -U/2.0, 50
 
 # Construct the impurity solver with the inverse temperature
 # and the structure of the Green's functions
-S = Solver(beta = beta, gf_struct = [ ('up',[0]), ('down',[0]) ], n_l = 100)
+S = Solver(beta = beta, gf_struct = [ ('up',1), ('down',1) ], n_l = 100)
 
 # Initialize the non-interacting Green's function S.G0_iw
 for name, g0 in S.G0_iw: g0 << inverse(iOmega_n - e_f - V**2 * Wilson(D))

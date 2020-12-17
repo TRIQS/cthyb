@@ -26,7 +26,7 @@ p["length_cycle"] = 500          # Number of MC steps between consecutive measur
 p["move_double"] = True          # Use four-operator moves
 
 # Block structure of Green's functions
-# gf_struct = [ ('up',[0,1,2,3,4]), ('down',[0,1,2,3,4]) ]
+# gf_struct = [ ('up',5), ('down',5) ]
 # This can be computed using the TRIQS function as follows:
 gf_struct = op.set_operator_structure(spin_names,orb_names,off_diag=off_diag) 
 

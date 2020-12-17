@@ -8,7 +8,7 @@ from triqs.statistics.histograms import Histogram
 
 cp = dict(
     beta=10.0,
-    gf_struct=[['up',[0]], ['do',[0]]],
+    gf_struct=[['up',1], ['do',1]],
     n_iw=1025, n_tau=2500, n_l=20
     )
 

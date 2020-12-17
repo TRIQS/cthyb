@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     solv = Solver(
         beta = 2.1,
-        gf_struct = [['up',[0]],['do',[0]]],
+        gf_struct = [['up',1],['do',1]],
         n_iw = 30,
         n_tau = 2*30+1,
         )

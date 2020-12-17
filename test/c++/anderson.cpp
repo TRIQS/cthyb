@@ -32,11 +32,11 @@ TEST(CtHyb, Anderson) {
   // GF structure
   enum spin { up, down };
 #ifdef BLOCK
-  gf_struct_t gf_struct{{"up", {0}}, {"down", {0}}};
+  gf_struct_t gf_struct{{"up", 1}, {"down", 1}};
   auto n_up   = n("up", 0);
   auto n_down = n("down", 0);
 #else
-  gf_struct_t gf_struct{{"tot", {0, 1}}};
+  gf_struct_t gf_struct{{"tot", 2}};
   auto n_up   = n("tot", 0);
   auto n_down = n("tot", 1);
 #endif

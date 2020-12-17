@@ -36,7 +36,7 @@ def get_h_loc(eps0, eps1, V, orb):
 # ----------------------------------------------------------------------
 def check_h_loc(h_loc_ref, h_loc_mat, orb):
     
-    S = Solver(beta=40, gf_struct={orb : [0,1]})
+    S = Solver(beta=40, gf_struct={orb : 2})
 
     S.G0_iw << inverse(Omega - h_loc_mat)
 

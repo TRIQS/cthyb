@@ -14,7 +14,7 @@ from triqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 beta = 10.0
 
-gf_struct = [['0', [0, 1]]]
+gf_struct = [['0', 2]]
 target_shape = [2, 2]
 
 nw = 48

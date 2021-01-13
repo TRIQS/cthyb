@@ -71,10 +71,21 @@ namespace triqs_cthyb {
   void h5_read(h5::group h5group, std::string name, constr_parameters_t &cp) {
     h5::group grp = name.empty() ? h5group : h5group.open_group(name);
     h5_read(grp, "beta", cp.beta);
-    h5_read(grp, "gf_struct", cp.gf_struct);
     h5_read(grp, "n_iw", cp.n_iw);
     h5_read(grp, "n_tau", cp.n_tau);
     h5_read(grp, "n_l", cp.n_l);
+
+    // Read gf_struct with backward compatibility layer for old gf_struct type
+    auto gf_struct_0 = grp.open_group("gf_struct").open_group("0");
+    if (gf_struct_0.has_subgroup("1")){
+      auto gf_struct_bkwd = std::vector<std::pair<std::string, std::vector<std::variant<int, std::string>>>>{};
+      h5_read(grp, "gf_struct", gf_struct_bkwd);
+      cp.gf_struct.clear();
+      for(auto const & [k, v]: gf_struct_bkwd)
+	cp.gf_struct.push_back({k, v.size()});
+    } else {
+      h5_read(grp, "gf_struct", cp.gf_struct);
+    }
   }
 
   void h5_write(h5::group h5group, std::string name, solve_parameters_t const &sp) {

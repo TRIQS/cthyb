@@ -35,7 +35,7 @@ namespace triqs_cthyb {
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau_old, tau_new;
     op_desc op_old, op_new;
-    using det_type = det_manip::det_manip<qmc_data::delta_block_adaptor>;
+    using det_type = det_manip::det_manip_basic<qmc_data::delta_block_adaptor>;
     det_type::RollDirection roll_direction;
     int block_index;
 

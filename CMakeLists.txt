@@ -58,12 +58,11 @@ if(NOT IS_SUBPROJECT)
 endif()
 set(${PROJECT_NAME}_BINARY_DIR ${PROJECT_BINARY_DIR} CACHE STRING "Binary directory of the ${PROJECT_NAME} Project")
 
-
-# ############
-# Options
-
 # Make additional Find Modules available
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/share/cmake/Modules)
+
+# ############
+# CMake Options
 
 # Default to Release build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -88,23 +87,22 @@ if(Build_Tests)
   enable_testing()
 endif()
 
-# Options for the compilation ...
-option(Hybridisation_is_complex "If ON, the hybridization Delta(tau) is complex" OFF)
-option(Local_hamiltonian_is_complex "If ON, the H_loc is complex" OFF)
-option(MeasureG2 "Measure the two particle object (requires the NFFT library)" ON)
+# Build static libraries by default
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 
-# check that options are compatible
-if(Hybridisation_is_complex AND NOT Local_hamiltonian_is_complex)
- message(FATAL_ERROR "Combination of options Hybridisation_is_complex=ON "
-                     "and Local_hamiltonian_is_complex=OFF is not supported.")
-endif()
+# ############
+# Global Compilation Settings
 
 # Export the list of compile-commands into compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Global compiler options
-option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
+# Disable compiler extensions
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Provide additional debugging information for Debug builds
 add_compile_options($<$<CONFIG:Debug>:-ggdb3>)
+
+# Enable Linktime optimizations when available
 cmake_policy(SET CMP0069 NEW)
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ipo_supported)
@@ -129,16 +127,11 @@ target_compile_options(${PROJECT_NAME}_warnings
     $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>
     $<$<CXX_COMPILER_ID:GNU>:-Wshadow=local>
     $<$<CXX_COMPILER_ID:GNU>:-Wno-attributes>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-comma-subscript>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-unknown-warning-option>
-    $<$<CXX_COMPILER_ID:Clang>:-Wshadow>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-gcc-compat>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-c++20-extensions>
-    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-comma-subscript>
-    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-unknown-warning-option>
-    $<$<CXX_COMPILER_ID:AppleClang>:-Wshadow>
-    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-gcc-compat>
-    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-c++20-extensions>
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-deprecated-comma-subscript>
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-unknown-warning-option>
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wshadow>
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-gcc-compat>
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-c++20-extensions>
 )
 
 # #############

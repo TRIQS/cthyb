@@ -80,6 +80,9 @@ endif()
 
 # Documentation
 option(Build_Documentation "Build documentation" OFF)
+if(Build_Documentation AND NOT PythonSupport)
+  message(FATAL_ERROR "Build_Documentation=ON requires PythonSupport to be enabled")
+endif()
 
 # Testing
 option(Build_Tests "Build tests" ON)
@@ -111,9 +114,6 @@ if(NOT ipo_supported)
 else()
   message(STATUS "Linktime optimizations enabled!")
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-  if(CMAKE_SYSTEM_NAME EQUAL "Linux")
-    add_link_options($<$<CXX_COMPILER_ID:Clang>:-fuse-ld=gold>)
-  endif()
 endif()
 
 # Create an Interface target for compiler warnings
@@ -127,11 +127,16 @@ target_compile_options(${PROJECT_NAME}_warnings
     $<$<CXX_COMPILER_ID:GNU>:-Wno-comma-subscript>
     $<$<CXX_COMPILER_ID:GNU>:-Wshadow=local>
     $<$<CXX_COMPILER_ID:GNU>:-Wno-attributes>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-deprecated-comma-subscript>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-unknown-warning-option>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wshadow>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-gcc-compat>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-c++20-extensions>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-comma-subscript>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-unknown-warning-option>
+    $<$<CXX_COMPILER_ID:Clang>:-Wshadow>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-gcc-compat>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-c++20-extensions>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-comma-subscript>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-unknown-warning-option>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wshadow>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-gcc-compat>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-c++20-extensions>
 )
 
 # #############

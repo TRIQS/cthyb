@@ -234,6 +234,10 @@ namespace triqs_cthyb {
 
     /// Read solve_parameters_t from hdf5
     friend void h5_read(h5::group h5group, std::string subgroup_name, solve_parameters_t &sp);
+
+    /// Threshold below which which off diagonal components of hloc are set to 0
+    double off_diag_threshold = 1.e-13;
+
   };
 
   /// A struct combining both constr_params_t and solve_params_t

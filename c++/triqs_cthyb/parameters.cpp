@@ -134,6 +134,7 @@ namespace triqs_cthyb {
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
     h5_write(grp, "imag_threshold", sp.imag_threshold);
+    h5_write(grp, "off_diag_threshold", sp.off_diag_threshold);
 
     h5_write(grp, "det_init_size", sp.det_init_size);
     h5_write(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);
@@ -199,6 +200,7 @@ namespace triqs_cthyb {
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);
+    h5_try_read(grp, "off_diag_threshold", sp.off_diag_threshold);
 
     h5_read(grp, "det_init_size", sp.det_init_size);
     h5_read(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);

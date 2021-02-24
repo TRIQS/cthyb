@@ -156,8 +156,8 @@ namespace triqs_cthyb {
 
     // set off diagonal terms in Delta_infty to 0 if they are below off_diag_threshold
     for (int b : range(gf_struct.size())){
-      for int i : range(first_dim(Delta_infty_vec[b])){
-        for int j : range(second_dim(Delta_infty_vec[b])){
+      for (int i : range(first_dim(Delta_infty_vec[b]))){
+        for (int j : range(second_dim(Delta_infty_vec[b]))){
           if (i != j && abs(Delta_infty_vec[b](i,j)) < params.off_diag_threshold)
             Delta_infty_vec[b](i,j) = 0;
         }

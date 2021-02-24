@@ -158,7 +158,7 @@ namespace triqs_cthyb {
     for (int b : range(gf_struct.size())){
       for int i : range(first_dim(Delta_infty_vec[b])){
         for int j : range(second_dim(Delta_infty_vec[b])){
-          if (i != j && Delta_infty_vec[b](i,j) < params.off_diag_threshold)
+          if (i != j && abs(Delta_infty_vec[b](i,j)) < params.off_diag_threshold)
             Delta_infty_vec[b](i,j) = 0;
         }
       }

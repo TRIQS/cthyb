@@ -170,6 +170,10 @@ namespace triqs_cthyb {
 #else
           double e_ij = Delta_infty_vec[b](n1, n2).real();
 #endif
+          // set off diagonal terms to 0 if they are below off_diag_threshold
+          if(n1 != n2 && abs(Delta_infty_vec[b](n1, n2)) < params.off_diag_threshold) 
+            e_ij = 0.0;
+
           _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
           n2++;
         }

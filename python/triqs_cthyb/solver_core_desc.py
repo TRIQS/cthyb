@@ -254,6 +254,8 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | det_singular_threshold        | double                                                    | -1                                                        | Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))  |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
+| off_diag_threshold            | double                                                    | 0.0                                                       | Threshold below which which off diagonal components of hloc are set to 0                                          |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 """)
 
 c.add_property(name = "h_loc",
@@ -571,6 +573,11 @@ c.add_member(c_name = "det_singular_threshold",
              c_type = "double",
              initializer = """ -1 """,
              doc = r"""Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))""")
+
+c.add_member(c_name = "off_diag_threshold",
+             c_type = "double",
+             initializer = """ 0.0 """,
+             doc = r"""Threshold below which which off diagonal components of hloc are set to 0""")
 
 module.add_converter(c)
 

@@ -160,6 +160,7 @@ namespace triqs_cthyb {
     #ifndef HYBRIDISATION_IS_COMPLEX
     double max_imag = 0.0;
     int b = 0;
+    range _;
     for (auto const &bl : gf_struct) {
       max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
       // Force all diagonal elements to be real

@@ -24,12 +24,12 @@ from .solver_core import SolverCore
 from triqs.gf import *
 import triqs.utility.mpi as mpi
 import numpy as np
-
+from triqs.operators.util.extractors import extract_h_dict
 from .tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
-    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30):
+    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, Delta_interface = False):
         """
         Initialise the solver.
 
@@ -49,6 +49,8 @@ class Solver(SolverCore):
                Number of imaginary time points used for the Green's functions.
         n_l : integer, optional
              Number of legendre polynomials to use in accumulations of the Green's functions.
+        Delta_interface: bool, optional
+            Are Delta_tau and Delta_infty provided as input instead of G0_iw? 
         """
         if isinstance(gf_struct,dict):
             if mpi.is_master_node(): print("WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict")
@@ -56,15 +58,16 @@ class Solver(SolverCore):
 
         # Initialise the core solver
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
-                            n_iw=n_iw, n_tau=n_tau, n_l=n_l)
+                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, Delta_interface = Delta_interface)
 
-        self.Sigma_iw = self.G0_iw.copy()
+        mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
+        self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
         self.Sigma_iw.zero()
-        self.G_iw = self.G0_iw.copy()
-        self.G_iw.zero()
+        self.G_iw = self.Sigma_iw.copy()
         self.gf_struct = gf_struct
         self.n_iw = n_iw
         self.n_tau = n_tau
+        self.Delta_interface = Delta_interface
 
     def solve(self, **params_kw):
         r"""
@@ -153,8 +156,23 @@ class Solver(SolverCore):
             assert is_gf_hermitian(self.G_iw)
             self.G_iw_raw = self.G_iw.copy()
 
+            G0_iw = self.G_iw.copy()
+            if self.Delta_interface:
+                Delta_iw = self.G_iw.copy()
+                hdict = extract_h_dict(self.h_loc0, ignore_irrelevant = True)
+                for bl, delta in self.Delta_tau:
+                    norb = delta.target_shape[0]
+                    hloc_array = np.zeros((norb,norb), dtype = np.complex_)
+                    for i in range(norb):
+                        for j in range(norb):
+                            hloc_array[i,j] = hdict.get(((bl, i), (bl, j)), 0.)
+                    Delta_iw[bl].set_from_fourier(delta)
+                    G0_iw[bl] << inverse( iOmega_n - Delta_iw[bl] - hloc_array)
+            else:
+                G0_iw << self.G0_iw
+
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
-            self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+            self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)
             self.Sigma_iw_raw = self.Sigma_iw.copy()
 
             if perform_tail_fit:
@@ -168,7 +186,7 @@ class Solver(SolverCore):
                     )
 
                 # Recompute G_iw with the fitted Sigma_iw
-                self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
+                self.G_iw = dyson(G0_iw=G0_iw, Sigma_iw=self.Sigma_iw)
             else:
 
                 # Enforce 1/w behavior of G_iw in the tail fit window
@@ -178,6 +196,6 @@ class Solver(SolverCore):
                     tail[1] = np.eye(g.target_shape[0])
                     g.replace_by_tail_in_fit_window(tail)
 
-                self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+                self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)
 
         return solve_status

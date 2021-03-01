@@ -66,6 +66,7 @@ namespace triqs_cthyb {
     h5_write(grp, "n_iw", cp.n_iw);
     h5_write(grp, "n_tau", cp.n_tau);
     h5_write(grp, "n_l", cp.n_l);
+    h5_write(grp, "Delta_interface", cp.Delta_interface);
   }
 
   void h5_read(h5::group h5group, std::string name, constr_parameters_t &cp) {
@@ -75,6 +76,7 @@ namespace triqs_cthyb {
     h5_read(grp, "n_iw", cp.n_iw);
     h5_read(grp, "n_tau", cp.n_tau);
     h5_read(grp, "n_l", cp.n_l);
+    h5_try_read(grp, "Delta_interface", cp.Delta_interface);
   }
 
   void h5_write(h5::group h5group, std::string name, solve_parameters_t const &sp) {
@@ -141,6 +143,7 @@ namespace triqs_cthyb {
     h5_write(grp, "det_precision_warning", sp.det_precision_warning);
     h5_write(grp, "det_precision_error", sp.det_precision_error);
     h5_write(grp, "det_singular_threshold", sp.det_singular_threshold);
+    h5_write(grp, "h_loc0", sp.h_loc0);
   }
 
   void h5_read(h5::group h5group, std::string name, solve_parameters_t &sp) {
@@ -207,6 +210,7 @@ namespace triqs_cthyb {
     h5_read(grp, "det_precision_warning", sp.det_precision_warning);
     h5_read(grp, "det_precision_error", sp.det_precision_error);
     h5_read(grp, "det_singular_threshold", sp.det_singular_threshold);
+    h5_try_read(grp, "h_loc0", sp.h_loc0);
   }
 
 } // namespace triqs_cthyb

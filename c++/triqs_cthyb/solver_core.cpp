@@ -109,7 +109,10 @@ namespace triqs_cthyb {
     std::vector<int> n_inner;
     for (auto const &bl : gf_struct) { n_inner.push_back(bl.second.size()); }
 
-    // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
+
+    if (not params.from_Delta){
+
+          // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
 
     if (not is_gf_hermitian(_G0_iw)) {
       if (params.verbosity >= 2)
@@ -120,7 +123,6 @@ namespace triqs_cthyb {
       _G0_iw = make_hermitian(_G0_iw);
     }
 
-    if (not params.from_Delta){
       // ==== Compute Delta from G0_iw ====
 
       auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw);
@@ -136,18 +138,12 @@ namespace triqs_cthyb {
           auto [tail, err] = fit_hermitian_tail(d);
           if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
           auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
-  #ifndef HYBRIDISATION_IS_COMPLEX
-          double imag_Delta = max_element(abs(imag(Delta_infty)));
-          if (imag_Delta > imag_threshold)
-            TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: "
-                                << imag_Delta << ", is larger than the set parameter imag_threshold " << imag_threshold;
-  #endif
           return Delta_infty;
         },
         Delta_iw);
 
 
-      // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
+      // Determine terms Delta_iw from G0_iw
       int b = 0;
       range _;
       for (auto const &bl : gf_struct) {
@@ -156,23 +152,33 @@ namespace triqs_cthyb {
           Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
         auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
         _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
-        // Force all diagonal elements to be real
-        for (int i : range(bl.second.size()))
-          _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
-        // If off-diagonal elements are below threshold, set to real
-        if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
-          _Delta_tau[b].data() = real(_Delta_tau[b].data());
         b++;
       }
     }
+
+    //check that Delta_infty and Delta_tau are real
+    #ifndef HYBRIDISATION_IS_COMPLEX
+    double max_imag = 0.0;
+    int b = 0;
+    for (auto const &bl : gf_struct) {
+      max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
+      // Force all diagonal elements to be real
+      for (int i : range(bl.second.size()))
+        _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
+      // If off-diagonal elements are below threshold, set to real
+      if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
+        _Delta_tau[b].data() = real(_Delta_tau[b].data());
+      b++;
+    }
+      if (max_imag > params.imag_threshold)
+          TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: "
+                                  << max_imag << ", is larger than the set parameter imag_threshold " << params.imag_threshold;
+    #endif
+
+
         // ==== Compute h_loc ====
 
     _h_loc = params.h_int;
-
-    // Do I have imaginary components in my local Hamiltonian?
-    auto max_imag = 0.0;
-    for (int b : range(gf_struct.size()))
-      max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
 
     // Add quadratic terms to h_loc
     int b = 0;

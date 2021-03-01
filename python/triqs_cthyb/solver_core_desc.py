@@ -256,6 +256,8 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | off_diag_threshold            | double                                                    | 0.0                                                       | Threshold below which which off diagonal components of hloc are set to 0                                          |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
+| from_Delta                    | bool                                                      | false                                                     | are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw                |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 """)
 
 c.add_property(name = "h_loc",
@@ -578,6 +580,11 @@ c.add_member(c_name = "off_diag_threshold",
              c_type = "double",
              initializer = """ 0.0 """,
              doc = r"""Threshold below which which off diagonal components of hloc are set to 0""")
+
+c.add_member(c_name = "from_Delta",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = r"""are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw""")
 
 module.add_converter(c)
 

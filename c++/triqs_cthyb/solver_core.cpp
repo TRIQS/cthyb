@@ -154,16 +154,6 @@ namespace triqs_cthyb {
     for (int b : range(gf_struct.size()))
       max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
 
-    // set off diagonal terms in Delta_infty to 0 if they are below off_diag_threshold
-    for (int b : range(gf_struct.size())){
-      for (int i : range(first_dim(Delta_infty_vec[b]))){
-        for (int j : range(second_dim(Delta_infty_vec[b]))){
-          if (i != j && abs(Delta_infty_vec[b](i,j)) < params.off_diag_threshold)
-            Delta_infty_vec[b](i,j) = 0;
-        }
-      }
-    }
-
     // Add quadratic terms to h_loc
     int b = 0;
     for (auto const &bl : gf_struct) {
@@ -180,6 +170,10 @@ namespace triqs_cthyb {
 #else
           double e_ij = Delta_infty_vec[b](n1, n2).real();
 #endif
+          // set off diagonal terms to 0 if they are below off_diag_threshold
+          if(n1 != n2 && abs(Delta_infty_vec[b](n1, n2)) < params.off_diag_threshold) 
+            e_ij = 0.0;
+
           _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
           n2++;
         }

@@ -209,6 +209,9 @@ namespace triqs_cthyb {
     h5_read(grp, "det_precision_warning", sp.det_precision_warning);
     h5_read(grp, "det_precision_error", sp.det_precision_error);
     h5_read(grp, "det_singular_threshold", sp.det_singular_threshold);
+
+    h5_try_read(grp, "from_Delta", sp.from_Delta);
+
   }
 
 } // namespace triqs_cthyb

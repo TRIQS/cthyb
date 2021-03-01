@@ -181,7 +181,7 @@ namespace triqs_cthyb {
     _h_loc = params.h_int;
 
     // Add quadratic terms to h_loc
-    int b = 0;
+    b = 0;
     for (auto const &bl : gf_struct) {
       int n1 = 0;
       for (auto const &a1 : bl.second) {

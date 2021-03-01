@@ -141,6 +141,8 @@ namespace triqs_cthyb {
     h5_write(grp, "det_precision_warning", sp.det_precision_warning);
     h5_write(grp, "det_precision_error", sp.det_precision_error);
     h5_write(grp, "det_singular_threshold", sp.det_singular_threshold);
+
+    h5_write(grp, "from_Delta", sp.from_Delta);
   }
 
   void h5_read(h5::group h5group, std::string name, solve_parameters_t &sp) {

@@ -238,6 +238,9 @@ namespace triqs_cthyb {
     /// Threshold below which which off diagonal components of hloc are set to 0
     double off_diag_threshold = 0.0;
 
+    /// are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw
+    bool from_Delta = false;
+
   };
 
   /// A struct combining both constr_params_t and solve_params_t

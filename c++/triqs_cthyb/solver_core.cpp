@@ -120,32 +120,52 @@ namespace triqs_cthyb {
       _G0_iw = make_hermitian(_G0_iw);
     }
 
-    // ==== Compute Delta from G0_iw ====
+    if (not params.from_Delta){
+      // ==== Compute Delta from G0_iw ====
 
-    auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw);
-    auto Delta_iw  = G0_iw_inv;
+      auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw);
+      auto Delta_iw  = G0_iw_inv;
 
-    for (auto &Delta_iw_bl : Delta_iw)
-      for (auto const &iw : Delta_iw[0].mesh()) Delta_iw_bl[iw] = iw - Delta_iw_bl[iw];
+      for (auto &Delta_iw_bl : Delta_iw)
+        for (auto const &iw : Delta_iw[0].mesh()) Delta_iw_bl[iw] = iw - Delta_iw_bl[iw];
 
-    // Compute the constant part of Delta
-    Delta_infty_vec = map(
-       // Compute 0th moment of one block
-       [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
-         auto [tail, err] = fit_hermitian_tail(d);
-         if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
-         auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
-#ifndef HYBRIDISATION_IS_COMPLEX
-         double imag_Delta = max_element(abs(imag(Delta_infty)));
-         if (imag_Delta > imag_threshold)
-           TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: "
-                               << imag_Delta << ", is larger than the set parameter imag_threshold " << imag_threshold;
-#endif
-         return Delta_infty;
-       },
-       Delta_iw);
+      // Compute the constant part of Delta
+      Delta_infty_vec = map(
+        // Compute 0th moment of one block
+        [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
+          auto [tail, err] = fit_hermitian_tail(d);
+          if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
+          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
+  #ifndef HYBRIDISATION_IS_COMPLEX
+          double imag_Delta = max_element(abs(imag(Delta_infty)));
+          if (imag_Delta > imag_threshold)
+            TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: "
+                                << imag_Delta << ", is larger than the set parameter imag_threshold " << imag_threshold;
+  #endif
+          return Delta_infty;
+        },
+        Delta_iw);
 
-    // ==== Compute h_loc ====
+
+      // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
+      int b = 0;
+      range _;
+      for (auto const &bl : gf_struct) {
+        // Remove constant quadratic part
+        for (auto const &iw : Delta_iw[0].mesh())
+          Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
+        auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
+        _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
+        // Force all diagonal elements to be real
+        for (int i : range(bl.second.size()))
+          _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
+        // If off-diagonal elements are below threshold, set to real
+        if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
+          _Delta_tau[b].data() = real(_Delta_tau[b].data());
+        b++;
+      }
+    }
+        // ==== Compute h_loc ====
 
     _h_loc = params.h_int;
 
@@ -182,23 +202,6 @@ namespace triqs_cthyb {
       b++;
     }
 
-    // Determine terms Delta_iw from G0_iw and ensure that the 1/iw behaviour of G0_iw is correct
-    b = 0;
-    range _;
-    for (auto const &bl : gf_struct) {
-      // Remove constant quadratic part
-      for (auto const &iw : Delta_iw[0].mesh())
-        Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
-      auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
-      _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
-      // Force all diagonal elements to be real
-      for (int i : range(bl.second.size()))
-        _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
-      // If off-diagonal elements are below threshold, set to real
-      if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
-        _Delta_tau[b].data() = real(_Delta_tau[b].data());
-      b++;
-    }
 
     // Report what h_loc we are using
     if (params.verbosity >= 2)

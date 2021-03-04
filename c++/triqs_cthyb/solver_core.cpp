@@ -58,7 +58,7 @@ namespace triqs_cthyb {
   };
 
   solver_core::solver_core(constr_parameters_t const &p)
-     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), constr_parameters(p) {
+     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), from_Delta(p.from_Delta), constr_parameters(p) {
 
     if (p.n_tau < 2 * p.n_iw)
       TRIQS_RUNTIME_ERROR
@@ -66,7 +66,8 @@ namespace triqs_cthyb {
          << " but n_tau = " << p.n_tau << ".";
 
     // Allocate single particle greens functions
-    _G0_iw     = block_gf<imfreq>({beta, Fermion, n_iw}, gf_struct);
+    if (not from_Delta)
+      _G0_iw     = block_gf<imfreq>({beta, Fermion, n_iw}, gf_struct);
     _Delta_tau = block_gf<imtime>({beta, Fermion, n_tau}, gf_struct);
   }
 
@@ -110,22 +111,22 @@ namespace triqs_cthyb {
     for (auto const &bl : gf_struct) { n_inner.push_back(bl.second.size()); }
 
 
-    if (not params.from_Delta){
+    if (_G0_iw){
 
           // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
 
-    if (not is_gf_hermitian(_G0_iw)) {
+    if (not is_gf_hermitian(_G0_iw.value())) {
       if (params.verbosity >= 2)
         std::cout << "!-------------------------------------------------------------------------------------------!\n"
                      "! WARNING: S.G0_iw violates fundamental Green Function property G0(iw)[i,j] = G0(-iw)*[j,i] !\n"
                      "! Symmetrizing S.G0_iw ...                                                                  !\n"
                      "!-------------------------------------------------------------------------------------------!\n\n";
-      _G0_iw = make_hermitian(_G0_iw);
+      _G0_iw = make_hermitian(_G0_iw.value());
     }
 
       // ==== Compute Delta from G0_iw ====
 
-      auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw);
+      auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw.value());
       auto Delta_iw  = G0_iw_inv;
 
       for (auto &Delta_iw_bl : Delta_iw)

@@ -133,19 +133,21 @@ c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = r"""Construc
 
 
 
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------+
-| Parameter Name | Type                              | Default | Documentation                                                   |
-+================+===================================+=========+=================================================================+
-| beta           | double                            | --      | Inverse temperature                                             |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------+
-| gf_struct      | triqs::hilbert_space::gf_struct_t | --      | block structure of the gf                                       |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------+
-| n_iw           | int                               | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>   |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------+
-| n_tau          | int                               | 10001   | Number of tau points for gf<imtime, matrix_valued>              |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------+
-| n_l            | int                               | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>  |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------+
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| Parameter Name | Type                              | Default | Documentation                                                                                       |
++================+===================================+=========+=====================================================================================================+
+| beta           | double                            | --      | Inverse temperature                                                                                 |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| gf_struct      | triqs::hilbert_space::gf_struct_t | --      | block structure of the gf                                                                           |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| n_iw           | int                               | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>                                       |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| n_tau          | int                               | 10001   | Number of tau points for gf<imtime, matrix_valued>                                                  |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| n_l            | int                               | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>                                      |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| from_Delta     | bool                              | false   | are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw  |
++----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
 """)
 
 c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
@@ -255,8 +257,6 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 | det_singular_threshold        | double                                                    | -1                                                        | Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))  |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | off_diag_threshold            | double                                                    | 0.0                                                       | Threshold below which which off diagonal components of hloc are set to 0                                          |
-+-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| from_Delta                    | bool                                                      | false                                                     | are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw                |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 """)
 
@@ -581,11 +581,6 @@ c.add_member(c_name = "off_diag_threshold",
              initializer = """ 0.0 """,
              doc = r"""Threshold below which which off diagonal components of hloc are set to 0""")
 
-c.add_member(c_name = "from_Delta",
-             c_type = "bool",
-             initializer = """ false """,
-             doc = r"""are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw""")
-
 module.add_converter(c)
 
 # Converter for constr_parameters_t
@@ -617,6 +612,11 @@ c.add_member(c_name = "n_l",
              c_type = "int",
              initializer = """ 50 """,
              doc = r"""Number of Legendre polynomials for gf<legendre, matrix_valued>""")
+
+c.add_member(c_name = "from_Delta",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = r"""are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw""")
 
 module.add_converter(c)
 

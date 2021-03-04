@@ -27,6 +27,7 @@
 #include <triqs/statistics/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
+#include <optional>
 
 #include "types.hpp"
 #include "container_set.hpp"
@@ -42,6 +43,7 @@ namespace triqs_cthyb {
     gf_struct_t gf_struct; // Block structure of the Green function
     many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
     int n_iw, n_tau, n_l;
+    bool from_Delta;
 
     std::vector<matrix_t> _density_matrix; // density matrix, when used in Norm mode
     mpi::communicator _comm;               // define the communicator, here MPI_COMM_WORLD
@@ -50,7 +52,7 @@ namespace triqs_cthyb {
     int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
     // Single-particle Green's function containers
-    G_iw_t _G0_iw;      // Non-interacting Matsubara Green's function
+    std::optional<G_iw_t> _G0_iw;      // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
     std::vector<matrix<dcomplex>> Delta_infty_vec; // Quadratic instantaneous part of G0_iw
 
@@ -112,7 +114,7 @@ namespace triqs_cthyb {
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
     /// :math:`G_0(i\omega)` in imaginary frequencies.
-    block_gf_view<imfreq> G0_iw() { return _G0_iw; }
+    block_gf_view<imfreq> G0_iw() { return _G0_iw.value(); }
 
     /// Atomic :math:`G(\tau)` in imaginary time.
     //block_gf_view<imtime> atomic_gf() const { return ::triqs_cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }

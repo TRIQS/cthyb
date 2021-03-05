@@ -29,7 +29,7 @@ from .tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
-    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30):
+    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, from_Delta = False):
         """
         Initialise the solver.
 
@@ -49,6 +49,8 @@ class Solver(SolverCore):
                Number of imaginary time points used for the Green's functions.
         n_l : integer, optional
              Number of legendre polynomials to use in accumulations of the Green's functions.
+        from_Delta: bool, optional
+            Are Delta_tau and Delta_infty provided as input instead of G0_iw? 
         """
         if isinstance(gf_struct,dict):
             if mpi.is_master_node(): print("WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict")
@@ -56,7 +58,7 @@ class Solver(SolverCore):
 
         # Initialise the core solver
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
-                            n_iw=n_iw, n_tau=n_tau, n_l=n_l)
+                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, from_Delta = from_Delta)
 
         self.Sigma_iw = self.G0_iw.copy()
         self.Sigma_iw.zero()
@@ -65,6 +67,7 @@ class Solver(SolverCore):
         self.gf_struct = gf_struct
         self.n_iw = n_iw
         self.n_tau = n_tau
+        self.from_Delta = from_Delta
 
     def solve(self, **params_kw):
         r"""

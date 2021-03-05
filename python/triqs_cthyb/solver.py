@@ -156,8 +156,16 @@ class Solver(SolverCore):
             assert is_gf_hermitian(self.G_iw)
             self.G_iw_raw = self.G_iw.copy()
 
+            G0_iw = self.G_iw.copy()
+            if self.from_Delta:
+                Delta_iw = self.G_iw.copy()
+                Delta_iw.set_from_fourier(self.Delta_tau)
+                G0_iw << inverse( iOmega_n - Delta_iw - self.Delta_infty)
+            else:
+                G0_iw << self.G0_iw
+
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
-            self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+            self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)
             self.Sigma_iw_raw = self.Sigma_iw.copy()
 
             if perform_tail_fit:
@@ -171,7 +179,7 @@ class Solver(SolverCore):
                     )
 
                 # Recompute G_iw with the fitted Sigma_iw
-                self.G_iw = dyson(G0_iw=self.G0_iw, Sigma_iw=self.Sigma_iw)
+                self.G_iw = dyson(G0_iw=G0_iw, Sigma_iw=self.Sigma_iw)
             else:
 
                 # Enforce 1/w behavior of G_iw in the tail fit window
@@ -181,6 +189,6 @@ class Solver(SolverCore):
                     tail[1] = np.eye(g.target_shape[0])
                     g.replace_by_tail_in_fit_window(tail)
 
-                self.Sigma_iw = dyson(G0_iw=self.G0_iw, G_iw=self.G_iw)
+                self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)
 
         return solve_status

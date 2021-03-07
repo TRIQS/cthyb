@@ -48,15 +48,15 @@ Delta_tau = Gf(mesh=tmesh, target_shape=target_shape)
 Delta_tail, Delta_tail_err = Delta_iw.fit_hermitian_tail()
 Delta_tau << Fourier(Delta_iw, Delta_tail)
 
-S.Delta_tau << Delta_tau
-S.Delta_infty = [E_loc]
+S.Delta_tau['0'] << Delta_tau
 
 S.solve(
     h_int = h_int,
     length_cycle = 10,
     n_warmup_cycles = 1,
     n_cycles = 1,
+    Delta_infty = [E_loc]
     )
 
-assert_block_gfs_are_close(Delta_tau, S.Delta_tau)
+assert_gfs_are_close(Delta_tau, S.Delta_tau['0'])
 np.testing.assert_array_almost_equal(S.Delta_infty[0], E_loc)

@@ -159,8 +159,11 @@ class Solver(SolverCore):
             G0_iw = self.G_iw.copy()
             if self.from_Delta:
                 Delta_iw = self.G_iw.copy()
-                Delta_iw.set_from_fourier(self.Delta_tau)
-                G0_iw << inverse( iOmega_n - Delta_iw - self.Delta_infty)
+                ibl = 0
+                for bl, delta in self.Delta_tau:
+                    Delta_iw[bl].set_from_fourier(delta)
+                    G0_iw[bl] << inverse( iOmega_n - Delta_iw[bl] - self.Delta_infty[ibl])
+                    ibl += 1
             else:
                 G0_iw << self.G0_iw
 

@@ -157,6 +157,10 @@ namespace triqs_cthyb {
       }
     }
 
+    else {
+      Delta_infty_vec = params.Delta_infty.value();
+    }
+
     //check that Delta_infty and Delta_tau are real
     #ifndef HYBRIDISATION_IS_COMPLEX
     double max_imag = 0.0;

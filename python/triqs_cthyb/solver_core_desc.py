@@ -258,6 +258,8 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | off_diag_threshold            | double                                                    | 0.0                                                       | Threshold below which which off diagonal components of hloc are set to 0                                          |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
+| Delta_infty                   | std::optional<std::vector<matrix<dcomplex> > >            | std::optional<std::vector<matrix<dcomplex>>>{}            | Quadratic part of the local Hamiltonian. Must be provided if from_Delta = true                                    |
++-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 """)
 
 c.add_property(name = "h_loc",
@@ -580,6 +582,11 @@ c.add_member(c_name = "off_diag_threshold",
              c_type = "double",
              initializer = """ 0.0 """,
              doc = r"""Threshold below which which off diagonal components of hloc are set to 0""")
+
+c.add_member(c_name = "Delta_infty",
+             c_type = "std::optional<std::vector<matrix<dcomplex> > >",
+             initializer = """ std::optional<std::vector<matrix<dcomplex>>>{} """,
+             doc = r"""Quadratic part of the local Hamiltonian. Must be provided if from_Delta = true""")
 
 module.add_converter(c)
 

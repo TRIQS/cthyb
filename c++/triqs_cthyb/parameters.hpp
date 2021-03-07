@@ -241,6 +241,9 @@ namespace triqs_cthyb {
 
     /// Threshold below which which off diagonal components of hloc are set to 0
     double off_diag_threshold = 0.0;
+    
+    /// Quadratic part of the local Hamiltonian. Must be provided if from_Delta = true
+    std::optional<std::vector<matrix<dcomplex>>> Delta_infty = std::optional<std::vector<matrix<dcomplex>>>{};
 
   };
 

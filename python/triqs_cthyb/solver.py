@@ -60,10 +60,10 @@ class Solver(SolverCore):
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
                             n_iw=n_iw, n_tau=n_tau, n_l=n_l, from_Delta = from_Delta)
 
-        self.Sigma_iw = self.G0_iw.copy()
+        mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
+        self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
         self.Sigma_iw.zero()
-        self.G_iw = self.G0_iw.copy()
-        self.G_iw.zero()
+        self.G_iw = self.Sigma_iw.copy()
         self.gf_struct = gf_struct
         self.n_iw = n_iw
         self.n_tau = n_tau

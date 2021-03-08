@@ -114,7 +114,10 @@ namespace triqs_cthyb {
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
     /// :math:`G_0(i\omega)` in imaginary frequencies.
-    block_gf_view<imfreq> G0_iw() { return _G0_iw.value(); }
+    block_gf_view<imfreq> G0_iw() {
+      if (Delta_interface) TRIQS_RUNTIME_ERROR << "G0_iw cannot be accessed when using the Delta interface";
+      return _G0_iw.value();
+    }
 
     /// Atomic :math:`G(\tau)` in imaginary time.
     //block_gf_view<imtime> atomic_gf() const { return ::triqs_cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }

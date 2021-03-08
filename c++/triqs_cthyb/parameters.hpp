@@ -52,7 +52,6 @@ namespace triqs_cthyb {
     /// are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw
     bool from_Delta = false;
 
-
     /// Write constr_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, constr_parameters_t const &sp);
 

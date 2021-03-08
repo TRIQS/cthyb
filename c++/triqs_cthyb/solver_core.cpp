@@ -58,7 +58,7 @@ namespace triqs_cthyb {
   };
 
   solver_core::solver_core(constr_parameters_t const &p)
-     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), from_Delta(p.from_Delta), constr_parameters(p) {
+     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), Delta_interface(p.Delta_interface), constr_parameters(p) {
 
     if (p.n_tau < 2 * p.n_iw)
       TRIQS_RUNTIME_ERROR
@@ -66,8 +66,7 @@ namespace triqs_cthyb {
          << " but n_tau = " << p.n_tau << ".";
 
     // Allocate single particle greens functions
-    if (not from_Delta)
-      _G0_iw     = block_gf<imfreq>({beta, Fermion, n_iw}, gf_struct);
+    if (not Delta_interface) _G0_iw = block_gf<imfreq>({beta, Fermion, n_iw}, gf_struct);
     _Delta_tau = block_gf<imtime>({beta, Fermion, n_tau}, gf_struct);
   }
 
@@ -143,7 +142,7 @@ namespace triqs_cthyb {
         },
         Delta_iw);
 
-      // Determine terms Delta_iw from G0_iw
+      // Determine terms Delta_iw fr  om G0_iw
       int b = 0;
       range _;
       for (auto const &bl : gf_struct) {

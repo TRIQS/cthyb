@@ -133,21 +133,21 @@ c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = r"""Construc
 
 
 
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
-| Parameter Name | Type                              | Default | Documentation                                                                                       |
-+================+===================================+=========+=====================================================================================================+
-| beta           | double                            | --      | Inverse temperature                                                                                 |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
-| gf_struct      | triqs::hilbert_space::gf_struct_t | --      | block structure of the gf                                                                           |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
-| n_iw           | int                               | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>                                       |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
-| n_tau          | int                               | 10001   | Number of tau points for gf<imtime, matrix_valued>                                                  |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
-| n_l            | int                               | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>                                      |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
-| from_Delta     | bool                              | false   | are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw  |
-+----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| Parameter Name  | Type                              | Default | Documentation                                                                                       |
++=================+===================================+=========+=====================================================================================================+
+| beta            | double                            | --      | Inverse temperature                                                                                 |
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| gf_struct       | triqs::hilbert_space::gf_struct_t | --      | block structure of the gf                                                                           |
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| n_iw            | int                               | 1025    | Number of Matsubara frequencies for gf<imfreq, matrix_valued>                                       |
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| n_tau           | int                               | 10001   | Number of tau points for gf<imtime, matrix_valued>                                                  |
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| n_l             | int                               | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>                                      |
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
+| Delta_interface | bool                              | false   | are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw  |
++-----------------+-----------------------------------+---------+-----------------------------------------------------------------------------------------------------+
 """)
 
 c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
@@ -258,7 +258,7 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | off_diag_threshold            | double                                                    | 0.0                                                       | Threshold below which which off diagonal components of hloc are set to 0                                          |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| Delta_infty                   | std::optional<std::vector<matrix<dcomplex> > >            | std::optional<std::vector<matrix<dcomplex>>>{}            | Quadratic part of the local Hamiltonian. Must be provided if from_Delta = true                                    |
+| Delta_infty                   | std::optional<std::vector<matrix<dcomplex> > >            | std::optional<std::vector<matrix<dcomplex>>>{}            | Quadratic part of the local Hamiltonian. Must be provided if the Delta interface is used                          |
 +-------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------+
 """)
 
@@ -586,7 +586,7 @@ c.add_member(c_name = "off_diag_threshold",
 c.add_member(c_name = "Delta_infty",
              c_type = "std::optional<std::vector<matrix<dcomplex> > >",
              initializer = """ std::optional<std::vector<matrix<dcomplex>>>{} """,
-             doc = r"""Quadratic part of the local Hamiltonian. Must be provided if from_Delta = true""")
+             doc = r"""Quadratic part of the local Hamiltonian. Must be provided if the Delta interface is used""")
 
 module.add_converter(c)
 
@@ -620,7 +620,7 @@ c.add_member(c_name = "n_l",
              initializer = """ 50 """,
              doc = r"""Number of Legendre polynomials for gf<legendre, matrix_valued>""")
 
-c.add_member(c_name = "from_Delta",
+c.add_member(c_name = "Delta_interface",
              c_type = "bool",
              initializer = """ false """,
              doc = r"""are Delta_tau and Delta_infty provided as input? if so they don't need to be calculated from G0_iw""")

@@ -29,7 +29,7 @@ from .tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
-    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, from_Delta = False):
+    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, Delta_interface = False):
         """
         Initialise the solver.
 
@@ -49,7 +49,7 @@ class Solver(SolverCore):
                Number of imaginary time points used for the Green's functions.
         n_l : integer, optional
              Number of legendre polynomials to use in accumulations of the Green's functions.
-        from_Delta: bool, optional
+        Delta_interface: bool, optional
             Are Delta_tau and Delta_infty provided as input instead of G0_iw? 
         """
         if isinstance(gf_struct,dict):
@@ -58,7 +58,7 @@ class Solver(SolverCore):
 
         # Initialise the core solver
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
-                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, from_Delta = from_Delta)
+                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, Delta_interface = Delta_interface)
 
         mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
         self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
@@ -67,7 +67,7 @@ class Solver(SolverCore):
         self.gf_struct = gf_struct
         self.n_iw = n_iw
         self.n_tau = n_tau
-        self.from_Delta = from_Delta
+        self.Delta_interface = Delta_interface
 
     def solve(self, **params_kw):
         r"""
@@ -157,7 +157,7 @@ class Solver(SolverCore):
             self.G_iw_raw = self.G_iw.copy()
 
             G0_iw = self.G_iw.copy()
-            if self.from_Delta:
+            if self.Delta_interface:
                 Delta_iw = self.G_iw.copy()
                 ibl = 0
                 for bl, delta in self.Delta_tau:

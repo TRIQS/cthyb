@@ -17,7 +17,7 @@ target_shape = [2, 2]
 nw = 48
 nt = 3 * nw
 
-S = Solver(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt, from_Delta = True)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt, Delta_interface = True)
 
 h_int = n('0', 0) * n('0', 1)
 

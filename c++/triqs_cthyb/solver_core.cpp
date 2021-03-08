@@ -150,8 +150,7 @@ namespace triqs_cthyb {
         // Remove constant quadratic part
         for (auto const &iw : Delta_iw[0].mesh())
           Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
-        auto known_moments = make_zero_tail(Delta_iw[b], 1);
-        auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b], known_moments);
+        auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
         _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
         b++;
       }

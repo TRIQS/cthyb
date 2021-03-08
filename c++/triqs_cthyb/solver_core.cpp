@@ -143,7 +143,6 @@ namespace triqs_cthyb {
         },
         Delta_iw);
 
-
       // Determine terms Delta_iw from G0_iw
       int b = 0;
       range _;

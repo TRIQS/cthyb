@@ -157,6 +157,15 @@ namespace triqs_cthyb {
 
     else {
       Delta_infty_vec = params.Delta_infty.value();
+
+      if (not is_gf_hermitian(_Delta_tau)) {
+        if (params.verbosity >= 2)
+          std::cout << "!---------------------------------------!\n"
+                       "! WARNING: S.Delta_tau is not symmetric !\n"
+                       "! Symmetrizing S.Delta_tau ...          !\n"
+                       "!-------------------------------------- !\n\n";
+        _Delta_tau = make_hermitian(_Delta_tau);
+      }
     }
 
     //check that Delta_infty and Delta_tau are real

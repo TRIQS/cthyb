@@ -77,7 +77,6 @@ namespace triqs_cthyb {
     h5_read(grp, "n_tau", cp.n_tau);
     h5_read(grp, "n_l", cp.n_l);
     h5_try_read(grp, "from_Delta", cp.from_Delta);
-
   }
 
   void h5_write(h5::group h5group, std::string name, solve_parameters_t const &sp) {

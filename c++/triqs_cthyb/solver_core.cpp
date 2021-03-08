@@ -182,7 +182,6 @@ namespace triqs_cthyb {
                                   << max_imag << ", is larger than the set parameter imag_threshold " << params.imag_threshold;
     #endif
 
-
         // ==== Compute h_loc ====
 
     _h_loc = params.h_int;

@@ -176,8 +176,12 @@ namespace triqs_cthyb {
     for (auto const &bl : gf_struct) {
       max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
       // Force all diagonal elements to be real
-      for (int i : range(bl.second.size()))
+      for (int i : range(bl.second.size())) {
+        double max_imag_diag = max_element(abs(imag(_Delta_tau[b].data()(_, i, i))));
+        if (max_imag_diag > 1e-10)
+          std::cout << "Warning! Delta_tau diagonal term has max imaginary part: " << max_imag_diag << "Disregarding imaginary part \n";
         _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
+      }
       // If off-diagonal elements are below threshold, set to real
       if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
         _Delta_tau[b].data() = real(_Delta_tau[b].data());

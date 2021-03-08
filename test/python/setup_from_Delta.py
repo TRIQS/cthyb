@@ -45,7 +45,8 @@ Delta_iw << inverse( iOmega_n - Ek ) + inverse( iOmega_n + Ek )
 Delta_iw.from_L_G_R(V, Delta_iw, V)
 
 Delta_tau = Gf(mesh=tmesh, target_shape=target_shape)
-Delta_tail, Delta_tail_err = Delta_iw.fit_hermitian_tail()
+known_moments = make_zero_tail(Delta_iw, 1)
+Delta_tail, Delta_tail_err = Delta_iw.fit_hermitian_tail(known_moments)
 Delta_tau << Fourier(Delta_iw, Delta_tail)
 
 S.Delta_tau['0'] << Delta_tau

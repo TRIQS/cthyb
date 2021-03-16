@@ -142,22 +142,60 @@ namespace triqs_cthyb {
         },
         Delta_iw);
 
-      // Determine terms Delta_iw fr  om G0_iw
+      // Determine Delta_iw from G0_iw
       int b = 0;
       range _;
       for (auto const &bl : gf_struct) {
         // Remove constant quadratic part
-        for (auto const &iw : Delta_iw[0].mesh())
-          Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec[b];
+        for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec.value()[b];
         auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
         _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
+        b++;
+      }
+
+#ifndef HYBRIDISATION_IS_COMPLEX
+      //check that Delta_infty is real
+      double max_imag = 0.0;
+      b               = 0;
+      for (auto const &bl : gf_struct) { max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec.value()[b])))); }
+      if (max_imag > params.imag_threshold)
+        TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: " << max_imag
+                            << ", is larger than the set parameter imag_threshold " << params.imag_threshold;
+#endif
+
+      // ==== Compute h_loc ====
+
+      _h_loc = params.h_int;
+
+      // Add quadratic terms to h_loc
+      b = 0;
+      for (auto const &bl : gf_struct) {
+        int n1 = 0;
+        for (auto const &a1 : bl.second) {
+          int n2 = 0;
+          for (auto const &a2 : bl.second) {
+#ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
+            dcomplex e_ij;
+            if (max_imag > params.imag_threshold)
+              e_ij = Delta_infty_vec.value()[b](n1, n2);
+            else
+              e_ij = Delta_infty_vec.value()[b](n1, n2).real();
+#else
+            double e_ij = Delta_infty_vec.value()[b](n1, n2).real();
+#endif
+            // set off diagonal terms to 0 if they are below off_diag_threshold
+            if (n1 != n2 && abs(Delta_infty_vec.value()[b](n1, n2)) < params.off_diag_threshold) e_ij = 0.0;
+
+            _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
+            n2++;
+          }
+          n1++;
+        }
         b++;
       }
     }
 
     else {
-      Delta_infty_vec = params.Delta_infty.value();
-
       if (not is_gf_hermitian(_Delta_tau)) {
         if (params.verbosity >= 2)
           std::cout << "!---------------------------------------!\n"
@@ -166,15 +204,16 @@ namespace triqs_cthyb {
                        "!-------------------------------------- !\n\n";
         _Delta_tau = make_hermitian(_Delta_tau);
       }
+      if (not params.h_loc0.has_value()) TRIQS_RUNTIME_ERROR << "h_loc0 must be provided when using the Delta interface";
+      _h_loc0 = params.h_loc0.value();
+      _h_loc  = params.h_int + _h_loc0.value();
     }
 
-    //check that Delta_infty and Delta_tau are real
     #ifndef HYBRIDISATION_IS_COMPLEX
-    double max_imag = 0.0;
+    //check that Delta_tau is real
     int b = 0;
     range _;
     for (auto const &bl : gf_struct) {
-      max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec[b]))));
       // Force all diagonal elements to be real
       for (int i : range(bl.second.size())) {
         double max_imag_diag = max_element(abs(imag(_Delta_tau[b].data()(_, i, i))));
@@ -187,42 +226,7 @@ namespace triqs_cthyb {
         _Delta_tau[b].data() = real(_Delta_tau[b].data());
       b++;
     }
-      if (max_imag > params.imag_threshold)
-          TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: "
-                                  << max_imag << ", is larger than the set parameter imag_threshold " << params.imag_threshold;
     #endif
-
-        // ==== Compute h_loc ====
-
-    _h_loc = params.h_int;
-
-    // Add quadratic terms to h_loc
-    b = 0;
-    for (auto const &bl : gf_struct) {
-      int n1 = 0;
-      for (auto const &a1 : bl.second) {
-        int n2 = 0;
-        for (auto const &a2 : bl.second) {
-#ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
-          dcomplex e_ij;
-          if (max_imag > params.imag_threshold)
-            e_ij = Delta_infty_vec[b](n1, n2);
-          else
-            e_ij = Delta_infty_vec[b](n1, n2).real();
-#else
-          double e_ij = Delta_infty_vec[b](n1, n2).real();
-#endif
-          // set off diagonal terms to 0 if they are below off_diag_threshold
-          if(n1 != n2 && abs(Delta_infty_vec[b](n1, n2)) < params.off_diag_threshold) 
-            e_ij = 0.0;
-
-          _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl.first, a1) * c<h_scalar_t>(bl.first, a2);
-          n2++;
-        }
-        n1++;
-      }
-      b++;
-    }
 
 
     // Report what h_loc we are using

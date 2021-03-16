@@ -24,7 +24,7 @@ from .solver_core import SolverCore
 from triqs.gf import *
 import triqs.utility.mpi as mpi
 import numpy as np
-
+from triqs.operators.util.extractors import extract_h_dict
 from .tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
@@ -159,11 +159,15 @@ class Solver(SolverCore):
             G0_iw = self.G_iw.copy()
             if self.Delta_interface:
                 Delta_iw = self.G_iw.copy()
-                ibl = 0
+                hdict = extract_h_dict(self.h_loc0, ignore_irrelevant = True)
                 for bl, delta in self.Delta_tau:
+                    norb = delta.target_shape[0]
+                    hloc_array = np.zeros((norb,norb))
+                    for i in range(norb):
+                        for j in range(norb):
+                            hloc_array[i,j] = hdict.get(((bl, i), (bl, j)), 0.)
                     Delta_iw[bl].set_from_fourier(delta)
-                    G0_iw[bl] << inverse( iOmega_n - Delta_iw[bl] - self.Delta_infty[ibl])
-                    ibl += 1
+                    G0_iw[bl] << inverse( iOmega_n - Delta_iw[bl] - hloc_array)
             else:
                 G0_iw << self.G0_iw
 

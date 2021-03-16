@@ -41,6 +41,11 @@ V = np.array([
     [0.25, -1.0],
     ])
 
+h_loc0 = c_dag('0', 0) * E_loc[0, 0] * c('0', 0) + \
+        c_dag('0', 0) * E_loc[0, 1] * c('0', 1) + \
+        c_dag('0', 1) * E_loc[1, 0] * c('0', 0) + \
+        c_dag('0', 1) * E_loc[1, 1] * c('0', 1)
+
 Delta_iw << inverse( iOmega_n - Ek ) + inverse( iOmega_n + Ek )
 Delta_iw.from_L_G_R(V, Delta_iw, V)
 
@@ -56,8 +61,7 @@ S.solve(
     length_cycle = 10,
     n_warmup_cycles = 1,
     n_cycles = 1,
-    Delta_infty = [E_loc]
+    h_loc0 = h_loc0
     )
 
 assert_gfs_are_close(Delta_tau, S.Delta_tau['0'])
-np.testing.assert_array_almost_equal(S.Delta_infty[0], E_loc)

@@ -22,14 +22,14 @@
 #include "./configuration.hpp"
 #include "./parameters.hpp"
 #include "triqs/utility/rbt.hpp"
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/stat/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 
 //#define PRINT_CONF_DEBUG
 
 using namespace triqs;
-using histo_map_t = std::map<std::string, triqs::statistics::histogram>;
-using triqs::statistics::histogram;
+using histo_map_t = std::map<std::string, triqs::stat::histogram>;
+using triqs::stat::histogram;
 using triqs::utility::rb_tree;
 using triqs::utility::rbt_insert_error;
 

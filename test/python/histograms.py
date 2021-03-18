@@ -4,7 +4,7 @@ import triqs.utility.mpi as mpi
 from h5 import HDFArchive
 from triqs.operators import *
 from triqs_cthyb import *
-from triqs.statistics.histograms import Histogram
+from triqs.stat.histograms import Histogram
 from triqs.gf import *
 import numpy as np
 

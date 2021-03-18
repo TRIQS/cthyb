@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "../qmc_data.hpp"
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/stat/histograms.hpp>
 
 namespace triqs_cthyb {
 
@@ -28,9 +28,9 @@ namespace triqs_cthyb {
 
     qmc_data const &data;
     int block_index;
-    statistics::histogram &histo_perturbation_order;
+    stat::histogram &histo_perturbation_order;
 
-    measure_perturbation_hist(int block_index, qmc_data const &data, statistics::histogram &hist)
+    measure_perturbation_hist(int block_index, qmc_data const &data, stat::histogram &hist)
        : data(data), block_index(block_index), histo_perturbation_order(hist) {
       histo_perturbation_order = {0, 1000};
     }
@@ -44,9 +44,9 @@ namespace triqs_cthyb {
   struct measure_perturbation_hist_total {
 
     qmc_data const &data;
-    statistics::histogram &histo_perturbation_order;
+    stat::histogram &histo_perturbation_order;
 
-    measure_perturbation_hist_total(qmc_data const &data, statistics::histogram &hist) : data(data), histo_perturbation_order(hist) {
+    measure_perturbation_hist_total(qmc_data const &data, stat::histogram &hist) : data(data), histo_perturbation_order(hist) {
       histo_perturbation_order = {0, 1000};
     }
 

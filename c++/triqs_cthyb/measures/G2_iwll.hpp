@@ -22,7 +22,7 @@
 
 #include <vector>
 #include <mpi/mpi.hpp>
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/stat/histograms.hpp>
 #include <triqs/experimental/nfft_array.hpp>
 
 #include <triqs/utility/legendre.hpp>

@@ -4,7 +4,7 @@ from triqs.gf import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
 from triqs.operators import n, c, c_dag
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore
-from triqs.statistics.histograms import Histogram
+from triqs.stat.histograms import Histogram
 
 cp = dict(
     beta=10.0,

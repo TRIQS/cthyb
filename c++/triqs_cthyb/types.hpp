@@ -28,7 +28,7 @@
 #include <triqs/mesh.hpp>
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/stat/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 
 #include "config.hpp"
@@ -40,7 +40,7 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
   using namespace triqs::mesh;
   using namespace triqs::utility;
-  using namespace triqs::statistics;
+  using namespace triqs::stat;
 
   using atom_diag = triqs::atom_diag::atom_diag<is_h_scalar_complex>;
 

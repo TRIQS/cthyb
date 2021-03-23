@@ -162,7 +162,7 @@ class Solver(SolverCore):
                 hdict = extract_h_dict(self.h_loc0, ignore_irrelevant = True)
                 for bl, delta in self.Delta_tau:
                     norb = delta.target_shape[0]
-                    hloc_array = np.zeros((norb,norb))
+                    hloc_array = np.zeros((norb,norb), dtype = np.complex_)
                     for i in range(norb):
                         for j in range(norb):
                             hloc_array[i,j] = hdict.get(((bl, i), (bl, j)), 0.)

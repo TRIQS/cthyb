@@ -155,9 +155,9 @@ namespace triqs_cthyb {
 
       //check that Delta_infty is real
       double max_imag = 0.0;
-#ifndef HYBRIDISATION_IS_COMPLEX
       b               = 0;
       for (auto const &bl : gf_struct) { max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec.value()[b])))); }
+#ifndef HYBRIDISATION_IS_COMPLEX
       if (max_imag > params.imag_threshold)
         TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: " << max_imag
                             << ", is larger than the set parameter imag_threshold " << params.imag_threshold;

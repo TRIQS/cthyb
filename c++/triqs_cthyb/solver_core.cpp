@@ -153,9 +153,9 @@ namespace triqs_cthyb {
         b++;
       }
 
-#ifndef HYBRIDISATION_IS_COMPLEX
       //check that Delta_infty is real
       double max_imag = 0.0;
+#ifndef HYBRIDISATION_IS_COMPLEX
       b               = 0;
       for (auto const &bl : gf_struct) { max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec.value()[b])))); }
       if (max_imag > params.imag_threshold)

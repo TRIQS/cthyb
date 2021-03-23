@@ -136,7 +136,7 @@ namespace triqs_cthyb {
         // Compute 0th moment of one block
         [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
           auto [tail, err] = fit_hermitian_tail(d);
-          if (err > 1e-8) std::cerr << "WARNING: Big error in tailfit";
+          if (err > 1e-8) std::cerr << "WARNING: Tail fit to G0_iw has large error of: " << err << std::endl;
           auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
           return Delta_infty;
         },

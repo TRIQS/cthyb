@@ -109,19 +109,18 @@ namespace triqs_cthyb {
     std::vector<int> n_inner;
     for (auto const &bl : gf_struct) { n_inner.push_back(bl.second.size()); }
 
+    if (_G0_iw) {
 
-    if (_G0_iw){
+      // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
 
-          // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
-
-    if (not is_gf_hermitian(_G0_iw.value())) {
-      if (params.verbosity >= 2)
-        std::cout << "!-------------------------------------------------------------------------------------------!\n"
-                     "! WARNING: S.G0_iw violates fundamental Green Function property G0(iw)[i,j] = G0(-iw)*[j,i] !\n"
-                     "! Symmetrizing S.G0_iw ...                                                                  !\n"
-                     "!-------------------------------------------------------------------------------------------!\n\n";
-      _G0_iw = make_hermitian(_G0_iw.value());
-    }
+      if (not is_gf_hermitian(_G0_iw.value())) {
+        if (params.verbosity >= 2)
+          std::cout << "!-------------------------------------------------------------------------------------------!\n"
+                       "! WARNING: S.G0_iw violates fundamental Green Function property G0(iw)[i,j] = G0(-iw)*[j,i] !\n"
+                       "! Symmetrizing S.G0_iw ...                                                                  !\n"
+                       "!-------------------------------------------------------------------------------------------!\n\n";
+        _G0_iw = make_hermitian(_G0_iw.value());
+      }
 
       // ==== Compute Delta from G0_iw ====
 
@@ -133,14 +132,14 @@ namespace triqs_cthyb {
 
       // Compute the constant part of Delta
       Delta_infty_vec = map(
-        // Compute 0th moment of one block
-        [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
-          auto [tail, err] = fit_hermitian_tail(d);
-          if (err > 1e-8) std::cerr << "WARNING: Tail fit to G0_iw has large error of: " << err << std::endl;
-          auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
-          return Delta_infty;
-        },
-        Delta_iw);
+         // Compute 0th moment of one block
+         [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
+           auto [tail, err] = fit_hermitian_tail(d);
+           if (err > 1e-8) std::cerr << "WARNING: Tail fit to G0_iw has large error of: " << err << std::endl;
+           auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
+           return Delta_infty;
+         },
+         Delta_iw);
 
       // Determine Delta_iw from G0_iw
       int b = 0;
@@ -209,7 +208,7 @@ namespace triqs_cthyb {
       _h_loc  = params.h_int + _h_loc0.value();
     }
 
-    #ifndef HYBRIDISATION_IS_COMPLEX
+#ifndef HYBRIDISATION_IS_COMPLEX
     //check that Delta_tau is real
     int b = 0;
     range _;
@@ -226,8 +225,7 @@ namespace triqs_cthyb {
         _Delta_tau[b].data() = real(_Delta_tau[b].data());
       b++;
     }
-    #endif
-
+#endif
 
     // Report what h_loc we are using
     if (params.verbosity >= 2)

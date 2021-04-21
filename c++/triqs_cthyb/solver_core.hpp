@@ -53,7 +53,7 @@ namespace triqs_cthyb {
     int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
 
     // Single-particle Green's function containers
-    std::optional<G_iw_t> _G0_iw;      // Non-interacting Matsubara Green's function
+    std::optional<G_iw_t> _G0_iw; // Non-interacting Matsubara Green's function
     G_tau_t _Delta_tau; // Imaginary-time Hybridization function
     std::optional<std::vector<matrix<dcomplex>>> Delta_infty_vec; // Quadratic instantaneous part of G0_iw
 

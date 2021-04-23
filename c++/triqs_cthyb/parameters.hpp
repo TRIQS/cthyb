@@ -49,6 +49,9 @@ namespace triqs_cthyb {
     /// Number of Legendre polynomials for gf<legendre, matrix_valued>
     int n_l = 50;
 
+    /// are Delta_tau and hloc_0 provided as input? if so they don't need to be calculated from G0_iw
+    bool Delta_interface = false;
+
     /// Write constr_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, constr_parameters_t const &sp);
 
@@ -238,6 +241,8 @@ namespace triqs_cthyb {
     /// Threshold below which which off diagonal components of hloc are set to 0
     double off_diag_threshold = 0.0;
 
+    /// Quadratic part of the local Hamiltonian. Must be provided if the Delta interface is used
+    std::optional<many_body_op_t> h_loc0 = {};
   };
 
   /// A struct combining both constr_params_t and solve_params_t

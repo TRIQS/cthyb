@@ -49,7 +49,7 @@ namespace triqs_cthyb {
     /// Number of Legendre polynomials for gf<legendre, matrix_valued>
     int n_l = 50;
 
-    /// are Delta_tau and hloc_0 provided as input? if so they don't need to be calculated from G0_iw
+    /// Use Delta_tau and h_loc0 as input instead of G0_iw?
     bool Delta_interface = false;
 
     /// Write constr_parameters_t to hdf5

@@ -110,7 +110,7 @@ namespace triqs_cthyb {
     std::vector<int> n_inner;
     for (auto const &[bl, bl_size] : gf_struct) { n_inner.push_back(bl_size); }
 
-    if (_G0_iw) {
+    if (not Delta_interface) {
 
       // ==== Assert that G0_iw fulfills the fundamental property G(iw)[i,j] = G(-iw)*[j,i] ====
 
@@ -125,79 +125,65 @@ namespace triqs_cthyb {
 
       // ==== Compute Delta from G0_iw ====
 
-      auto G0_iw_inv = map([](gf_const_view<imfreq> x) { return triqs::gfs::inverse(x); }, _G0_iw.value());
-      auto Delta_iw  = G0_iw_inv;
-
-      for (auto &Delta_iw_bl : Delta_iw)
-        for (auto const &iw : Delta_iw[0].mesh()) Delta_iw_bl[iw] = iw - Delta_iw_bl[iw];
+      // Initialize Delta with iw - inv(G0[iw])
+      auto Delta_iw = inverse(_G0_iw.value());
+      for (auto bl : range(gf_struct.size()))
+        for (auto const &iw : Delta_iw[bl].mesh()) Delta_iw[bl][iw] = iw - Delta_iw[bl][iw];
 
       // Compute the constant part of Delta
       Delta_infty_vec = map(
          // Compute 0th moment of one block
          [imag_threshold = params.imag_threshold](gf_const_view<imfreq> d) {
            auto [tail, err] = fit_hermitian_tail(d);
-           if (err > 1e-8) std::cerr << "WARNING: Tail fit to G0_iw has large error of: " << err << std::endl;
+           if (err > 1e-5) std::cerr << "WARNING: Tail fit in extraction of delta(infty) has large error of: " << err << std::endl;
            auto Delta_infty = matrix<dcomplex>{tail(0, ellipsis())};
+#ifndef HYBRIDISATION_IS_COMPLEX
+           double max_imag = max_element(abs(imag(Delta_infty)));
+           if (max_imag > imag_threshold)
+             TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: " << max_imag
+                                 << ", is larger than the set parameter imag_threshold " << imag_threshold;
+#endif
            return Delta_infty;
          },
          Delta_iw);
 
-      // Determine Delta_iw from G0_iw
-      int b = 0;
-      range _;
-      for (auto const &bl : gf_struct) {
-        // Remove constant quadratic part
-        for (auto const &iw : Delta_iw[0].mesh()) Delta_iw[b][iw] = Delta_iw[b][iw] - Delta_infty_vec.value()[b];
-        auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[b]);
-        _Delta_tau[b]()               = fourier(Delta_iw[b], Delta_tail_b);
-        b++;
+      // Subtract constant part from Delta and perform Fourier transform
+      for (auto bl : range(gf_struct.size())) {
+        for (auto const &iw : Delta_iw[bl].mesh()) Delta_iw[bl][iw] = Delta_iw[bl][iw] - Delta_infty_vec.value()[bl];
+        auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[bl]);
+        _Delta_tau[bl]()              = fourier(Delta_iw[bl], Delta_tail_b);
       }
-
-      //check that Delta_infty is real
-      double max_imag = 0.0;
-      b               = 0;
-      for (auto const &bl : gf_struct) { max_imag = std::max(max_imag, max_element(abs(imag(Delta_infty_vec.value()[b])))); }
-#ifndef HYBRIDISATION_IS_COMPLEX
-      if (max_imag > params.imag_threshold)
-        TRIQS_RUNTIME_ERROR << "Largest imaginary element of delta(infty) e.g. of the local part of G0: " << max_imag
-                            << ", is larger than the set parameter imag_threshold " << params.imag_threshold;
-#endif
 
       // ==== Compute h_loc ====
 
       _h_loc = params.h_int;
 
       // Add quadratic terms to h_loc
-      b = 0;
-      for (auto const &[bl, bl_size] : gf_struct) {
-        for (auto n1 : range(bl_size)) {
-          for (auto n2 : range(bl_size)) {
+      for (auto bl : range(gf_struct.size())) {
+        for (auto [n1, n2] : Delta_iw[bl].target_indices()) {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
-            dcomplex e_ij;
-            if (max_imag > params.imag_threshold)
-              e_ij = Delta_infty_vec.value()[b](n1, n2);
-            else
-              e_ij = Delta_infty_vec.value()[b](n1, n2).real();
+          dcomplex e_ij;
+          if (max_imag > params.imag_threshold)
+            e_ij = Delta_infty_vec.value()[bl](n1, n2);
+          else
+            e_ij = Delta_infty_vec.value()[bl](n1, n2).real();
 #else
-            double e_ij = Delta_infty_vec.value()[b](n1, n2).real();
+          double e_ij = Delta_infty_vec.value()[bl](n1, n2).real();
 #endif
-            // set off diagonal terms to 0 if they are below off_diag_threshold
-            if (n1 != n2 && abs(Delta_infty_vec.value()[b](n1, n2)) < params.off_diag_threshold) e_ij = 0.0;
+          // Set off diagonal terms to 0 if they are below off_diag_threshold
+          if (n1 != n2 && abs(Delta_infty_vec.value()[bl](n1, n2)) < params.off_diag_threshold) e_ij = 0.0;
 
-            _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl, n1) * c<h_scalar_t>(bl, n2);
-          }
+	  auto bl_name = gf_struct[bl].first;
+          _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl_name, n1) * c<h_scalar_t>(bl_name, n2);
         }
-        b++;
       }
-    }
-
-    else {
+    } else { // Delta Interface
       if (not is_gf_hermitian(_Delta_tau)) {
         if (params.verbosity >= 2)
-          std::cout << "!---------------------------------------!\n"
-                       "! WARNING: S.Delta_tau is not symmetric !\n"
-                       "! Symmetrizing S.Delta_tau ...          !\n"
-                       "!-------------------------------------- !\n\n";
+          std::cout << "!---------------------------------------------------------------------------------------!\n"
+                       "! WARNING: S.Delta_tau violates fundamental symmetry Delta(tau)[i,j] = Delta(tau)*[j,i] !\n"
+                       "! Symmetrizing S.Delta_tau ...                                                          !\n"
+                       "!---------------------------------------------------------------------------------------!\n\n";
         _Delta_tau = make_hermitian(_Delta_tau);
       }
       if (not params.h_loc0.has_value()) TRIQS_RUNTIME_ERROR << "h_loc0 must be provided when using the Delta interface";
@@ -206,21 +192,21 @@ namespace triqs_cthyb {
     }
 
 #ifndef HYBRIDISATION_IS_COMPLEX
-    //check that Delta_tau is real
-    int b = 0;
-    range _;
-    for (auto const &[bl, bl_size] : gf_struct) {
+    // Check that diagonal components of Delta_tau are real
+    for (auto bl : range(gf_struct.size())) {
+      long bl_size = gf_struct[bl].second;
       // Force all diagonal elements to be real
-      for (int i : range(bl_size)) {
-        double max_imag_diag = max_element(abs(imag(_Delta_tau[b].data()(_, i, i))));
-        if (max_imag_diag > 1e-10)
-          std::cout << "Warning! Delta_tau diagonal term has max imaginary part: " << max_imag_diag << "Disregarding imaginary part \n";
-        _Delta_tau[b].data()(_, i, i) = real(_Delta_tau[b].data()(_, i, i));
+      range _;
+      for (auto [i, j] : product_range(bl_size, bl_size)) {
+        auto Delta_tau_bl_ij = _Delta_tau[bl].data()(_, i, j);
+        double max_imag      = max_element(abs(imag(Delta_tau_bl_ij)));
+        if (i == j && max_imag > 1e-10) {
+          std::cout << "Warning! Delta_tau diagonal term has max imaginary part: " << max_imag << "Disregarding imaginary part \n";
+          Delta_tau_bl_ij = real(Delta_tau_bl_ij);
+        } else if (max_imag < params.imag_threshold) {
+          Delta_tau_bl_ij = real(Delta_tau_bl_ij);
+        }
       }
-      // If off-diagonal elements are below threshold, set to real
-      if (max_element(abs(imag(_Delta_tau[b].data()))) < params.imag_threshold)
-        _Delta_tau[b].data() = real(_Delta_tau[b].data());
-      b++;
     }
 #endif
 

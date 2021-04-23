@@ -31,6 +31,8 @@
 #include <triqs/stat/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 
+#include <itertools/itertools.hpp>
+
 #include "config.hpp"
 
 #include <variant>
@@ -41,6 +43,7 @@ namespace triqs_cthyb {
   using namespace triqs::mesh;
   using namespace triqs::utility;
   using namespace triqs::stat;
+  using namespace itertools;
 
   using atom_diag = triqs::atom_diag::atom_diag<is_h_scalar_complex>;
 

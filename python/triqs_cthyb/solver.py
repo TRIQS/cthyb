@@ -24,6 +24,7 @@ from .solver_core import SolverCore
 from triqs.gf import *
 import triqs.utility.mpi as mpi
 import numpy as np
+from itertools import product
 from triqs.operators.util.extractors import extract_h_dict
 from .tail_fit import tail_fit as cthyb_tail_fit
 
@@ -156,20 +157,23 @@ class Solver(SolverCore):
             assert is_gf_hermitian(self.G_iw)
             self.G_iw_raw = self.G_iw.copy()
 
-            G0_iw = self.G_iw.copy()
+            # Helper Function to extract the single-particle block_matrix associated with a quadratic operator
+            def get_block_matrix(op, gf_struct):
+                bl_mat = { bl: np.zeros((bl_size, bl_size), dtype = np.complex128) for bl, bl_size in gf_struct }
+                opdict = extract_h_dict(op, ignore_irrelevant = True)
+                for bl, bl_size in gf_struct:
+                    for i, j in product(range(bl_size), repeat=2):
+                        bl_mat[bl][i,j] = opdict.get(((bl, i), (bl, j)), 0.)
+                return bl_mat
+
             if self.Delta_interface:
-                Delta_iw = self.G_iw.copy()
-                hdict = extract_h_dict(self.h_loc0, ignore_irrelevant = True)
-                for bl, delta in self.Delta_tau:
-                    norb = delta.target_shape[0]
-                    hloc_array = np.zeros((norb,norb), dtype = np.complex_)
-                    for i in range(norb):
-                        for j in range(norb):
-                            hloc_array[i,j] = hdict.get(((bl, i), (bl, j)), 0.)
-                    Delta_iw[bl].set_from_fourier(delta)
-                    G0_iw[bl] << inverse( iOmega_n - Delta_iw[bl] - hloc_array)
+                G0_iw = self.G_iw.copy()
+                Delta_iw = make_gf_from_fourier(self.Delta_tau, self.n_iw)
+                h_loc0_mat = get_block_matrix(self.h_loc0, self.gf_struct)
+                for bl in self.Delta_tau.indices:
+                    G0_iw[bl] << inverse(iOmega_n - Delta_iw[bl] - h_loc0_mat[bl])
             else:
-                G0_iw << self.G0_iw
+                G0_iw = self.G0_iw
 
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
             self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)

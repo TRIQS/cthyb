@@ -626,7 +626,7 @@ c.add_member(c_name = "n_l",
 c.add_member(c_name = "Delta_interface",
              c_type = "bool",
              initializer = """ false """,
-             doc = r"""are Delta_tau and hloc_0 provided as input? if so they don't need to be calculated from G0_iw""")
+             doc = r"""Use Delta_tau and h_loc0 as input instead of G0_iw?""")
 
 module.add_converter(c)
 

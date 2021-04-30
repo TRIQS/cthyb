@@ -38,12 +38,11 @@ class Solver(SolverCore):
         ----------
         beta : scalar
                Inverse temperature.
-        gf_struct : list of pairs [ (str,[int,...]), ...]
+        gf_struct : list of pairs [ (str,int), ...]
                     Structure of the Green's functions. It must be a
                     list of pairs, each containing the name of the
-                    Green's function block as a string and a list of integer
-                    indices.
-                    For example: ``[ ('up', [0, 1, 2]), ('down', [0, 1, 2]) ]``.
+                    Green's function block and its linear size.
+                    For example: ``[ ('up', 3), ('down', 3) ]``.
         n_iw : integer, optional
                Number of Matsubara frequencies used for the Green's functions.
         n_tau : integer, optional
@@ -53,9 +52,8 @@ class Solver(SolverCore):
         Delta_interface: bool, optional
             Are Delta_tau and Delta_infty provided as input instead of G0_iw? 
         """
-        if isinstance(gf_struct,dict):
-            if mpi.is_master_node(): print("WARNING: gf_struct should be a list of pairs [ (str,[int,...]), ...], not a dict")
-            gf_struct = [ [k, v] for k, v in gf_struct.items() ]
+
+        gf_struct = fix_gf_struct_type(gf_struct)
 
         # Initialise the core solver
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 

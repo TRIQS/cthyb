@@ -415,8 +415,9 @@ namespace triqs_cthyb {
           first_term = trace_partial;
           histo->dominant_block_bound << block_index;
           histo->dominant_block_energy_bound << get_block_emin(block_index);
-        } else
+        } else if (first_term != 0.0) {
           histo->trace_first_over_sec_term << real(trace_partial / first_term);
+	}
       }
     } // loop on block
 
@@ -424,7 +425,7 @@ namespace triqs_cthyb {
     if (!isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;
 
     // Analysis
-    if (histo) {
+    if (histo && norm_trace != 0.0) {
       histo->trace_over_norm << std::abs(full_trace) / norm_trace;
       histo->trace_abs_over_norm << trace_abs / norm_trace;
       histo->trace_over_trace_abs << real(full_trace / trace_abs);

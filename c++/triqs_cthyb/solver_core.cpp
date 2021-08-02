@@ -42,6 +42,8 @@
 #include "./measures/perturbation_hist.hpp"
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
+#include "./measures/average_order.hpp"
+#include "./measures/auto_corr_time.hpp"
 #ifdef CTHYB_G2_NFFT
 #include "./measures/G2_tau.hpp"
 #include "./measures/G2_iw.hpp"
@@ -421,6 +423,8 @@ namespace triqs_cthyb {
     }
 
     qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
+    qmc.add_measure(measure_average_order{data, _average_order}, "Average order");
+    qmc.add_measure(measure_auto_corr_time{data, _auto_corr_time}, "Auto-correlation time");
 
     // --------------------------------------------------------------------------
 
@@ -430,7 +434,11 @@ namespace triqs_cthyb {
                                  triqs::utility::clock_callback(params.max_time));
     qmc.collect_results(_comm);
 
-    if (params.verbosity >= 2) std::cout << "Average sign: " << _average_sign << std::endl;
+    if (params.verbosity >= 2) {
+      std::cout << "Average sign: " << _average_sign << std::endl;
+      std::cout << "Average order: " << _average_order << std::endl;
+      std::cout << "Auto-correlation time: " << _auto_corr_time << std::endl;
+    }
 
     // Copy local (real or complex) G_tau back to complex G_tau
     if (G_tau && G_tau_accum) *G_tau = *G_tau_accum;

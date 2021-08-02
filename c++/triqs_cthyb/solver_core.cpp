@@ -163,6 +163,7 @@ namespace triqs_cthyb {
         for (auto [n1, n2] : Delta_iw[bl].target_indices()) {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
           dcomplex e_ij;
+          double max_imag = max_element(abs(imag(Delta_infty_vec.value()[bl])));
           if (max_imag > params.imag_threshold)
             e_ij = Delta_infty_vec.value()[bl](n1, n2);
           else

@@ -46,7 +46,7 @@ namespace triqs_cthyb {
     struct delta_block_adaptor {
       gf<imtime, delta_target_t> delta_block; // make a copy. Needed in the real case anyway.
 
-      delta_block_adaptor(gf<imtime, delta_target_t> delta_block) : delta_block(std::move(delta_block)) {}
+      delta_block_adaptor(gf_const_view<imtime, delta_target_t> delta_block) : delta_block(std::move(delta_block)) {}
       delta_block_adaptor(delta_block_adaptor const &) = default;
       delta_block_adaptor(delta_block_adaptor &&)      = default;
       delta_block_adaptor &operator=(delta_block_adaptor const &) = delete;

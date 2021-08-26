@@ -152,11 +152,11 @@ class Solver(SolverCore):
                 known_moments[1,...] = np.eye(bl_size)
                 self.G_iw[bl].set_from_fourier(g, known_moments)
 
+            self.G_iw_raw = self.G_iw.copy()
             if not is_gf_hermitian(self.G_iw):
                 mpi.report('WARNING: G_iw is not Hermitian. Forcing G_iw to be Hermitian')
             for name, g in self.G_iw:
                 self.G_iw[name] = make_hermitian(g)
-            self.G_iw_raw = self.G_iw.copy()
 
             if self.Delta_interface:
                 G0_iw = self.G_iw.copy()

@@ -1,7 +1,7 @@
 .. _about:
 
 Authors
-=======
+*******
 
 This continuous-time hybridization-expansion solver has been written by P.
 Seth, I. Krivenko, M. Ferrero and O. Parcollet. It is based on a hybridization

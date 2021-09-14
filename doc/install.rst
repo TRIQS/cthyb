@@ -2,6 +2,8 @@
 
 .. _install:
 
+Install CTHYB
+*************
 
 Packaged Versions of CTHyb
 ==========================
@@ -33,6 +35,8 @@ A Docker image including the latest version of CTHyb is available `here <https:/
 
 Compiling CTHYB from source
 ===========================
+
+.. note:: To guarantee reproducibility in scientific calculations we strongly recommend the use of a stable `release <https://github.com/TRIQS/triqs/releases>`_ of both TRIQS and its applications.
 
 Prerequisites
 -------------

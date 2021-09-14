@@ -1,7 +1,7 @@
 .. _documentation:
 
 Documentation
-=============
+*************
 
 Basic notions
 -------------

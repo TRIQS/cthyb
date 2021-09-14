@@ -1,12 +1,18 @@
 .. _welcome:
 
 The hybridization-expansion solver
-==================================
+**********************************
 
-.. sidebar:: cthyb 3.0.0
+.. sidebar:: cthyb 3.1.0
 
-   This is the homepage cthyb Version 3.0.0
-   For changes see, Cf :ref:`changelog page <changelog>`
+   This is the homepage cthyb Version v3.1.0.
+   For changes see the :ref:`changelog page <changelog>`.
+      
+      .. image:: _static/logo_github.png
+         :width: 75%
+         :align: center
+         :target: https://github.com/triqs/cthyb
+
 
 The :ref:`TRIQS-based <triqslibs:welcome>` hybridization-expansion solver
 allows to solve the generic problem of a **quantum impurity** embedded in a
@@ -42,5 +48,13 @@ With the knowledge of :math:`G_0` and the matrix :math:`U_{\alpha\beta\gamma\del
 the quantum impurity solvers find the interacting Green's function :math:`G` of the
 problem. Learn how to use it in the :ref:`documentation`.
 
+    
 .. toctree::
    :maxdepth: 2
+   :hidden:
+
+   install
+   documentation
+   issues
+   ChangeLog.md
+   about

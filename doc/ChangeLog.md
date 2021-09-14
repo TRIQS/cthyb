@@ -1,5 +1,9 @@
-Version 3.0.0
-=============
+(changelog)=
+
+# Changelog
+
+## Version 3.0.0
+
 
 CTHYB version 3.0.0 is a major release that
 
@@ -50,8 +54,7 @@ Thanks to all commit-contributors (in alphabetical order):
 Philipp Dumitrescu, Alexander Hampel, Nils Wentzell
 
 
-Version 2.2.1
-=============
+## Version 2.2.1
 
 CTHYB Version 2.2.1 makes the application available
 through the Anaconda package manager. We adjust
@@ -69,8 +72,7 @@ General
 * Remove redundant inclusion of triqs/utility/serialization.hpp
 
 
-Version 2.2.0
-=============
+## Version 2.2.0
 
 CTHYB version 2.2.0 is a compatibility release
 for TRIQS version 2.2.0. It provides improvements to
@@ -112,8 +114,7 @@ packaging
 * update package name to triqs_cthyb and conflict with cthyb
 
 
-Version 2.1.0
--------------
+## Version 2.1.0
 
 Contributors
 ~~~~~~~~~~~~

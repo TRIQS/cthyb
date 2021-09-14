@@ -158,8 +158,6 @@ namespace triqs_cthyb {
 
       // ==== Compute h_loc ====
 
-      _h_loc = params.h_int;
-
       // Add quadratic terms to h_loc
       for (auto bl : range(gf_struct.size())) {
         for (auto [n1, n2] : Delta_iw[bl].target_indices()) {
@@ -177,9 +175,10 @@ namespace triqs_cthyb {
           if (n1 != n2 && abs(Delta_infty_vec.value()[bl](n1, n2)) < params.off_diag_threshold) e_ij = 0.0;
 
 	  auto bl_name = gf_struct[bl].first;
-          _h_loc = _h_loc + e_ij * c_dag<h_scalar_t>(bl_name, n1) * c<h_scalar_t>(bl_name, n2);
+          _h_loc0 = _h_loc0 + e_ij * c_dag<h_scalar_t>(bl_name, n1) * c<h_scalar_t>(bl_name, n2);
         }
       }
+
     } else { // Delta Interface
       if (not is_gf_hermitian(_Delta_tau)) {
         if (params.verbosity >= 2)
@@ -191,8 +190,9 @@ namespace triqs_cthyb {
       }
       if (not params.h_loc0.has_value()) TRIQS_RUNTIME_ERROR << "h_loc0 must be provided when using the Delta interface";
       _h_loc0 = params.h_loc0.value();
-      _h_loc  = params.h_int + _h_loc0.value();
     }
+
+    _h_loc  = params.h_int + _h_loc0;
 
 #ifndef HYBRIDISATION_IS_COMPLEX
     // Check that diagonal components of Delta_tau are real

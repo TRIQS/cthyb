@@ -42,7 +42,7 @@ namespace triqs_cthyb {
     atom_diag h_diag;      // diagonalization of the local problem
     gf_struct_t gf_struct; // Block structure of the Green function
     many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
-    std::optional<many_body_op_t> _h_loc0; //quadratic part of the local Hamiltonian
+    many_body_op_t _h_loc0; //noninteracting part of the local Hamiltonian
     int n_iw, n_tau, n_l;
     bool Delta_interface;
 
@@ -96,11 +96,8 @@ namespace triqs_cthyb {
     /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
     many_body_op_t const &h_loc() const { return _h_loc; }
 
-    /// The quadratic part of the local Hamiltonian provided when the Delta interface is used.
-    many_body_op_t const &h_loc0() const {
-      if (not Delta_interface) TRIQS_RUNTIME_ERROR << "h_loc0 can only be accessed when using the Delta interface";
-      return _h_loc0.value();
-    }
+    /// The noninteracting part of the local Hamiltonian.
+    many_body_op_t const &h_loc0() const {return _h_loc0; }
 
     /// Set of parameters used in the construction of the ``solver_core`` class.
     constr_parameters_t last_constr_parameters() const { return constr_parameters; }
@@ -109,6 +106,7 @@ namespace triqs_cthyb {
     solve_parameters_t last_solve_parameters() const { return solve_parameters; }
 
     /// :math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara Frequency.
+    [[deprecated("Use h_loc0() instead.")]]
     std::vector<matrix<dcomplex>> Delta_infty() {
       if (Delta_interface) TRIQS_RUNTIME_ERROR << "Delta_infty cannot be accessed when using the Delta interface";
       return Delta_infty_vec.value();

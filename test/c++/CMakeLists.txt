@@ -5,9 +5,9 @@ foreach(file ${all_h5_ref_files})
 endforeach()
 
 # List of all tests
-set(all_tests anderson spinless kanamori kanamori_offdiag legendre rbt impurity_trace_atomic_gf impurity_trace_bug_try_insert impurity_trace_op_insert)
+set(all_tests anderson.cpp spinless.cpp kanamori.cpp kanamori_offdiag.cpp legendre.cpp rbt.cpp impurity_trace_atomic_gf.cpp impurity_trace_bug_try_insert.cpp impurity_trace_op_insert.cpp)
 if(MeasureG2)
-  list(APPEND all_tests G2)
+  list(APPEND all_tests G2.cpp)
 endif()
 #file(GLOB_RECURSE all_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 

@@ -13,8 +13,7 @@ CTHYB version 3.0.0 is a major release that
 * fundamental Green function properties are now enforced to increase accuracy
 
 
-Fundamental Green Function Symmetries
--------------------------------------
+### Fundamental Green Function Symmetries
 
 We now enforce the fundamental Green function properties `G[iw](i,j) = G[-iw](j,i)*`
 and `G[tau](i,j) = G[tau](j,i)*` for both the solver-input S.G0_iw as well as the
@@ -24,8 +23,8 @@ If the input violates the relation a warning will be issued and the input will
 be automatically symmetrized. The output will always be symmetrized
 in the collect_results section of the G_tau measurement.
 
-Dependency Management
---------------------
+### Dependency Management
+
 We are managing the interdependencies of the various library components of triqs now using cmake.
 Per default cmake will pull those dependencies from their corresponding
 GitHub repositories, build them, and install these components together
@@ -37,8 +36,8 @@ This behavior can be altered using the additional cmake options
 
 during the configuration step. See also the TRIQS documentation for more detailed instructions.
 
-Other Changes
--------------
+### Other Changes
+
 * Run port_to_triqs3 script
 * Port py files to python3
 * Update triqs python module name: pytriqs -> triqs
@@ -62,12 +61,12 @@ the install pages of the documentation accordingly.
 It further introduces two minor fixes.
 We provide a more detailed description of the changes below.
 
-doc
----
+### doc
+
 * Add a section on the Anaconda package to the install page
 
-General
--------
+### General
+
 * Correct error in solve params deprecation warning Fix #124
 * Remove redundant inclusion of triqs/utility/serialization.hpp
 
@@ -80,23 +79,20 @@ the documentation and fixes various compiler warnings.
 
 We provide a more detailed description of the changes below.
 
-cmake
------
+### cmake
 * Install additional triqs namespace headers provided by cthyb
 * Synchronize project structure with app4triqs
 * Bump cthyb version to 2.2.0 and adjust triqs version requirement
 * Minor adjustments in cmake to restore cmake version 3.0.2 compatibility
 
-doc
----
+### doc
 * Update install instructions for nfft
 * Install svg files used by tutorials
 * Add tutorial for pert order histogram
 * Add tutoria for dynamic suscept
 * Fix import statements -> static observables (import from atom_diag)
 
-General
--------
+### General
 * Use std::vector over triqs::arrays::vector for density containers
 * Fix various compiler warnings and deprecation messages
 * Consistently use std:: namespace instead of std::c14::
@@ -105,39 +101,33 @@ General
 * Port cthyb after latest changes to triqs mpi/itertools functionality
 * Add measurement O_tau_min_ins
 
-h5
---
+### h5
 * Store additional member variables when storing solver object, FIX #115
 
-packaging
----------
+### packaging
 * update package name to triqs_cthyb and conflict with cthyb
 
 
 ## Version 2.1.0
 
-Contributors
-~~~~~~~~~~~~
+### Contributors
 
 * **Hugo U. R. Strand**, new functionality, two-particle Green's function sampling in imaginary time and frequency, and sampling by operator insertion.
 * **Igor Krivenko**, occupation number constraints in the trace, two-particle Green's function sampling with NFFT and mixed basis frequency*(legendre)^2.
 * **Lewin Boehnke**, (indirect contribution) through the first mixed basis sampling implementation in an early version of ``cthyb``.
 * **Nils Wentzell**, nfft_buf_t, cmake, and install.
 
-Testers
-~~~~~~~
+### Testers
 
 Manuel Zingl, Daniel Mantadakis, and Jonathan Karp.
 
-Changes in installation and cmake files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Changes in installation and cmake files
 
 * Headers are now installed to ``${CMAKE_INSTALL_PREFIX}/include/triqs_cthyb``.
 * The c++ namespace is now a single namespace called ``triqs_cthyb``.
 * The python module is named ``triqs_cthyb``.
 
-Solver Interface
-~~~~~~~~~~~~~~~~
+### Solver Interface
 
 * The type of gf_struct has changed from a dict to a list of pairs
 
@@ -153,8 +143,7 @@ Solver Interface
 * Solver object can be stored and loaded directly to/from h5 archive
 * Tail fit functionality is rewritten for the Triqs 2.0 change in how tail coefficients are handled
 
-Changes in behavior
-~~~~~~~~~~~~~~~~~~~
+### Changes in behavior
 
 * ``move_double`` is now enabled by default.
 * The sampled single particle Greens function is modified when tail fitting is enabled.
@@ -164,7 +153,6 @@ Changes in behavior
 
   When passing a dictionary a warning is printed.
 
-Dependencies
-~~~~~~~~~~~~
+### Dependencies
 
 * The NFFT3 library by default, to compile without the library use the cmake flag ``-DMeasureG2=OFF``.

@@ -267,7 +267,7 @@ c.add_property(name = "h_loc",
 
 c.add_property(name = "h_loc0",
                getter = cfunction("triqs_cthyb::many_body_op_t h_loc0 ()"),
-               doc = r"""The quadratic part of the local Hamiltonian provided when the Delta interface is used.""")
+               doc = r"""The noninteracting part of the local Hamiltonian.""")
 
 c.add_property(name = "last_constr_parameters",
                getter = cfunction("triqs_cthyb::constr_parameters_t last_constr_parameters ()"),

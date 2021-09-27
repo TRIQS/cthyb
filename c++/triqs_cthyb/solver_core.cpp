@@ -158,7 +158,9 @@ namespace triqs_cthyb {
 
       // ==== Compute h_loc ====
 
-      // Add quadratic terms to h_loc
+      _h_loc0 = {}; 
+
+      // Add non-interacting terms to h_loc
       for (auto bl : range(gf_struct.size())) {
         for (auto [n1, n2] : Delta_iw[bl].target_indices()) {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX

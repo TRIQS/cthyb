@@ -12,22 +12,9 @@ from triqs_cthyb import *
 half_bandwidth = 1.0
 U = 2.5
 mu = (U/2.0)+0.2
-beta = 100.0
+beta = 80.0
 
 gf_struct = [['down',1], ['up',1]]
-
-# Construct solver
-S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=3000, n_l=30)
-
-# Local Hamiltonian
-H = U*n("up",0)*n("down",0)
-
-# init the Green function
-S.G_iw << SemiCircular(half_bandwidth)
-
-# Compute G0
-for name, g0 in S.G0_iw:
-  g0 << inverse(iOmega_n + mu - (half_bandwidth/2.0)**2  * S.G_iw[name])
 
 # Parameters
 p = {}
@@ -44,7 +31,24 @@ p["fit_max_moment"] = 3
 p["fit_min_w"] = 1.2
 p["fit_max_w"] = 3.0
 
-S.solve(h_int=H, **p)
+# Construct solver
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=8001, n_l=30)
+
+# Local Hamiltonian
+H = U*n("up",0)*n("down",0)
+
+# init the Green function
+S.G_iw << SemiCircular(half_bandwidth)
+
+
+for i in range(2):
+
+    g = 0.5 * ( S.G_iw['up'] + S.G_iw['down'] )
+    # Compute G0
+    for name, g0 in S.G0_iw:
+      g0 << inverse(iOmega_n + mu - (half_bandwidth/2.0)**2  * g)
+
+    S.solve(h_int=H, **p)
 
 # Calculation is done. Now save a few things
 if mpi.is_master_node():
@@ -53,7 +57,7 @@ if mpi.is_master_node():
         #Results["h_loc"] = S.h_loc
         Results["Delta_infty"] = S.Delta_infty
         Results["Delta_tau"] = S.Delta_tau
-        
+
         Results["G0_iw"] = S.G0_iw
 
         Results["G_tau"] = S.G_tau
@@ -64,7 +68,7 @@ if mpi.is_master_node():
 
         Results["Sigma_iw"] = S.Sigma_iw
         Results["Sigma_iw_raw"] = S.Sigma_iw_raw
-        
+
 # Check against reference
 if mpi.is_master_node():
     with HDFArchive("single_site_bethe.ref.h5",'r') as Results:
@@ -77,7 +81,7 @@ if mpi.is_master_node():
 
         assert_block_gfs_are_close(Results["Sigma_iw"], S.Sigma_iw)
         assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
-        
+
 # Redundant with previous check
 from triqs.utility.h5diff import h5diff
 h5diff("single_site_bethe.out.h5","single_site_bethe.ref.h5", precision=5e-5)

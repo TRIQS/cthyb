@@ -64,8 +64,8 @@ def osxPlatforms = [
 for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
   def platform = platformEnv[0]
-  platforms["osx-$platform"] = { -> node('osx && triqs') {
-    stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
+  platforms["osx-${platform}-complex"] = { -> node('osx && triqs') {
+    stage("osx-${platform}-complex") { timeout(time: 1, unit: 'HOURS') { ansiColor('xterm') {
       def srcDir = pwd()
       def tmpDir = pwd(tmp:true)
       def buildDir = "$tmpDir/build"
@@ -93,7 +93,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         /* note: this is installing into the parent (triqs) venv (install dir), which is thus shared among apps and so not be completely safe */
         sh "pip3 install -U -r $srcDir/requirements.txt"
-        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir -DBuild_Deps=Always"
+        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir -DBuild_Deps=Always -DHybridisation_is_complex=ON -DLocal_hamiltonian_is_complex=ON"
         sh "make -j2 || make -j1 VERBOSE=1"
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"

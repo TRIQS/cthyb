@@ -76,7 +76,7 @@ namespace triqs_cthyb {
     /// Quantum numbers
     /// type: list(Operator)
     /// default: []
-    std::vector<many_body_op_t> quantum_numbers = std::vector<many_body_op_t>{};
+    std::vector<many_body_op_t> quantum_numbers = {};
 
     /// Restrict local Hilbert space to states with at least this number of particles
     /// default: 0
@@ -126,7 +126,7 @@ namespace triqs_cthyb {
     bool measure_G_l = false;
 
     /// Measure O_tau by insertion
-    std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = std::optional<std::pair<many_body_op_t, many_body_op_t>>{};
+    std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = {};
 
     /// Minumum of operator insertions in: O_tau by insertion measure
     int measure_O_tau_min_ins = 10;
@@ -163,7 +163,7 @@ namespace triqs_cthyb {
 
     /// List of block index pairs of G^2 to measure.
     /// default: measure all blocks
-    std::set<std::pair<std::string, std::string>> measure_G2_blocks = (std::set<std::pair<std::string, std::string>>{});
+    std::set<std::pair<std::string, std::string>> measure_G2_blocks = {};
 
     /// Number of imaginary time slices for G^4 measurement.
     int measure_G2_n_tau = 10;
@@ -182,7 +182,7 @@ namespace triqs_cthyb {
 
     /// NFFT buffer sizes for different blocks
     /// default: 100 for every block
-    std::map<std::string, long> nfft_buf_sizes = (std::map<std::string, long>{});
+    std::map<std::string, long> nfft_buf_sizes = {};
 
     /// Measure perturbation order?
     bool measure_pert_order = false;
@@ -199,13 +199,13 @@ namespace triqs_cthyb {
     /// Operator insertion/removal probabilities for different blocks
     /// type: dict(str:float)
     /// default: {}
-    std::map<std::string, double> proposal_prob = (std::map<std::string, double>{});
+    std::map<std::string, double> proposal_prob = {};
 
     /// List of global moves (with their names).
     /// Each move is specified with an index substitution dictionary.
     /// type: dict(str : dict(indices : indices))
     /// default: {}
-    std::map<std::string, indices_map_t> move_global = (std::map<std::string, indices_map_t>{});
+    std::map<std::string, indices_map_t> move_global = {};
 
     /// Overall probability of the global moves
     double move_global_prob = 0.05;

@@ -32,7 +32,7 @@ namespace triqs_cthyb {
 
   namespace G2_iw {
 
-    using namespace triqs::arrays;
+    using namespace nda;
 
     using M_block_t = block_gf<prod<imfreq, imfreq>, matrix_valued>;
     using M_t       = M_block_t::g_t;

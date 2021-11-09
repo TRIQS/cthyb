@@ -27,7 +27,7 @@
 namespace triqs {
   namespace experimental {
 
-    using namespace triqs::arrays;
+    using namespace nda;
     using namespace triqs::gfs;
     using namespace triqs::mesh;
     using triqs::utility::time_pt;

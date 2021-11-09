@@ -24,12 +24,12 @@ class Nfft : public ::testing::Test {
  gf<imfreq> giw_exact;
 
  virtual void SetUp() {
-  shape = triqs::arrays::make_shape(1, 1);
+  shape = nda::make_shape(1, 1);
  }
 
  // Init exact reference gf
  void make_giw_exact() {
-  triqs::clef::placeholder<0> iw_;
+  nda::clef::placeholder<0> iw_;
   giw_exact = gf<imfreq>{{beta, stat, n_iw}, shape};
   giw_exact(iw_) << 1.0 / (iw_ - 1.0);
  }
@@ -264,8 +264,8 @@ void Nfft::test_2d() {
    giw_fftw_2d[{iw1, iw2}] = giw_fftw_f[iw1] * giw_fftw_b[iw2];
 
  // Init exact reference gf
- triqs::clef::placeholder<0> iw1_;
- triqs::clef::placeholder<1> iw2_;
+ nda::clef::placeholder<0> iw1_;
+ nda::clef::placeholder<1> iw2_;
  auto giw_exact_2d = gf<prod<imfreq, imfreq>, scalar_valued>
                      {{{beta, Fermion, n_iw_f}, {beta, Boson, n_iw_b}}, {}};
  giw_exact_2d(iw1_, iw2_) << 1.0 / (iw1_ - 1.0) / (iw2_ - 1.0);

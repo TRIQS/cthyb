@@ -26,7 +26,7 @@
 
 namespace triqs_cthyb {
 
-  using namespace triqs::arrays;
+  using namespace nda;
   using namespace triqs::experimental;
 
   // Measure the two-particle Green's function in Matsubara frequency

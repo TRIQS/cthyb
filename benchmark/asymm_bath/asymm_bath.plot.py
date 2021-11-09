@@ -4,7 +4,7 @@ import numpy as np
 from triqs.gf import *
 from triqs.gf.gf_fnt import rebinning_tau
 from h5 import HDFArchive
-from triqs.statistics.histograms import *
+from triqs.stat.histograms import *
 from triqs.plot.mpl_interface import plt, oplot
 from matplotlib.backends.backend_pdf import PdfPages
 

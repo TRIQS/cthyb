@@ -14,7 +14,7 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
 using gf_struct_t = triqs::hilbert_space::gf_struct_t;
 
-using namespace triqs::arrays;
+using namespace nda;
 using namespace triqs::hilbert_space;
 using namespace triqs::atom_diag;
 using namespace triqs::operators;

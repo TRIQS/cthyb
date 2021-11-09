@@ -58,7 +58,7 @@ int impurity_trace::check_one_block_table_linear(node n, int b, bool print) {
 matrix_t impurity_trace::check_one_block_matrix_linear(node top, int b) {
 
   node p     = tree.max(top);
-  matrix_t M = make_unit_matrix<h_scalar_t>(get_block_dim(b));
+  matrix_t M = nda::eye<h_scalar_t>(get_block_dim(b));
   auto _     = arrays::range();
 
   foreach_reverse(tree, top, [&](node n) {

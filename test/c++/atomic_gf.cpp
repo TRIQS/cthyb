@@ -43,7 +43,7 @@ TEST(CtHyb, AtomicGf) {
   p.length_cycle    = 1;
   p.n_warmup_cycles = 0;
 
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {2, 2}};
   g0_iw(om_) << om_;
   solver.G0_iw()[0] = triqs::gfs::inverse(g0_iw);

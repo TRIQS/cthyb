@@ -75,7 +75,7 @@ TEST(CtHyb, Kanamori) {
   solver_core solver({beta, gf_struct, 1025, 2500});
 
   // Set G0
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {1, 1}};
   g0_iw(om_) << om_ + mu - (V / (om_ - epsilon) + V / (om_ + epsilon));
   for (int o = 0; o < 2 * num_orbitals; ++o) { solver.G0_iw()[o] = triqs::gfs::inverse(g0_iw); }

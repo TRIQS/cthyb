@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include "impurity_trace.hpp"
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <algorithm>
 #include <limits>
 
@@ -34,7 +34,7 @@ double double_max = std::numeric_limits<double>::max(); // easier to read
 
 template <typename T>
 // require( is_real_or_complex<T>) FIXME?
-double frobenius_norm2(triqs::arrays::matrix<T> const &a) {
+double frobenius_norm2(nda::matrix<T> const &a) {
   double r = 0;
   for (int i = 0; i < a.shape()[0]; ++i)
     for (int j = 0; j < a.shape()[1]; ++j) {
@@ -174,7 +174,7 @@ namespace triqs_cthyb {
     int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1)); // relevant block on current node
     if (b2 == -1) return {-1, {}};
 
-    matrix_t M = (!n->delete_flag ? get_op_block_matrix(n, b1) : make_unit_matrix<h_scalar_t>(get_block_dim(b1)));
+    matrix_t M = (!n->delete_flag ? get_op_block_matrix(n, b1) : nda::eye<h_scalar_t>(get_block_dim(b1)));
 
     if (n->right) { // M <- M * exp * r[b]
       dtau_r   = double(n->key - tree.min_key(n->right));

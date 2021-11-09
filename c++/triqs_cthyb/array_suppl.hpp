@@ -1,5 +1,5 @@
 #pragma once
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 
 namespace triqs {
   namespace arrays {

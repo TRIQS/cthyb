@@ -13,7 +13,7 @@ using namespace triqs::mesh;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
-using triqs::arrays::matrix;
+using nda::matrix;
 using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, KanamoriOffDiag) {
@@ -88,7 +88,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   // Set G0
   auto delta_iw = gf<imfreq>{{beta, Fermion}, {num_orbitals, num_orbitals}};
 
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
   auto term = gf<imfreq>{{beta, Fermion}, {num_orbitals, num_orbitals}};
   for (int j = 0; j < epsilon.size(); ++j) {
     term(om_) << 1.0 / (om_ - epsilon[j]);

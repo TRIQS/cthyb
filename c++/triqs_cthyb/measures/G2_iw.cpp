@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <triqs/utility/itertools.hpp>
 
 #include "./G2_iw.hpp"

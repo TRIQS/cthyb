@@ -68,7 +68,7 @@ TEST(CtHyb, G2_measurments) {
   solver_core solver({beta, gf_struct, n_iw, n_tau, n_l});
 
   // Set G0
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {1, 1}};
   g0_iw(om_) << om_ + mu - V1 * V1 / (om_ - epsilon1) - V2 * V2 / (om_ - epsilon2);
   for (int bl = 0; bl < 2; ++bl) solver.G0_iw()[bl] = triqs::gfs::inverse(g0_iw);

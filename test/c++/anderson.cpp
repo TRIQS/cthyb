@@ -53,7 +53,7 @@ TEST(CtHyb, Anderson) {
   solver_core solver({beta, gf_struct, 1025, 2500});
 
   // Set G0
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
 #ifdef BLOCK
   auto g0_iw = gf<imfreq>{{beta, Fermion}, {1, 1}};
   g0_iw(om_) << om_ + mu - (V * V / (om_ - epsilon) + V * V / (om_ + epsilon));

@@ -27,7 +27,7 @@
 namespace triqs_cthyb {
   using namespace triqs::gfs;
   using namespace triqs::mesh;
-  using namespace triqs::arrays;
+  using namespace nda;
 
   /************************
  * The Monte Carlo data

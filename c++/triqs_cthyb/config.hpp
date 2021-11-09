@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 #include <string>
@@ -34,7 +34,7 @@
 
 namespace triqs_cthyb {
 
-using namespace triqs::arrays;
+using namespace nda;
 using namespace triqs::gfs;
 using namespace triqs::mesh;
 using namespace triqs::hilbert_space;

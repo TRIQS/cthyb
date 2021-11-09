@@ -24,7 +24,7 @@
 #include <array>
 #include <numeric>
 #include <utility>
-#include <triqs/arrays.hpp>
+#include <nda/nda.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 #include <triqs/utility/tuple_tools.hpp>
@@ -35,7 +35,7 @@ namespace triqs {
   namespace experimental {
 
     using nda::stdutil::sum;
-    using namespace triqs::arrays;
+    using namespace nda;
     using namespace triqs::gfs;
     using namespace triqs::mesh;
 

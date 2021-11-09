@@ -41,10 +41,10 @@ TEST(CtHyb, Spinless) {
   solver_core solver({beta, gf_struct, 1025, 2500});
 
   // Set hybridization function
-  triqs::clef::placeholder<0> om_;
+  nda::clef::placeholder<0> om_;
   auto delta_iw = gf<imfreq>{{beta, Fermion}, {2, 2}};
 
-  using triqs::arrays::range;
+  using nda::range;
   auto d00 = slice_target(delta_iw, range(0, 1), range(0, 1));
   auto d11 = slice_target(delta_iw, range(1, 2), range(1, 2));
   auto d01 = slice_target(delta_iw, range(0, 1), range(1, 2));

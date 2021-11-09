@@ -33,7 +33,7 @@
 
 namespace triqs_cthyb {
 
-  using namespace triqs::arrays;
+  using namespace nda;
   using namespace triqs::experimental;
 
   // Generates values of \tilde P_l(x(\tau_1-\tau_2))

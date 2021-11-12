@@ -66,7 +66,7 @@ namespace triqs_cthyb {
     h5_write(grp, "n_iw", cp.n_iw);
     h5_write(grp, "n_tau", cp.n_tau);
     h5_write(grp, "n_l", cp.n_l);
-    h5_write(grp, "Delta_interface", cp.Delta_interface);
+    h5_write(grp, "delta_interface", cp.delta_interface);
   }
 
   void h5_read(h5::group h5group, std::string name, constr_parameters_t &cp) {
@@ -75,7 +75,7 @@ namespace triqs_cthyb {
     h5_read(grp, "n_iw", cp.n_iw);
     h5_read(grp, "n_tau", cp.n_tau);
     h5_read(grp, "n_l", cp.n_l);
-    h5_try_read(grp, "Delta_interface", cp.Delta_interface);
+    h5_try_read(grp, "delta_interface", cp.delta_interface);
     triqs::gfs::h5_read_gf_struct(grp, "gf_struct", cp.gf_struct);
   }
 

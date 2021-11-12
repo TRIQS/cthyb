@@ -44,7 +44,7 @@ namespace triqs_cthyb {
     many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
     many_body_op_t _h_loc0; //noninteracting part of the local Hamiltonian
     int n_iw, n_tau, n_l;
-    bool Delta_interface;
+    bool delta_interface;
 
     std::vector<matrix_t> _density_matrix; // density matrix, when used in Norm mode
     mpi::communicator _comm;               // define the communicator, here MPI_COMM_WORLD
@@ -108,7 +108,7 @@ namespace triqs_cthyb {
     /// :math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara Frequency.
     [[deprecated("Use h_loc0() instead.")]]
     std::vector<matrix<dcomplex>> Delta_infty() {
-      if (Delta_interface) TRIQS_RUNTIME_ERROR << "Delta_infty cannot be accessed when using the Delta interface";
+      if (delta_interface) TRIQS_RUNTIME_ERROR << "Delta_infty cannot be accessed when using the Delta interface";
       return Delta_infty_vec.value();
     }
 
@@ -125,7 +125,7 @@ namespace triqs_cthyb {
 
     /// :math:`G_0(i\omega)` in imaginary frequencies.
     block_gf_view<imfreq> G0_iw() {
-      if (Delta_interface) TRIQS_RUNTIME_ERROR << "G0_iw cannot be accessed when using the Delta interface";
+      if (delta_interface) TRIQS_RUNTIME_ERROR << "G0_iw cannot be accessed when using the Delta interface";
       return _G0_iw.value();
     }
 

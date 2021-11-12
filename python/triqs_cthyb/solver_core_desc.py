@@ -145,7 +145,7 @@ c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = r"""Construc
 +-----------------+-------------------------+---------+-----------------------------------------------------------------+
 | n_l             | int                     | 50      | Number of Legendre polynomials for gf<legendre, matrix_valued>  |
 +-----------------+-------------------------+---------+-----------------------------------------------------------------+
-| Delta_interface | bool                    | false   | Use Delta_tau and h_loc0 as input instead of G0_iw?             |
+| delta_interface | bool                    | false   | Use Delta_tau and h_loc0 as input instead of G0_iw?             |
 +-----------------+-------------------------+---------+-----------------------------------------------------------------+
 """)
 
@@ -631,7 +631,7 @@ c.add_member(c_name = "n_l",
              initializer = """ 50 """,
              doc = r"""Number of Legendre polynomials for gf<legendre, matrix_valued>""")
 
-c.add_member(c_name = "Delta_interface",
+c.add_member(c_name = "delta_interface",
              c_type = "bool",
              initializer = """ false """,
              doc = r"""Use Delta_tau and h_loc0 as input instead of G0_iw?""")

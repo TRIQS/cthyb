@@ -30,7 +30,7 @@ from .tail_fit import tail_fit as cthyb_tail_fit
 
 class Solver(SolverCore):
 
-    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, Delta_interface = False):
+    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, delta_interface = False):
         """
         Initialise the solver.
 
@@ -49,15 +49,15 @@ class Solver(SolverCore):
                Number of imaginary time points used for the Green's functions.
         n_l : integer, optional
              Number of legendre polynomials to use in accumulations of the Green's functions.
-        Delta_interface: bool, optional
-            Are Delta_tau and Delta_infty provided as input instead of G0_iw? 
+        delta_interface: bool, optional
+            Are Delta_tau and Delta_infty provided as input instead of G0_iw?
         """
 
         gf_struct = fix_gf_struct_type(gf_struct)
 
         # Initialise the core solver
-        SolverCore.__init__(self, beta=beta, gf_struct=gf_struct, 
-                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, Delta_interface = Delta_interface)
+        SolverCore.__init__(self, beta=beta, gf_struct=gf_struct,
+                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, delta_interface = delta_interface)
 
         mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
         self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
@@ -66,7 +66,7 @@ class Solver(SolverCore):
         self.gf_struct = gf_struct
         self.n_iw = n_iw
         self.n_tau = n_tau
-        self.Delta_interface = Delta_interface
+        self.delta_interface = delta_interface
 
     def solve(self, **params_kw):
         r"""
@@ -105,12 +105,12 @@ class Solver(SolverCore):
         """
 
         # -- Deprecation checks for measure parameters
-        
+
         depr_params = dict(
             measure_g_tau='measure_G_tau',
             measure_g_l='measure_G_l',
             )
-        
+
         for key in list(depr_params.keys()):
             if key in list(params_kw.keys()):
                 print('WARNING: cthyb.solve parameter %s is deprecated use %s.' % \
@@ -119,7 +119,7 @@ class Solver(SolverCore):
                 params_kw[depr_params[key]] = val
 
         # -- Tail post proc flags
-                
+
         perform_post_proc = params_kw.pop("perform_post_proc", True)
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
         if perform_post_proc and perform_tail_fit:
@@ -155,7 +155,7 @@ class Solver(SolverCore):
             assert is_gf_hermitian(self.G_iw)
             self.G_iw_raw = self.G_iw.copy()
 
-            if self.Delta_interface:
+            if self.delta_interface:
                 G0_iw = self.G_iw.copy()
                 Delta_iw = make_gf_from_fourier(self.Delta_tau, self.n_iw)
                 h_loc0_mat = block_matrix_from_op(self.h_loc0, self.gf_struct)
@@ -169,7 +169,7 @@ class Solver(SolverCore):
             self.Sigma_iw_raw = self.Sigma_iw.copy()
 
             if perform_tail_fit:
-                
+
                 cthyb_tail_fit(
                     Sigma_iw=self.Sigma_iw,
                     fit_min_n = fit_min_n, fit_max_n = fit_max_n,

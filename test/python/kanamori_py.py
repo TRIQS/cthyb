@@ -55,7 +55,7 @@ def write_and_compare(S, fname):
         with HDFArchive("{}.out.h5".format(fname),'w') as Results:
             Results["G_tau"] = S.G_tau
             Results["G_leg"] = S.G_l
-    
+
     if mpi.is_master_node():
         with HDFArchive("{}.ref.h5".format(fname),'r') as Results:
             assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
@@ -80,7 +80,7 @@ write_and_compare(S, "kanamori_py")
 # ==== Delta Interface ====
 
 # Construct solver
-S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500, n_l=50, Delta_interface = True)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500, n_l=50, delta_interface = True)
 
 # Set Weiss Field
 S.Delta_tau << Fourier(delta_w)

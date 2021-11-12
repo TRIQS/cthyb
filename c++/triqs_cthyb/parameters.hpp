@@ -50,7 +50,7 @@ namespace triqs_cthyb {
     int n_l = 50;
 
     /// Use Delta_tau and h_loc0 as input instead of G0_iw?
-    bool Delta_interface = false;
+    bool delta_interface = false;
 
     /// Write constr_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, constr_parameters_t const &sp);

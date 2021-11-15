@@ -69,6 +69,10 @@ def write_and_compare(S, fname):
 # Construct solver
 S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500, n_l=50)
 
+# check if solver properties for complex support can be accessed
+mpi.report('Is cthyb compiled with support for complex hybridization? '+str(S.hybridisation_is_complex))
+mpi.report('Is cthyb compiled with support for complex local Hamiltonian? '+str(S.local_hamiltonian_is_complex))
+
 # Set Weiss Field
 S.G0_iw << inverse(iOmega_n + mu - delta_w)
 

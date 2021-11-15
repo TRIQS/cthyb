@@ -315,8 +315,15 @@ c.add_property(name = "auto_corr_time",
 
 c.add_property(name = "solve_status",
                getter = cfunction("int solve_status ()"),
-               doc = r"""Status of the ``solve()`` on exit.""")
+               doc = r"""status of the ``solve()`` on exit.""")
 
+c.add_property(name = "hybridisation_is_complex",
+               getter = cfunction("bool hybridisation_is_complex ()"),
+               doc = r"""cthyb compiled with support for complex hybridization?""")
+
+c.add_property(name = "local_hamiltonian_is_complex",
+               getter = cfunction("bool local_hamiltonian_is_complex ()"),
+               doc = r"""cthyb compiled with support for complex local Hamiltonian?""")
 module.add_class(c)
 
 

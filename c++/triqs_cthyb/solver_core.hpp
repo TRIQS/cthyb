@@ -153,6 +153,24 @@ namespace triqs_cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
+    /// is cthyb compiled with support for complex hybridization?
+    bool hybridisation_is_complex() const {
+#ifdef HYBRIDISATION_IS_COMPLEX
+      return true;
+#else
+      return false;
+#endif
+    }
+
+    /// is cthyb compiled with support for complex local Hamiltonian
+    bool local_hamiltonian_is_complex() const {
+#ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
+      return true;
+#else
+      return false;
+#endif
+    }
+
     CPP2PY_IGNORE
     static std::string hdf5_format() { return "CTHYB_SolverCore"; }
 

@@ -396,7 +396,8 @@ namespace triqs_cthyb {
         // internal check
         if (std::abs(trace_partial) - 1.0000001 * std::sqrt(norm_trace_sq_partial) * get_block_dim(block_index) > 1.e-15)
           TRIQS_RUNTIME_ERROR << "|trace| > dim * norm" << trace_partial << " " << std::sqrt(norm_trace_sq_partial) << "  " << trace_abs;
-        if (std::abs(trace_partial - trace(mat)) > 1.e-15) TRIQS_RUNTIME_ERROR << "Internal error : trace and density mismatch";
+        auto dev = std::abs(trace_partial - trace(mat));
+        if (dev > 1.e-14) TRIQS_RUNTIME_ERROR << "Internal error : trace and density mismatch. Deviation: " << dev;
       }
 
 #ifdef CHECK_MATRIX_BOUNDED_BY_BOUND

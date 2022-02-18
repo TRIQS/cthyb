@@ -145,7 +145,6 @@ namespace triqs_cthyb {
     // --- Modify the tree
 
     // Mark the operator at original time for deletion in the tree
-    //data.imp_trace.try_delete(op_pos_in_det, block_index, is_dagger);
     data.imp_trace.try_delete(tau_old);
 
     // Try to insert the new operator at shifted time in the tree

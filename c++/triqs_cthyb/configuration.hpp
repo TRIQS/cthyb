@@ -29,6 +29,13 @@
 
 #include <map>
 
+
+#define CTHYB_EXPECTS(X)                                                                                                                                   \
+  if (!(X)) {                                                                                                                                        \
+    std::cerr << "Precondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n";                                          \
+    std::terminate();                                                                                                                                \
+  }
+
 namespace triqs_cthyb {
 
   using triqs::utility::time_pt;

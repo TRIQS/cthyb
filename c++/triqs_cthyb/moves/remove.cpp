@@ -21,14 +21,6 @@
 
 #include "./remove.hpp"
 
-
-#define CTHYB_EXPECTS(X)                                                                                                                                   \
-  if (!(X)) {                                                                                                                                        \
-    std::cerr << "Precondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n";                                          \
-    std::terminate();                                                                                                                                \
-  }
-
-
 namespace triqs_cthyb {
 
   histogram * move_remove_c_cdag::add_histo(std::string const &name, histo_map_t *histos) {
@@ -70,16 +62,10 @@ namespace triqs_cthyb {
 #endif
 
     // now mark 2 nodes for deletion
-    //tau1 = data.imp_trace.try_delete(num_c, block_index, false);
-    //tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
-
     // FIXME rename tau1 -> tau_c etc...
     tau1 = det.get_y(num_c).first;
     tau2 = det.get_x(num_c_dag).first;
    
-    CTHYB_EXPECTS(tau1 == data.imp_trace.debug_try_delete(num_c, block_index, false));
-    CTHYB_EXPECTS(tau2 == data.imp_trace.debug_try_delete(num_c_dag, block_index, true));
- 
     data.imp_trace.try_delete(tau1);
     data.imp_trace.try_delete(tau2);
     

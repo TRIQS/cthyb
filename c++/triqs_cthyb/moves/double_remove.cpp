@@ -79,11 +79,21 @@ namespace triqs_cthyb {
 #endif
 
     // now mark 2 nodes for deletion
-    tau1 = data.imp_trace.try_delete(num_c1, block_index1, false);
-    tau2 = data.imp_trace.try_delete(num_c_dag1, block_index1, true);
-    tau3 = data.imp_trace.try_delete(num_c2, block_index2, false);
-    tau4 = data.imp_trace.try_delete(num_c_dag2, block_index2, true);
+    //tau1 = data.imp_trace.try_delete(num_c1, block_index1, false);
+    //tau2 = data.imp_trace.try_delete(num_c_dag1, block_index1, true);
+    //tau3 = data.imp_trace.try_delete(num_c2, block_index2, false);
+    //tau4 = data.imp_trace.try_delete(num_c_dag2, block_index2, true);
 
+    tau1 = det1.get_y(num_c1).first;
+    tau2 = det1.get_x(num_c_dag1).first;
+    tau3 = det2.get_y(num_c2).first;
+    tau4 = det2.get_x(num_c_dag2).first;
+
+    data.imp_trace.try_delete(tau1);
+    data.imp_trace.try_delete(tau2);
+    data.imp_trace.try_delete(tau3);
+    data.imp_trace.try_delete(tau4);
+    
     dtau1 = double(tau2 - tau1);
     dtau2 = double(tau4 - tau3);
     if (histo_proposed1) {

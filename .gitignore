@@ -1,2 +1,5 @@
 compile_commands.json
 doc/cpp2rst_generated
+.*.swp
+.*.swo
+

@@ -37,6 +37,8 @@ namespace triqs_cthyb {
     configuration config; // Configuration
     time_segment tau_seg;
     std::map<std::pair<int, int>, int> linindex; // Linear index constructed from block and inner indices
+    //local_ops_table_t local_ops;
+
     atom_diag const &h_diag;                     // Diagonalization of the atomic problem
     mutable impurity_trace imp_trace;            // Calculator of the trace
     std::vector<int> n_inner;

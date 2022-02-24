@@ -37,8 +37,6 @@ namespace triqs_cthyb {
     time_pt tau1, tau2;
     op_desc op1, op2;
 
-    histogram *add_histo(std::string const &name, histo_map_t *histos);
-
     public:
     move_insert_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,
                        histo_map_t *histos);

@@ -20,14 +20,9 @@
  ******************************************************************************/
 
 #include "./double_insert.hpp"
+#include "./util.hpp"
 
 namespace triqs_cthyb {
-
-  histogram *move_insert_c_c_cdag_cdag::add_histo(std::string const &name, histo_map_t *histos) {
-    if (!histos) return nullptr;
-    auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
-    return &(new_histo.first->second);
-  }
 
   move_insert_c_c_cdag_cdag::move_insert_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2,
                                                        std::string const &block_name1, std::string const &block_name2, qmc_data &data,
@@ -39,18 +34,14 @@ namespace triqs_cthyb {
        block_index2(block_index2),
        block_size1(block_size1),
        block_size2(block_size2),
-       histo_proposed1(add_histo("double_insert_length_proposed_" + block_name1, histos)),
-       histo_proposed2(add_histo("double_insert_length_proposed_" + block_name2, histos)),
-       histo_accepted1(add_histo("double_insert_length_accepted_" + block_name1, histos)),
-       histo_accepted2(add_histo("double_insert_length_accepted_" + block_name2, histos)) {}
+       histo_proposed1(add_histo("double_insert_length_proposed_" + block_name1, histos, config.beta())),
+       histo_proposed2(add_histo("double_insert_length_proposed_" + block_name2, histos, config.beta())),
+       histo_accepted1(add_histo("double_insert_length_accepted_" + block_name1, histos, config.beta())),
+       histo_accepted2(add_histo("double_insert_length_accepted_" + block_name2, histos, config.beta())) {}
 
   mc_weight_t move_insert_c_c_cdag_cdag::attempt() {
 
-#ifdef EXT_DEBUG
-    std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cerr << "In config " << config.get_id() << std::endl;
-    std::cerr << "* Attempt for move_insert_c_c_cdag_cdag (blocks " << block_index1 << ", " << block_index2 << ")" << std::endl;
-#endif
+    LOG("{}\n* Attempt for move_insert_c_c_cdag_cdag (block {}, {})", debug_config_print_start, block_index1, block_index2);
 
     // Pick up the value of alpha and choose the operators
     auto rs1 = rng(block_size1), rs2 = rng(block_size1), rs3 = rng(block_size2), rs4 = rng(block_size2);
@@ -66,13 +57,7 @@ namespace triqs_cthyb {
     tau4 = data.tau_seg.get_random_pt(rng);
     if ((tau1 == tau3) or (tau2 == tau4)) return 0; // trying to insert/remove two operators at exactly the same time
 
-#ifdef EXT_DEBUG
-    std::cerr << "* Proposing to insert:" << std::endl;
-    std::cerr << op1 << " at " << tau1 << std::endl;
-    std::cerr << op2 << " at " << tau2 << std::endl;
-    std::cerr << op3 << " at " << tau3 << std::endl;
-    std::cerr << op4 << " at " << tau4 << std::endl;
-#endif
+    LOG("* Proposing to insert:\n   {} at {}\n   {} at {}\n   {} at {}\n   {} at {}", op1, tau1, op2, tau2, op3, tau3, op4, tau4);
 
     // record the length of the proposed insertion
     dtau1 = double(tau2 - tau1);
@@ -174,18 +159,14 @@ namespace triqs_cthyb {
 
     mc_weight_t p = atomic_weight_ratio * det_ratio;
 
-#ifdef EXT_DEBUG
-    std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
-    std::cerr << "Det ratio: " << det_ratio << '\t';
-    std::cerr << "Prefactor: " << t_ratio << '\t';
-    std::cerr << "Weight: " << p * t_ratio << std::endl;
-    std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight << std::endl;
-#endif
-
-    if (!isfinite(p * t_ratio))
-      TRIQS_RUNTIME_ERROR << "p * t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
+    LOG("Atomic ratio: {}  Det ratio: {}  Prefactor: {} ", atomic_weight_ratio, det_ratio, t_ratio);
+    LOG("Weight: {}\n  p_yee * newtrace: {} ", p * t_ratio, p_yee * new_atomic_weight);
+    ALWAYS_EXPECTS(isfinite(p * t_ratio), "(insert) p * t_ratio not finite p = {}, t_ratio = {} \n config:\n {} ", p, t_ratio, config);
+	
     return p * t_ratio;
   }
+
+  // -----------------------------------------------------------
 
   mc_weight_t move_insert_c_c_cdag_cdag::accept() {
 
@@ -197,7 +178,6 @@ namespace triqs_cthyb {
     config.insert(tau2, op2);
     config.insert(tau3, op3);
     config.insert(tau4, op4);
-    config.finalize();
 
     // insert in the determinant
     if (block_index1 == block_index2) {
@@ -216,9 +196,8 @@ namespace triqs_cthyb {
       *histo_accepted2 << dtau2;
     }
 
+    LOG("* Accepted \n{}", debug_config_print_end);
 #ifdef EXT_DEBUG
-    std::cerr << "* Move move_insert_c_c_cdag_cdag accepted" << std::endl;
-    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
     check_det_sequence(data.dets[block_index1], config.get_id());
     check_det_sequence(data.dets[block_index2], config.get_id());
 #endif
@@ -226,12 +205,12 @@ namespace triqs_cthyb {
     return data.current_sign / data.old_sign;
   }
 
-  //----------------
+  // -----------------------------------------------------------
 
   void move_insert_c_c_cdag_cdag::reject() {
 
-    config.finalize();
     data.imp_trace.cancel_insert();
+
     if (block_index1 == block_index2) {
       data.dets[block_index1].reject_last_try();
     } else {
@@ -239,11 +218,10 @@ namespace triqs_cthyb {
       data.dets[block_index2].reject_last_try();
     }
 
+    LOG("* Rejected \n{}", debug_config_print_end);
 #ifdef EXT_DEBUG
-    std::cerr << "* Move move_insert_c_c_cdag_cdag rejected" << std::endl;
-    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
     check_det_sequence(data.dets[block_index1], config.get_id());
     check_det_sequence(data.dets[block_index2], config.get_id());
 #endif
   }
-}
+} // namespace triqs_cthyb

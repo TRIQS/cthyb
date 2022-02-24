@@ -65,3 +65,13 @@ external_dependency(GTest
   BUILD_ALWAYS
   EXCLUDE_FROM_ALL
 )
+
+# -- spdlog --
+external_dependency(spdlog
+  GIT_REPO https://github.com/gabime/spdlog.git
+  VERSION 1.9
+  GIT_TAG v1.x
+  BUILD_ALWAYS
+)
+
+

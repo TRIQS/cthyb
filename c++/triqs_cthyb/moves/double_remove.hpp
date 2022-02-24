@@ -39,8 +39,6 @@ namespace triqs_cthyb {
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau1, tau2, tau3, tau4;
 
-    histogram *add_histo(std::string const &name, histo_map_t *histos);
-
     public:
     move_remove_c_c_cdag_cdag(int block_index1, int block_index2, int block_size1, int block_size2, std::string const &block_name1,
                               std::string const &block_name2, qmc_data &data, mc_tools::random_generator &rng, histo_map_t *histos);

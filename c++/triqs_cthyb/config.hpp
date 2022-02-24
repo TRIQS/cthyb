@@ -28,9 +28,17 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/state.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
-//#include "./array_suppl.hpp"
 
 #include <h5/h5.hpp>
+
+// spdlog
+#ifdef EXT_DEBUG
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#else
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_OFF
+#endif
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h" 
 
 namespace triqs_cthyb {
 

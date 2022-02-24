@@ -20,32 +20,25 @@
  ******************************************************************************/
 
 #include "./remove.hpp"
+#include "./util.hpp"
 
 namespace triqs_cthyb {
 
-  histogram * move_remove_c_cdag::add_histo(std::string const &name, histo_map_t *histos) {
-    if (!histos) return nullptr;
-    auto new_histo = histos->insert({name, {.0, config.beta(), 100}});
-    return &(new_histo.first->second);
-  }
-
-  move_remove_c_cdag::move_remove_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,
-                     histo_map_t *histos)
+  move_remove_c_cdag::move_remove_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data,
+                                         mc_tools::random_generator &rng, histo_map_t *histos)
      : data(data),
        config(data.config),
        rng(rng),
        block_index(block_index),
        block_size(block_size),
-       histo_proposed(add_histo("remove_length_proposed_" + block_name, histos)),
-       histo_accepted(add_histo("remove_length_accepted_" + block_name, histos)) {}
+       histo_proposed(add_histo("remove_length_proposed_" + block_name, histos, config.beta())),
+       histo_accepted(add_histo("remove_length_accepted_" + block_name, histos, config.beta())) {}
+
+  // -----------------------------------------------------------
 
   mc_weight_t move_remove_c_cdag::attempt() {
 
-#ifdef EXT_DEBUG
-    std::cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cerr << "In config " << config.get_id() << std::endl;
-    std::cerr << "* Attempt for move_remove_c_cdag (block " << block_index << ")" << std::endl;
-#endif
+    LOG("{}\n* Attempt for remove_c_cdag (block {})", debug_config_print_start, block_index);
 
     auto &det = data.dets[block_index];
 
@@ -54,21 +47,16 @@ namespace triqs_cthyb {
     int det_size = det.size();
     if (det_size == 0) return 0; // nothing to remove
     int num_c_dag = rng(det_size), num_c = rng(det_size);
-
-#ifdef EXT_DEBUG
-    std::cerr << "* Proposing to remove: ";
-    std::cerr << num_c_dag << "-th Cdag(" << block_index << ",...), ";
-    std::cerr << num_c << "-th C(" << block_index << ",...)" << std::endl;
-#endif
+    LOG("* Proposing to remove for block {}:\n       {}-th Cdag\n       {}-th C", block_index, num_c_dag, num_c);
 
     // now mark 2 nodes for deletion
     // FIXME rename tau1 -> tau_c etc...
     tau1 = det.get_y(num_c).first;
     tau2 = det.get_x(num_c_dag).first;
-   
+
     data.imp_trace.try_delete(tau1);
     data.imp_trace.try_delete(tau2);
-    
+
     // record the length of the proposed removal
     dtau = double(tau2 - tau1);
     if (histo_proposed) *histo_proposed << dtau;
@@ -86,9 +74,7 @@ namespace triqs_cthyb {
     // recompute the atomic_weight
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
     if (new_atomic_weight == 0.0) {
-#ifdef EXT_DEBUG
-      std::cerr << "atomic_weight == 0" << std::endl;
-#endif
+      LOG("atomic_weight == 0");
       return 0;
     }
     auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
@@ -98,27 +84,15 @@ namespace triqs_cthyb {
 
     mc_weight_t p = atomic_weight_ratio * det_ratio;
 
-#ifdef EXT_DEBUG
-    std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
-    std::cerr << "Det ratio: " << det_ratio << '\t';
-    std::cerr << "Prefactor: " << t_ratio << '\t';
-    std::cerr << "Weight: " << p / t_ratio << std::endl;
-#endif
+    LOG("Trace ratio: {}  Det ratio: {}  Prefactor: {} ", atomic_weight_ratio, det_ratio, t_ratio);
+    LOG("Weight: {}\n  p_yee * newtrace: {} ", p / t_ratio, p_yee * new_atomic_weight);
+    ALWAYS_EXPECTS(isfinite(p), "(remove) p = {} not finite", p); 
+    ALWAYS_EXPECTS(isfinite(p), "(remove) p / t_ratio  not finite. p = {}, t_ratio = {} ", p, t_ratio); 
 
-    if (!isfinite(p)) {
-      std::cerr << "Remove move info\n";
-      std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
-      std::cerr << "Det ratio: " << det_ratio << '\t';
-      std::cerr << "Prefactor: " << t_ratio << '\t';
-      std::cerr << "Weight: " << p / t_ratio << std::endl;
-      TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
-    }
-    
-    if (!isfinite(p / t_ratio)){
-      TRIQS_RUNTIME_ERROR << "(remove) p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
-    }
     return p / t_ratio;
   }
+
+  // -----------------------------------------------------------
 
   mc_weight_t move_remove_c_cdag::accept() {
 
@@ -128,7 +102,6 @@ namespace triqs_cthyb {
     // remove from the configuration
     config.erase(tau1);
     config.erase(tau2);
-    config.finalize();
 
     // remove from the determinants
     data.dets[block_index].complete_operation();
@@ -138,24 +111,23 @@ namespace triqs_cthyb {
     if (histo_accepted) *histo_accepted << dtau;
 
 #ifdef EXT_DEBUG
-    std::cerr << "* Move move_remove_c_cdag accepted" << std::endl;
-    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
     check_det_sequence(data.dets[block_index], config.get_id());
 #endif
 
+    LOG("* Accepted \n{}", debug_config_print_end);
     return data.current_sign / data.old_sign;
   }
 
+  // -----------------------------------------------------------
+
   void move_remove_c_cdag::reject() {
 
-    config.finalize();
     data.imp_trace.cancel_delete();
     data.dets[block_index].reject_last_try();
 
 #ifdef EXT_DEBUG
-    std::cerr << "* Move move_remove_c_cdag rejected" << std::endl;
-    std::cerr << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
     check_det_sequence(data.dets[block_index], config.get_id());
 #endif
+    LOG("* Rejected \n{}", debug_config_print_end);
   }
-}
+} // namespace triqs_cthyb

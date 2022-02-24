@@ -47,7 +47,7 @@ namespace triqs_cthyb {
 
   using atom_diag = triqs::atom_diag::atom_diag<is_h_scalar_complex>;
 
-  using triqs::hilbert_space::gf_struct_t;
+  using triqs::gfs::gf_struct_t;
   using triqs::utility::time_pt;
   using op_t        = std::pair<time_pt, int>;
   using histo_map_t = std::map<std::string, histogram>;

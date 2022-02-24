@@ -54,12 +54,6 @@
 
 namespace triqs_cthyb {
 
-  struct index_visitor {
-    std::vector<std::string> indices;
-    void operator()(int i) { indices.push_back(std::to_string(i)); }
-    void operator()(std::string s) { indices.push_back(s); }
-  };
-
   solver_core::solver_core(constr_parameters_t const &p)
      : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), delta_interface(p.delta_interface), constr_parameters(p) {
 
@@ -76,6 +70,11 @@ namespace triqs_cthyb {
   /// -------------------------------------------------------------------------------------------
 
   void solver_core::solve(solve_parameters_t const &solve_parameters_) {
+
+    // Set up the logging
+    spdlog::set_level(spdlog::level::trace); 
+    //spdlog::set_pattern("[%l] %s : %v");
+    spdlog::set_pattern("%v");
 
     solve_parameters = solve_parameters_;
     solve_parameters_t params(solve_parameters_);

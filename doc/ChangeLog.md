@@ -4,14 +4,12 @@
 
 ## Version 3.0.0
 
-
 CTHYB version 3.0.0 is a major release that
 
 * is compatible with TRIQS version 3.0.x
 * introduces compatibility with Python 3 (Python 2 is no longer supported)
 * brings new documentation for measuring the impurity density matrix in cthyb
 * fundamental Green function properties are now enforced to increase accuracy
-
 
 ### Fundamental Green Function Symmetries
 

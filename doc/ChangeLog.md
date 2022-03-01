@@ -2,6 +2,50 @@
 
 # Changelog
 
+## Version 3.1.0
+
+CTHYB version 3.1.0 is a compatibility release
+for TRIQS version 3.1.0. This release fixes
+several application issues and introduces an
+alternate Delta Interface that allows users to provide
+the hybridization function and the non-interacting
+local Hamiltonian instead of the Weiss-field.
+
+We provide a more detailed description of the changes and fixes below.
+
+### General
+* Add parameter Delta_interface that allows to provide h_loc0 and Delta_tau instead of G0_iw
+* Add delta_interface as a construction parameter to switch to alternate solver interface
+* Test Delta Interface in kanamori_py test
+* Add simple measurements for average_order and auto_corr_time based on Z (sign)
+* Adjust cthyb to changes in gf_struct object
+* Add backward compatibility layers for old gf_struct type
+* Add solver property to check if cthyb has been build with complex support
+* Allow to set small off diagonal elements of Delta_infty to 0 (#140)
+* Fix sanitizer positive, protect division by zero in trace analysis
+* Slightly loosen internal check in impurity trace and improve error message
+* Run port_to_triqs3 script for TRIQS mesh and nda changes
+* Expose h_loc0 in both interfaces and deprecate Delta_infty
+* Run git-clang-format
+* Regenerate python bindings
+
+### jenkins
+* For OSX builds enable complex Hybridisation and Local Hamiltonian and adjust build names
+
+### doc
+* Adding multiplet_analysis_notebook guide to documentation
+* Add missing image file logo_flatiron.png
+
+### cmake
+* Avoid policy warning for CMP0115
+
+### gh-actions
+* Install nfft from wentzell/triqs/nfft
+* Fix brew nfft install instructions
+
+We thank all contributors: Alexander Hampel, Jonathan Karp, Dylan Simon, Nils Wentzell
+
+
 ## Version 3.0.0
 
 CTHYB version 3.0.0 is a major release that

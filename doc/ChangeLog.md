@@ -11,6 +11,13 @@ alternate Delta Interface that allows users to provide
 the hybridization function and the non-interacting
 local Hamiltonian instead of the Weiss-field.
 
+### Delta Interface
+
+The Delta Interface allows the user to provide the hybridization function directly instead of providing G0_iw. 
+It can be used by setting delta_interface=True when initializing the solver object. 
+When calling the solver, the quadratic part of the local Hamiltonian must be provided with the parameter h_loc0, which is a many body operator like h_int.
+The Solver.G0_iw and Solver.Delta_infty objects cannot be accessed while using the Delta Interface. 
+
 We provide a more detailed description of the changes and fixes below.
 
 ### General

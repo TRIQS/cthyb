@@ -14,6 +14,8 @@ local Hamiltonian instead of the Weiss-field.
 We provide a more detailed description of the changes and fixes below.
 
 ### General
+* Use the latest [app4triqs/3.1.x](https://github.com/TRIQS/app4triqs) skeleton
+* Switches documentation to read-the-docs theme
 * Add parameter Delta_interface that allows to provide h_loc0 and Delta_tau instead of G0_iw
 * Add delta_interface as a construction parameter to switch to alternate solver interface
 * Test Delta Interface in kanamori_py test

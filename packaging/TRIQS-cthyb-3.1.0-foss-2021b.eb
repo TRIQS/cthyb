@@ -25,7 +25,7 @@ toolchainopts = {'pic': True, 'usempi': True}
 
 source_urls = ['https://github.com/TRIQS/cthyb/releases/download/%(version)s/']
 sources = ['cthyb-%(version)s.tar.gz']
-checksums = ['PUT HERE THE SHA256 OF THE RELEASE TARBALL']
+checksums = ['8d6d2c4d5b3928d062b72fad4ea9df9aae198e39dd9c1fd3cc5dc34a5019acc0']
 
 dependencies = [
     ('Python', '3.9.6'),

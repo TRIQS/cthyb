@@ -30,26 +30,37 @@ namespace triqs_cthyb {
   /// Measurement auto-correlation time based on the partition function
   struct measure_auto_corr_time {
 
-    measure_auto_corr_time(qmc_data const &, double &_auto_corr_time) : auto_corr_time(_auto_corr_time) {}
+    measure_auto_corr_time(qmc_data const &_data, double &_auto_corr_time) : data(_data), auto_corr_time(_auto_corr_time) {}
 
-    void accumulate(mc_weight_t sign) { log_acc << sign; }
+    void accumulate(mc_weight_t sign) {
+      log_accs[0] << sign;
+      log_accs[1] << data.config.size();
+    }
 
     void collect_results(mpi::communicator const &comm) {
 
-      auto [errs, counts] = log_acc.log_bin_errors_all_reduce(comm);
-
-      // Estimate auto-correlation time
       auto_corr_time = 0.0;
-      if (comm.rank() == 0 && errs[0] > 0) auto_corr_time = std::max(0.0, tau_estimate_from_errors(errs[int(0.7 * errs.size())], errs[0]));
-      mpi::broadcast(auto_corr_time, comm, 0);
 
-      // Reset the accumulator
-      log_acc = {0.0, -1, 0};
+      for (auto &log_acc : log_accs) {
+        auto [errs, counts] = log_acc.log_bin_errors_all_reduce(comm);
+
+        // Estimate auto-correlation time
+        if (comm.rank() == 0 && errs[0] > 0) {
+          auto_corr_time = std::max(auto_corr_time, tau_estimate_from_errors(errs[int(0.7 * errs.size())], errs[0]));
+        }
+
+        // Reset the accumulator
+        log_acc = {0.0, -1, 0};
+      }
+      mpi::broadcast(auto_corr_time, comm, 0);
     }
 
     private:
+    qmc_data const &data;
     double &auto_corr_time;
-    accumulator<mc_weight_t> log_acc = {0.0, -1, 0};
+
+    // Initialize one complex log accumulator for each observable to use for the autocorrelation analysis
+    std::vector<accumulator<dcomplex>> log_accs = {2, {0.0, -1, 0}};
   };
 
 } // namespace triqs_cthyb

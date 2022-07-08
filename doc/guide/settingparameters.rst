@@ -13,7 +13,7 @@ At first you need to create an instance of the CTQMC solver class. This is done
 with::
 
     from triqs.operators import *
-    from triqs.applications.impurity_solvers.cthyb import Solver
+    from triqs_cthyb import Solver
 
     # Create a solver instance
     S = Solver(beta = beta, gf_struct = gf_struct)

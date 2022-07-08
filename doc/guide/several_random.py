@@ -1,7 +1,7 @@
 from triqs.gf import *
 from triqs.operators import *
 from h5 import HDFArchive
-from triqs.applications.impurity_solvers.cthyb import Solver
+from triqs_cthyb import Solver
 import triqs.utility.mpi as mpi
 
 D, V, U = 1.0, 0.2, 4.0

@@ -1,6 +1,6 @@
 from triqs.gf import *
 from triqs.operators import *
-from triqs.applications.impurity_solvers.cthyb import Solver
+from triqs_cthyb import Solver
 
 # Parameters
 D = 1.0         # Half-bandwidth of the bath

@@ -17,7 +17,7 @@ Q: How do I save the triqs and cthyb hash and script for debugging purposes?
 
 A: Simply add this to your script::
 
-    from triqs.applications.impurity_solvers.cthyb import version
+    from triqs_cthyb import version
     if mpi.is_master_node():
       with HDFArchive(filename+".h5",'a') as Results:
         if "log" not in Results: Results.create_group("log")

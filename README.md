@@ -1,16 +1,16 @@
 [![build](https://github.com/TRIQS/cthyb/workflows/build/badge.svg)](https://github.com/TRIQS/cthyb/actions?query=workflow%3Abuild)
 
-TRIQS continuous-time hybridization-expansion solver
+## TRIQS continuous-time hybridization-expansion solver
 
 Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
 Copyright (C) 2017, H. U.R. Strand, N. Wentzell
 Copyright (C) 2018, The Simons Foundation
 
-1. Documentation
+### Documentation
 
 For documentation and installation instructions see [triqs.github.io/cthyb](https://triqs.github.io/cthyb).
 
-2. License
+### License
 
 This application is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

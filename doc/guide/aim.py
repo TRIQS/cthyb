@@ -1,6 +1,6 @@
 from triqs.gf import *
 from triqs.operators import *
-from triqs.applications.impurity_solvers.cthyb import Solver
+from triqs_cthyb import Solver
 from h5 import HDFArchive
 import triqs.utility.mpi as mpi
 

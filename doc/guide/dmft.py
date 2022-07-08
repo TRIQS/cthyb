@@ -2,7 +2,7 @@ from triqs.gf import *
 from triqs.operators import *
 from h5 import *
 import triqs.utility.mpi as mpi
-from triqs.applications.impurity_solvers.cthyb import Solver
+from triqs_cthyb import Solver
 
 # Set up a few parameters
 U = 2.5

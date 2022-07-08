@@ -2,8 +2,8 @@
 
 ## TRIQS continuous-time hybridization-expansion solver
 
-Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
-Copyright (C) 2017, H. U.R. Strand, N. Wentzell
+Copyright (C) 2014, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet \
+Copyright (C) 2017, H. U.R. Strand, N. Wentzell \
 Copyright (C) 2018, The Simons Foundation
 
 ### Documentation

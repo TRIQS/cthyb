@@ -59,8 +59,8 @@ if mpi.is_master_node():
 
 if mpi.is_master_node():
     with HDFArchive("slater.ref.h5",'r') as Results:
-        assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
+        assert_block_gfs_are_close(Results["G_tau"], S.G_tau, precision=5e-6)
         assert_block_gfs_are_close(Results["G_leg"], S.G_l)
 
 from triqs.utility.h5diff import h5diff
-h5diff("slater.out.h5","slater.ref.h5")
+h5diff("slater.out.h5","slater.ref.h5", precision=5e-6)

@@ -27,6 +27,8 @@ import numpy as np
 from itertools import product
 from triqs.operators.util.extractors import extract_h_dict, block_matrix_from_op
 from .tail_fit import tail_fit as cthyb_tail_fit
+from .tail_fit import sigma_high_frequency_moments
+from .util import orbital_occupations
 
 class Solver(SolverCore):
 
@@ -145,6 +147,23 @@ class Solver(SolverCore):
         # (only supported for G_tau, to permit compatibility with dft_tools)
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
 
+            if self.last_solve_parameters["measure_density_matrix"]:
+                # we have the density matrix, so we will compute the analytic moments
+                # and orbital occupations
+                self.orbital_occupations = orbital_occupations(self.density_matrix,
+                                                               self.gf_struct,
+                                                               self.h_loc_diagonalization
+                                                               )
+
+                self.Sigma_moments = sigma_high_frequency_moments(self.density_matrix,
+                                                 self.h_loc_diagonalization,
+                                                 self.gf_struct,
+                                                 self.last_solve_parameters['h_int']
+                                                 )
+
+                self.Sigma_Hartree = self.Sigma_moments[0]
+                
+
             # Fourier transform G_tau to obtain G_iw
             for bl, g in self.G_tau:
                 bl_size = g.target_shape[0]
@@ -169,6 +188,14 @@ class Solver(SolverCore):
             self.Sigma_iw_raw = self.Sigma_iw.copy()
 
             if perform_tail_fit:
+
+                if self.last_solve_parameters["measure_density_matrix"]:
+                    fit_known_moments ={}
+                    for name, sig in self.Sigma_iw:
+                        shape = [2]+list(sig.target_shape)
+                        fit_known_moments[name] = np.zeros(shape, dtype=complex)
+                        fit_known_moments[name][0] = self.Sigma_moments[0][name]
+                        fit_known_moments[name][1] = self.Sigma_moments[1][name]
 
                 cthyb_tail_fit(
                     Sigma_iw=self.Sigma_iw,

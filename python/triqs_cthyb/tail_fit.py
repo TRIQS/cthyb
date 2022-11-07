@@ -33,21 +33,21 @@ def sigma_high_frequency_moments(density_matrix,
                            gf_struct, 
                            h_int):
     """
-    Calculate the first and second analytic high frequency moments of Sigma_iw
+    Calculate the first and second high frequency moments of Sigma_iw
     following Rev. Mod. Phys. 83, 349 (2011), where the first and second moments are
     (1) Sigma_Hartree = -<{[H,c],c+}>
     (2) Sigma_1       = <{[H,[H,c]],c+}> - Sigma_Hartree^2,
-    where H is th interaction Hamiltonian
+    where H is the interaction Hamiltonian
 
     Parameters
     ----------
     density_matrix : list, np.ndarray
                      measured density matrix from TRIQS/CTHYB.
-    h_loc          : h_loc_diagonalization
-                     h_loc_diagonalizatoin from TRIQS/CTHYB.
-    gf_struct      : gf_struct_t
+    h_loc          : AtomDiag
+                     h_loc_diagonalization from TRIQS/CTHYB.
+    gf_struct      : List of pairs (str,int)
                      Block structure of Green's function.
-    h_int          : H_int
+    h_int          : triqs.operators.Operator
                      interaction Hamiltonian
 
     Returns
@@ -59,52 +59,20 @@ def sigma_high_frequency_moments(density_matrix,
     def comm(A,B): return A*B - B*A
     def anticomm(A,B): return A*B + B*A
 
-    # Sigma_HF term
-    sigma_hf = {bl : np.zeros((bl_size, bl_size),dtype=complex) for bl, bl_size in gf_struct}
+    sigma_moments = {bl : np.zeros((2, bl_size, bl_size),dtype=complex) for bl, bl_size in gf_struct}
     for bl, bl_size in gf_struct:
         for orb1 in range(bl_size):
             for orb2 in range(bl_size):
-                op = -anticomm(comm(h_int, c(bl,orb1)), c_dag(bl,orb2))
-                for term, coef in op:
-                    bl1, u1 = term[0][1]
-                    bl2, u2 = term[1][1]
 
-                    sigma_hf[bl][orb1,orb2] += coef*trace_rho_op(density_matrix,
-                                                                 c_dag(bl1,u1)*c(bl2,u2),
-                                                                 h_loc
-                                                                 )
-    # Sigma_1/iwn term
-    sigma_1 = {bl : np.zeros((bl_size,bl_size),dtype=complex) for bl,bl_size in gf_struct}
-    for bl, bl_size in gf_struct:
-        for orb1 in range(bl_size):
-            for orb2 in range(bl_size):
-                op = anticomm(comm(h_int, comm(h_int, c(bl,orb1))), c_dag(bl,orb2))
-                for term, coef in op:
+                # Sigma_HF term
+                op_HF = -anticomm(comm(h_int, c(bl,orb1)), c_dag(bl,orb2))
+                sigma_moments[bl][0,orb1,orb2] = trace_rho_op(density_matrix, op_HF, h_loc)
 
-                    if len(term) == 2:
+                # Sigma_1/iwn term
+                op_iw = anticomm(comm(h_int, comm(h_int, c(bl,orb1))), c_dag(bl,orb2))
+                sigma_moments[bl][1,orb1,orb2] = trace_rho_op(density_matrix, op_iw, h_loc) - sigma_moments[bl][0,orb1,orb2]**2
 
-                        bl1, u1 = term[0][1]
-                        bl2, u2 = term[1][1]
-
-                        sigma_1[bl][orb1,orb2] += coef*trace_rho_op(density_matrix,
-                                                                    c_dag(bl1,u1)*c(bl2,u2),
-                                                                    h_loc
-                                                                    )
-                    elif len(term) == 4:
-
-                        bl1, u1 = term[0][1]
-                        bl2, u2 = term[1][1]
-                        bl3, u3 = term[2][1]
-                        bl4, u4 = term[3][1]
-
-                        sigma_1[bl][orb1,orb2] += coef*trace_rho_op(density_matrix,
-                                                                    c_dag(bl1,u1)*c_dag(bl2,u2)*c(bl3,u3)*c(bl4,u4),
-                                                                    h_loc
-                                                                    )
-
-                sigma_1[bl][orb1,orb2] -= sigma_hf[bl][orb1,orb2]**2
-
-    return [sigma_hf, sigma_1]
+    return sigma_moments
 
 
 

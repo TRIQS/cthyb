@@ -11,9 +11,9 @@ import triqs.utility.mpi as mpi
 D,V,U = 1., 0.2, 4.
 ef,beta = -U/2., 50
 
-H = U*n('up_0',0)*n('down_0',0)
+H = U*n('up',0)*n('down',0)
 
-S = Solver(beta=beta, gf_struct=[('up_0',1), ('down_0',1)])
+S = Solver(beta=beta, gf_struct=[('up',1), ('down',1)])
 
 for name, g0 in S.G0_iw: g0 << inverse(iOmega_n - ef - V**2 * Wilson(D))
 
@@ -31,21 +31,21 @@ S.solve(h_int = H,
         )
 
 # exact moments
-n_up = trace_rho_op(S.density_matrix, n('up_0',0), S.h_loc_diagonalization)
-n_dn = trace_rho_op(S.density_matrix, n('down_0',0), S.h_loc_diagonalization)
+n_up = trace_rho_op(S.density_matrix, n('up',0), S.h_loc_diagonalization)
+n_dn = trace_rho_op(S.density_matrix, n('down',0), S.h_loc_diagonalization)
 
-np.testing.assert_almost_equal(S.Sigma_Hartree['up_0'][0,0], U*n_dn)
-np.testing.assert_almost_equal(S.Sigma_Hartree['down_0'][0,0], U*n_up)
+np.testing.assert_almost_equal(S.Sigma_Hartree['up'][0,0], U*n_dn)
+np.testing.assert_almost_equal(S.Sigma_Hartree['down'][0,0], U*n_up)
 
-np.testing.assert_almost_equal(S.Sigma_moments[0]['up_0'][0,0], U*n_dn)
-np.testing.assert_almost_equal(S.Sigma_moments[0]['down_0'][0,0], U*n_up)
+np.testing.assert_almost_equal(S.Sigma_moments['up'][0,0,0], U*n_dn)
+np.testing.assert_almost_equal(S.Sigma_moments['down'][0,0,0], U*n_up)
 
-np.testing.assert_almost_equal(S.Sigma_moments[1]['up_0'][0,0], U*U*n_dn*(1-n_dn))
-np.testing.assert_almost_equal(S.Sigma_moments[1]['down_0'][0,0], U*U*n_up*(1-n_up))
+np.testing.assert_almost_equal(S.Sigma_moments['up'][1,0,0], U*U*n_dn*(1-n_dn))
+np.testing.assert_almost_equal(S.Sigma_moments['down'][1,0,0], U*U*n_up*(1-n_up))
 
 
 # magnetic case
-S = Solver(beta=beta, gf_struct=[('up_0',1), ('down_0',1)])
+S = Solver(beta=beta, gf_struct=[('up',1), ('down',1)])
 
 for name, g0 in S.G0_iw: 
     if 'up' in name:
@@ -62,14 +62,14 @@ S.solve(h_int = H,
         )
 
 # exact moments
-n_up = trace_rho_op(S.density_matrix, n('up_0',0), S.h_loc_diagonalization)
-n_dn = trace_rho_op(S.density_matrix, n('down_0',0), S.h_loc_diagonalization)
+n_up = trace_rho_op(S.density_matrix, n('up',0), S.h_loc_diagonalization)
+n_dn = trace_rho_op(S.density_matrix, n('down',0), S.h_loc_diagonalization)
 
-np.testing.assert_almost_equal(S.Sigma_Hartree['up_0'][0,0], U*n_dn)
-np.testing.assert_almost_equal(S.Sigma_Hartree['down_0'][0,0], U*n_up)
+np.testing.assert_almost_equal(S.Sigma_Hartree['up'][0,0], U*n_dn)
+np.testing.assert_almost_equal(S.Sigma_Hartree['down'][0,0], U*n_up)
 
-np.testing.assert_almost_equal(S.Sigma_moments[0]['up_0'][0,0], U*n_dn)
-np.testing.assert_almost_equal(S.Sigma_moments[0]['down_0'][0,0], U*n_up)
+np.testing.assert_almost_equal(S.Sigma_moments['up'][0,0,0], U*n_dn)
+np.testing.assert_almost_equal(S.Sigma_moments['down'][0,0,0], U*n_up)
 
-np.testing.assert_almost_equal(S.Sigma_moments[1]['up_0'][0,0], U*U*n_dn*(1-n_dn))
-np.testing.assert_almost_equal(S.Sigma_moments[1]['down_0'][0,0], U*U*n_up*(1-n_up))
+np.testing.assert_almost_equal(S.Sigma_moments['up'][1,0,0], U*U*n_dn*(1-n_dn))
+np.testing.assert_almost_equal(S.Sigma_moments['down'][1,0,0], U*U*n_up*(1-n_up))

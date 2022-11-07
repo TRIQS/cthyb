@@ -161,8 +161,7 @@ class Solver(SolverCore):
                                                  self.last_solve_parameters['h_int']
                                                  )
 
-                self.Sigma_Hartree = self.Sigma_moments[0]
-                
+                self.Sigma_Hartree = {bl: sigma_bl[0] for bl, sigma_bl in self.Sigma_moments.items()}
 
             # Fourier transform G_tau to obtain G_iw
             for bl, g in self.G_tau:
@@ -189,13 +188,8 @@ class Solver(SolverCore):
 
             if perform_tail_fit:
 
-                if self.last_solve_parameters["measure_density_matrix"]:
-                    fit_known_moments ={}
-                    for name, sig in self.Sigma_iw:
-                        shape = [2]+list(sig.target_shape)
-                        fit_known_moments[name] = np.zeros(shape, dtype=complex)
-                        fit_known_moments[name][0] = self.Sigma_moments[0][name]
-                        fit_known_moments[name][1] = self.Sigma_moments[1][name]
+                if fit_known_moments is None and self.last_solve_parameters["measure_density_matrix"]:
+                    fit_known_moments = self.Sigma_moments
 
                 cthyb_tail_fit(
                     Sigma_iw=self.Sigma_iw,

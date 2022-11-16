@@ -27,7 +27,7 @@ import numpy as np
 from itertools import product
 from triqs.operators.util.extractors import extract_h_dict, block_matrix_from_op
 from .tail_fit import tail_fit as cthyb_tail_fit
-from .tail_fit import sigma_high_frequency_moments
+from .tail_fit import sigma_high_frequency_moments, green_high_frequency_moments
 from .util import orbital_occupations
 
 class Solver(SolverCore):
@@ -64,11 +64,16 @@ class Solver(SolverCore):
         mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
         self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
         self.Sigma_iw.zero()
+        self.Sigma_iw_raw = None
         self.G_iw = self.Sigma_iw.copy()
+        self.G_iw_raw = None
         self.gf_struct = gf_struct
         self.n_iw = n_iw
         self.n_tau = n_tau
         self.delta_interface = delta_interface
+        self.G_moments = None
+        self.Sigma_moments = None
+        self.Sigma_Hartree = None
 
     def solve(self, **params_kw):
         r"""
@@ -124,6 +129,7 @@ class Solver(SolverCore):
 
         perform_post_proc = params_kw.pop("perform_post_proc", True)
         perform_tail_fit = params_kw.pop("perform_tail_fit", False)
+
         if perform_post_proc and perform_tail_fit:
             # If tail parameters provided for Sigma_iw fitting, use them, otherwise use defaults
             if not (("fit_min_n" in params_kw) or ("fit_max_n" in params_kw) or ("fit_max_w" in params_kw) or ("fit_min_w" in params_kw)):
@@ -148,26 +154,37 @@ class Solver(SolverCore):
         if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
 
             if self.last_solve_parameters["measure_density_matrix"]:
-                # we have the density matrix, so we will compute the analytic moments
-                # and orbital occupations
+                # we have the density matrix, so we will compute the high frequency
+                # moments and orbital occupations
+
                 self.orbital_occupations = orbital_occupations(self.density_matrix,
                                                                self.gf_struct,
                                                                self.h_loc_diagonalization
                                                                )
 
+                h_int = self.last_solve_parameters['h_int']
                 self.Sigma_moments = sigma_high_frequency_moments(self.density_matrix,
                                                  self.h_loc_diagonalization,
                                                  self.gf_struct,
-                                                 self.last_solve_parameters['h_int']
+                                                 h_int
                                                  )
 
                 self.Sigma_Hartree = {bl: sigma_bl[0] for bl, sigma_bl in self.Sigma_moments.items()}
 
+                self.G_moments = green_high_frequency_moments(self.density_matrix,
+                                                         self.h_loc_diagonalization,
+                                                         self.gf_struct,
+                                                         self.h_loc
+                                                         )
+
             # Fourier transform G_tau to obtain G_iw
             for bl, g in self.G_tau:
                 bl_size = g.target_shape[0]
-                known_moments = make_zero_tail(g, 4)
-                known_moments[1,...] = np.eye(bl_size)
+                if self.G_moments is None:
+                    known_moments = make_zero_tail(g, 4)
+                    known_moments[1] = np.eye(bl_size)
+                else:
+                    known_moments = self.G_moments[bl]
                 self.G_iw[bl].set_from_fourier(g, known_moments)
 
             assert is_gf_hermitian(self.G_iw)
@@ -188,7 +205,7 @@ class Solver(SolverCore):
 
             if perform_tail_fit:
 
-                if fit_known_moments is None and self.last_solve_parameters["measure_density_matrix"]:
+                if fit_known_moments is None and self.Sigma_moments is not None:
                     fit_known_moments = self.Sigma_moments
 
                 cthyb_tail_fit(
@@ -206,8 +223,12 @@ class Solver(SolverCore):
                 # Enforce 1/w behavior of G_iw in the tail fit window
                 # and recompute Sigma_iw
                 for name, g in self.G_iw:
-                    tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
-                    tail[1] = np.eye(g.target_shape[0])
+                    if self.G_moments is None:
+                        tail = make_zero_tail(g, 2)
+                        tail[1] = np.eye(g.target_shape[0])
+                    else:
+                        tail = self.G_moments[bl]
+
                     g.replace_by_tail_in_fit_window(tail)
 
                 self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)

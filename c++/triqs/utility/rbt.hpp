@@ -323,7 +323,7 @@ namespace triqs {
         if (r) return r;
         if (f(x)) return x;
         return find_if_impl(x->right, f);
-      };
+      }
 
       /*************************************************************************
   *  Red-black insertion

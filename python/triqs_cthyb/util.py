@@ -19,7 +19,7 @@
 #
 ################################################################################
 r"""
-CTHYB utility functions:
+utility functions
 """
 from math import ceil
 from numpy import argmax

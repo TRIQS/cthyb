@@ -1,7 +1,7 @@
 .. _aim:
 
-An example: the Anderson impurity model
-=======================================
+The Anderson impurity model
+===========================
 
 To illustrate how the CTQMC solver works in practice, we show the example of a
 one-orbital Anderson impurity embedded in a flat (Wilson) conduction bath. The

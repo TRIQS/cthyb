@@ -121,16 +121,7 @@ c.add_member(c_name = "perturbation_order",
 c.add_member(c_name = "constr_parameters",
              c_type = "triqs_cthyb::constr_parameters_t",
              read_only= True,
-             doc = r"""""")
-
-c.add_member(c_name = "solve_parameters",
-             c_type = "triqs_cthyb::solve_parameters_t",
-             read_only= True,
-             doc = r"""""")
-
-c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = r"""Construct a CTHYB solver
-
-
+             doc = r"""construction parameter list
 
 +-----------------+-------------------------+---------+-----------------------------------------------------------------+
 | Parameter Name  | Type                    | Default | Documentation                                                   |
@@ -149,10 +140,10 @@ c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = r"""Construc
 +-----------------+-------------------------+---------+-----------------------------------------------------------------+
 """)
 
-c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
-             doc = r"""Solve method that performs CTHYB calculation
-
-
+c.add_member(c_name = "solve_parameters",
+             c_type = "triqs_cthyb::solve_parameters_t",
+             read_only= True,
+             doc = r"""solve parameter list
 
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | Parameter Name                | Type                                                     | Default                       | Documentation                                                                                                     |
@@ -231,7 +222,7 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | measure_pert_order            | bool                                                     | false                         | Measure perturbation order?                                                                                       |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| measure_density_matrix        | bool                                                     | false                         | Measure the reduced impurity density matrix?                                                                      |
+| measure_density_matrix        | bool                                                     | false                         | Measure the reduced impurity density matrix? Automatically also determines high frequency moments for G and Sigma |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | use_norm_as_weight            | bool                                                     | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                                     |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
@@ -260,6 +251,10 @@ c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""",
 | h_loc0                        | std::optional<many_body_op_t>                            | {}                            | Quadratic part of the local Hamiltonian. Must be provided if the Delta interface is used                          |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 """)
+
+c.add_constructor("""(**triqs_cthyb::constr_parameters_t)""", doc = r"""Construct a CTHYB solver""" )
+
+c.add_method("""void solve (**triqs_cthyb::solve_parameters_t)""", doc = r"""Solve method that performs CTHYB calculation""")
 
 c.add_property(name = "h_loc",
                getter = cfunction("triqs_cthyb::many_body_op_t h_loc ()"),

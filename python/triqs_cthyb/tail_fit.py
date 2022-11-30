@@ -19,7 +19,9 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
+r"""
+tail fitting and high frequency moments
+"""
 import numpy as np
 
 from triqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
@@ -27,8 +29,8 @@ from triqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
 from triqs.operators import c, c_dag
 from triqs.atom_diag import trace_rho_op
 
-def comm(A,B): return A*B - B*A
-def anticomm(A,B): return A*B + B*A
+def _comm(A,B): return A*B - B*A
+def _anticomm(A,B): return A*B + B*A
 
 def sigma_high_frequency_moments(density_matrix,
                            ad_imp, 
@@ -66,11 +68,11 @@ def sigma_high_frequency_moments(density_matrix,
             for orb2 in range(bl_size):
 
                 # Sigma_HF term
-                op_HF = -anticomm(comm(h_int, c(bl,orb1)), c_dag(bl,orb2))
+                op_HF = -_anticomm(_comm(h_int, c(bl,orb1)), c_dag(bl,orb2))
                 sigma_moments[bl][0,orb1,orb2] = trace_rho_op(density_matrix, op_HF, ad_imp)
 
                 # Sigma_1/iwn term
-                op_iw = anticomm(comm(h_int, comm(h_int, c(bl,orb1))), c_dag(bl,orb2))
+                op_iw = _anticomm(_comm(h_int, _comm(h_int, c(bl,orb1))), c_dag(bl,orb2))
                 sigma_moments[bl][1,orb1,orb2] = trace_rho_op(density_matrix, op_iw, ad_imp) - sigma_moments[bl][0,orb1,orb2]**2
 
     return sigma_moments
@@ -113,7 +115,7 @@ def green_high_frequency_moments(density_matrix,
         for orb1 in range(bl_size):
             for orb2 in range(bl_size):
                 # G_1/iwn**2 term
-                op = -anticomm(comm(h_imp, c(bl,orb1)), c_dag(bl,orb2))
+                op = -_anticomm(_comm(h_imp, c(bl,orb1)), c_dag(bl,orb2))
                 green_moments[bl][2,orb1,orb2] = trace_rho_op(density_matrix, op, ad_imp)
 
     return green_moments

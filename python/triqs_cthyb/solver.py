@@ -19,7 +19,9 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
+r"""
+the triqs_cthyb solver class
+"""
 from .solver_core import SolverCore
 from triqs.gf import *
 import triqs.utility.mpi as mpi

@@ -4,7 +4,7 @@ Measurements: definitions
 =========================
 
 Here we list all the observables that can be measured by the solver along with their definitions.
-Each measurement can be turned on or off via the corresponding :doc:`solve() parameters <solve_parameters>`.
+Each measurement can be turned on or off via the corresponding :ref:`solve() parameters <solve_parameters>`.
 
 Green's function
 ----------------
@@ -216,7 +216,7 @@ with the bath degrees of freedom traced out.
 
     \hat\rho_\mathrm{imp} = \mathrm{Tr}_\mathrm{bath}[e^{-\beta\hat H}/Z].
 
-One can use this object to :ref:`estimate average values <static>`
+One can use this object to `estimate average values <../guide/static_observables_notebook.ipynb>`_
 of the static (:math:`\tau`-independent) impurity observables,
 
 .. math::

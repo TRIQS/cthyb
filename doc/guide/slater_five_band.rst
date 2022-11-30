@@ -1,7 +1,7 @@
 .. _slater:
 
-Another example: a multiorbital impurity model
-==============================================
+Multiorbital impurity model
+===========================
 
 We present another more complex example here. This time, we solve the five-band
 impurity with a fully-rotationally invariant interaction:

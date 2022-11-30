@@ -51,11 +51,13 @@ Reference manual
    triqs_cthyb.tail_fit
    triqs_cthyb.util
 
+Link to all relevant solver parameters:
+
 .. toctree::
    :maxdepth: 1
 
-   reference/constr_parameters
-   reference/solve_parameters
+   _ref/triqs_cthyb.solver.Solver.solve_parameters.rst
+   _ref/triqs_cthyb.solver.Solver.constr_parameters.rst
 
 FAQs
 ----

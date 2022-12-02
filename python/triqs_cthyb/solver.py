@@ -224,7 +224,7 @@ class Solver(SolverCore):
 
                 # Enforce 1/w behavior of G_iw in the tail fit window
                 # and recompute Sigma_iw
-                for name, g in self.G_iw:
+                for bl, g in self.G_iw:
                     if self.G_moments is None:
                         tail = make_zero_tail(g, 2)
                         tail[1] = np.eye(g.target_shape[0])

@@ -24,6 +24,8 @@ tail fitting and high frequency moments
 """
 import numpy as np
 
+import triqs.utility.mpi as mpi
+
 from triqs.gf.gf_fnt import fit_hermitian_tail_on_window, replace_by_tail
 
 from triqs.operators import c, c_dag
@@ -74,6 +76,12 @@ def sigma_high_frequency_moments(density_matrix,
                 # Sigma_1/iwn term
                 op_iw = _anticomm(_comm(h_int, _comm(h_int, c(bl,orb1))), c_dag(bl,orb2))
                 sigma_moments[bl][1,orb1,orb2] = trace_rho_op(density_matrix, op_iw, ad_imp) - sigma_moments[bl][0,orb1,orb2]**2
+        # enforce hermiticity
+        for idx in [0, 1]:
+            moments_non_herm = sigma_moments[bl][idx, :, :].copy()
+            sigma_moments[bl][idx, :, :] = 0.5*(sigma_moments[bl][idx, :, :] + sigma_moments[bl][idx, :, :].T.conj())
+        if np.linalg.norm(sigma_moments[bl][idx, :, :] - moments_non_herm) > 1e-3:
+            mpi.report('\nWARNING: Hermiticity of Sigma moments is enforced, but violation was larger than 1e-3. Probably due to poor statistics.\n')
 
     return sigma_moments
 
@@ -117,6 +125,11 @@ def green_high_frequency_moments(density_matrix,
                 # G_1/iwn**2 term
                 op = -_anticomm(_comm(h_imp, c(bl,orb1)), c_dag(bl,orb2))
                 green_moments[bl][2,orb1,orb2] = trace_rho_op(density_matrix, op, ad_imp)
+        # enforce hermiticity
+        moments_non_herm = green_moments[bl][2, :, :].copy()
+        green_moments[bl][2, :, :] = 0.5*(green_moments[bl][2, :, :] + green_moments[bl][2, :, :].T.conj())
+        if np.linalg.norm(green_moments[bl][2, :, :] - moments_non_herm) > 1e-3:
+            mpi.report('\nWARNING: Hermiticity of Gf moments is enforced, but violation was larger than 1e-3. Probably due to poor statistics.\n')
 
     return green_moments
 

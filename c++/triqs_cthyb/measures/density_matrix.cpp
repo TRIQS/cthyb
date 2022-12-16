@@ -67,5 +67,12 @@ namespace triqs_cthyb {
     if (std::abs(tr - 1) > 1.e-13)
       std::cerr << "Warning :: Trace of the density matrix is " << std::setprecision(13) << tr << std::setprecision(6) << " instead of 1"
                 << std::endl;
+
+    // enforce the hermiticity of the density matrix
+    for (auto &b : block_dm){
+        auto b_sym = make_regular(b);
+        b_sym = 0.5*(b + nda::conj(nda::transpose(b)));
+        b = b_sym;
+    }
   }
 }

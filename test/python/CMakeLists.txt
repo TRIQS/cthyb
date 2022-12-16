@@ -5,7 +5,7 @@ foreach(file ${all_h5_ref_files})
 endforeach()
 
 # List of all tests
-set(all_tests setup_Delta_tau_and_h_loc single_site_bethe atomic_observables kanamori_py slater measure_static histograms move_global h5_read_write h5_read_write_more O_tau_ins high_freq_tail)
+set(all_tests setup_Delta_tau_and_h_loc single_site_bethe atomic_observables kanamori_py slater measure_static histograms move_global h5_read_write h5_read_write_more O_tau_ins high_freq_tail hermitian_density_matrix)
 if(Local_hamiltonian_is_complex)
   list(APPEND all_tests atomic_gf_complex atomdiag_ed complex_bug81)
   if(Hybridisation_is_complex)

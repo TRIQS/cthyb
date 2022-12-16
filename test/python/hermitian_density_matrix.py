@@ -7,9 +7,7 @@ from triqs_cthyb import *
 from triqs.gf import *
 import numpy as np
 
-def is_hermitian(matrix):
-    N, M = matrix.shape
-    return any([matrix[i,j] == matrix[j,i].conjugate() for i in range(N) for j in range(M)])
+is_hermitian = lambda matrix : (matrix == matrix.conj().T).all()
 
 # Input parameters
 beta = 10.0
@@ -44,7 +42,7 @@ S = Solver(beta=beta, gf_struct=[["dn",2], ["up",2]], n_tau=n_tau, n_iw=n_iw)
 # Set hybridization function
 delta_w = GfImFreq(beta=beta, target_shape=(2,2))
 delta_w << (V**2)*(inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon))
-for bn, g in S.G0_iw: g << inverse(iOmega_n - np.matrix([[-mu,t],[t,-mu]]) - delta_w)
+for bn, g in S.G0_iw: g << inverse(iOmega_n - np.array([[-mu,t],[t,-mu]]) - delta_w)
 
 # Solve!
 S.solve(h_int=H, **p)

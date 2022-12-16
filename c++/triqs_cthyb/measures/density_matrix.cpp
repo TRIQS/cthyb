@@ -56,10 +56,12 @@ namespace triqs_cthyb {
 
     z                          = mpi::all_reduce(z, c);
     block_dm                   = mpi::all_reduce(block_dm, c);
-    // normalize by the weight and enforce the hermiticity of the density matrix
     for (auto &b : block_dm){
-        auto b_sym = make_regular(0.5*(b + dagger(b)))/real(z);
-        b = b_sym;
+        // Normalize
+        b /= real(z);
+        
+        // Enforce hermiticity
+        b = make_regular(0.5*(b + dagger(b)));
     }
 
     if (c.rank() != 0) return;

@@ -56,7 +56,13 @@ namespace triqs_cthyb {
 
     z                          = mpi::all_reduce(z, c);
     block_dm                   = mpi::all_reduce(block_dm, c);
-    for (auto &b : block_dm) b = b / real(z);
+    for (auto &b : block_dm){
+        // Normalize
+        b /= real(z);
+        
+        // Enforce hermiticity
+        b = make_regular(0.5*(b + dagger(b)));
+    }
 
     if (c.rank() != 0) return;
 
@@ -67,5 +73,6 @@ namespace triqs_cthyb {
     if (std::abs(tr - 1) > 1.e-13)
       std::cerr << "Warning :: Trace of the density matrix is " << std::setprecision(13) << tr << std::setprecision(6) << " instead of 1"
                 << std::endl;
+
   }
 }

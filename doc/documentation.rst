@@ -37,6 +37,7 @@ Tutorials
    guide/aim
    guide/slater_five_band
    guide/cthyb_convergence_tests
+   guide/high_freq_moments
 
 Reference manual
 ----------------

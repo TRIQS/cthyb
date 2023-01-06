@@ -76,7 +76,7 @@ if False:
 elif False:
     from triqs.gf.gf_fnt import fit_tail_on_window, replace_by_tail
 
-    known_moments = np.zeros((0, 2, 2), dtype=np.complex) # no known moments
+    known_moments = np.zeros((0, 2, 2), dtype=complex) # no known moments
     print('known_moments.shape =', known_moments.shape)
     
     tail, err = fit_tail_on_window(

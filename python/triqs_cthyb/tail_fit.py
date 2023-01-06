@@ -72,7 +72,7 @@ def tail_fit(
         fit_known_moments = {}
         for name, sig in Sigma_iw:
             shape = [0] + list(sig.target_shape)
-            fit_known_moments[name] = np.zeros(shape, dtype=np.complex) # no known moments
+            fit_known_moments[name] = np.zeros(shape, dtype=complex) # no known moments
 
     # Now fit the tails of Sigma_iw and replace the high frequency part with the tail expansion
     for name, sig in Sigma_iw:

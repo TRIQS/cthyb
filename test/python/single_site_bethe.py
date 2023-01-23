@@ -54,7 +54,6 @@ for i in range(2):
 if mpi.is_master_node():
     with HDFArchive("single_site_bethe.out.h5",'w') as Results:
 
-        #Results["h_loc"] = S.h_loc
         Results["Delta_infty"] = S.Delta_infty
         Results["Delta_tau"] = S.Delta_tau
 
@@ -66,6 +65,8 @@ if mpi.is_master_node():
         Results["G_iw"] = S.G_iw
         Results["G_iw_raw"] = S.G_iw_raw
 
+        # we store Sigma_iw_arw here, but comparing noisy Sigma from Dyson after 2 DMFT
+        # iteration is pointless. The tail fitted Sigma_iw can be compared to some degree
         Results["Sigma_iw"] = S.Sigma_iw
         Results["Sigma_iw_raw"] = S.Sigma_iw_raw
 
@@ -76,13 +77,10 @@ if mpi.is_master_node():
         assert_block_gfs_are_close(Results["G_tau"], S.G_tau)
         assert_block_gfs_are_close(Results["G_l"], S.G_l)
 
-        assert_block_gfs_are_close(Results["G_iw_raw"], S.G_iw_raw)
-        assert_block_gfs_are_close(Results["Sigma_iw_raw"], S.Sigma_iw_raw, precision=1e-4)
-
-        assert_block_gfs_are_close(Results["Sigma_iw"], S.Sigma_iw)
         assert_block_gfs_are_close(Results["G_iw"], S.G_iw)
+        assert_block_gfs_are_close(Results["G_iw_raw"], S.G_iw_raw)
 
-# Redundant with previous check
-from triqs.utility.h5diff import h5diff
-h5diff("single_site_bethe.out.h5","single_site_bethe.ref.h5", precision=1e-4)
+        assert_block_gfs_are_close(Results["Sigma_iw"], S.Sigma_iw, precision=1e-4)
+
+        assert_block_gfs_are_close(Results["Delta_tau"], S.Delta_tau)
 

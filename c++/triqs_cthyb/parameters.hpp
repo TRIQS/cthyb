@@ -64,7 +64,7 @@ namespace triqs_cthyb {
     many_body_op_t h_int;
 
     /// Number of QMC cycles
-    int n_cycles;
+    long n_cycles;
 
     /// Partition method
     /// type: str
@@ -85,15 +85,15 @@ namespace triqs_cthyb {
 
     /// Length of a single QMC cycle
     /// default: 50
-    int length_cycle = 50;
+    long length_cycle = 50;
 
     /// Number of cycles for thermalization
     /// default: 5000
-    int n_warmup_cycles = 5000;
+    long n_warmup_cycles = 5000;
 
     /// Seed for random number generator
     /// default: 34788 + 928374 * MPI.rank
-    int random_seed = 34788 + 928374 * mpi::communicator().rank();
+    long random_seed = 34788 + 928374 * mpi::communicator().rank();
 
     /// Name of random number generator
     /// type: str
@@ -101,7 +101,7 @@ namespace triqs_cthyb {
 
     /// Maximum runtime in seconds, use -1 to set infinite
     /// default: -1 = infinite
-    int max_time = -1;
+    long max_time = -1;
 
     /// Verbosity level
     /// default: 3 on MPI rank 0, 0 otherwise.
@@ -227,7 +227,7 @@ namespace triqs_cthyb {
 
     solve_parameters_t() {}
 
-    solve_parameters_t(many_body_op_t h_int, int n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
+    solve_parameters_t(many_body_op_t h_int, long n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
 
     /// Write solve_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, solve_parameters_t const &sp);

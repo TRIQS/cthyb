@@ -315,7 +315,7 @@ c.add_member(c_name = "h_int",
      type: Operator""")
 
 c.add_member(c_name = "n_cycles",
-             c_type = "int",
+             c_type = "long",
              initializer = """  """,
              doc = r"""Number of QMC cycles""")
 
@@ -345,19 +345,19 @@ c.add_member(c_name = "loc_n_max",
      default: INT_MAX""")
 
 c.add_member(c_name = "length_cycle",
-             c_type = "int",
+             c_type = "long",
              initializer = """ 50 """,
              doc = r"""Length of a single QMC cycle
      default: 50""")
 
 c.add_member(c_name = "n_warmup_cycles",
-             c_type = "int",
+             c_type = "long",
              initializer = """ 5000 """,
              doc = r"""Number of cycles for thermalization
      default: 5000""")
 
 c.add_member(c_name = "random_seed",
-             c_type = "int",
+             c_type = "long",
              initializer = """ 34788+928374*mpi::communicator().rank() """,
              doc = r"""Seed for random number generator
      default: 34788 + 928374 * MPI.rank""")
@@ -369,7 +369,7 @@ c.add_member(c_name = "random_name",
      type: str""")
 
 c.add_member(c_name = "max_time",
-             c_type = "int",
+             c_type = "long",
              initializer = """ -1 """,
              doc = r"""Maximum runtime in seconds, use -1 to set infinite
      default: -1 = infinite""")

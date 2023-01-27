@@ -2,6 +2,28 @@
 
 # Changelog
 
+## Version 3.1.1
+
+CTHYB version 3.1.1 is a patch release contains a number of bug fixes.
+In particular, we resolve incompatibility with recent numpy versions.
+
+We thank all contributors: Alexander Hampel, Nils Wentzell, weiyiguo9
+
+Find below an itemized list of changes in this release.
+
+### General
+* fix: data type of certain parameters int -> long
+* fix: failing Py_single_site_bethe test
+* Update 3.1 easybuild script with sha256 of release tarball
+* Bump version numbers from 3.1.0 to 3.1.1
+
+### Doc
+* Fix some import statements in guides
+
+### Numpy
+* np.complex is deprecated -> complex instead
+
+
 ## Version 3.1.0
 
 CTHYB version 3.1.0 is a compatibility release

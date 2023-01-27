@@ -19,9 +19,9 @@ Hamiltonian of the problem has the form
             \frac{1}{2}\sum_{\alpha\beta\gamma\delta} U_{\alpha\beta\gamma\delta}
             d^\dagger_\alpha d^\dagger_\beta d_\delta d_\gamma.
 
-.. sidebar:: cthyb 3.1.0
+.. sidebar:: cthyb 3.1.1
 
-   This is the homepage cthyb Version v3.1.0.
+   This is the homepage cthyb Version v3.1.1.
    For changes see the :ref:`changelog page <changelog>`. 
    
       .. image:: _static/logo_github.png

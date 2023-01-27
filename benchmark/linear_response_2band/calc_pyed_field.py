@@ -38,7 +38,7 @@ if __name__ == '__main__':
         m, p = None, None
     m, p = mpi.bcast(m), mpi.bcast(p)
 
-    p.chi_field = np.zeros((4, 4, 4, 4), dtype=np.complex)
+    p.chi_field = np.zeros((4, 4, 4, 4), dtype=complex)
     p.g_tau_field = {}
 
     g_tau = GfImTime(name=r'$g$', beta=m.beta,
@@ -77,7 +77,7 @@ if __name__ == '__main__':
             o3, o4 = m.op_imp[i3], m.op_imp[i4]
             O2 = dagger(o3) * o4
 
-            O2_vec = np.zeros(2, dtype=np.complex)
+            O2_vec = np.zeros(2, dtype=complex)
             O2_vec[0] = ed_m.get_expectation_value(O2)
             O2_vec[1] = ed_p.get_expectation_value(O2)
 

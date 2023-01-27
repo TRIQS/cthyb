@@ -185,7 +185,7 @@ class Solver(SolverCore):
                 # Enforce 1/w behavior of G_iw in the tail fit window
                 # and recompute Sigma_iw
                 for name, g in self.G_iw:
-                    tail = np.zeros([2] + list(g.target_shape), dtype=np.complex)
+                    tail = np.zeros([2] + list(g.target_shape), dtype=complex)
                     tail[1] = np.eye(g.target_shape[0])
                     g.replace_by_tail_in_fit_window(tail)
 

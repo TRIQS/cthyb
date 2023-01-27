@@ -36,11 +36,11 @@ if __name__ == '__main__':
     p = ParameterCollection()
     ed = TriqsExactDiagonalization(m.H, m.op_full, m.beta)
 
-    p.O1_exp = np.zeros((4, 4), dtype=np.complex)
-    p.O2_exp = np.zeros((4, 4), dtype=np.complex)
-    p.chi_dissconn = np.zeros((4, 4, 4, 4), dtype=np.complex)
+    p.O1_exp = np.zeros((4, 4), dtype=complex)
+    p.O2_exp = np.zeros((4, 4), dtype=complex)
+    p.chi_dissconn = np.zeros((4, 4, 4, 4), dtype=complex)
     
-    p.chi_static = np.zeros((4, 4, 4, 4), dtype=np.complex)
+    p.chi_static = np.zeros((4, 4, 4, 4), dtype=complex)
     
     p.chi_tau = GfImTime(name=r'$g$', beta=m.beta,
                          statistic='Boson', n_points=50,

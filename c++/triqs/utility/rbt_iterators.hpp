@@ -61,7 +61,13 @@ namespace triqs {
     namespace detail {
 
       // forward iterator
-      template <typename RBT, typename Node> class rbt_iterator : public std::iterator<std::forward_iterator_tag, Node> {
+      template <typename RBT, typename Node> class rbt_iterator {
+
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = Node;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = Node *;
+        using reference         = Node &;
 
         RBT *tree    = nullptr;
         Node n       = nullptr;

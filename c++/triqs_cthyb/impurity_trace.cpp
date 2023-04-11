@@ -165,7 +165,7 @@ namespace triqs_cthyb {
     bool updating = (!n->modified && !n->cache.matrix_norm_valid[b]);
 
     double dtau_l = 0, dtau_r = 0;
-    auto _ = arrays::range();
+    auto _ = arrays::range::all;
 
     auto r = compute_matrix(n->right, b);
     int b1 = r.first; // exit block of right subtree

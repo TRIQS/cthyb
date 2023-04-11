@@ -34,8 +34,8 @@ namespace triqs_cthyb {
     order     = G2_measures.params.measure_G2_block_order;
     int n_tau = G2_measures.params.measure_G2_n_tau;
 
-    gf_mesh<imtime> fermi_tau_mesh{beta, Fermion, n_tau};
-    gf_mesh<prod<imtime, imtime, imtime>> G2_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
+    mesh::imtime fermi_tau_mesh{beta, Fermion, n_tau};
+    mesh::prod<imtime, imtime, imtime> G2_tau_mesh{fermi_tau_mesh, fermi_tau_mesh, fermi_tau_mesh};
 
     G2_tau_opt = make_block2_gf(G2_tau_mesh, G2_measures.gf_struct, order);
 

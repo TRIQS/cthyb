@@ -91,7 +91,7 @@ namespace triqs {
 
     /// Function template for block2_gf initialization
     template <typename Var_t>
-    block2_gf<Var_t, tensor_valued<4>> make_block2_gf(gf_mesh<Var_t> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct,
+    block2_gf<Var_t, tensor_valued<4>> make_block2_gf(Var_t const &m, triqs::hilbert_space::gf_struct_t const &gf_struct,
                                                       triqs_cthyb::block_order order = triqs_cthyb::block_order::AABB) {
 
       std::vector<std::vector<gf<Var_t, tensor_valued<4>>>> gf_vecvec;

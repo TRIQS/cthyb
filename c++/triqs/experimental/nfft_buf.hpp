@@ -48,7 +48,7 @@ namespace triqs {
       template <std::size_t... Is> struct imfreq_product<std::index_sequence<Is...>> { using type = prod<decltype(Is, imfreq{})...>; };
 
       public:
-      using freq_mesh_t = gf_mesh<typename imfreq_product<>::type>;
+      using freq_mesh_t = typename imfreq_product<>::type;
 
       nfft_buf_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, Rank> fiw_arr, int buf_size, bool do_checks = false)
          : fiw_mesh(fiw_mesh), fiw_arr(fiw_arr), buf_size(buf_size), do_checks(do_checks), plan_ptr(std::make_unique<nfft_plan>()), buf_counter(0) {
@@ -56,7 +56,7 @@ namespace triqs {
         // Initialize NFFT plans
         all_fermion   = true;
         common_factor = 1;
-        triqs::tuple::for_each_enumerate(fiw_mesh.components(), [this](int r, gf_mesh<imfreq> const &m) {
+        triqs::tuple::for_each_enumerate(fiw_mesh.components(), [this](int r, mesh::imfreq const &m) {
           if (m.domain().statistic == Fermion) {
             index_shifts[r] = 0;
             common_factor *= (m.size() / 2) % 2 ? -1 : 1;
@@ -129,7 +129,7 @@ namespace triqs {
         // Write the set of shifted and normalized tau values (i. e. x values) to
         // the NFFT buffer and sum \tau/\beta for fermions
         double sum_tau_beta = 0;
-        triqs::tuple::for_each_enumerate(fiw_mesh.components(), [&tau_arr, &sum_tau_beta, this](int r, gf_mesh<imfreq> const &m) {
+        triqs::tuple::for_each_enumerate(fiw_mesh.components(), [&tau_arr, &sum_tau_beta, this](int r, mesh::imfreq const &m) {
           double tau  = tau_arr[r];
           double beta = m.domain().beta;
 

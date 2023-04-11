@@ -59,7 +59,7 @@ matrix_t impurity_trace::check_one_block_matrix_linear(node top, int b) {
 
   node p     = tree.max(top);
   matrix_t M = nda::eye<h_scalar_t>(get_block_dim(b));
-  auto _     = arrays::range();
+  auto _     = arrays::range::all;
 
   foreach_reverse(tree, top, [&](node n) {
     // multiply by the exponential unless it is the first call, i.e. first operator n==p

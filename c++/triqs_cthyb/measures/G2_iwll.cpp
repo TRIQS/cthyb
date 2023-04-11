@@ -36,9 +36,9 @@ namespace triqs_cthyb {
 
     // Allocate the two-particle Green's function
     {
-      gf_mesh<imfreq> mesh_w{beta, Boson, n_bosonic};
-      gf_mesh<legendre> mesh_l{beta, Fermion, n_l};
-      gf_mesh<prod<imfreq, legendre, legendre>> mesh_wll{mesh_w, mesh_l, mesh_l};
+      mesh::imfreq mesh_w{beta, Boson, n_bosonic};
+      mesh::legendre mesh_l{beta, Fermion, n_l};
+      mesh::prod<imfreq, legendre, legendre> mesh_wll{mesh_w, mesh_l, mesh_l};
 
       G2_iwll_opt = make_block2_gf(mesh_wll, G2_measures.gf_struct, order);
       G2_iwll.rebind(*G2_iwll_opt);
@@ -49,7 +49,7 @@ namespace triqs_cthyb {
     {
       nfft_buf.resize(std::array<long, 2>{G2_iwll.size1(), G2_iwll.size2()});
 
-      gf_mesh<imfreq> mesh_w = std::get<0>(G2_iwll(0, 0).mesh().components());
+      mesh::imfreq mesh_w = std::get<0>(G2_iwll(0, 0).mesh().components());
 
       for (auto const &m : G2_measures()) {
         auto s = m.target_shape;

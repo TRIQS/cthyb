@@ -201,7 +201,7 @@ namespace triqs_cthyb {
     for (auto bl : range(gf_struct.size())) {
       long bl_size = gf_struct[bl].second;
       // Force all diagonal elements to be real
-      range _;
+      auto _ = range::all;
       for (auto [i, j] : product_range(bl_size, bl_size)) {
         auto Delta_tau_bl_ij = _Delta_tau[bl].data()(_, i, j);
         double max_imag      = max_element(abs(imag(Delta_tau_bl_ij)));

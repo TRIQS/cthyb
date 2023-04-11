@@ -11,8 +11,7 @@
 #include <triqs/atom_diag/gf.hpp>
 #include <h5/h5.hpp>
 
-#include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
-using gf_struct_t = triqs::hilbert_space::gf_struct_t;
+#include <triqs/gfs/block/gf_struct.hpp>
 
 using namespace nda;
 using namespace triqs::hilbert_space;

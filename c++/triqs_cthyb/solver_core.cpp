@@ -130,7 +130,7 @@ namespace triqs_cthyb {
       // Initialize Delta with iw - inv(G0[iw])
       auto Delta_iw = inverse(_G0_iw.value());
       for (auto bl : range(gf_struct.size()))
-        for (auto const &iw : Delta_iw[bl].mesh()) Delta_iw[bl][iw] = iw - Delta_iw[bl][iw];
+        for (auto iw : Delta_iw[bl].mesh()) Delta_iw[bl][iw] = iw - Delta_iw[bl][iw];
 
       // Compute the constant part of Delta
       Delta_infty_vec = map(
@@ -151,7 +151,7 @@ namespace triqs_cthyb {
 
       // Subtract constant part from Delta and perform Fourier transform
       for (auto bl : range(gf_struct.size())) {
-        for (auto const &iw : Delta_iw[bl].mesh()) Delta_iw[bl][iw] = Delta_iw[bl][iw] - Delta_infty_vec.value()[bl];
+        for (auto iw : Delta_iw[bl].mesh()) Delta_iw[bl][iw] = Delta_iw[bl][iw] - Delta_infty_vec.value()[bl];
         auto [Delta_tail_b, tail_err] = fit_hermitian_tail(Delta_iw[bl]);
         _Delta_tau[bl]()              = fourier(Delta_iw[bl], Delta_tail_b);
       }

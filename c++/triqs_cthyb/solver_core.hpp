@@ -207,14 +207,14 @@ namespace triqs_cthyb {
       h5_read(grp, "G0_iw", s._G0_iw);
       h5_read(grp, "Delta_tau", s._Delta_tau);
 
-      h5_try_read(grp, "h_diag", s.h_diag);
-      h5_try_read(grp, "h_loc", s._h_loc);
-      h5_try_read(grp, "density_matrix", s._density_matrix);
-      h5_try_read(grp, "average_sign", s._average_sign);
-      h5_try_read(grp, "average_order", s._average_order);
-      h5_try_read(grp, "auto_corr_time", s._auto_corr_time);
-      h5_try_read(grp, "solve_status", s._solve_status);
-      h5_try_read(grp, "Delta_infty_vec", s.Delta_infty_vec);
+      h5::try_read(grp, "h_diag", s.h_diag);
+      h5::try_read(grp, "h_loc", s._h_loc);
+      h5::try_read(grp, "density_matrix", s._density_matrix);
+      h5::try_read(grp, "average_sign", s._average_sign);
+      h5::try_read(grp, "average_order", s._average_order);
+      h5::try_read(grp, "auto_corr_time", s._auto_corr_time);
+      h5::try_read(grp, "solve_status", s._solve_status);
+      h5::try_read(grp, "Delta_infty_vec", s.Delta_infty_vec);
 
       return s;
     }

@@ -75,7 +75,7 @@ namespace triqs_cthyb {
     h5_read(grp, "n_iw", cp.n_iw);
     h5_read(grp, "n_tau", cp.n_tau);
     h5_read(grp, "n_l", cp.n_l);
-    h5_try_read(grp, "delta_interface", cp.delta_interface);
+    h5::try_read(grp, "delta_interface", cp.delta_interface);
     triqs::gfs::h5_read_gf_struct(grp, "gf_struct", cp.gf_struct);
   }
 
@@ -203,14 +203,14 @@ namespace triqs_cthyb {
     h5_read(grp, "move_global_prob", sp.move_global_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);
-    h5_try_read(grp, "off_diag_threshold", sp.off_diag_threshold);
+    h5::try_read(grp, "off_diag_threshold", sp.off_diag_threshold);
 
     h5_read(grp, "det_init_size", sp.det_init_size);
     h5_read(grp, "det_n_operations_before_check", sp.det_n_operations_before_check);
     h5_read(grp, "det_precision_warning", sp.det_precision_warning);
     h5_read(grp, "det_precision_error", sp.det_precision_error);
     h5_read(grp, "det_singular_threshold", sp.det_singular_threshold);
-    h5_try_read(grp, "h_loc0", sp.h_loc0);
+    h5::try_read(grp, "h_loc0", sp.h_loc0);
   }
 
 } // namespace triqs_cthyb

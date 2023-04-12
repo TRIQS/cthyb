@@ -57,7 +57,7 @@ namespace triqs_cthyb {
     average_sign = mpi::all_reduce(average_sign, c);
 
     for (auto &G_tau_block : G_tau) {
-      double beta = G_tau_block.mesh().domain().beta;
+      double beta = G_tau_block.mesh().beta();
       G_tau_block /= -real(average_sign) * beta * G_tau_block.mesh().delta();
 
       // Multiply first and last bins by 2 to account for full bins

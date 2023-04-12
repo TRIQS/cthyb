@@ -58,9 +58,7 @@ namespace triqs_cthyb {
           // insert accumulation
           double t1 = double(x.first);
           double t2 = double(y.first);
-          for (auto const &[w1, w2] : M_ww.mesh()) {
-            M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * std::exp(t2 * w2);
-          }
+          for (auto [w1, w2] : M_ww.mesh()) { M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * std::exp(t2 * w2); }
         })
           ;
       };

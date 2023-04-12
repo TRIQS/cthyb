@@ -58,7 +58,7 @@ namespace triqs_cthyb {
                                                   // compute the sign
       }
 
-      friend void swap(delta_block_adaptor &dba1, delta_block_adaptor &dba2) noexcept { swap(dba1.delta_block, dba2.delta_block); }
+      friend void swap(delta_block_adaptor &dba1, delta_block_adaptor &dba2) noexcept { std::swap(dba1.delta_block, dba2.delta_block); }
     };
 
     std::vector<det_manip::det_manip<delta_block_adaptor>> dets; // The determinants

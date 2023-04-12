@@ -55,7 +55,7 @@ namespace triqs_cthyb {
         auto s = m.target_shape;
         array<int, 6> buf_sizes(n_l, n_l, s[0], s[1], s[2], s[3]);
         buf_sizes() = nfft_buf_size;
-        nfft_buf(m.b1.idx, m.b2.idx) = nfft_array_t<1, 6>{mesh_w, G2_iwll(m.b1.idx, m.b2.idx).data(), buf_sizes};
+        nfft_buf(m.b1.index(), m.b2.idx) = nfft_array_t<1, 6>{mesh_w, G2_iwll(m.b1.idx, m.b2.idx).data(), buf_sizes};
       }
     }
   }
@@ -70,7 +70,7 @@ namespace triqs_cthyb {
 
     for (auto const &m : G2_measures()) {
 
-      if (data.dets[m.b1.idx].size() == 0 || data.dets[m.b2.idx].size() == 0) continue;
+      if (data.dets[m.b1.index()].size() == 0 || data.dets[m.b2.idx].size() == 0) continue;
 
       auto accumulate_impl = [&](op_t const &i, op_t const &j, op_t const &k, op_t const &l, mc_weight_t val) {
 
@@ -82,17 +82,17 @@ namespace triqs_cthyb {
           for (int l2 : range(n_l)) {
             double p_l2 = p_l2_gen.next();
             std::array<int, 6> vec{l1, l2, i.second, j.second, k.second, l.second};
-            nfft_buf(m.b1.idx, m.b2.idx).push_back({dtau}, vec, val * p_l1 * p_l2);
+            nfft_buf(m.b1.index(), m.b2.idx).push_back({dtau}, vec, val * p_l1 * p_l2);
           }
         }
       };
 
-      bool diag_block = (m.b1.idx == m.b2.idx);
+      bool diag_block = (m.b1.index() == m.b2.idx);
 
       // Perform the accumulation looping over both determinants
       if (order == block_order::AABB || diag_block) {
-        foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &j, mc_weight_t M_ij) {
-          foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &l, mc_weight_t M_kl) {
+        foreach (data.dets[m.b1.index()], [&](op_t const &i, op_t const &j, mc_weight_t M_ij) {
+          foreach (data.dets[m.b2.index()], [&](op_t const &k, op_t const &l, mc_weight_t M_kl) {
             accumulate_impl(i, j, k, l, s * M_ij * M_kl); // Accumulate in legendre-nfft buffer
           })
             ;
@@ -100,8 +100,8 @@ namespace triqs_cthyb {
           ;
       }
       if (order == block_order::ABBA || diag_block) {
-        foreach (data.dets[m.b1.idx], [&](op_t const &i, op_t const &l, mc_weight_t M_il) {
-          foreach (data.dets[m.b2.idx], [&](op_t const &k, op_t const &j, mc_weight_t M_kj) {
+        foreach (data.dets[m.b1.index()], [&](op_t const &i, op_t const &l, mc_weight_t M_il) {
+          foreach (data.dets[m.b2.index()], [&](op_t const &k, op_t const &j, mc_weight_t M_kj) {
             accumulate_impl(i, j, k, l, -s * M_il * M_kj); // Accumulate in legendre-nfft buffer
           })
             ;
@@ -129,7 +129,7 @@ namespace triqs_cthyb {
 
   template <G2_channel Channel> void measure_G2_iwll<Channel>::collect_results(mpi::communicator const &c) {
 
-    for (auto const &m : G2_measures()) { nfft_buf(m.b1.idx, m.b2.idx).flush(); }
+    for (auto const &m : G2_measures()) { nfft_buf(m.b1.index(), m.b2.idx).flush(); }
 
     G2_iwll = mpi::all_reduce(G2_iwll, c);
 

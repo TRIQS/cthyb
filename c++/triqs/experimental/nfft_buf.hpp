@@ -57,7 +57,7 @@ namespace triqs {
         all_fermion   = true;
         common_factor = 1;
         triqs::tuple::for_each_enumerate(fiw_mesh.components(), [this](int r, mesh::imfreq const &m) {
-          if (m.domain().statistic == Fermion) {
+          if (m.statistic == Fermion) {
             index_shifts[r] = 0;
             common_factor *= (m.size() / 2) % 2 ? -1 : 1;
           } else {
@@ -131,12 +131,12 @@ namespace triqs {
         double sum_tau_beta = 0;
         triqs::tuple::for_each_enumerate(fiw_mesh.components(), [&tau_arr, &sum_tau_beta, this](int r, mesh::imfreq const &m) {
           double tau  = tau_arr[r];
-          double beta = m.domain().beta;
+          double beta = m.beta;
 
           // Note: Nfft multi-arrays are stored in flattened arrays (c-order)
           x_arr()[buf_counter * Rank + r] = tau_arr[r] / beta - 0.5; // \in [-0.5, 0.5)
 
-          if (m.domain().statistic == Fermion) sum_tau_beta += tau / beta;
+          if (m.statistic == Fermion) sum_tau_beta += tau / beta;
         });
 
         // Write f(x) to nfft_plan-> The prefactor accounts for the Pi/beta offset

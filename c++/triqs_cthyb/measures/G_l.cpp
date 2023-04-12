@@ -27,7 +27,7 @@ namespace triqs_cthyb {
   using namespace triqs::mesh;
 
   measure_G_l::measure_G_l(std::optional<G_l_t> &G_l_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct) : data(data), average_sign(0) {
-    G_l_opt = block_gf<legendre>{{data.config.beta(), Fermion, static_cast<size_t>(n_l)}, gf_struct};
+    G_l_opt = block_gf<legendre>{{data.config.beta(), Fermion, n_l}, gf_struct};
     G_l.rebind(*G_l_opt);
     G_l() = 0.0;
   }
@@ -67,7 +67,7 @@ namespace triqs_cthyb {
     for (auto &G_l_block : G_l) {
       for (auto l : G_l_block.mesh()) {
         /// Normalize polynomial coefficients with basis overlap
-        G_l_block[l] *= -(sqrt(2.0 * l + 1.0) / (real(average_sign) * beta));
+        G_l_block[l] *= -(sqrt(2.0 * l.idx + 1.0) / (real(average_sign) * beta));
       }
       matrix<double> id(G_l_block.target_shape());
       id() = 1.0; // this creates an unit matrix

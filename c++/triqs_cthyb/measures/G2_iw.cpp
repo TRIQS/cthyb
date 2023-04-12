@@ -58,9 +58,7 @@ namespace triqs_cthyb {
           // insert accumulation
           double t1 = double(x.first);
           double t2 = double(y.first);
-          for (auto const &[w1, w2] : M_ww.mesh()) {
-            M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * std::exp(t2 * w2);
-          }
+          for (auto [w1, w2] : M_ww.mesh()) { M_ww[w1, w2](x.second, y.second) += exp((beta - t1) * w1) * M_xy * std::exp(t2 * w2); }
         })
           ;
       };
@@ -104,11 +102,11 @@ namespace triqs_cthyb {
                  auto dexp1 = std::exp(dWt1);
                  auto dexp2 = std::exp(dWt2);
 
-                 auto exp1 = std::exp(dWt1 * (mesh1.first_index() + 0.5));
+                 auto exp1 = std::exp(dWt1 * (mesh1.first_idx() + 0.5));
 
                  for (auto const i1 : range(M_arr.shape()[2])) {
 
-                   auto exp2      = std::exp(dWt2 * (mesh2.first_index() + 0.5));
+                   auto exp2      = std::exp(dWt2 * (mesh2.first_idx() + 0.5));
                    auto exp1_M_xy = exp1 * M_xy;
 
                    for (auto const i2 : range(M_arr.shape()[3])) {

@@ -23,6 +23,7 @@ module.add_preamble("""
 #include <cpp2py/converters/variant.hpp>
 #include <cpp2py/converters/vector.hpp>
 #include <triqs/cpp2py_converters/gf.hpp>
+#include <triqs/cpp2py_converters/mesh.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 
 using namespace triqs_cthyb;

@@ -94,10 +94,10 @@ namespace triqs_cthyb {
     void solve(solve_parameters_t const &p);
 
     /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
-    many_body_op_t const &h_loc() const { return _h_loc; }
+    many_body_op_t const & h_loc() const { return _h_loc; }
 
     /// The noninteracting part of the local Hamiltonian.
-    many_body_op_t const &h_loc0() const {return _h_loc0; }
+    many_body_op_t h_loc0() const {return _h_loc0; }
 
     /// Set of parameters used in the construction of the ``solver_core`` class.
     constr_parameters_t last_constr_parameters() const { return constr_parameters; }
@@ -136,10 +136,10 @@ namespace triqs_cthyb {
     std::vector<matrix_t> const &density_matrix() const { return _density_matrix; }
 
     /// Diagonalization of :math:`H_{loc}`.
-    atom_diag const &h_loc_diagonalization() const { return h_diag; }
+    atom_diag h_loc_diagonalization() const { return h_diag; }
 
     /// Histograms related to the performance analysis.
-    histo_map_t const &get_performance_analysis() const { return _performance_analysis; }
+    histo_map_t performance_analysis() const { return _performance_analysis; }
 
     /// Monte Carlo average sign.
     mc_weight_t average_sign() const { return _average_sign; }

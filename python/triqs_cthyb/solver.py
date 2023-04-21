@@ -22,7 +22,7 @@
 r"""
 the triqs_cthyb solver class
 """
-from .solver_core import SolverCore
+from .solver_core import SolverCore, ConstrParametersT, SolveParametersT
 from triqs.gf import *
 import triqs.utility.mpi as mpi
 import numpy as np
@@ -60,8 +60,8 @@ class Solver(SolverCore):
         gf_struct = fix_gf_struct_type(gf_struct)
 
         # Initialise the core solver
-        SolverCore.__init__(self, beta=beta, gf_struct=gf_struct,
-                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, delta_interface = delta_interface)
+        SolverCore.__init__(self, ConstrParametersT(beta=beta, gf_struct=gf_struct,
+                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, delta_interface = delta_interface))
 
         mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
         self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
@@ -149,13 +149,13 @@ class Solver(SolverCore):
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
         # Call the core solver's solve routine
-        solve_status = SolverCore.solve(self, **params_kw)
+        solve_status = SolverCore.solve(self, SolveParametersT(**params_kw))
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
-        if perform_post_proc and (self.last_solve_parameters["measure_G_tau"] == True):
+        if perform_post_proc and (self.last_solve_parameters.measure_G_tau == True):
 
-            if self.last_solve_parameters["measure_density_matrix"]:
+            if self.last_solve_parameters.measure_density_matrix:
                 # we have the density matrix, so we will compute the high frequency
                 # moments and orbital occupations
 
@@ -164,7 +164,7 @@ class Solver(SolverCore):
                                                                self.h_loc_diagonalization
                                                                )
 
-                h_int = self.last_solve_parameters['h_int']
+                h_int = self.last_solve_parameters.h_int
                 self.Sigma_moments = sigma_high_frequency_moments(self.density_matrix,
                                                  self.h_loc_diagonalization,
                                                  self.gf_struct,

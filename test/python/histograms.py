@@ -38,7 +38,7 @@ p["performance_analysis"] = True
 H = U*n("up",0)*n("dn",0) -mu*(n("up",0) + n("dn",0))
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
+S = SolverCore(ConstrParametersT(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw))
 
 # Set hybridization function
 delta_w = GfImFreq(indices = [0], beta=beta)
@@ -46,7 +46,7 @@ delta_w << (V**2)*(inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon))
 for sn in spin_names: S.G0_iw[sn] << inverse(iOmega_n - delta_w)
 
 # Solve the problem
-S.solve(h_int=H, **p)
+S.solve(SolveParametersT(h_int=H, **p))
 
 from triqs.utility.comparison_tests import *
 

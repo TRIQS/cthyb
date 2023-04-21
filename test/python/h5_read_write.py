@@ -3,7 +3,7 @@ import triqs.utility.mpi as mpi
 from triqs.gf import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
 from triqs.operators import n, c, c_dag
 from h5 import HDFArchive
-from triqs_cthyb import SolverCore
+from triqs_cthyb import SolverCore, ConstrParametersT, SolveParametersT
 from triqs.stat.histograms import Histogram
 
 cp = dict(
@@ -12,7 +12,7 @@ cp = dict(
     n_iw=1025, n_tau=2500, n_l=20
     )
 
-solver = SolverCore(**cp)
+solver = SolverCore(ConstrParametersT(**cp))
 
 # Set hybridization function
 mu = 0.5
@@ -32,7 +32,7 @@ sp = dict(
     measure_pert_order = True
     )
     
-solver.solve(**sp)
+solver.solve(SolveParametersT(**sp))
 
 filename = 'h5_read_write.h5'
 

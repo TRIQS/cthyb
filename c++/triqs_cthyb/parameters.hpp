@@ -57,6 +57,8 @@ namespace triqs_cthyb {
 
     /// Read constr_parameters_t from hdf5
     friend void h5_read(h5::group h5group, std::string subgroup_name, constr_parameters_t &sp);
+    
+    bool operator ==(constr_parameters_t const &) const = default;
   };
 
   // All the arguments of the solve function
@@ -232,6 +234,8 @@ namespace triqs_cthyb {
 
     solve_parameters_t(many_body_op_t h_int, long n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
 
+    bool operator ==(solve_parameters_t const &) const = default;
+    
     /// Write solve_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, solve_parameters_t const &sp);
 

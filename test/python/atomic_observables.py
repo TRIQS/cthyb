@@ -47,12 +47,12 @@ H += 0.22*Sz
 H += 0.33*Lz
 
 # Construct the solver
-S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=10000)
+S = SolverCore(ConstrParametersT(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=10000))
 
 # Set G0(iw)
 S.G0_iw << inverse(iOmega_n)
 
-S.solve(h_int=H, **p)
+S.solve(SolveParametersT(h_int=H, **p))
 
 obs = {'E':H,'N':N,'S2':S2,'Sz':Sz,'L2':L2,'Lz':Lz} #,'LS':LS}
 res = dict ( (name, [item for v in quantum_number_eigenvalues(op,S.h_loc_diagonalization) for item in v ]) for (name,op) in obs.items())

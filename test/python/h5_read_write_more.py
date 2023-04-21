@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
             val = getattr(solv, attr)
             ref_val = getattr(ref_solv, attr)
-
+            print(val, type(val))
             if not (val == ref_val):
 
                 if type(val) == BlockGf:

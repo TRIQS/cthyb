@@ -122,6 +122,12 @@ namespace triqs_cthyb {
     /// Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)
     bool measure_G_tau = true;
 
+    /// Measure G(iw) directly
+    bool measure_G_iw = false;
+
+    /// Number of Matsubara frequencies in the direct measurement of G(iw)
+    int measure_G_n_iw = 20;
+
     /// Measure G_l (Legendre)? Note, no hermiticity in G_l is ensured
     bool measure_G_l = false;
 
@@ -248,6 +254,6 @@ namespace triqs_cthyb {
   /// A struct combining both constr_params_t and solve_params_t
   struct params_t : constr_parameters_t, solve_parameters_t {
     params_t(constr_parameters_t constr_parameters_, solve_parameters_t solve_parameters_)
-      : constr_parameters_t(constr_parameters_), solve_parameters_t(solve_parameters_) {}
+       : constr_parameters_t(constr_parameters_), solve_parameters_t(solve_parameters_) {}
   };
-}
+} // namespace triqs_cthyb

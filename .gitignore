@@ -1,2 +1,8 @@
 compile_commands.json
 doc/cpp2rst_generated
+.*.sw?
+code.vim
+.cache
+.vscode
+.clangd
+

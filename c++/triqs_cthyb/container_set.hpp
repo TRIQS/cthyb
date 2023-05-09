@@ -29,7 +29,7 @@ namespace triqs_cthyb {
 
   // Containers for measurements
   struct container_set_t {
-    
+
     // -- Single particle Green's functions
 
     /// Single-particle Green's function :math:`G(\tau)` in imaginary time.
@@ -40,6 +40,9 @@ namespace triqs_cthyb {
 
     /// Violation of the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i] after the measurement
     std::optional<G_tau_G_target_t> asymmetry_G_tau;
+
+    /// Single-particle Green's function :math:`G(\tau)` in imaginary time.
+    std::optional<G_iw_t> G_iw_direct;
 
     /// Single-particle Green's function :math:`G_l` in Legendre polynomial representation.
     std::optional<G_l_t> G_l;

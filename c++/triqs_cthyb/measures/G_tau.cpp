@@ -61,12 +61,12 @@ namespace triqs_cthyb {
       G_tau_block /= -real(average_sign) * beta * G_tau_block.mesh().delta();
 
       // Multiply first and last bins by 2 to account for full bins
-      int last = G_tau_block.mesh().size() - 1;
+      long last = G_tau_block.mesh().size() - 1;
       G_tau_block[0] *= 2;
       G_tau_block[last] *= 2;
 
       // Enforce discontinuity in Green function
-      G_tau_block[0] = 0.5 * matrix_t(G_tau_block[0] - 1 - G_tau_block[last]);
+      G_tau_block[0]    = 0.5 * matrix_t(G_tau_block[0] - 1 - G_tau_block[last]);
       G_tau_block[last] = -1 - G_tau_block[0];
     }
 

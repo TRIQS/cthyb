@@ -32,18 +32,19 @@ namespace triqs_cthyb {
   using namespace triqs::mesh;
 
   // Measure imaginary time Green's function (all blocks)
-  class measure_G_tau {
+  class measure_G_iw {
 
     public:
-    measure_G_tau(qmc_data const &data, int n_tau, gf_struct_t const &gf_struct, container_set_t &results);
+    measure_G_iw(qmc_data const &data, int n_iw, gf_struct_t const &gf_struct, container_set_t &results);
     void accumulate(mc_weight_t s);
     void collect_results(mpi::communicator const &c);
 
     private:
     qmc_data const &data; //NOLINT
     mc_weight_t average_sign;
-    G_tau_G_target_t::view_type G_tau;
-    G_tau_G_target_t::view_type asymmetry_G_tau;
+    G_iw_t::view_type G_iw;
   };
+
+  // FIXME : assert concept
 
 } // namespace triqs_cthyb

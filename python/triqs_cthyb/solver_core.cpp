@@ -25,20 +25,9 @@ namespace c2py_module {
 
   auto get_set_as_properties = true;
 
-  // FIXME : error in fun_accept clause...
-  auto fun_accept_only  = "solver_core";
-  auto enum_accept_only = "triqs_cthyb::block_order";
+  auto regex_filter_fun  = "imag";
+  auto regex_filter_cls  = "triqs_cthyb::solver_core|triqs_cthyb::solve_parameters_t|triqs_cthyb::constr_parameters_t";
+  auto regex_filter_enum = "triqs_cthyb::block_order";
 
-  template <> struct wrap_info<triqs_cthyb::solver_core> {
-    using bases_to_merge = std::tuple<triqs_cthyb::container_set_t>;
-  };
-
-  template <> struct wrap_info<triqs_cthyb::constr_parameters_t> {
-    static constexpr auto synthetize_init_from_pydict = true;
-  };
-
-  template <> struct wrap_info<triqs_cthyb::solve_parameters_t> {
-    static constexpr auto synthetize_init_from_pydict = true;
-  };
 
 } // namespace c2py_module

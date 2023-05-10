@@ -16,7 +16,6 @@ template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<t
 // ------------  END ALL GOES INTO TRIQS _-----------------
 
 
-
 namespace c2py_module {
 
   auto documentation = "The TRIQS cthyb solver";
@@ -25,9 +24,12 @@ namespace c2py_module {
 
   auto get_set_as_properties = true;
 
-  auto regex_filter_fun  = "imag";
-  auto regex_filter_cls  = "triqs_cthyb::solver_core|triqs_cthyb::solve_parameters_t|triqs_cthyb::constr_parameters_t";
-  auto regex_filter_enum = "triqs_cthyb::block_order";
+  auto regex_filter =  "triqs_cthyb::(solver_core|solve_parameters_t|constr_parameters_t|block_order)";
+
+  // Alternatively, one can be more specific fun/cls/enum... Same result
+  //auto regex_exclude_fun  = ".*"; 
+  //auto regex_filter_cls  = "triqs_cthyb::(solver_core|solve_parameters_t|constr_parameters_t)";
+  //auto regex_filter_enum = "triqs_cthyb::block_order";
 
 
 } // namespace c2py_module

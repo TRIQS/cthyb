@@ -40,8 +40,10 @@ using namespace triqs::mesh;
 using namespace triqs::hilbert_space;
 namespace operators = triqs::operators;
 
-using std::isfinite;
-inline bool isfinite(dcomplex const &x) { return std::isfinite(real(x)) && std::isfinite(imag(x)); }
+using dcomplex = std::complex<double>;
+
+//using std::isfinite;
+inline bool isfinite(std::complex<double> const &x) { return std::isfinite(real(x)) && std::isfinite(imag(x)); }
 
 inline double real(double x) { return x; }
 inline double imag(double) { return 0; }

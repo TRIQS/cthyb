@@ -109,7 +109,9 @@ TEST(CtHyb, KanamoriOffDiag) {
 
   // Solve parameters
   auto n_cycles     = 5000;
-  auto p            = solve_parameters_t(H, n_cycles);
+  auto p            = solve_parameters_t{};
+  p.h_int = H;
+  p.n_cycles= n_cycles;
   p.max_time        = -1;
   p.random_name     = "";
   p.random_seed     = 123 * rank + 567;

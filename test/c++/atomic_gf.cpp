@@ -39,7 +39,9 @@ TEST(CtHyb, AtomicGf) {
   solver_core solver(beta, gf_struct, 1025, 2051);
 
   // Solve parameters
-  auto p            = solve_parameters_t(H, 0);
+  auto p            = solve_parameters_t{};
+  p.h_int = H;
+  p.n_cycles= 0;
   p.length_cycle    = 1;
   p.n_warmup_cycles = 0;
 

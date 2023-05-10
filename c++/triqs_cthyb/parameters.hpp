@@ -230,10 +230,6 @@ namespace triqs_cthyb {
     /// Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
     double det_singular_threshold = -1;
 
-    solve_parameters_t() {}
-
-    solve_parameters_t(many_body_op_t h_int, long n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
-
     bool operator ==(solve_parameters_t const &) const = default;
     
     /// Write solve_parameters_t to hdf5

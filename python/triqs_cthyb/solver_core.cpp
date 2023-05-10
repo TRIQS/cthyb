@@ -4,23 +4,6 @@
 #include <triqs/operators.hpp>
 #include <triqs/atom_diag.hpp>
 
-// ------------  ALL GOES INTO TRIQS _-----------------
-// FIXME auto include in TRIQS under macro CLAIR_C2PY_MODULE
-// define automatically in compiler pass ?
-//#include <nda_py/cpp2py_converters.hpp>
-//#include <triqs/cpp2py_converters.hpp>
-//#include <triqs/cpp2py_converters/operators_real_complex.hpp>
-
-// FIXME : should be in TRIQS itself ... Same macro
-//template <> static constexpr bool c2py::is_wrapped<triqs::operators::many_body_operator>                          = true;
-
-//template <> static constexpr bool c2py::is_wrapped<triqs::stat::histogram>                                        = true;
-//template <> static constexpr bool c2py::is_wrapped<triqs::atom_diag::atom_diag<triqs_cthyb::is_h_scalar_complex>> = true;
-// ------------  END ALL GOES INTO TRIQS _-----------------
-
-//static_assert(c2py::concepts::IsConvertibleC2Py<triqs_cthyb::histo_map_t>);
-//static_assert(c2py::concepts::IsConvertibleC2Py<triqs::stat::histogram>);
-
 namespace c2py_module {
 
   auto documentation = "The TRIQS cthyb solver";

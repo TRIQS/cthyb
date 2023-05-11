@@ -54,6 +54,11 @@ c.add_member(c_name = "asymmetry_G_tau",
              read_only= True,
              doc = r"""Violation of the fundamental Green function property G(tau)[i,j] = G(tau)*[j,i] after the measurement""")
 
+c.add_member(c_name = "G_iw_direct",
+             c_type = "std::optional<G_iw_t>",
+             read_only= True,
+             doc = r"""Single-particle Green's function :math:`G_iw` in Matsubara Green funcitons.""")
+
 c.add_member(c_name = "G_l",
              c_type = "std::optional<G_l_t>",
              read_only= True,
@@ -419,6 +424,16 @@ c.add_member(c_name = "measure_G_tau",
              c_type = "bool",
              initializer = """ true """,
              doc = r"""Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)""")
+
+c.add_member(c_name = "measure_G_iw",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = r"""Measure G_iw directly?""")
+
+c.add_member(c_name = "measure_G_n_iw",
+             c_type = "int",
+             initializer = """ 20 """,
+             doc = r"""Number of Matsubara frequencies for the G_iw measurement.""")
 
 c.add_member(c_name = "measure_G_l",
              c_type = "bool",

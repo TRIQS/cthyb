@@ -43,12 +43,10 @@ namespace triqs_cthyb {
         auto val      = (y.first >= x.first ? s : -s) * M;
         double dtau   = double(y.first - x.first);
         auto const &m = G_iw[0].mesh();
-        long n_iw     = m.last_index();
         auto ex_dt    = std::exp(M_PI / m.domain().beta * dtau * 1i);
         auto ex_2dt   = ex_dt * ex_dt;
         auto ex       = ex_dt;
-        for (long n = 0; n < n_iw; ++n, ex *= ex_2dt) { G_iw[block_idx][n](y.second, x.second) += val * ex; }
-        //this->G_tau[block_idx][closest_mesh_pt(dtau)](y.second, x.second) += val;
+        for (long w = 0; w <= m.last_index(); ++w, ex *= ex_2dt) { G_iw[block_idx][w](y.second, x.second) += val * ex; }
       })
         ;
     }
@@ -58,11 +56,12 @@ namespace triqs_cthyb {
 
     G_iw         = mpi::all_reduce(G_iw, c);
     average_sign = mpi::all_reduce(average_sign, c);
-    G_iw /= -real(average_sign);
-    // for (auto &gbl : G_iw) {
-    //   //double beta = gbl.mesh().domain().beta;
-    //   gbl /= -real(average_sign); //  * beta * gbl.mesh().delta();
-    // }
+    G_iw /= -real(average_sign) * G_iw[0].mesh().domain().beta;
+
+    // fill negative frequencies
+    for (auto block_idx : range(G_iw.size())) {
+      for (long w = 0; w <= G_iw[0].mesh().last_index(); ++w) { G_iw[block_idx][-w - 1] = conj(G_iw[block_idx][w]); }
+    }
   }
 
 } // namespace triqs_cthyb

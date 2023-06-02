@@ -1,7 +1,7 @@
 import triqs.utility.mpi as mpi
 from triqs.operators import *
 from triqs.operators.util.op_struct import set_operator_structure
-from triqs.operators.util.U_matrix import U_matrix
+from triqs.operators.util.U_matrix import U_matrix_slater
 from triqs.operators.util.hamiltonians import h_int_slater
 from h5 import HDFArchive
 from triqs_cthyb import *
@@ -21,7 +21,7 @@ mu = 32.5  # 3 electrons in 5 bands
 
 spin_names = ("up","down")
 cubic_names = [str(i) for i in range(2*L+1)]
-U_mat = U_matrix(L, radial_integrals=[F0,F2,F4], basis="cubic")
+U_mat = U_matrix_slater(L, radial_integrals=[F0,F2,F4], basis="cubic")
 
 # Parameters
 p = {}

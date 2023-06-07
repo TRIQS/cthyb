@@ -29,5 +29,4 @@ This run generates a file :file:`single_site_bethe.h5` containing the Green's fu
 at every iteration. You can plot them to see the convergence on the solver:
 
 .. plot:: guide/dmft_plot.py
-    :include-source:
     :scale: 70

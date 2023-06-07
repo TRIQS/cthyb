@@ -19,7 +19,6 @@ This file contains the Green's function in imaginary time and in imaginary
 frequencies found by the solver. Let us plot the Green's function:
 
 .. plot:: guide/slater_five_band_plot.py
-   :include-source:
    :scale: 70
 
 We have rebinned the data to 1000 points to reduce the noise. The calculation

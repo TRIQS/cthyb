@@ -166,7 +166,6 @@ of Legendre coefficients to keep for the following runs. If you have saved the
 Legendre Green's function in an archive, you can then plot it:
 
 .. plot:: guide/legendre_plot.py
-  :include-source:
   :scale: 70
 
 From this plot you see that for :math:`l > 30`, the value of the

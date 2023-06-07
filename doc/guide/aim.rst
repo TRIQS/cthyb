@@ -33,7 +33,6 @@ found by the solver.
 Let us plot the Green's function:
 
 .. plot:: guide/aim_plot.py
-   :include-source:
    :scale: 70
 
 As expected the result shows a particle-hole symmetric impurity Green's

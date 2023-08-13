@@ -22,7 +22,7 @@ r"""
 functions for analyzing the multiplet structure in cthyb
 """
 
-def multiplet_analysis(rho, h_loc_diag, orb_names, spin_names=['up','down'], off_diag=True):
+def multiplet_analysis(rho, h_loc_diag, n_orb, spin_names=['up','down'], off_diag=True):
     r"""
     Computes operator expectation values from measured
     density matrix and h_loc_diag object from cthyb solver.
@@ -42,8 +42,8 @@ def multiplet_analysis(rho, h_loc_diag, orb_names, spin_names=['up','down'], off
         measured density matrix from cthyb or equivalent solver, structured in subspaces
     h_loc_diag: triqs atom_diag object
         contains information about the local Hamiltonian (Hloc_0 + H_int)
-    orb_names : list of int
-        list of orbital indices
+    n_orb : int
+        number of orbitals per spin channel
     spin_names : list of string
         list of strings containing the spin channel names
     off_diag: boolean
@@ -71,10 +71,10 @@ def multiplet_analysis(rho, h_loc_diag, orb_names, spin_names=['up','down'], off
     N_op = sum(occ_operators)
 
     # create S2 and Sz operator
-    S2 = S2_op(spin_names, orb_names, off_diag=off_diag)
+    S2 = S2_op(spin_names, n_orb, off_diag=off_diag)
     S2 = make_operator_real(S2)
 
-    Sz=S_op('z', spin_names, orb_names, off_diag=off_diag)
+    Sz=S_op('z', spin_names, n_orb, off_diag=off_diag)
     Sz = make_operator_real(Sz)
 
     # get eigenvalues

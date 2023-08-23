@@ -45,6 +45,4 @@ namespace triqs_cthyb {
     G_iw_t::view_type G_iw;
   };
 
-  // FIXME : assert concept
-
 } // namespace triqs_cthyb

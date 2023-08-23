@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014, H. U.R. Strand, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2023 The Simons Foundation
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -43,7 +43,7 @@ namespace triqs_cthyb {
         auto val      = (y.first >= x.first ? s : -s) * M;
         double dtau   = double(y.first - x.first);
         auto const &m = G_iw[0].mesh();
-        auto ex_dt    = std::exp(M_PI / m.domain().beta * dtau * 1i);
+        auto ex_dt    = std::exp(M_PI / m.beta() * dtau * 1i);
         auto ex_2dt   = ex_dt * ex_dt;
         auto ex       = ex_dt;
         for (long w = 0; w <= m.last_index(); ++w, ex *= ex_2dt) { G_iw[block_idx][w](y.second, x.second) += val * ex; }
@@ -60,7 +60,7 @@ namespace triqs_cthyb {
 
     // fill negative frequencies
     for (auto block_idx : range(G_iw.size())) {
-      for (long w = 0; w <= G_iw[0].mesh().last_index(); ++w) { G_iw[block_idx][-w - 1] = conj(G_iw[block_idx][w]); }
+      for (long w = 0; w <= G_iw[0].mesh().last_index(); ++w) { G_iw[block_idx][-w - 1] = dagger(G_iw[block_idx][w]); }
     }
   }
 

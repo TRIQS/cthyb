@@ -2,6 +2,66 @@
 
 # Changelog
 
+## Version 3.2.0
+
+CTHYB version 3.2.0 is a compatibility release
+for TRIQS version 3.2.0. This release fixes
+several application issues and introduces more
+accurate ways of calculating high-frequency moments
+of the Self-Energy and Green function from the
+impurity density matrix
+
+We thank all contributors: Alexander Hampel, Azin Kazemi-Moridani, Harrison LaBollita, Dylan Simon, Nils Wentzell, weiyiguo9
+
+Find below an itemized list of changes in this release.
+
+### General
+* Calculate high freq moments of Sigma and G from density matrix
+* Enforce hermiticity of measured density matrix (#162)
+* Add Tutorial for high freq moments of self-energy and greens function (#163)
+* Add tutorial on cthyb convergence tests (#151)
+* Use perturbation order in estimate of auto_corr_time
+* Raise test tolerance for slater.py and single_site_bethe.py after 80cbb37
+* Synchronize clang-tidy config file with app4triqs
+* Rename U_matrix -> U_matrix_slater
+* Add github actions badge
+* clang-format all source files
+* General cleanup
+
+### doc
+* Enable autodoc for reference manual
+* Don't force 'include-source' in plot directives
+* Use Markdown for Readme.md and add line breaks
+
+### fix
+* Replace numpy.complex by complex
+* Fix small error in block accessor var name
+* Fix data type of certain parameters int -> long
+* Fix 0+ and beta- symmetrization to use full Gtau statistics
+
+
+## Version 3.1.1
+
+CTHYB version 3.1.1 is a patch release contains a number of bug fixes.
+In particular, we resolve incompatibility with recent numpy versions.
+
+We thank all contributors: Alexander Hampel, Nils Wentzell, weiyiguo9
+
+Find below an itemized list of changes in this release.
+
+### General
+* fix: data type of certain parameters int -> long
+* fix: failing Py_single_site_bethe test
+* Update 3.1 easybuild script with sha256 of release tarball
+* Bump version numbers from 3.1.0 to 3.1.1
+
+### Doc
+* Fix some import statements in guides
+
+### Numpy
+* np.complex is deprecated -> complex instead
+
+
 ## Version 3.1.0
 
 CTHYB version 3.1.0 is a compatibility release

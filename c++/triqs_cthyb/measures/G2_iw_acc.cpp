@@ -86,12 +86,12 @@ namespace triqs_cthyb {
       
       timer_G2.start();
       for (auto &m : G2_measures()) {
-        auto G2_iw_block = G2_iw(m.b1.index(), m.b2.idx);
-        bool diag_block  = (m.b1.index() == m.b2.idx);
+        auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
+        bool diag_block  = (m.b1.idx == m.b2.idx);
         if (order == block_order::AABB || diag_block)
-          accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.index()), M(m.b2.idx));
+          accumulate_impl_AABB<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
         if (order == block_order::ABBA || diag_block)
-          accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.index()), M(m.b2.idx));
+          accumulate_impl_ABBA<Channel>(G2_iw_block, s, M(m.b1.idx), M(m.b2.idx));
       }
       timer_G2.stop();
     }
@@ -170,7 +170,7 @@ namespace triqs_cthyb {
       using mesh_point_t  = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
 
       for (const auto &[n1, n2, n3] : G2.mesh()) {
-        mesh_point_t n4{iw_mesh, n1.index() + n3.idx - n2.idx};
+        auto n4 = iw_mesh(n1.index() + n3.index() - n2.index());
         for (const auto [i, j, k, l] : G2.target_indices())
           G2[n1, n2, n3](i, j, k, l) += s * M_ij[n2, n1](j, i) * M_kl[n4, n3](l, k);
       }
@@ -186,7 +186,7 @@ namespace triqs_cthyb {
       using mesh_point_t  = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
 
       for (const auto &[n1, n2, n3] : G2.mesh()) {
-        mesh_point_t n4{iw_mesh, n1.index() + n3.idx - n2.idx};
+        auto n4 = iw_mesh(n1.index() + n3.index() - n2.index());
         for (const auto [i, j, k, l] : G2.target_indices())
           G2[n1, n2, n3](i, j, k, l) -= s * M_il[n4, n1](l, i) * M_kj[n2, n3](j, k);
       }

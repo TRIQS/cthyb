@@ -12,7 +12,7 @@ Packaged Versions of CTHyb
 Ubuntu Debian packages
 ----------------------
 
-We provide a Debian package for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 (bionic), which can be installed by following the steps outlined :ref:`here <triqslibs:triqs_debian>`, and the subsequent command::
+We provide a Debian package for the Ubuntu LTS Version 22.04 (jammy), which can be installed by following the steps outlined :ref:`here <triqslibs:triqs_debian>`, and the subsequent command::
 
         sudo apt-get install -y triqs_cthyb
 

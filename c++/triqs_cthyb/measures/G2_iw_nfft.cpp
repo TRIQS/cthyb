@@ -33,8 +33,6 @@ namespace triqs_cthyb {
 
     // Initialize the nfft_buffers mirroring the matrix M
     {
-      M_nfft.resize(M.size());
-
       std::cout << "G2_iw_nfft NFFT buffer sizes:\n";
       for (auto bidx : range(M.size())) {
         std::string bname = M.block_names()[bidx];
@@ -48,7 +46,7 @@ namespace triqs_cthyb {
 
         std::cout << "block_name = " << bname << " nfft_buf_size = " << buf_size << "\n";
 
-        M_nfft(bidx) = nfft_array_t<2, 2>(M(bidx).mesh(), M(bidx).data(), buf_sizes);
+        M_nfft.emplace_back(M(bidx).mesh(), M(bidx).data(), buf_sizes);
       }
     }
   }
@@ -67,8 +65,8 @@ namespace triqs_cthyb {
     // Intermediate M matrices for all blocks
     M() = 0;
     for (auto bidx : range(M.size())) {
-      nfft_fill(data.dets[bidx], M_nfft(bidx));
-      M_nfft(bidx).flush();
+      nfft_fill(data.dets[bidx], M_nfft[bidx]);
+      M_nfft[bidx].flush();
     }
     timer_M.stop();
 

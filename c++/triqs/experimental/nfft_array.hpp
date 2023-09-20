@@ -42,20 +42,30 @@ namespace triqs {
 
       nfft_array_t() = default;
 
+      nfft_array_t(nfft_array_t const &other) = delete;
+      nfft_array_t(nfft_array_t &&other) : indexmap(other.indexmap), buffers(std::move(other.buffers)) { fiw_arr.rebind(other.fiw_arr); }
+
+      nfft_array_t &operator=(nfft_array_t const &other) = delete;
+      nfft_array_t &operator=(nfft_array_t &&other) {
+        indexmap = other.indexmap;
+        buffers  = std::move(other.buffers);
+        fiw_arr.rebind(other.fiw_arr);
+        return *this;
+      }
+
       // fiw_mesh - Matsubara frequency mesh
       // fiw_arr_ - array to contain the final NFFT output
       // buf_sizes - sizes of NFFT buffers
       nfft_array_t(freq_mesh_t const &fiw_mesh, array_view<dcomplex, result_rank> fiw_arr_, array<long, TargetRank> const &buf_sizes)
          : indexmap(make_target_shape(fiw_arr_.shape())), fiw_arr(fiw_arr_) {
         buffers.reserve(indexmap.size());
-        for_each (buf_sizes.shape(), [this, &fiw_mesh, &buf_sizes](auto... ind) {
+        for_each(buf_sizes.shape(), [this, &fiw_mesh, &buf_sizes](auto... ind) {
 #ifdef NDEBUG
           buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), false);
 #else
           buffers.emplace_back(fiw_mesh, fiw_arr(ellipsis(), ind...), buf_sizes(ind...), true);
 #endif
-        })
-          ;
+        });
       }
 
       // Add a new element to the NFFT buffer

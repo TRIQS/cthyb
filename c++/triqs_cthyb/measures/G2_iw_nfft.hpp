@@ -40,7 +40,7 @@ namespace triqs_cthyb {
     using B::collect_results;
     
     private:
-    array<nfft_array_t<2, 2>, 1> M_nfft;
+    std::vector<nfft_array_t<2, 2>> M_nfft;
     using B::M, B::M_mesh, B::G2_measures, B::data, B::timer_M, B::accumulate_G2;
   };
 

@@ -117,10 +117,9 @@ namespace triqs_cthyb {
                                               M_t const &M_ij, M_t const &M_kl) {
 
       //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) + s * M_ij(n1, n1 + w)(i, j) * M_kl(n2 + w, n2)(k, l);
-
       for (const auto &[w, n1, n2] : G2.mesh())
         for (const auto [i, j, k, l] : G2.target_indices())
-          G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, n1 + w](i, j) * M_kl[n2 + w, n2](k, l);
+          G2[w, n1, n2](i, j, k, l) += s * M_ij[n1.value(), n1 + w](i, j) * M_kl[n2 + w, n2.value()](k, l);
     }
 
     template <>
@@ -128,10 +127,9 @@ namespace triqs_cthyb {
                                               M_t const &M_il, M_t const &M_kj) {
 
       //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) - s * M_il(n1, n2)(i, l) * M_kj(n2 + w, n1 + w)(k, j);
-
       for (const auto &[w, n1, n2] : G2.mesh())
         for (const auto [i, j, k, l] : G2.target_indices())
-          G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[n2 + w, n1 + w](k, j);
+          G2[w, n1, n2](i, j, k, l) -= s * M_il[n1.value(), n2.value()](i, l) * M_kj[n2 + w, n1 + w](k, j);
     }
 
     // -- Particle-particle
@@ -141,10 +139,9 @@ namespace triqs_cthyb {
                                               M_t const &M_ij, M_t const &M_kl) {
 
       //G2(w, n1, n2)(i, j, k, l) << G2(w, n1, n2)(i, j, k, l) + s * M_ij(n1, w - n2)(i, j) * M_kl(w - n1, n2)(k, l);
-
       for (const auto &[w, n1, n2] : G2.mesh())
         for (const auto [i, j, k, l] : G2.target_indices())
-          G2[w, n1, n2](i, j, k, l) += s * M_ij[n1, w - n2](i, j) * M_kl[w - n1, n2](k, l);
+          G2[w, n1, n2](i, j, k, l) += s * M_ij[n1.value(), w - n2](i, j) * M_kl[w - n1, n2.value()](k, l);
     }
 
     template <>
@@ -155,7 +152,7 @@ namespace triqs_cthyb {
 
       for (const auto &[w, n1, n2] : G2.mesh())
         for (const auto [i, j, k, l] : G2.target_indices())
-          G2[w, n1, n2](i, j, k, l) -= s * M_il[n1, n2](i, l) * M_kj[w - n1, w - n2](k, j);
+          G2[w, n1, n2](i, j, k, l) -= s * M_il[n1.value(), n2.value()](i, l) * M_kj[w - n1, w - n2](k, j);
     }
 
     // -- Fermionic
@@ -165,14 +162,10 @@ namespace triqs_cthyb {
                                                         M_t const &M_ij, M_t const &M_kl) {
 
       //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) + s * M_ij(n2, n1)(j, i) * M_kl(n1 + n3 - n2, n3)(l, k);
-
-      const auto &iw_mesh = std::get<0>(G2.mesh());
-      using mesh_point_t  = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
-
       for (const auto &[n1, n2, n3] : G2.mesh()) {
-        auto n4 = iw_mesh(n1.index() + n3.index() - n2.index());
+        auto n4 = n1 + n3 - n2;
         for (const auto [i, j, k, l] : G2.target_indices())
-          G2[n1, n2, n3](i, j, k, l) += s * M_ij[n2, n1](j, i) * M_kl[n4, n3](l, k);
+          G2[n1, n2, n3](i, j, k, l) += s * M_ij[n2.value(), n1.value()](j, i) * M_kl[n4, n3.value()](l, k);
       }
     }
 
@@ -181,14 +174,10 @@ namespace triqs_cthyb {
                                                         M_t const &M_il, M_t const &M_kj) {
 
       //G2(n1, n2, n3)(i, j, k, l) << G2(n1, n2, n3)(i, j, k, l) - s * M_il(n1 + n3 - n2, n1)(l, i) * M_kj(n2, n3)(j, k);
-
-      const auto &iw_mesh = std::get<0>(G2.mesh());
-      using mesh_point_t  = typename std::remove_reference<decltype(iw_mesh)>::type::mesh_point_t;
-
       for (const auto &[n1, n2, n3] : G2.mesh()) {
-        auto n4 = iw_mesh(n1.index() + n3.index() - n2.index());
+        auto n4 = n1 + n3 - n2;
         for (const auto [i, j, k, l] : G2.target_indices())
-          G2[n1, n2, n3](i, j, k, l) -= s * M_il[n4, n1](l, i) * M_kj[n2, n3](j, k);
+          G2[n1, n2, n3](i, j, k, l) -= s * M_il[n4, n1.value()](l, i) * M_kj[n2.value(), n3.value()](j, k);
       }
     }
 

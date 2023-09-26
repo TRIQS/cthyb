@@ -19,6 +19,7 @@ from triqs.gf import *
 from triqs.operators import *
 from h5 import HDFArchive
 from triqs_cthyb import Solver
+import triqs_cthyb.version
 
 # ----------------------------------------------------------------------    
 if __name__ == '__main__':
@@ -128,6 +129,10 @@ if __name__ == '__main__':
 
     d.perturbation_order = solv.perturbation_order
     d.perturbation_order_total = solv.perturbation_order_total
+
+    d.version = triqs_cthyb.version.version
+    d.triqs_hash = triqs_cthyb.version.triqs_hash
+    d.triqs_cthyb_hash = triqs_cthyb.version.triqs_cthyb_hash
         
     # ------------------------------------------------------------------
     # -- Store results

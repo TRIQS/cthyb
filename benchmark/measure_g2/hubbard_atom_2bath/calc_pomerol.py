@@ -44,9 +44,9 @@ def make_calc():
     d = Dummy() # storage space
     d.params = params
 
-    print('--> Solving SIAM with parameters')
+    if mpi.is_master_node(): print('--> Solving SIAM with parameters')
     for key, value in list(params.items()):
-        print('%10s = %-10s' % (key, str(value)))
+        if mpi.is_master_node(): print('%10s = %-10s' % (key, str(value)))
         globals()[key] = value # populate global namespace
     
     # ------------------------------------------------------------------
@@ -82,7 +82,7 @@ def make_calc():
     ed = PomerolED(index_converter, verbose=True)
     ed.diagonalize(d.H) # -- Diagonalize H
 
-    gf_struct = [[up, [0]], [do, [0]]]
+    gf_struct = [[up, 1], [do, 1]]
 
     # -- Single-particle Green's functions
     G_iw = ed.G_iw(gf_struct, beta, n_iw=niw)
@@ -111,11 +111,12 @@ def make_calc():
     
     # ------------------------------------------------------------------
     # -- Store to hdf5
-    
-    filename = 'data_pomerol.h5'
-    with HDFArchive(filename,'w') as res:
-        for key, value in list(d.__dict__.items()):
-            res[key] = value
+
+    if mpi.is_master_node():
+        filename = 'data_pomerol.h5'
+        with HDFArchive(filename,'w') as res:
+            for key, value in list(d.__dict__.items()):
+                res[key] = value
             
 # ----------------------------------------------------------------------
 if __name__ == '__main__':

@@ -97,21 +97,24 @@ def make_calc(U=10):
     
     imtime = MeshImTime(beta, 'Fermion', ntau)
     prodmesh = MeshProduct(imtime, imtime, imtime)
-    G2opt = dict(mesh=prodmesh, target_shape=[])
 
-    G02_tau = Gf(name='$G^{(2)}_0(\tau_1, \tau_2, \tau_3)$', **G2opt)
+    G2opt = dict(mesh=prodmesh, target_shape=[])
+    G2opt_1111 = dict(mesh=prodmesh, target_shape=[1, 1, 1, 1])
+
+    G02_tau = Gf(name='$G^{(2)}_0(\tau_1, \tau_2, \tau_3)$', **G2opt_1111)
     ed.set_g40_tau(G02_tau, d.G_tau)
 
     G2_tau = Gf(name='$G^{(2)}(\tau_1, \tau_2, \tau_3)$', **G2opt)
     ed.set_g4_tau(G2_tau, c_dag(up,0), c(up,0), c_dag(do,0), c(do,0))
 
-    G2opt_1111 = dict(mesh=prodmesh, target_shape=[1, 1, 1, 1])
-    
-    d.G02_tau = Gf(**G2opt_1111)
+    #d.G02_tau = Gf(**G2opt_1111)
     d.G2_tau = Gf(**G2opt_1111)
 
-    d.G02_tau.data[:, :, :, 0, 0, 0, 0] = G02_tau.data
+    #d.G02_tau.data[:, :, :, 0, 0, 0, 0] = G02_tau.data
     d.G2_tau.data[:, :, :, 0, 0, 0, 0] = G2_tau.data
+
+    d.G02_tau = G02_tau
+    #d.G2_tau = G2_tau
     
     # ------------------------------------------------------------------
     # -- Store to hdf5

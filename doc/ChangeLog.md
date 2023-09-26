@@ -2,6 +2,30 @@
 
 # Changelog
 
+## Version 3.2.1
+
+CTHYB version 3.2.1 is a patch release contains an important bugfix
+in the two-particle Green function measurement.
+
+We thank all contributors: Hugo U. R. Strand, Nils Wentzell
+
+Find below an itemized list of changes in this release.
+
+### General
+* Fix crucial bug in G2 measurement
+* Fix nfft_array_t to correctly handle move construction and move assignment
+* Fix compilation of G2 measurement
+* Update scripts for benchmarks measure_g2 hubbard_atom_2bath
+
+### doc
+* Correct link to ubuntu debian triqs page
+* Correct Ubuntu Version in install instructions
+* Update version in website sidebar
+
+### jenkins
+* Always build with G2 Measure ON
+
+
 ## Version 3.2.0
 
 CTHYB version 3.2.0 is a compatibility release

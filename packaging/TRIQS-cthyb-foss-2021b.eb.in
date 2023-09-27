@@ -1,7 +1,7 @@
 easyblock = 'CMakeMake'
 
 name = 'TRIQS-cthyb'
-version = '3.1.0'
+version = '@PROJECT_VERSION@'
 
 homepage = 'https://triqs.github.io/cthyb/'
 description = """
@@ -25,7 +25,7 @@ toolchainopts = {'pic': True, 'usempi': True}
 
 source_urls = ['https://github.com/TRIQS/cthyb/releases/download/%(version)s/']
 sources = ['cthyb-%(version)s.tar.gz']
-checksums = ['8d6d2c4d5b3928d062b72fad4ea9df9aae198e39dd9c1fd3cc5dc34a5019acc0']
+checksums = ['PUT HERE THE SHA256 OF THE RELEASE TARBALL']
 
 dependencies = [
     ('Python', '3.9.6'),
@@ -36,7 +36,7 @@ dependencies = [
     ('GMP', '6.2.1'),
     ('HDF5', '1.10.7'),
     ('Mako', '1.1.4'),
-    ('TRIQS', '3.1.0'),
+    ('TRIQS', '3.2.0'),
     ('NFFT', '3.5.2')
 ]
 
@@ -50,8 +50,8 @@ runtest = 'test'
 
 sanity_check_paths = {
     'files': ['lib/libtriqs_cthyb_c.a'],
-    'dirs': ['include', 'include/triqs_cthyb', 'lib',
-             'lib/python%(pyshortver)s/site-packages', 'share'],
+    'dirs': ['include/triqs_cthyb', 'lib', 'share',
+             'lib/python%(pyshortver)s/site-packages/triqs_cthyb'],
 }
 
 sanity_check_commands = ["python -c 'import triqs_cthyb'"]
@@ -62,8 +62,8 @@ modextrapaths = {
     'CMAKE_PREFIX_PATH': 'lib/cmake/triqs_cthyb',
 }
 modextravars = {
-    'TRIQS_CTHYB_ROOT': '%(installdir)s',
-    'TRIQS_CTHYB_VERSION': '%(version)s',
+    'APP4TRIQS_ROOT': '%(installdir)s',
+    'APP4TRIQS_VERSION': '%(version)s',
 }
 
 moduleclass = 'phys'

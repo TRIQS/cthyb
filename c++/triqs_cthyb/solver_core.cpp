@@ -206,7 +206,8 @@ namespace triqs_cthyb {
         auto Delta_tau_bl_ij = _Delta_tau[bl].data()(_, i, j);
         double max_imag      = max_element(abs(imag(Delta_tau_bl_ij)));
         if (i == j && max_imag > 1e-10) {
-          std::cout << "Warning! Delta_tau diagonal term has max imaginary part: " << max_imag << "Disregarding imaginary part \n";
+          std::cout << "WARNING: max(abs(imag(S.Delta_tau[" << bl << "][" << i << ", " << j << "]))) = "
+		    << max_imag << " setting to zero.\n";
           Delta_tau_bl_ij = real(Delta_tau_bl_ij);
         } else if (max_imag < params.imag_threshold) {
           Delta_tau_bl_ij = real(Delta_tau_bl_ij);

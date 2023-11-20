@@ -44,8 +44,8 @@ Prerequisites
 #. The :ref:`TRIQS <triqslibs:welcome>` library, see :ref:`TRIQS installation instruction <triqslibs:installation>`.
    In the following, we assume that TRIQS is installed in the directory ``path_to_triqs``.
 
-#. The NFFT3 library for non-uniform Fourier transformations https://www-user.tu-chemnitz.de/~potts/nfft/.
-   To compile without NFFT3 the two-particle measurements has to be disabled by passing the cmake flag: ``-DMeasureG2=OFF``.
+#. Optional: The NFFT3 library for non-uniform Fourier transformations https://www-user.tu-chemnitz.de/~potts/nfft/.
+   The two-particle Green's function measurement requires the NFFT library and can be enabled by passing the cmake flag: ``-DMeasureG2=ON``.
    
 Installation steps
 ------------------
@@ -121,5 +121,3 @@ The compilation of ``cthyb`` can be configured using CMake-options::
 
     * Combination of options ``HYBRIDISATION_IS_COMPLEX=ON`` and ``LOCAL_HAMILTONIAN_IS_COMPLEX=OFF``
       is not supported.
-
-    * The two-particle Green's function measurement requires the NFFT library. To build ``cthyb`` without NFFT pass ``-DMeasureG2=OFF`` to cmake.

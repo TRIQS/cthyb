@@ -2,3 +2,5 @@
 mako
 numpy
 scipy
+# for the doc build needed
+pandoc

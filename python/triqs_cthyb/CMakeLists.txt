@@ -16,15 +16,33 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION ${TRIQS_PYTHON_LIB_DES
 
 # ------- Python Extension ----------
 
+# Find python
 find_package(Python COMPONENTS Interpreter Development NumPy)
+
+# Get c2py
+include(FetchContent)
+FetchContent_Declare(
+  c2py
+  GIT_REPOSITORY https://github.com/TRIQS/c2py
+  GIT_TAG        unstable 
+  EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(c2py)
+
+# 
+option(GENERATE_PYTHON_BINDINGS "Use Clair python bindings generators" OFF)
+if (GENERATE_PYTHON_BINDINGS)
+  find_package(Clair REQUIRED)
+endif()
+
 
 set(module_name solver_core)
 
-Python_add_library( ${module_name} MODULE ${module_name}.$<IF:$<TARGET_EXISTS:clair::c2py_plugin>,cpp,wrap.cxx>)
+Python_add_library( ${module_name} MODULE ${module_name}.$<IF:$<BOOL:${GENERATE_PYTHON_BINDINGS}>,cpp,wrap.cxx>)
 
 target_include_directories(${module_name} SYSTEM PRIVATE  ${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(${module_name} PRIVATE ${PROJECT_NAME}_c $<TARGET_NAME_IF_EXISTS:clair::c2py_plugin> c2py::c2py Python::NumPy triqs_py)
+target_link_libraries(${module_name} PRIVATE ${PROJECT_NAME}_c $<$<BOOL:${GENERATE_PYTHON_BINDINGS}>:clair::c2py_plugin> c2py::c2py Python::NumPy triqs_py)
 
 # What is the use of this ? 
 add_library(${PROJECT_NAME}::${module_name} ALIAS ${module_name})

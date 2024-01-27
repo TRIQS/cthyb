@@ -72,13 +72,6 @@ if(PythonSupport AND NOT TRIQS_WITH_PYTHON_SUPPORT)
   message(FATAL_ERROR "TRIQS was installed without Python support. Cannot build the Python Interface. Disable the build with -DPythonSupport=OFF")
 endif()
 
-# Clair 
-option(Clair "Use Clair python bindings generators" OFF)
-if(Clair)
-  find_package(Clair REQUIRED)
-  MESSAGE(STATUS "Found Clair plugin. Will use it to compile.")
-endif()
-
 # Documentation
 option(Build_Documentation "Build documentation" OFF)
 if(NOT IS_SUBPROJECT AND (Build_Documentation AND NOT PythonSupport))

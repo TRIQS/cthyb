@@ -20,7 +20,7 @@ set_target_properties(${PROJECT_NAME}_c PROPERTIES
   VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )
 target_include_directories(${PROJECT_NAME}_c PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
-target_include_directories(${PROJECT_NAME}_c SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+target_include_directories(${PROJECT_NAME}_c SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_INCLUDEDIR}>)
 target_compile_definitions(${PROJECT_NAME}_c PUBLIC
 				CTHYB_GIT_HASH=${PROJECT_GIT_HASH}
 				TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
@@ -36,7 +36,7 @@ target_compile_definitions(${PROJECT_NAME}_c PUBLIC
 			  )
 
 # Install library and headers
-install(TARGETS ${PROJECT_NAME}_c EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+install(TARGETS ${PROJECT_NAME}_c EXPORT ${PROJECT_NAME}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
 
 # ========= Addtional Dependencies ==========

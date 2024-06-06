@@ -18,7 +18,7 @@ User guide
 
 .. toctree::
    :maxdepth: 1
-   
+
    guide/settingparameters
    guide/dmft
    guide/random
@@ -26,7 +26,8 @@ User guide
    guide/multiplet_analysis_notebook
    guide/dynamic_susceptibility_notebook
    guide/perturbation_order_notebook
-   
+   guide/CRM_Dyson_solver
+
 
 Tutorials
 ---------

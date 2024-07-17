@@ -204,10 +204,10 @@ namespace triqs_cthyb {
     int nbins_histo = 100; 
 
     /// Histogram for insert moves
-    std::vector<std::vector<double>> hist_insert;   
+    std::vector<std::vector<double>> hist_insert = {};   
 
     /// Histogram for remove moves
-    std::vector<std::vector<double>> hist_remove; 
+    std::vector<std::vector<double>> hist_remove = {}; 
 
     /// Use the norm of the density matrix in the weight if true, otherwise use Trace
     bool use_norm_as_weight = false;

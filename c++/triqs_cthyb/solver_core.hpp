@@ -161,7 +161,7 @@ namespace triqs_cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
-    configuration::oplist_t final_config() const { return _final_config; }  
+    configuration::oplist_t const &final_config() const { return _final_config; }  
 
     /// is cthyb compiled with support for complex hybridization?
     bool hybridisation_is_complex() const {

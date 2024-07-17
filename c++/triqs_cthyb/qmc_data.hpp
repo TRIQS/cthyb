@@ -58,10 +58,10 @@ namespace triqs_cthyb {
       det_scalar_t operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
         double dtau = double(x.first - y.first);
 	auto ind = delta_block.mesh().to_data_index(closest_mesh_pt(dtau)); 
-        det_scalar_t res;
+        det_scalar_t res, ya, yb;
+	double xa, xb;
         bool use_linear_interpolation = false;  
 	if (use_linear_interpolation) {
-	  double xa, xb, ya, yb;
 	  xa = delta_block.mesh().to_value(ind);
 	  ya = delta_block[ind](x.second, y.second);
 	  if (dtau >= xa) { 

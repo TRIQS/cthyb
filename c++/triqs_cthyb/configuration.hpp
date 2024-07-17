@@ -70,7 +70,7 @@ namespace triqs_cthyb {
 
     double beta() const { return beta_; }
     int size() const { return oplist.size(); }
-    oplist_t get_oplist() const { return oplist; }  
+    oplist_t const &get_oplist() const { return oplist; }  
 
     void insert(time_pt tau, op_desc op) { oplist.insert({tau, op}); }
     void replace(time_pt tau, op_desc op) { oplist[tau] = op; }

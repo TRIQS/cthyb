@@ -211,8 +211,9 @@ namespace triqs_cthyb {
         auto Delta_tau_bl_ij = _Delta_tau[bl].data()(_, i, j);
         double max_imag      = max_element(abs(imag(Delta_tau_bl_ij)));
         if (i == j && max_imag > 1e-10) {
-          std::cout << "Warning! Delta_tau diagonal term has max imaginary part: " << max_imag << "Disregarding imaginary part \n";
-          Delta_tau_bl_ij = real(Delta_tau_bl_ij);
+          std::cout << "WARNING: max(abs(imag(S.Delta_tau[" << bl << "][" << i << ", " << j << "]))) = "
+		    << max_imag << " setting to zero.\n";
+	  Delta_tau_bl_ij = real(Delta_tau_bl_ij);
         } else if (max_imag < params.imag_threshold) {
           Delta_tau_bl_ij = real(Delta_tau_bl_ij);
         }
@@ -257,7 +258,7 @@ namespace triqs_cthyb {
     if (params.verbosity >= 2)
       std::cout << "Found " << h_diag.n_subspaces() << " subspaces." << std::endl;
 
-    //if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << h_diag;  
+    if (params.performance_analysis && mpi::communicator().rank()==0) std::ofstream("impurity_blocks.dat") << h_diag;  
 
     // If one is interested only in the atomic problem
     if (params.n_warmup_cycles == 0 && params.n_cycles == 0) {

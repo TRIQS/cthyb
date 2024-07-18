@@ -43,6 +43,11 @@ namespace triqs_cthyb {
     }
 
     void collect_results(mpi::communicator const &comm) {
+      if (N == 0) {
+        N = 1;
+	update_time = data.n_acc;
+      }
+	    
       N = mpi::all_reduce(N, comm);
 
       // Reduce and normalize

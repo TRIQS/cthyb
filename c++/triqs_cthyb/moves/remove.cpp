@@ -39,11 +39,11 @@ namespace triqs_cthyb {
        block_size(block_size),
        histo_proposed(add_histo("remove_length_proposed_" + block_name, histos, nbins)),
        histo_accepted(add_histo("remove_length_accepted_" + block_name, histos, nbins)),
-       hist_insert(use_improved_sampling ? hist_insert : nullptr),
-       hist_remove(use_improved_sampling ? hist_remove : nullptr),
+       hist_insert(hist_insert ? hist_insert : nullptr),
+       hist_remove(hist_remove ? hist_remove : nullptr),
        step_i(time_pt::Nmax / (nbins - 1)),
        use_improved_sampling(use_improved_sampling),
-       taus_bin(use_improved_sampling ? taus_bin : nullptr),
+       taus_bin(taus_bin ? taus_bin : nullptr),
        t1(time_pt(1, config.beta())),
        Nmax(30) 	{
          bins.reserve(Nmax);

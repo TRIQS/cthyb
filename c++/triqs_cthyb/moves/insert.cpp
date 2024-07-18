@@ -40,12 +40,12 @@ namespace triqs_cthyb {
        block_size(block_size),
        histo_proposed(add_histo("insert_length_proposed_" + block_name, histos, nbins)),
        histo_accepted(add_histo("insert_length_accepted_" + block_name, histos, nbins)),
-       hist_insert(hist_insert),
-       hist_remove(hist_remove),
+       hist_insert(use_improved_sampling ? hist_insert : nullptr),
+       hist_remove(use_improved_sampling ? hist_remove : nullptr),
        step_i(time_pt::Nmax / (nbins - 1)),
        step_d(config.beta() / double(nbins - 1)),
        use_improved_sampling(use_improved_sampling),
-       taus_bin(taus_bin),
+       taus_bin(use_improved_sampling ? taus_bin : nullptr),
        t1(time_pt(1, config.beta()))	{}   
 
   mc_weight_t move_insert_c_cdag::attempt() {

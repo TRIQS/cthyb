@@ -31,8 +31,8 @@ namespace triqs_cthyb {
 
   move_insert_c_cdag::move_insert_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data,
 					 mc_tools::random_generator &rng, histo_map_t *histos, int nbins, 
-					 std::vector<double> const &hist_insert, std::vector<double> const &hist_remove, 
-					 std::vector<time_pt> const &taus_bin, bool use_improved_sampling)
+					 std::vector<double> const *hist_insert, std::vector<double> const *hist_remove, 
+					 std::vector<time_pt> const *taus_bin, bool use_improved_sampling)
      : data(data),
        config(data.config),
        rng(rng),
@@ -68,19 +68,19 @@ namespace triqs_cthyb {
       // first choose the bin, each bin being weighted by the probability hist_insert[bin]*length(bin)
       double ran  = double(rng(time_pt::Nmax)) / double(time_pt::Nmax - 1);
       double csum = 0;
-      int nbins = hist_insert.size();
+      int nbins = (*hist_insert).size();
       int ibin1 = 0, ibin2 = 0;
       for (int i = 0; i < nbins; ++i) {
         double step = step_d;
 	if (i==0 || i==nbins-1) step /= 2.;  // first and last bins are half-sized
-        csum += hist_insert[i] * step;
+        csum += (*hist_insert)[i] * step;
         if (csum >= ran || i == (nbins - 1) ) {
           ibin1 = i;
 	  break;
 	}	
       }
       // now draw a time point uniformly within this bin
-      tau2 = tau1 + data.tau_seg.get_random_pt(rng, taus_bin[ibin1], taus_bin[ibin1+1]); 
+      tau2 = tau1 + data.tau_seg.get_random_pt(rng, (*taus_bin)[ibin1], (*taus_bin)[ibin1+1]); 
      
       // compute the probability of proposing the current config from the trial one  
       // this is simply hist_remove[bin(tau1-tau2)] / sum_i(hist_remove(bin(tau_i - tau2))) 
@@ -89,28 +89,28 @@ namespace triqs_cthyb {
       // so we need to be careful with that)
       time_pt dtau_r = tau1 - tau2;
       // find the bin of tau1 - tau2  (different from ibin, which is the bin of tau2 - tau1)
-      if (dtau_r < taus_bin[1])  // special treatment for first and last bin since they're not the same size 
+      if (dtau_r < (*taus_bin)[1])  // special treatment for first and last bin since they're not the same size 
         ibin2 = 0;
-      else if (dtau_r >= taus_bin[nbins-1])
+      else if (dtau_r >= (*taus_bin)[nbins-1])
         ibin2 = nbins-1;
       else
         ibin2 = (floor_div(dtau_r, t1) - step_i / 2 ) / step_i + 1;  
       int ind;
-      double s = hist_remove[ibin2];   // normalization constant = sum_i(hist_remove(bin(tau_i - tau2)))
+      double s = (*hist_remove)[ibin2];   // normalization constant = sum_i(hist_remove(bin(tau_i - tau2)))
       for (auto const &o : config) {
         auto op = o.second;
 	if (op.dagger != 1 || op.block_index != block_index) continue; 
         dtau_r = o.first - tau2;
-        if (dtau_r < taus_bin[1])
+        if (dtau_r < (*taus_bin)[1])
           ind = 0;
-        else if (dtau_r >= taus_bin[nbins-1])
+        else if (dtau_r >= (*taus_bin)[nbins-1])
           ind = nbins-1;
         else
           ind = (floor_div(dtau_r, t1) - step_i / 2) / step_i + 1;
-        s += hist_remove[ind];	
+        s += (*hist_remove)[ind];	
       }
       // corrective factor for t_ratio
-      fac = double(data.dets[block_index].size() + 1) * hist_remove[ibin2] / (s * config.beta() * hist_insert[ibin1]);  
+      fac = double(data.dets[block_index].size() + 1) * (*hist_remove)[ibin2] / (s * config.beta() * (*hist_insert)[ibin1]);  
     }
     else 
       tau2 = data.tau_seg.get_random_pt(rng);

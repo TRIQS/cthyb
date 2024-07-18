@@ -36,20 +36,20 @@ namespace triqs_cthyb {
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau1, tau2;
     op_desc op1, op2;
-    const std::vector<double> &hist_insert; 
-    const std::vector<double> &hist_remove;
+    const std::vector<double> *hist_insert; 
+    const std::vector<double> *hist_remove;
     const uint64_t step_i;
     const double step_d;
     bool use_improved_sampling;
-    const std::vector<time_pt> &taus_bin;
+    const std::vector<time_pt> *taus_bin;
     const time_pt t1; 
 
     histogram *add_histo(std::string const &name, histo_map_t *histos, int nbins);
 
     public:
     move_insert_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,
-	               histo_map_t *histos, int nbins, std::vector<double> const &hist_insert, 
-		       std::vector<double> const &hist_remove, std::vector<time_pt> const &taus_bin, bool use_improved_sampling);
+	               histo_map_t *histos, int nbins, std::vector<double> const *hist_insert, 
+		       std::vector<double> const *hist_remove, std::vector<time_pt> const *taus_bin, bool use_improved_sampling);
 
     mc_weight_t attempt();
     mc_weight_t accept();

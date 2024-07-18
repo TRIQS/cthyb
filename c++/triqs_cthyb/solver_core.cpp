@@ -319,9 +319,11 @@ namespace triqs_cthyb {
       auto const &block_name = delta_names[block];
       double prop_prob       = get_prob_prop(block_name);
       inserts.add(move_insert_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map, params.nbins_histo,
-		 params.hist_insert[block], params.hist_remove[block], taus_bin, use_improved_sampling), "Insert Delta_" + block_name, prop_prob);
+		  &params.hist_insert[block], &params.hist_remove[block], &taus_bin, use_improved_sampling), 
+	          "Insert Delta_" + block_name, prop_prob);
       removes.add(move_remove_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map, params.nbins_histo,
-	         params.hist_insert[block], params.hist_remove[block], taus_bin, use_improved_sampling), "Remove Delta_" + block_name, prop_prob);
+	          &params.hist_insert[block], &params.hist_remove[block], &taus_bin, use_improved_sampling), 
+	          "Remove Delta_" + block_name, prop_prob);
       if (params.move_double) {
         for (size_t block2 = 0; block2 < _Delta_tau.size(); ++block2) {
           int block_size2         = _Delta_tau[block2].data().shape()[1];

@@ -314,16 +314,17 @@ namespace triqs_cthyb {
       }
       taus_bin[params.nbins_histo] = time_pt(time_pt::Nmax, beta);  // make sure the last tau point exactly reaches beta
     }
+    std::vector<time_pt> *taus_bins = use_improved_sampling ? &taus_bin : nullptr;
     for (size_t block = 0; block < _Delta_tau.size(); ++block) {
+      std::vector<double> *hist_ins = use_improved_sampling ? &params.hist_insert[block] : nullptr;
+      std::vector<double> *hist_rem = use_improved_sampling ? &params.hist_remove[block] : nullptr;
       int block_size         = _Delta_tau[block].data().shape()[1];
       auto const &block_name = delta_names[block];
       double prop_prob       = get_prob_prop(block_name);
       inserts.add(move_insert_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map, params.nbins_histo,
-		  &params.hist_insert[block], &params.hist_remove[block], &taus_bin, use_improved_sampling), 
-	          "Insert Delta_" + block_name, prop_prob);
+		  hist_ins, hist_rem, taus_bins, use_improved_sampling), "Insert Delta_" + block_name, prop_prob);
       removes.add(move_remove_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map, params.nbins_histo,
-	          &params.hist_insert[block], &params.hist_remove[block], &taus_bin, use_improved_sampling), 
-	          "Remove Delta_" + block_name, prop_prob);
+	          hist_ins, hist_rem, taus_bins, use_improved_sampling), "Remove Delta_" + block_name, prop_prob);
       if (params.move_double) {
         for (size_t block2 = 0; block2 < _Delta_tau.size(); ++block2) {
           int block_size2         = _Delta_tau[block2].data().shape()[1];

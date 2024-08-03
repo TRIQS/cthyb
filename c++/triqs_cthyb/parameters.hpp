@@ -25,6 +25,7 @@
 
 #include "./config.hpp"
 #include "./types.hpp"
+#include "./configuration.hpp"
 
 namespace triqs_cthyb {
 
@@ -192,6 +193,9 @@ namespace triqs_cthyb {
 
     /// Use the norm of the density matrix in the weight if true, otherwise use Trace
     bool use_norm_as_weight = false;
+
+    /// Initial configuration of the run
+    configuration initial_configuration;
 
     /// Analyse performance of trace computation with histograms (developers only)?
     bool performance_analysis = false;

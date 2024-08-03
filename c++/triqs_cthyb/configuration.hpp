@@ -51,10 +51,22 @@ namespace triqs_cthyb {
       h5_write(g, "inner", op.inner_index);
       h5_write(g, "dagger", op.dagger);
     }
+
+    friend void h5_read(h5::group g, op_desc &op) {
+      h5_read(g, "block", op.block_index);
+      h5_read(g, "inner", op.inner_index);
+      h5_read(g, "dagger", op.dagger);
+    }
+
+    bool operator==(op_desc const &op) const { return (block_index == op.block_index && inner_index == op.inner_index
+      && dagger == op.dagger && linear_index == op.linear_index);
+    }
   };
 
   // The configuration of the Monte Carlo
   struct configuration {
+
+    bool operator==(configuration const &config) const { return (beta_ == config.beta_ && oplist == config.oplist); }
 
     // a map associating an operator to an imaginary time
     using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
@@ -66,6 +78,7 @@ namespace triqs_cthyb {
     ~configuration() { configs_hfile.close(); }
 #else
     configuration(double beta) : beta_(beta), id(0) {}
+    configuration() : beta_(double(0.)) {}
 #endif
 
     double beta() const { return beta_; }
@@ -86,15 +99,36 @@ namespace triqs_cthyb {
       return out;
     }
 
+    static std::string hdf5_format() { return "Configuration"; }
+
     // Writing of configuration out to a h5 for e.g. plotting
     friend void h5_write(h5::group conf, std::string conf_group_name, configuration const &c) {
+      auto beta = c.beta();
+      auto t1 = time_pt(1,beta);
       h5::group conf_group = conf.create_group(conf_group_name);
+      write_hdf5_format(conf_group, c);
+      h5_write(conf_group, "beta", beta);
       for (auto const &op : c) {
         // create group for given tau
         auto tau_group_name        = std::to_string(double(op.first));
         h5::group tau_group        = conf_group.create_group(tau_group_name);
         // in tau subgroup, write operator info
         h5_write(tau_group, op.second);
+        h5_write(tau_group, "n", floor_div(op.first, t1));
+      }
+    }
+
+    friend void h5_read(h5::group conf, std::string conf_group_name, configuration &c) {
+      h5::group conf_group = conf.open_group(conf_group_name);
+      op_desc op;
+      uint64_t n;
+      double beta;
+      h5_read(conf_group, "beta", beta);
+      for (auto &sgrp : conf_group.get_all_subgroup_names()) {
+        auto tau_group = conf_group.open_group(sgrp);
+        h5_read(tau_group, op);
+        h5_read(tau_group, "n", n);
+        c.insert(time_pt(n,beta), op);
       }
     }
 

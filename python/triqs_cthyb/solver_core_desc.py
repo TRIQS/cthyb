@@ -227,6 +227,8 @@ c.add_member(c_name = "solve_parameters",
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | use_norm_as_weight            | bool                                                     | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                                     |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
+| initial_configuration         | Configuration                                            | {}                            | Initial configuration for the run                                                                                  |
++-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | performance_analysis          | bool                                                     | false                         | Analyse performance of trace computation with histograms (developers only)?                                       |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | proposal_prob                 | dict(str:float)                                          | {}                            | Operator insertion/removal probabilities for different blocks                                                     |
@@ -312,6 +314,10 @@ c.add_property(name = "auto_corr_time",
 c.add_property(name = "solve_status",
                getter = cfunction("int solve_status ()"),
                doc = r"""status of the ``solve()`` on exit.""")
+
+c.add_property(name = "configuration",
+               getter = cfunction("configuration get_configuration()"),
+               doc = r"""Configuration""")
 
 c.add_property(name = "hybridisation_is_complex",
                getter = cfunction("bool hybridisation_is_complex ()"),
@@ -537,6 +543,11 @@ c.add_member(c_name = "use_norm_as_weight",
              initializer = """ false """,
              doc = r"""Use the norm of the density matrix in the weight if true, otherwise use Trace""")
 
+c.add_member(c_name = "initial_configuration",
+             c_type = "triqs_cthyb::configuration",
+             initializer = """ {} """,
+             doc = r"""Initial configuration for the run""")
+
 c.add_member(c_name = "performance_analysis",
              c_type = "bool",
              initializer = """ false """,
@@ -641,5 +652,30 @@ c.add_member(c_name = "delta_interface",
 
 module.add_converter(c)
 
+# The class configuration
+c = class_(
+        py_type = "Configuration",  # name of the python class
+        c_type = "triqs_cthyb::configuration",   # name of the C++ class
+        doc = r"""Core class of the cthyb configuration""",   # doc of the C++ class
+        comparisons = "==",
+        is_printable = True,
+        hdf5 = True
+)
+
+c.add_constructor(signature = "()",
+                  doc = "Create empty configuration")
+
+c.add_constructor(signature = "(double beta)",
+                  doc = "Initialize beta")
+
+c.add_property(name = "beta",
+               getter = cfunction("double beta()"),
+               doc = r"""Value of beta""")
+
+c.add_property(name = "size",
+               getter = cfunction("int size()"),
+               doc = r"""Size of the configuration""")
+
+module.add_class(c)
 
 module.generate_code()

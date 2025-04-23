@@ -33,8 +33,8 @@ def _comm(A,B): return A*B - B*A
 def _anticomm(A,B): return A*B + B*A
 
 def sigma_high_frequency_moments(density_matrix,
-                           ad_imp, 
-                           gf_struct, 
+                           ad_imp,
+                           gf_struct,
                            h_int):
     """
     Calculate the first and second high frequency moment of Sigma_iw
@@ -79,8 +79,8 @@ def sigma_high_frequency_moments(density_matrix,
 
 
 def green_high_frequency_moments(density_matrix,
-                           ad_imp, 
-                           gf_struct, 
+                           ad_imp,
+                           gf_struct,
                            h_imp):
     """
     Calculate the first and second high frequency moment of G_iw
@@ -99,7 +99,7 @@ def green_high_frequency_moments(density_matrix,
     gf_struct      : List of pairs (str,int)
                      Block structure of Green's function.
     h_imp          : triqs.operators.Operator
-                     impurity Hamiltonian   
+                     impurity Hamiltonian
 
     Returns
     -------
@@ -129,10 +129,10 @@ def tail_fit(
         fit_max_moment=None, fit_known_moments=None
         ):
     """
-    Fit a high frequency 1/(iw)^n expansion of Sigma_iw 
+    Fit a high frequency 1/(iw)^n expansion of Sigma_iw
     and replace the high frequency part with the fitted high frequency expansion.
 
-    Either give frequency window to fit on in terms of matsubara frequencies index 
+    Either give frequency window to fit on in terms of matsubara frequencies index
     (fit_min_n/fit_max_n) or value (fit_min_w/fit_max_w).
 
     Parameters
@@ -181,10 +181,10 @@ def tail_fit(
             n_max = fit_max_n,
             known_moments = fit_known_moments[name],
             # set max number of pts used in fit larger than mesh size, to use all data in fit
-            n_tail_max = 10 * len(sig.mesh), 
+            n_tail_max = 10 * len(sig.mesh),
             expansion_order = fit_max_moment
             )
-        
-        replace_by_tail(sig, tail, n_min=fit_min_n)        
+
+        replace_by_tail(sig, tail, n_min=fit_min_n)
 
     return Sigma_iw

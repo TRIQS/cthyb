@@ -533,7 +533,7 @@ c.add_member(c_name = "measure_density_matrix",
              c_type = "bool",
              initializer = """ false """,
              doc = r"""Measure the reduced impurity density matrix?""")
-			 
+
 c.add_member(c_name = "time_invariance",
              c_type = "bool",
              initializer = """ false """,

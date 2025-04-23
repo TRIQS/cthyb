@@ -189,9 +189,9 @@ namespace triqs_cthyb {
 
     /// Measure the reduced impurity density matrix?
     bool measure_density_matrix = false;
-	
+
     /// Use time invariance for the measurement of the density matrix?
-    bool time_invariance = false;   
+    bool time_invariance = false;
 
     /// Use the norm of the density matrix in the weight if true, otherwise use Trace
     bool use_norm_as_weight = false;

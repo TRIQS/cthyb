@@ -48,7 +48,7 @@ namespace triqs_cthyb {
     }
     double next() { return f * l_gen.next(); }
   };
-  
+
   // Measure G^2(i\omega,l,l')
   template <G2_channel Channel> struct measure_G2_iwll {
 
@@ -66,7 +66,7 @@ namespace triqs_cthyb {
     void accumulate(mc_weight_t s);
     void collect_results(mpi::communicator const &c);
 
-    // internal methods 
+    // internal methods
     double setup_times(tilde_p_gen & p_l1_gen, tilde_p_gen & p_l2_gen, op_t const & i, op_t const & j, op_t const & k, op_t const & l);
   };
 }

@@ -188,7 +188,7 @@ namespace triqs_cthyb {
   }
 
   mc_weight_t move_insert_c_c_cdag_cdag::accept() {
-	  
+
     time_pt tau_min  = std::min(tau1,tau2);
     time_pt tau_min2 = std::min(tau3,tau4);
     tau_min = std::min(tau_min,tau_min2);

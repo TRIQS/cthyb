@@ -47,7 +47,7 @@ def estimate_nfft_buf_size(gf_struct, pert_order_histograms):
     return buf_sizes
 
 def orbital_occupations(density_matrix, gf_struct, h_loc_diag):
-    
+
     dtype=density_matrix[0].dtype
     occ_mat = {bl: np.zeros((bl_size,bl_size), dtype=dtype) for bl, bl_size in gf_struct}
 

@@ -83,7 +83,7 @@ namespace triqs_cthyb {
 
       s *= data.atomic_reweighting;
       average_sign += s;
-      
+
       timer_G2.start();
       for (auto &m : G2_measures()) {
         auto G2_iw_block = G2_iw(m.b1.idx, m.b2.idx);
@@ -184,6 +184,6 @@ namespace triqs_cthyb {
     template class measure_G2_iw_base<G2_channel::AllFermionic>;
     template class measure_G2_iw_base<G2_channel::PP>;
     template class measure_G2_iw_base<G2_channel::PH>;
-    
+
   } // namespace G2_iw
 } // namespace triqs_cthyb

@@ -47,7 +47,7 @@ namespace triqs_cthyb {
     op_desc op1_d, op2_d;
     int min_ins;
     mc_tools::random_generator &rng;
-    
+
   };
 
 } // namespace triqs_cthyb

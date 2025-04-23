@@ -54,19 +54,19 @@ namespace triqs_cthyb {
      : beta(beta),
        use_norm_as_weight(use_norm_as_weight),
        measure_density_matrix(measure_density_matrix),
-       time_invariance(time_invariance),  
+       time_invariance(time_invariance),
        h_diag(&h_diag_),
        density_matrix(n_blocks),
        atomic_rho(n_blocks),
        atomic_z(partition_function(*h_diag, beta)),
        atomic_norm(0),
-       histo(performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr) {  
+       histo(performance_analysis ? new histograms_t(h_diag_.n_subspaces(), *hist_map) : nullptr) {
 
     // init density_matrix block + bool
     for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl] = bool_and_matrix{false, matrix_t(get_block_dim(bl), get_block_dim(bl))};
 
     // prepare atomic_rho and atomic_norm
-    if (use_norm_as_weight || measure_density_matrix) {    
+    if (use_norm_as_weight) {
       auto rho = atomic_density_matrix(h_diag_, beta);
       for (int bl = 0; bl < n_blocks; ++bl) {
         atomic_rho[bl] = bool_and_matrix{true, rho[bl] * atomic_z};
@@ -112,6 +112,7 @@ namespace triqs_cthyb {
 
     return (n->left ? compute_block_table(n->left, b2) : b2);
   }
+
   // -------- Computation of the block table and bounds -------------
 
   // for subtree at node n, return (B', bound)
@@ -182,7 +183,7 @@ namespace triqs_cthyb {
       if (n->modified) dtau_r = n->cache.dtau_r_temp;
       else dtau_r = n->cache.dtau_r;
       auto dim = M.shape()[1];                                                               // same as get_block_dim(b2);
-      if (updating) {    
+      if (updating) {
         if (n->cache.exp_r[b1].empty()) n->cache.exp_r[b1].resize(dim);
         for (int i = 0; i < dim; ++i) {
           n->cache.exp_r[b1][i] = std::exp(-dtau_r * get_block_eigenval(b1, i));
@@ -204,7 +205,7 @@ namespace triqs_cthyb {
       if (n->modified) dtau_l = n->cache.dtau_l_temp;
       else dtau_l = n->cache.dtau_l;
       auto dim = M.shape()[0]; // same as get_block_dim(b1);
-      if (updating) { 
+      if (updating) {
         if (n->cache.exp_l[b2].empty()) n->cache.exp_l[b2].resize(dim);
         for (int i = 0; i < dim; ++i) {
           n->cache.exp_l[b2][i] = std::exp(-dtau_l * get_block_eigenval(b2, i));
@@ -236,8 +237,8 @@ namespace triqs_cthyb {
     return {b3, std::move(M)};
   }
 
-  // At each node, computes recursively the full left matrix (keeping only the operators with tau >= tau_node) for block b  
-  
+  // At each node, computes recursively the full left matrix (keeping only the operators with tau >= tau_node) for block b
+
   void impurity_trace::compute_matrix_left(node n, int b, matrix_t &Mleft, bool is_empty, double dtau_beta) {
 
     auto _ = arrays::range();
@@ -288,8 +289,8 @@ namespace triqs_cthyb {
     }
   }
 
-  // At each node, computes recursively the full right matrix (keeping only the operators with tau <= tau_node) for block b  
-  
+  // At each node, computes recursively the full right matrix (keeping only the operators with tau <= tau_node) for block b
+
   void impurity_trace::compute_matrix_right(node n, int b, int br, matrix_t &Mright, bool is_empty, double dtau_0) {
 
     auto _ = arrays::range();
@@ -430,7 +431,7 @@ namespace triqs_cthyb {
             if (std::abs(eu - ev) < epsilon)
               weight = n->cache.exp_r[b1][u] * dtau_r / beta;
             else
-              weight = (n->cache.exp_r[b1][u] - n->cache.exp_r[b1][v] ) / (beta * (ev - eu)) ;
+              weight = (n->cache.exp_r[b1][u] - n->cache.exp_r[b1][v]) / (beta * (ev - eu)) ;
             density_matrix[b1].mat(u,v) = density_matrix[b1].mat(u,v) + M(u,v) * weight;
           }
         }
@@ -442,15 +443,7 @@ namespace triqs_cthyb {
 
   // ------- Update the cache -----------------------
 
-  void impurity_trace::update_cache() {
-    update_cache_impl(tree.get_root());
-    if (measure_density_matrix) {
-      if (tree.get_root() && time_invariance) {
-        update_matrix_left(tree.get_root());
-        update_matrix_right(tree.get_root());
-      }
-    }
-  }
+  void impurity_trace::update_cache() { update_cache_impl(tree.get_root()); }
 
   // --------------------------------
 
@@ -462,7 +455,7 @@ namespace triqs_cthyb {
     update_cache_impl(n->right);
     n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
     n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
-    n->cache.dtau_l_temp = n->cache.dtau_l; 
+    n->cache.dtau_l_temp = n->cache.dtau_l; // Necessary for the call to compute_block_table_and_bound below
     n->cache.dtau_r_temp = n->cache.dtau_r;
     for (int b = 0; b < n_blocks; ++b) {
       auto r                        = compute_block_table_and_bound(n, b, double_max, false);
@@ -480,29 +473,24 @@ namespace triqs_cthyb {
     if ((n == nullptr) || (!n->modified)) return;
     update_dtau(n->left);
     update_dtau(n->right);
-    n->cache.dtau_r_temp = (n->right ? double(n->key - tree.min_key(n->right)) : 0);  
-    n->cache.dtau_l_temp = (n->left ? double(tree.max_key(n->left) - n->key) : 0);  
+    n->cache.dtau_r_temp = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
+    n->cache.dtau_l_temp = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
   }
 
   //-------- Compute the full trace ------------------------------------------
   // Returns MC atomic weight and reweighting = trace/(atomic weight)
-  std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u_yee, bool meas_den) {  
+  std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u_yee, bool meas_den) {
 
     double epsilon         = 1.e-15; // Machine precision
     auto log_epsilon0      = -std::log(1.e-15);
     double lnorm_threshold = double_max - 100;
     std::vector<std::pair<double, int>> init_to_sort_lnorm_b, to_sort_lnorm_b; // pairs of lnorm and b to sort in order of bound
 
-    if (meas_den) {    
-      min_tau = time_pt(time_pt::Nmax,beta);
-      max_tau = time_pt(0,beta);
-    }
-
     // simplifies later code
     if (tree_size == 0) {
       if (meas_den) density_matrix = atomic_rho;
       if (use_norm_as_weight) {
-        return {atomic_norm, atomic_z / atomic_norm};   
+        return {atomic_norm, atomic_z / atomic_norm};
       } else
         return {atomic_z, 1};
     }
@@ -574,6 +562,12 @@ namespace triqs_cthyb {
           density_matrix[bl].mat = h_scalar_t{0};
 	  density_matrix[bl].is_valid = false;
         }
+        if (root) {
+          update_matrix_left(root);
+          update_matrix_right(root);
+        }
+        min_tau = time_pt(time_pt::Nmax,beta);
+        max_tau = time_pt(0,beta);
       }
       else {
         for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
@@ -589,25 +583,24 @@ namespace triqs_cthyb {
     // determine at which block we have exceeded the bound and hence can stop.
     // Can tighten bound on trace by using sqrt(dim(B)) in the case of Frobenius norm only.
     bound_cumul[n_bl] = 0;
-    if (!use_norm_as_weight) {   
+    if (!use_norm_as_weight) {
       for (int bl = n_bl - 1; bl >= 0; --bl)
-	bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * get_block_dim(to_sort_lnorm_b[bl].second); 
+	bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
     } else {
-      for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) *
-                                                          std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second)); 
+      for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
     }
 
     int bl;
     for (bl = 0; bl < n_bl; ++bl) { // sum over all blocks
 
-      // stopping criterion 
-      if ((bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon) && !(meas_den && time_invariance)) break;
+      // stopping criterion
+      if ((bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
 
       int block_index = to_sort_lnorm_b[bl].second; // index in original (unsorted) order
 
       // additionnal Yee quick return criterion
       if (p_yee >= 0.0) {
-	auto current_weight = (use_norm_as_weight ? std::sqrt(norm_trace_sq) : full_trace); 
+        auto current_weight = (use_norm_as_weight ? std::sqrt(norm_trace_sq) : full_trace);
         auto pmax           = std::abs(p_yee) * (std::abs(current_weight) + bound_cumul[bl]);
         if (pmax < u_yee) return {0, 1}; // pmax < u, we can reject
       }
@@ -630,7 +623,7 @@ namespace triqs_cthyb {
         trace_abs += std::abs(x);
       }
 
-      if (use_norm_as_weight || (meas_den && !time_invariance)) {
+      if (use_norm_as_weight) {
         // recompute the density matrix
         double norm_trace_sq_partial         = 0;
         matrix_t M = {};
@@ -657,7 +650,7 @@ namespace triqs_cthyb {
         auto dev = std::abs(trace_partial - trace(*mat));
         if (dev > 1.e-14) TRIQS_RUNTIME_ERROR << "Internal error : trace and density mismatch. Deviation: " << dev;
       }
-      if (meas_den && time_invariance) { 
+      if (meas_den && time_invariance) {
         matrix_t M = {};
         compute_matrix_left(root, block_index, M, true, dtau_beta);
         compute_matrix_right(root, block_index, block_index, M, true, dtau_0);
@@ -702,9 +695,9 @@ namespace triqs_cthyb {
     }
 
     // return {weight, reweighting}
-    if (!use_norm_as_weight) return {full_trace, 1};  
+    if (!use_norm_as_weight) return {full_trace, 1};
     // else determine reweighting
-    auto rw = full_trace / norm_trace;  
+    auto rw = full_trace / norm_trace;
     if (!isfinite(rw)) rw = 1;
     //FIXME if (!isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
     return {norm_trace, rw};

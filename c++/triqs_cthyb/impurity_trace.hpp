@@ -43,19 +43,19 @@ namespace triqs_cthyb {
     double beta;
     bool use_norm_as_weight;
     bool measure_density_matrix;
-    bool time_invariance;  
+    bool time_invariance;
 
     public:
     // construct from the config, the diagonalization of h_loc, and parameters
     impurity_trace(double beta, atom_diag const &h_diag, histo_map_t *hist_map,
-                   bool use_norm_as_weight=false, bool measure_density_matrix=false, 
+                   bool use_norm_as_weight=false, bool measure_density_matrix=false,
                    bool time_invariance=false, bool performance_analysis=false);
 
     ~impurity_trace() {
       cancel_insert_impl(); // in case of an exception, we need to remove any trial nodes before cleaning the tree!
     }
 
-    std::pair<h_scalar_t, h_scalar_t> compute(double p_yee = -1, double u_yee = 0, bool meas_den = false); 
+    std::pair<h_scalar_t, h_scalar_t> compute(double p_yee = -1, double u_yee = 0, bool meas_den = false);
 
     // ------- Configuration and h_loc data ----------------
 
@@ -91,15 +91,15 @@ namespace triqs_cthyb {
       double dtau_l_temp = 0, dtau_r_temp = 0;          // same as dtau_l and dtau_r but for trial configuration
       std::vector<int> block_table;                     // number of blocks limited to 2^15
       std::vector<arrays::matrix<h_scalar_t>> matrices; // partial product of operator/time evolution matrices
-      std::vector<arrays::matrix<h_scalar_t>> matrix_left; // product of operator/time evolution matrices with tau >= tau_node  
+      std::vector<arrays::matrix<h_scalar_t>> matrix_left; // product of operator/time evolution matrices with tau >= tau_node
       std::vector<arrays::matrix<h_scalar_t>> matrix_right; // product of operator/time evolution matrices with tau <= tau_node
       std::vector<double> matrix_lnorms;                // -ln(norm(matrix))
       std::vector<bool> matrix_norm_valid;              // is the norm of the matrix still valid?
-      std::vector<bool> matrix_left_valid;              // is matrix_left still valid ?      
+      std::vector<bool> matrix_left_valid;              // is matrix_left still valid ?
       std::vector<bool> matrix_right_valid;             // is matrix right still valid ?
       std::vector<std::vector<double>> exp_l;           // exp(-dtau_l * Ei)
       std::vector<std::vector<double>> exp_r;           // exp(-dtau_r * Ei)
-      cache_t(int n_blocks) : block_table(n_blocks), matrices(n_blocks), matrix_left(n_blocks), matrix_right(n_blocks),  
+      cache_t(int n_blocks) : block_table(n_blocks), matrices(n_blocks), matrix_left(n_blocks), matrix_right(n_blocks),
                               matrix_lnorms(n_blocks), matrix_norm_valid(n_blocks), matrix_left_valid(n_blocks), matrix_right_valid(n_blocks),
                               exp_l(n_blocks), exp_r(n_blocks) {}
     };
@@ -120,7 +120,7 @@ namespace triqs_cthyb {
     rb_tree_t tree; // the red black tree and its nodes
 
     std::vector<atom_diag::op_block_mat_t> aux_operators;
-    
+
     // ---------------- Cache machinery ----------------
     void update_cache();
 
@@ -158,11 +158,11 @@ namespace triqs_cthyb {
     int compute_block_table(node n, int b);
     std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true);
     std::pair<int, matrix_t> compute_matrix(node n, int b);
-    void compute_matrix_left(node n, int b, matrix_t &Mleft, bool is_empty, double dtau_beta); 
-    void compute_matrix_right(node n, int b, int br, matrix_t &Mright, bool is_empty, double dtau_0); 
-    void compute_density_matrix(node n, int b, int br, bool is_root, double dtau_beta, double dtau_0); 
-    void update_matrix_left(node n); 
-    void update_matrix_right(node n); 
+    void compute_matrix_left(node n, int b, matrix_t &Mleft, bool is_empty, double dtau_beta);
+    void compute_matrix_right(node n, int b, int br, matrix_t &Mright, bool is_empty, double dtau_0);
+    void compute_density_matrix(node n, int b, int br, bool is_root, double dtau_beta, double dtau_0);
+    void update_matrix_left(node n);
+    void update_matrix_right(node n);
 
     void update_cache_impl(node n);
     void update_dtau(node n);
@@ -225,7 +225,7 @@ namespace triqs_cthyb {
       op_desc operator_desc{0, 0, true, -static_cast<int>(aux_operators.size())};
       return operator_desc;
     }
-    
+
     /*************************************************************************
      *  Ordinary binary search tree (BST) insertion of the trial nodes
      *************************************************************************/
@@ -408,7 +408,7 @@ namespace triqs_cthyb {
     node try_replace_impl(node n, configuration::oplist_t const &updated_ops) noexcept {
 
       node new_left = nullptr, new_right = nullptr;
-      if (n->left) new_left              = try_replace_impl(n->left, updated_ops);
+      if (n->left)  new_left  = try_replace_impl(n->left, updated_ops);
       if (n->right) new_right = try_replace_impl(n->right, updated_ops);
 
       auto const &op     = n->op;
@@ -420,10 +420,10 @@ namespace triqs_cthyb {
         auto key   = n->key;
         auto color = n->color;
         auto N     = n->N;
-        auto matrix_left = n->cache.matrix_left;   
-        auto matrix_left_valid = n->cache.matrix_left_valid;
-        auto matrix_right = n->cache.matrix_right;
-        auto matrix_right_valid = n->cache.matrix_right_valid;
+        auto &matrix_left = n->cache.matrix_left;
+        auto &matrix_left_valid = n->cache.matrix_left_valid;
+        auto &matrix_right = n->cache.matrix_right;
+        auto &matrix_right_valid = n->cache.matrix_right_valid;
 
         new_node = backup_nodes.swap_next(n);
         if (op_changed)
@@ -434,7 +434,7 @@ namespace triqs_cthyb {
         new_node->right    = new_right;
         new_node->color    = color;
         new_node->N        = N;
-        new_node->cache.matrix_left = matrix_left;   
+        new_node->cache.matrix_left = matrix_left;
         new_node->cache.matrix_left_valid = matrix_left_valid;
         new_node->cache.matrix_right = matrix_right;
         new_node->cache.matrix_right_valid = matrix_right_valid;

@@ -59,7 +59,7 @@ namespace triqs_cthyb {
     for (auto &b : block_dm){
         // Normalize
         b /= real(z);
-        
+
         // Enforce hermiticity
         b = make_regular(0.5*(b + dagger(b)));
     }

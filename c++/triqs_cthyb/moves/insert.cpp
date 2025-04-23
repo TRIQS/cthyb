@@ -134,14 +134,14 @@ namespace triqs_cthyb {
       std::cerr << "Prefactor: " << t_ratio << '\t';
       std::cerr << "Weight: " << p * t_ratio << std::endl;
       std::cerr << "p_yee * newtrace: " << p_yee * new_atomic_weight << std::endl;
-      
+
       TRIQS_RUNTIME_ERROR << "(insert) p * t_ratio not finite p : " << p << " t_ratio : " << t_ratio << " in config " << config.get_id();
     }
     return p * t_ratio;
   }
 
   mc_weight_t move_insert_c_cdag::accept() {
-	  
+
     time_pt tau_min = std::min(tau1,tau2);
     time_pt tau_max = std::max(tau1,tau2);
     if (tau_min < data.imp_trace.min_tau) data.imp_trace.min_tau = tau_min;

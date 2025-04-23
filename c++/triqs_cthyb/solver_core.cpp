@@ -158,7 +158,7 @@ namespace triqs_cthyb {
 
       // ==== Compute h_loc ====
 
-      _h_loc0 = {}; 
+      _h_loc0 = {};
 
       // Add non-interacting terms to h_loc
       for (auto bl : range(gf_struct.size())) {
@@ -418,9 +418,9 @@ namespace triqs_cthyb {
       qmc.add_measure(measure_perturbation_hist_total(data, *perturbation_order_total), "Perturbation order");
     }
     if (params.measure_density_matrix) {
-      //if (!params.use_norm_as_weight)
-      //  TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
-      //                        "use_norm_as_weight to True, i.e. to reweight the QMC";
+      if (!params.use_norm_as_weight)
+        TRIQS_RUNTIME_ERROR << "To measure the density_matrix of atomic states, you need to set "
+                              "use_norm_as_weight to True, i.e. to reweight the QMC";
       qmc.add_measure(measure_density_matrix{data, _density_matrix},
                       "Density Matrix for local static observable");
     }

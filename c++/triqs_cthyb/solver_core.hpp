@@ -3,7 +3,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014-2017, H. U.R. Strand, P. Seth, I. Krivenko, 
+ * Copyright (C) 2014-2017, H. U.R. Strand, P. Seth, I. Krivenko,
  *                          M. Ferrero and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
@@ -62,7 +62,7 @@ namespace triqs_cthyb {
     // Return reference to container_set
     container_set_t &container_set() { return static_cast<container_set_t &>(*this); }
     container_set_t const &container_set() const { return static_cast<container_set_t const &>(*this); }
- 
+
     public:
 
     // Struct containing the parameters relevant for the solver construction
@@ -119,7 +119,7 @@ namespace triqs_cthyb {
     void set_container_set(container_set_t &cs) { static_cast<container_set_t &>(*this) = cs; }
     container_set_t last_container_set() { return static_cast<container_set_t>(*this); }
     */
-    
+
     /// :math:`\Delta(\tau)` in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 

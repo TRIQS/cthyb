@@ -89,6 +89,7 @@ namespace triqs_cthyb {
     struct cache_t {
       double dtau_l = 0, dtau_r = 0;                    // difference in tau of this node and left and right sub-trees
       double dtau_l_temp = 0, dtau_r_temp = 0;          // same as dtau_l and dtau_r but for trial configuration
+      double norm_l = 0, norm_r = 0;
       std::vector<int> block_table;                     // number of blocks limited to 2^15
       std::vector<arrays::matrix<h_scalar_t>> matrices; // partial product of operator/time evolution matrices
       std::vector<arrays::matrix<h_scalar_t>> matrix_left; // product of operator/time evolution matrices with tau >= tau_node
@@ -163,6 +164,8 @@ namespace triqs_cthyb {
     void compute_density_matrix(node n, int b, int br, bool is_root, double dtau_beta, double dtau_0);
     void update_matrix_left(node n);
     void update_matrix_right(node n);
+    double compute_max_bound(node n, int b, double bound_left, double bound_right);
+    bool check_norm(node n);
 
     void update_cache_impl(node n);
     void update_dtau(node n);

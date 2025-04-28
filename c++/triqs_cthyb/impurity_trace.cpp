@@ -359,6 +359,54 @@ namespace triqs_cthyb {
     if (n->left) update_matrix_right(n->left);
   }
 
+  bool impurity_trace::check_norm(node n) {
+    if (!n) return false;
+    bool check_l = check_norm(n->left);
+    bool check_r = check_norm(n->right);
+    bool check   = check_l || check_r;
+    if (!check) check = (n->left && !isfinite(1. / n->cache.norm_l)) || (n->right && !isfinite(1. / n->cache.norm_r));
+    n->cache.norm_l = 0.;
+    n->cache.norm_r = 0.;
+    return check;
+  }
+
+  /// Compute the upper bound for the integral over all time-shifted configurations
+  double impurity_trace::compute_max_bound(node n, int b, double bound_left, double bound_right) {
+
+    int b1 = b;
+    if (n->right) b1 = (n->right)->cache.block_table[b];
+    int b2 = get_op_block_map(n, b1);
+    double bound = bound_left + bound_right;
+    double xl = 0., xr = 0., xxl = 0., xxr = 0.;
+
+    if (n->left)  {
+      xxl = n->cache.dtau_l * get_block_emin(b2);
+      xl  = xxl + (n->left)->cache.matrix_lnorms[b2];
+    }
+    if (n->right) {
+      xxr = n->cache.dtau_r * get_block_emin(b1);
+      xr  = xxr + (n->right)->cache.matrix_lnorms[b];
+    }
+    bound += xr + xl;
+
+    double lnorm   = (n->left || n->right ? std::exp(-bound) : 1.);
+    double bound_l = (n->left  ? lnorm * std::sqrt(get_block_dim(b2)) * n->cache.dtau_l / beta : 0.);
+    double bound_r = (n->right ? lnorm * std::sqrt(get_block_dim(b1)) * n->cache.dtau_r / beta : 0.);
+    double bound_max = bound_l + bound_r;
+
+    if (n->left) {
+      double bound_max_l = compute_max_bound(n->left, b2, bound_left, bound_right + xr + xxl);
+      bound_max += bound_max_l;
+    }
+
+    if (n->right) {
+      double bound_max_r = compute_max_bound(n->right, b, bound_left + xl + xxr, bound_right);
+      bound_max += bound_max_r;
+    }
+
+    return bound_max;
+  }
+
   void impurity_trace::compute_density_matrix(node n, int b, int br, bool is_root, double dtau_beta, double dtau_0) {
 
     double weight = 0;
@@ -386,7 +434,7 @@ namespace triqs_cthyb {
             if (std::abs(eu - ev) < epsilon)
               weight = std::exp(-eu * dtau) * dtau / beta;
             else
-              weight = (std::exp(- eu * dtau) - std::exp(- ev * dtau) ) / (beta * (ev - eu)) ;
+              weight = (std::exp(- eu * dtau) - std::exp(- ev * dtau) ) / (beta * (ev - eu));
             density_matrix[b].mat(u,v) = density_matrix[b].mat(u,v) + n->cache.matrices[b](u,v) * weight;
           }
         }
@@ -408,8 +456,10 @@ namespace triqs_cthyb {
             if (std::abs(eu - ev) < epsilon)
               weight = n->cache.exp_l[b2][u] * dtau_l / beta;
             else
-              weight = (n->cache.exp_l[b2][u] - n->cache.exp_l[b2][v] ) / (beta * (ev - eu)) ;
+              weight = (n->cache.exp_l[b2][u] - n->cache.exp_l[b2][v] ) / (beta * (ev - eu));
             density_matrix[b2].mat(u,v) = density_matrix[b2].mat(u,v) + M(u,v) * weight;
+            double xx = std::abs(M(u,v));
+            n->cache.norm_l += xx * xx;
           }
         }
         density_matrix[b2].is_valid = true;
@@ -431,8 +481,10 @@ namespace triqs_cthyb {
             if (std::abs(eu - ev) < epsilon)
               weight = n->cache.exp_r[b1][u] * dtau_r / beta;
             else
-              weight = (n->cache.exp_r[b1][u] - n->cache.exp_r[b1][v]) / (beta * (ev - eu)) ;
+              weight = (n->cache.exp_r[b1][u] - n->cache.exp_r[b1][v]) / (beta * (ev - eu));
             density_matrix[b1].mat(u,v) = density_matrix[b1].mat(u,v) + M(u,v) * weight;
+            double xx = std::abs(M(u,v));
+            n->cache.norm_r += xx * xx;
           }
         }
         density_matrix[b1].is_valid = true;
@@ -587,7 +639,12 @@ namespace triqs_cthyb {
       for (int bl = n_bl - 1; bl >= 0; --bl)
 	bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
     } else {
-      for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
+      for (int bl = n_bl - 1; bl >= 0; --bl) {
+        double lnorm = std::exp(-to_sort_lnorm_b[bl].first);
+        if (meas_den && time_invariance)
+          lnorm = lnorm * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second)) * dtau / beta + compute_max_bound(root, to_sort_lnorm_b[bl].second, dtau_beta, dtau_0);
+        bound_cumul[bl] = bound_cumul[bl + 1] + lnorm;
+      }
     }
 
     int bl;
@@ -678,6 +735,34 @@ namespace triqs_cthyb {
 	}
       }
     } // loop on block
+
+    if (meas_den && time_invariance) {
+      bool check = check_norm(root); // Check if one of the time-shifted configurations is 0
+      if (check) {   // Switch to conventional sampling if that's the case
+        full_trace = 0;
+        for (bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
+        for (bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] +
+            std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
+        for (bl = 0; bl < n_bl; ++bl) {
+          if ((bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
+          int block_index = to_sort_lnorm_b[bl].second;
+          auto b_mat = compute_matrix(root, block_index);
+          h_scalar_t trace_partial = 0;
+          auto dim                 = get_block_dim(block_index);
+          for (int u = 0; u < dim; ++u) {
+            auto x = b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
+            trace_partial += x;
+          }
+          density_matrix[block_index].is_valid = true;
+          auto &mat                            = density_matrix[block_index].mat;
+          for (int u = 0; u < dim; ++u) {
+            for (int v = 0; v < dim; ++v)
+              mat(u, v) = b_mat.second(u, v) * std::exp(-dtau_beta * get_block_eigenval(block_index, u) - dtau_0 * get_block_eigenval(block_index, v));
+          }
+          full_trace += trace_partial;
+        }
+      }
+    }
 
     double norm_trace = std::sqrt(norm_trace_sq);
     if (!isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;

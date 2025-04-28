@@ -364,7 +364,8 @@ namespace triqs_cthyb {
     bool check_l = check_norm(n->left);
     bool check_r = check_norm(n->right);
     bool check   = check_l || check_r;
-    if (!check) check = (n->left && !isfinite(1. / n->cache.norm_l)) || (n->right && !isfinite(1. / n->cache.norm_r));
+    if (!check) check = (n->left && n->cache.norm_l == 0) || (n->right && n->cache.norm_r == 0);
+    if (!check) check = (n->left  && !isfinite(1. / n->cache.norm_l)) || (n->right && !isfinite(1. / n->cache.norm_r));
     n->cache.norm_l = 0.;
     n->cache.norm_r = 0.;
     return check;
@@ -782,7 +783,7 @@ namespace triqs_cthyb {
     // return {weight, reweighting}
     if (!use_norm_as_weight) return {full_trace, 1};
     // else determine reweighting
-    auto rw = full_trace / norm_trace;
+    auto rw = (norm_trace == 0 ? 1 : full_trace / norm_trace);
     if (!isfinite(rw)) rw = 1;
     //FIXME if (!isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
     return {norm_trace, rw};

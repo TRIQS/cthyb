@@ -342,9 +342,9 @@ namespace triqs_cthyb {
     bound_cumul[n_bl] = 0;
     if (!use_norm_as_weight) {
       for (int bl = n_bl - 1; bl >= 0; --bl)
-        bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
+        bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * get_block_dim(to_sort_lnorm_b[bl].second);
     } else {
-      for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
+      for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
     }
 
     int bl;

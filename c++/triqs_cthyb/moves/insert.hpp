@@ -36,12 +36,15 @@ namespace triqs_cthyb {
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau1, tau2;
     op_desc op1, op2;
+    double pauli_prob;
+    int Nmax;
+    std::vector<int> vec_ind;
 
     histogram *add_histo(std::string const &name, histo_map_t *histos);
 
     public:
     move_insert_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,
-                       histo_map_t *histos);
+                       histo_map_t *histos, double pauli_prob);
 
     mc_weight_t attempt();
     mc_weight_t accept();

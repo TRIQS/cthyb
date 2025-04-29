@@ -158,7 +158,7 @@ namespace triqs_cthyb {
 
       // ==== Compute h_loc ====
 
-      _h_loc0 = {}; 
+      _h_loc0 = {};
 
       // Add non-interacting terms to h_loc
       for (auto bl : range(gf_struct.size())) {
@@ -286,9 +286,9 @@ namespace triqs_cthyb {
       int block_size         = _Delta_tau[block].data().shape()[1];
       auto const &block_name = delta_names[block];
       double prop_prob       = get_prob_prop(block_name);
-      inserts.add(move_insert_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map),
+      inserts.add(move_insert_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map, params.pauli_prob),
                   "Insert Delta_" + block_name, prop_prob);
-      removes.add(move_remove_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map),
+      removes.add(move_remove_c_cdag(block, block_size, block_name, data, qmc.get_rng(), histo_map, params.pauli_prob),
                   "Remove Delta_" + block_name, prop_prob);
       if (params.move_double) {
         for (size_t block2 = 0; block2 < _Delta_tau.size(); ++block2) {

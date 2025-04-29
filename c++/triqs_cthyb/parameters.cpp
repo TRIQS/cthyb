@@ -135,6 +135,8 @@ namespace triqs_cthyb {
       TRIQS_RUNTIME_ERROR << "Error serailizing: CTHYB solve_parameters, can not serialize the global moves data type.";
     h5_write(grp, "move_global_prob", sp.move_global_prob);
 
+    h5_write(grp, "pauli_prob", sp.pauli_prob);
+
     h5_write(grp, "imag_threshold", sp.imag_threshold);
     h5_write(grp, "off_diag_threshold", sp.off_diag_threshold);
 
@@ -201,6 +203,8 @@ namespace triqs_cthyb {
     if( grp.has_key("move_global") )
       TRIQS_RUNTIME_ERROR << "Error reading: CTHYB solve_parameters, can not de-serialize the global moves data type.";
     h5_read(grp, "move_global_prob", sp.move_global_prob);
+
+    h5_read(grp, "pauli_prob", sp.pauli_prob);
 
     h5_read(grp, "imag_threshold", sp.imag_threshold);
     h5::try_read(grp, "off_diag_threshold", sp.off_diag_threshold);

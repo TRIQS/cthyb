@@ -121,6 +121,7 @@ namespace triqs_cthyb {
 
       // initialize hybridization determinants
       dets.clear();
+      dets.reserve(delta.size());
       for (auto const &bl : range(delta.size())) {
 #ifdef HYBRIDISATION_IS_COMPLEX
         auto delta_functor = delta_block_adaptor(delta[bl]);

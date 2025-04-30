@@ -102,7 +102,6 @@ namespace triqs_cthyb {
       std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
 
       dets.clear();
-      dets.reserve(delta.size());
       for (auto const &bl : range(delta.size())) {
         if (X[bl].size() != Y[bl].size())
           TRIQS_RUNTIME_ERROR << "In the initial config, the number of c and c_dag operators should be equal";

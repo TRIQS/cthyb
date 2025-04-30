@@ -11,6 +11,8 @@ from triqs_cthyb import SolverCore
 from triqs.operators import n, c, c_dag, Operator
 import triqs.utility.mpi as mpi
 from triqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
+from h5 import HDFArchive
+from triqs.utility.h5diff import h5diff
 
 beta = 10.0
 
@@ -63,8 +65,8 @@ S.G0_iw << G0_iw
 S.solve(
     h_int = h_int,
     length_cycle = 10,
-    n_warmup_cycles = 1,
-    n_cycles = 1,
+    n_warmup_cycles = 100,
+    n_cycles = 2,
     )
 
 h_loc_ref = S.h_loc - h_int
@@ -91,6 +93,21 @@ diff = np.max(np.abs(Delta_iw.data - Delta_iw_ref.data))
 print('Delta_iw diff =', diff)
 np.testing.assert_array_almost_equal(Delta_iw.data, Delta_iw_ref.data)
 assert( diff < 1e-7 )
+
+config = S.configuration
+S.solve(
+    h_int = h_int,
+    length_cycle = 10,
+    n_warmup_cycles = 100,
+    n_cycles = 10000,
+    initial_configuration = config
+    )
+
+with HDFArchive("setup_Delta_tau_and_h_loc_complex.out.h5","w") as ar:
+    ar["G_tau"] = S.G_tau
+    ar["sign"]  = np.array([S.average_sign])
+
+h5diff("setup_Delta_tau_and_h_loc_complex.ref.h5","setup_Delta_tau_and_h_loc_complex.out.h5")
 
 if False:
     from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt

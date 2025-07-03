@@ -21,8 +21,7 @@ extensions = ['sphinx.ext.autodoc',
               'myst_parser',
               'matplotlib.sphinxext.plot_directive',
               'numpydoc',
-              'IPython.sphinxext.ipython_console_highlighting',
-              'nbsphinx'
+              'IPython.sphinxext.ipython_console_highlighting'
               ]
 
 myst_enable_extensions = [
@@ -58,7 +57,7 @@ rst_epilog = """
 version = version,
 )
 
-copyright = '2014-2021, Simons Foundation, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
+copyright = '2014-2025, The Simons Foundation, P. Seth, I. Krivenko, H. Strand, M. Ferrero, O. Parcollet'
 
 mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=default"
 templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_templates']

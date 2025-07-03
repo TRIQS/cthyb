@@ -21,7 +21,7 @@ Hamiltonian of the problem has the form
 
 .. sidebar:: cthyb |PROJECT_VERSION|
 
-   This is the homepage cthyb Version |PROJECT_VERSION|.
+   This is the homepage of cthyb Version |PROJECT_VERSION|.
    For changes see the :ref:`changelog page <changelog>`. 
    
       .. image:: _static/logo_github.png

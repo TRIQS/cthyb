@@ -23,11 +23,11 @@
 #include <algorithm>
 #include <limits>
 
-//#define CHECK_ALL
-#ifdef CHECK_ALL
-#define CHECK_CACHE
-#define CHECK_AGAINST_LINEAR_COMPUTATION
-#define CHECK_MATRIX_BOUNDED_BY_BOUND
+//#define TRACE_DEBUG_CHECKS
+#ifdef TRACE_DEBUG_CHECKS
+#define TRACE_CHECK_CACHE
+#define TRACE_CHECK_AGAINST_LINEAR_COMPUTATION
+#define TRACE_CHECK_MATRIX_BOUNDED_BY_BOUND
 #endif
 
 double double_max = std::numeric_limits<double>::max(); // easier to read
@@ -366,7 +366,7 @@ namespace triqs_cthyb {
       auto b_mat = compute_matrix(root, block_index); // b_mat = {block that b connects to, matrix for this block}
       if (b_mat.first == -1) TRIQS_RUNTIME_ERROR << " Internal error : B = -1 after compute matrix : " << block_index;
 
-#ifdef CHECK_AGAINST_LINEAR_COMPUTATION
+#ifdef TRACE_CHECK_AGAINST_LINEAR_COMPUTATION
       auto b_mat2 = check_one_block_matrix_linear(root, block_index);
       if (max_element(abs(b_mat.second - b_mat2)) > 1.e-10) TRIQS_RUNTIME_ERROR << " Matrix failed against linear computation";
 #endif
@@ -400,7 +400,7 @@ namespace triqs_cthyb {
         if (dev > 1.e-14) TRIQS_RUNTIME_ERROR << "Internal error : trace and density mismatch. Deviation: " << dev;
       }
 
-#ifdef CHECK_MATRIX_BOUNDED_BY_BOUND
+#ifdef TRACE_CHECK_MATRIX_BOUNDED_BY_BOUND
       if (std::abs(trace_partial) > 1.000001 * dim * std::exp(-to_sort_lnorm_b[bl].first))
         TRIQS_RUNTIME_ERROR << "Matrix not bounded by the bound ! test is " << std::abs(trace_partial) << " < "
                             << dim * std::exp(-to_sort_lnorm_b[bl].first);

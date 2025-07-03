@@ -38,11 +38,11 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
         mv -f Dockerfile.jenkins Dockerfile
       """
       /* build and tag */
-      def args = ''
+      def args = '-DTRACE_DEBUG_CHECKS=ON'
       if (platform == documentationPlatform)
-        args = '-DBuild_Documentation=1'
+        args = "-DBuild_Documentation=1 ${args}"
       else if (platform == "sanitize")
-        args = '-DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
+        args = "-DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo ${args}"
       def img = docker.build("flatironinstitute/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside("--shm-size=4gb") {
@@ -94,7 +94,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         /* note: this is installing into the parent (triqs) venv (install dir), which is thus shared among apps and so not be completely safe */
         sh "pip3 install -U -r $srcDir/requirements.txt"
-        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir -DBuild_Deps=Always -DHybridisation_is_complex=ON -DLocal_hamiltonian_is_complex=ON"
+        sh "cmake $srcDir -DCMAKE_INSTALL_PREFIX=$installDir -DTRIQS_ROOT=$triqsDir -DTRACE_DEBUG_CHECKS=ON -DHybridisation_is_complex=ON -DLocal_hamiltonian_is_complex=ON"
         sh "make -j2 || make -j1 VERBOSE=1"
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') { try {
           sh "make test CTEST_OUTPUT_ON_FAILURE=1"

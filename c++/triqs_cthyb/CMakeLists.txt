@@ -11,6 +11,7 @@ target_link_libraries(${PROJECT_NAME}_c PUBLIC triqs PRIVATE $<BUILD_INTERFACE:$
 
 # Additional compilation options
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
+option(TRACE_DEBUG_CHECKS "Enable various debug checks in the impurity trace computation [developers only]" OFF)
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
 set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
 
@@ -33,6 +34,7 @@ target_compile_definitions(${PROJECT_NAME}_c PUBLIC
 				$<$<BOOL:${Local_hamiltonian_is_complex}>:LOCAL_HAMILTONIAN_IS_COMPLEX>
 				$<$<BOOL:${MeasureG2}>:CTHYB_G2_NFFT>
 				$<$<BOOL:${EXT_DEBUG}>:EXT_DEBUG>
+				$<$<BOOL:${TRACE_DEBUG_CHECKS}>:TRACE_DEBUG_CHECKS>
 				$<$<BOOL:${SAVE_CONFIGS}>:SAVE_CONFIGS>
 				$<$<BOOL:${SAVE_CONFIGS}>:NUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE}>
 			  )

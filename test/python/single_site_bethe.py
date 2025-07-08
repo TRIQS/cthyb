@@ -26,6 +26,8 @@ p["n_warmup_cycles"] = 5000
 p["n_cycles"] = 5000
 p["measure_G_l"] = True
 p["move_double"] = False
+p["measure_G_iw"] = True
+p["measure_G_n_iw"] = 10
 p["perform_tail_fit"] = True
 p["fit_max_moment"] = 3
 p["fit_min_w"] = 1.2
@@ -63,6 +65,7 @@ if mpi.is_master_node():
         Results["G_l"] = S.G_l
 
         Results["G_iw"] = S.G_iw
+        Results["G_iw_direct"] = S.G_iw_direct
         Results["G_iw_raw"] = S.G_iw_raw
 
         # we store Sigma_iw_arw here, but comparing noisy Sigma from Dyson after 2 DMFT
@@ -84,3 +87,8 @@ if mpi.is_master_node():
 
         assert_block_gfs_are_close(Results["Delta_tau"], S.Delta_tau)
 
+# compare direct measured G_iw
+iw0 = len(S.G_iw.mesh)//2
+n_iw = p["measure_G_n_iw"]
+for block, gf in S.G_iw_direct:
+    assert_arrays_are_close(S.G_iw[block].data[iw0-n_iw:iw0+n_iw, :, :], S.G_iw_direct[block].data, precision=1e-4)

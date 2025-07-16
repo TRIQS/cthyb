@@ -29,7 +29,7 @@ namespace triqs_cthyb {
 
   // Containers for measurements
   struct container_set_t {
-    
+
     // -- Single particle Green's functions
 
     /// Single-particle Green's function :math:`G(\tau)` in imaginary time.

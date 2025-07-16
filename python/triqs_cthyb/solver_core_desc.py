@@ -225,6 +225,8 @@ c.add_member(c_name = "solve_parameters",
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | measure_density_matrix        | bool                                                     | false                         | Measure the reduced impurity density matrix? Automatically also determines high frequency moments for G and Sigma |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
+| time_invariance               | bool                                                     | false                         | Use time invariance to sample the density matrix?                                                                 |
++-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | use_norm_as_weight            | bool                                                     | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                                     |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | performance_analysis          | bool                                                     | false                         | Analyse performance of trace computation with histograms (developers only)?                                       |
@@ -531,6 +533,11 @@ c.add_member(c_name = "measure_density_matrix",
              c_type = "bool",
              initializer = """ false """,
              doc = r"""Measure the reduced impurity density matrix?""")
+
+c.add_member(c_name = "time_invariance",
+             c_type = "bool",
+             initializer = """ false """,
+             doc = r"""Use time invariance to measure the density matrix?""")
 
 c.add_member(c_name = "use_norm_as_weight",
              c_type = "bool",

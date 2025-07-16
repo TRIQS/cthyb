@@ -50,10 +50,11 @@ namespace triqs_cthyb {
 
   // -------- Constructor --------
   impurity_trace::impurity_trace(double beta, atom_diag const &h_diag_, histo_map_t *hist_map, bool use_norm_as_weight, bool measure_density_matrix,
-                                 bool performance_analysis)
+                                 bool time_invariance, bool performance_analysis)
      : beta(beta),
        use_norm_as_weight(use_norm_as_weight),
        measure_density_matrix(measure_density_matrix),
+       time_invariance(time_invariance),
        h_diag(&h_diag_),
        density_matrix(n_blocks),
        atomic_rho(n_blocks),
@@ -111,6 +112,7 @@ namespace triqs_cthyb {
 
     return (n->left ? compute_block_table(n->left, b2) : b2);
   }
+
   // -------- Computation of the block table and bounds -------------
 
   // for subtree at node n, return (B', bound)
@@ -127,7 +129,7 @@ namespace triqs_cthyb {
     if (n->right) {
       std::tie(b1, lnorm) = compute_block_table_and_bound(n->right, b, lnorm_threshold, use_threshold);
       if (b1 < 0) return {b1, 0};
-      lnorm += n->cache.dtau_r * get_block_emin(b1);
+      lnorm += n->cache.dtau_r_temp * get_block_emin(b1);
     }
     if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
 
@@ -135,8 +137,9 @@ namespace triqs_cthyb {
     if (b2 < 0) return {b2, 0};
 
     int b3 = b2;
+
     if (n->left) {
-      lnorm += n->cache.dtau_l * get_block_emin(b2);
+      lnorm += n->cache.dtau_l_temp * get_block_emin(b2);
       if (use_threshold && (lnorm > lnorm_threshold)) return {-1, 0};
       double lnorm3;
       std::tie(b3, lnorm3) = compute_block_table_and_bound(n->left, b2, lnorm_threshold, use_threshold);
@@ -177,9 +180,17 @@ namespace triqs_cthyb {
     matrix_t M = (!n->delete_flag ? get_op_block_matrix(n, b1) : nda::eye<h_scalar_t>(get_block_dim(b1)));
 
     if (n->right) { // M <- M * exp * r[b]
-      dtau_r   = double(n->key - tree.min_key(n->right));
+      if (n->modified) dtau_r = n->cache.dtau_r_temp;
+      else dtau_r = n->cache.dtau_r;
       auto dim = M.shape()[1];                                                               // same as get_block_dim(b2);
-      for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i)); // Create time-evolution matrix e^-H(t'-t)
+      if (updating) {
+        if (n->cache.exp_r[b1].empty()) n->cache.exp_r[b1].resize(dim);
+        for (int i = 0; i < dim; ++i) {
+          n->cache.exp_r[b1][i] = std::exp(-dtau_r * get_block_eigenval(b1, i));
+          M(_, i) *= n->cache.exp_r[b1][i];
+        }
+      }
+      else for (int i = 0; i < dim; ++i) M(_, i) *= std::exp(-dtau_r * get_block_eigenval(b1, i));
       if ((r.second.shape()[0] == 1) && (r.second.shape()[1] == 1))
         M *= r.second(0, 0);
       else
@@ -191,9 +202,17 @@ namespace triqs_cthyb {
       auto l = compute_matrix(n->left, b2);
       b3     = l.first;
       if (b3 == -1) return {-1, {}};
-      dtau_l   = double(tree.max_key(n->left) - n->key);
+      if (n->modified) dtau_l = n->cache.dtau_l_temp;
+      else dtau_l = n->cache.dtau_l;
       auto dim = M.shape()[0]; // same as get_block_dim(b1);
-      for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b2, i));
+      if (updating) {
+        if (n->cache.exp_l[b2].empty()) n->cache.exp_l[b2].resize(dim);
+        for (int i = 0; i < dim; ++i) {
+          n->cache.exp_l[b2][i] = std::exp(-dtau_l * get_block_eigenval(b2, i));
+          M(i, _) *= n->cache.exp_l[b2][i];
+        }
+      }
+      else for (int i = 0; i < dim; ++i) M(i, _) *= std::exp(-dtau_l * get_block_eigenval(b2, i));
       if ((l.second.shape()[0] == 1) && (l.second.shape()[1] == 1))
         M *= l.second(0, 0);
       else
@@ -218,6 +237,263 @@ namespace triqs_cthyb {
     return {b3, std::move(M)};
   }
 
+  // At each node, computes recursively the full left matrix (keeping only the operators with tau >= tau_node) for block b
+
+  void impurity_trace::compute_matrix_left(node n, int b, matrix_t &Mleft, bool is_empty, double dtau_beta) {
+
+    auto _ = arrays::range();
+
+    int b1 = b;
+    if (n->right) b1 = (n->right)->cache.block_table[b];
+    int b2 = get_op_block_map(n,b1);
+
+    int dimb1 = get_block_dim(b1);
+    int dimb2 = get_block_dim(b2);
+
+    if (!n->left && is_empty && !n->cache.matrix_left_valid[b1]) {
+      if (n->cache.matrix_left[b1].shape()[0] != dimb2 || n->cache.matrix_left[b1].shape()[1] != dimb1)
+        n->cache.matrix_left[b1] = matrix_t(dimb2,dimb1);
+      for (int i = 0; i < dimb2; ++i)
+        n->cache.matrix_left[b1](i,_) = get_op_block_matrix(n,b1)(i,_) * std::exp(- dtau_beta * get_block_eigenval(b2,i)) ;
+      n->cache.matrix_left_valid[b1] = true;
+    }
+
+    if (!n->left && !is_empty && !n->cache.matrix_left_valid[b1]) {
+      if (dimb1==1 && dimb2==1)
+        n->cache.matrix_left[b1] = Mleft * get_op_block_matrix(n,b1)(0,0);
+      else
+        n->cache.matrix_left[b1] = Mleft * get_op_block_matrix(n,b1);
+      n->cache.matrix_left_valid[b1] = true;
+    }
+
+    if (n->left && !n->cache.matrix_left_valid[b1]) {
+      compute_matrix_left(n->left, b2, Mleft, is_empty, dtau_beta);
+      node x = tree.max(n->left);
+      if (n->cache.matrix_left[b1].shape()[0] != dimb2 || n->cache.matrix_left[b1].shape()[1] != dimb1)
+        n->cache.matrix_left[b1] = matrix_t(dimb2,dimb1);
+      for (int i = 0; i < dimb2; ++i)
+        n->cache.matrix_left[b1](i,_) = get_op_block_matrix(n,b1)(i,_) * n->cache.exp_l[b2][i];
+      if (dimb1==1 && dimb2==1)
+        n->cache.matrix_left[b1] = x->cache.matrix_left[b2] * n->cache.matrix_left[b1](0,0);
+      else
+        n->cache.matrix_left[b1] = x->cache.matrix_left[b2] * n->cache.matrix_left[b1];
+      n->cache.matrix_left_valid[b1] = true;
+    }
+
+    if (n->right) {
+      int dim = n->cache.matrix_left[b1].shape()[0];
+      if (Mleft.shape()[0] != dim || Mleft.shape()[1] != dimb1) Mleft = matrix_t(dim,dimb1);
+      for (int i = 0; i < dimb1; ++i)
+        Mleft(_,i) = n->cache.matrix_left[b1](_,i) * n->cache.exp_r[b1][i];
+      compute_matrix_left(n->right, b, Mleft, false, dtau_beta);
+    }
+  }
+
+  // At each node, computes recursively the full right matrix (keeping only the operators with tau <= tau_node) for block b
+
+  void impurity_trace::compute_matrix_right(node n, int b, int br, matrix_t &Mright, bool is_empty, double dtau_0) {
+
+    auto _ = arrays::range();
+
+    int b1 = br ;
+    if (n->right) b1 = (n->right)->cache.block_table[br];
+    int b2 = get_op_block_map(n,b1);
+
+    int dimb1 = get_block_dim(b1);
+    int dimb2 = get_block_dim(b2);
+    int dimb  = get_block_dim(b);
+
+    if (!n->right && is_empty && !n->cache.matrix_right_valid[b]) {
+      if (n->cache.matrix_right[b].shape()[0] != dimb2 || n->cache.matrix_right[b].shape()[1] != dimb)
+        n->cache.matrix_right[b] = matrix_t(dimb2,dimb);
+      for (int i = 0; i < dimb; ++i)
+        n->cache.matrix_right[b](_,i) = get_op_block_matrix(n,b)(_,i) * std::exp(- dtau_0 * get_block_eigenval(b,i)) ;
+      n->cache.matrix_right_valid[b] = true;
+    }
+
+    if (!n->right && !is_empty && !n->cache.matrix_right_valid[b]) {
+      if (dimb1==1 && dimb2==1)
+        n->cache.matrix_right[b] = get_op_block_matrix(n,b1)(0,0) * Mright;
+      else
+        n->cache.matrix_right[b] = get_op_block_matrix(n,b1) * Mright;
+      n->cache.matrix_right_valid[b] = true;
+    }
+
+    if (n->right && !n->cache.matrix_right_valid[b]) {
+      compute_matrix_right(n->right, b, br, Mright, is_empty, dtau_0);
+      node x = tree.min(n->right);
+      if (n->cache.matrix_right[b].shape()[0] != dimb2 || n->cache.matrix_right[b].shape()[1] != dimb1)
+        n->cache.matrix_right[b] = matrix_t(dimb2,dimb1);
+      for (int i = 0; i < dimb1; ++i)
+        n->cache.matrix_right[b](_,i) = get_op_block_matrix(n,b1)(_,i) * n->cache.exp_r[b1][i];
+      if (dimb1==1 && dimb2==1)
+        n->cache.matrix_right[b] = n->cache.matrix_right[b](0,0) * x->cache.matrix_right[b];
+      else
+        n->cache.matrix_right[b] = n->cache.matrix_right[b] * x->cache.matrix_right[b];
+      n->cache.matrix_right_valid[b] = true;
+    }
+
+    if (n->left) {
+      if (Mright.shape()[0] != dimb2 || Mright.shape()[1] != dimb) Mright = matrix_t(dimb2,dimb);
+      for (int i = 0; i < dimb2; ++i)
+        Mright(i,_) = n->cache.matrix_right[b](i,_) * n->cache.exp_l[b2][i];
+      compute_matrix_right(n->left, b, b2, Mright, false, dtau_0);
+    }
+  }
+
+  /// Mark the matrix left that need to be recomputed
+  void impurity_trace::update_matrix_left(node n) {
+    if (n->key <= max_tau) {
+      for (int b = 0; b < n_blocks; ++b) n->cache.matrix_left_valid[b] = false;
+      if (n->left) update_matrix_left(n->left);
+    }
+    if (n->right) update_matrix_left(n->right);
+  }
+
+  /// Mark the matrix right that need to be recomputed
+  void impurity_trace::update_matrix_right(node n) {
+    if (n->key >= min_tau) {
+      for (int b = 0; b < n_blocks; ++b) n->cache.matrix_right_valid[b] = false;
+      if (n->right) update_matrix_right(n->right);
+    }
+    if (n->left) update_matrix_right(n->left);
+  }
+
+  bool impurity_trace::check_norm(node n) {
+    if (!n) return false;
+    bool check_l = check_norm(n->left);
+    bool check_r = check_norm(n->right);
+    bool check   = check_l || check_r;
+    if (!check) check = (n->left && n->cache.norm_l == 0) || (n->right && n->cache.norm_r == 0);
+    if (!check) check = (n->left  && !isfinite(1. / n->cache.norm_l)) || (n->right && !isfinite(1. / n->cache.norm_r));
+    n->cache.norm_l = 0.;
+    n->cache.norm_r = 0.;
+    return check;
+  }
+
+  /// Compute the upper bound for the integral over all time-shifted configurations
+  double impurity_trace::compute_max_bound(node n, int b, double bound_left, double bound_right) {
+
+    int b1 = b;
+    if (n->right) b1 = (n->right)->cache.block_table[b];
+    int b2 = get_op_block_map(n, b1);
+    double bound = bound_left + bound_right;
+    double xl = 0., xr = 0., xxl = 0., xxr = 0.;
+
+    if (n->left)  {
+      xxl = n->cache.dtau_l * get_block_emin(b2);
+      xl  = xxl + (n->left)->cache.matrix_lnorms[b2];
+    }
+    if (n->right) {
+      xxr = n->cache.dtau_r * get_block_emin(b1);
+      xr  = xxr + (n->right)->cache.matrix_lnorms[b];
+    }
+    bound += xr + xl;
+
+    double lnorm   = (n->left || n->right ? std::exp(-bound) : 1.);
+    double bound_l = (n->left  ? lnorm * std::sqrt(get_block_dim(b2)) * n->cache.dtau_l / beta : 0.);
+    double bound_r = (n->right ? lnorm * std::sqrt(get_block_dim(b1)) * n->cache.dtau_r / beta : 0.);
+    double bound_max = bound_l + bound_r;
+
+    if (n->left) {
+      double bound_max_l = compute_max_bound(n->left, b2, bound_left, bound_right + xr + xxl);
+      bound_max += bound_max_l;
+    }
+
+    if (n->right) {
+      double bound_max_r = compute_max_bound(n->right, b, bound_left + xl + xxr, bound_right);
+      bound_max += bound_max_r;
+    }
+
+    return bound_max;
+  }
+
+  void impurity_trace::compute_density_matrix(node n, int b, int br, bool is_root, double dtau_beta, double dtau_0) {
+
+    double weight = 0;
+    double eu = 0;
+    double ev = 0;
+
+    if (n->left || n->right || is_root) {
+      int b1 = br ;
+      if (n->right) b1 = (n->right)->cache.block_table[br];
+      int b2 = get_op_block_map(n,b1);
+
+      int dimb  = get_block_dim(b);
+      int dimb1 = get_block_dim(b1);
+      int dimb2 = get_block_dim(b2);
+      double dtau = dtau_beta + dtau_0;
+      double epsilon = 1.e-15;
+
+      // Special case when sampling the density matrix between last
+      // and first operators. We only do it once, at the root node.
+      if (is_root) {
+        for (int u = 0; u < dimb; ++u) {
+          eu = get_block_eigenval(b,u);
+          for (int v = 0; v < dimb; ++v) {
+            ev = get_block_eigenval(b,v);
+            if (std::abs(eu - ev) < epsilon)
+              weight = std::exp(-eu * dtau) * dtau / beta;
+            else
+              weight = (std::exp(- eu * dtau) - std::exp(- ev * dtau) ) / (beta * (ev - eu));
+            density_matrix[b].mat(u,v) = density_matrix[b].mat(u,v) + n->cache.matrices[b](u,v) * weight;
+          }
+        }
+        density_matrix[b].is_valid = true;
+      }
+
+      if (n->left) {
+        double dtau_l = n->cache.dtau_l;
+        matrix_t M = {};
+        node x = tree.max(n->left);
+        if (dimb==1 && dimb2==1)
+          M = n->cache.matrix_right[b](0,0) * x->cache.matrix_left[b2];
+        else
+          M = n->cache.matrix_right[b] * x->cache.matrix_left[b2];
+        for (int u = 0; u < dimb2; ++u) {
+          eu = get_block_eigenval(b2,u);
+          for (int v = 0; v < dimb2; ++v) {
+            ev = get_block_eigenval(b2,v);
+            if (std::abs(eu - ev) < epsilon)
+              weight = n->cache.exp_l[b2][u] * dtau_l / beta;
+            else
+              weight = (n->cache.exp_l[b2][u] - n->cache.exp_l[b2][v] ) / (beta * (ev - eu));
+            density_matrix[b2].mat(u,v) = density_matrix[b2].mat(u,v) + M(u,v) * weight;
+            double xx = std::abs(M(u,v));
+            n->cache.norm_l += xx * xx;
+          }
+        }
+        density_matrix[b2].is_valid = true;
+        compute_density_matrix(n->left, b, b2, false, dtau_beta, dtau_0);
+      }
+
+      if (n->right) {
+        double dtau_r = n->cache.dtau_r;
+        matrix_t M = {};
+        node x = tree.min(n->right);
+        if (dimb==1 && dimb1==1)
+          M = x->cache.matrix_right[b](0,0) * n->cache.matrix_left[b1];
+        else
+          M = x->cache.matrix_right[b] * n->cache.matrix_left[b1];
+        for (int u = 0; u < dimb1; ++u) {
+          eu = get_block_eigenval(b1,u);
+          for (int v = 0; v < dimb1; ++v) {
+            ev = get_block_eigenval(b1,v);
+            if (std::abs(eu - ev) < epsilon)
+              weight = n->cache.exp_r[b1][u] * dtau_r / beta;
+            else
+              weight = (n->cache.exp_r[b1][u] - n->cache.exp_r[b1][v]) / (beta * (ev - eu));
+            density_matrix[b1].mat(u,v) = density_matrix[b1].mat(u,v) + M(u,v) * weight;
+            double xx = std::abs(M(u,v));
+            n->cache.norm_r += xx * xx;
+          }
+        }
+        density_matrix[b1].is_valid = true;
+        compute_density_matrix(n->right, b, br, false, dtau_beta, dtau_0);
+      }
+    }
+  }
+
   // ------- Update the cache -----------------------
 
   void impurity_trace::update_cache() { update_cache_impl(tree.get_root()); }
@@ -232,6 +508,8 @@ namespace triqs_cthyb {
     update_cache_impl(n->right);
     n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
     n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
+    n->cache.dtau_l_temp = n->cache.dtau_l; // Necessary for the call to compute_block_table_and_bound below
+    n->cache.dtau_r_temp = n->cache.dtau_r;
     for (int b = 0; b < n_blocks; ++b) {
       auto r                        = compute_block_table_and_bound(n, b, double_max, false);
       n->cache.block_table[b]       = r.first;
@@ -248,13 +526,13 @@ namespace triqs_cthyb {
     if ((n == nullptr) || (!n->modified)) return;
     update_dtau(n->left);
     update_dtau(n->right);
-    n->cache.dtau_r = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
-    n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
+    n->cache.dtau_r_temp = (n->right ? double(n->key - tree.min_key(n->right)) : 0);
+    n->cache.dtau_l_temp = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
   }
 
   //-------- Compute the full trace ------------------------------------------
   // Returns MC atomic weight and reweighting = trace/(atomic weight)
-  std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u_yee) {
+  std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u_yee, bool meas_den) {
 
     double epsilon         = 1.e-15; // Machine precision
     auto log_epsilon0      = -std::log(1.e-15);
@@ -263,8 +541,8 @@ namespace triqs_cthyb {
 
     // simplifies later code
     if (tree_size == 0) {
+      if (meas_den) density_matrix = atomic_rho;
       if (use_norm_as_weight) {
-        density_matrix = atomic_rho;
         return {atomic_norm, atomic_z / atomic_norm};
       } else
         return {atomic_z, 1};
@@ -329,7 +607,25 @@ namespace triqs_cthyb {
     double norm_trace_sq = 0, trace_abs = 0;
 
     // Put density_matrix to "not recomputed"
-    for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
+    if (meas_den) {
+      if (time_invariance) {   // reset to 0
+        for (int bl = 0; bl < n_blocks; ++bl)  {
+          int dim = get_block_dim(bl);
+          density_matrix[bl].mat = matrix_t(dim,dim);
+          density_matrix[bl].mat = h_scalar_t{0};
+	  density_matrix[bl].is_valid = false;
+        }
+        if (root) {
+          update_matrix_left(root);
+          update_matrix_right(root);
+        }
+        min_tau = time_pt(time_pt::Nmax,beta);
+        max_tau = time_pt(0,beta);
+      }
+      else {
+        for (int bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
+      }
+    }
 
     auto trace_contrib_block = std::vector<std::pair<double, int>>{}; //FIXME complex -- can histos handle this?
 
@@ -342,9 +638,14 @@ namespace triqs_cthyb {
     bound_cumul[n_bl] = 0;
     if (!use_norm_as_weight) {
       for (int bl = n_bl - 1; bl >= 0; --bl)
-        bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
+	bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
     } else {
-      for (int bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] + std::exp(-to_sort_lnorm_b[bl].first);
+      for (int bl = n_bl - 1; bl >= 0; --bl) {
+        double lnorm = std::exp(-to_sort_lnorm_b[bl].first);
+        if (meas_den && time_invariance)
+          lnorm = lnorm * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second)) * dtau / beta + compute_max_bound(root, to_sort_lnorm_b[bl].second, dtau_beta, dtau_0);
+        bound_cumul[bl] = bound_cumul[bl + 1] + lnorm;
+      }
     }
 
     int bl;
@@ -380,15 +681,23 @@ namespace triqs_cthyb {
         trace_abs += std::abs(x);
       }
 
-      if (use_norm_as_weight) { // else we are not allowed to compute this matrix, may make no sense
+      if (use_norm_as_weight) {
         // recompute the density matrix
-        density_matrix[block_index].is_valid = true;
         double norm_trace_sq_partial         = 0;
-        auto &mat                            = density_matrix[block_index].mat;
+        matrix_t M = {};
+        matrix_t *mat;
+        if (meas_den && !time_invariance) {
+          mat = &density_matrix[block_index].mat;
+          density_matrix[block_index].is_valid = true;
+        }
+        else {
+          M = matrix_t(dim,dim);
+          mat = &M;
+        }
         for (int u = 0; u < dim; ++u) {
           for (int v = 0; v < dim; ++v) {
-            mat(u, v) = b_mat.second(u, v) * std::exp(-dtau_beta * get_block_eigenval(block_index, u) - dtau_0 * get_block_eigenval(block_index, v));
-            double xx = std::abs(mat(u, v));
+            (*mat)(u, v) = b_mat.second(u, v) * std::exp(-dtau_beta * get_block_eigenval(block_index, u) - dtau_0 * get_block_eigenval(block_index, v));
+            double xx = std::abs((*mat)(u, v));
             norm_trace_sq_partial += xx * xx;
           }
         }
@@ -396,8 +705,14 @@ namespace triqs_cthyb {
         // internal check
         if (std::abs(trace_partial) - 1.0000001 * std::sqrt(norm_trace_sq_partial) * get_block_dim(block_index) > 1.e-15)
           TRIQS_RUNTIME_ERROR << "|trace| > dim * norm" << trace_partial << " " << std::sqrt(norm_trace_sq_partial) << "  " << trace_abs;
-        auto dev = std::abs(trace_partial - trace(mat));
+        auto dev = std::abs(trace_partial - trace(*mat));
         if (dev > 1.e-14) TRIQS_RUNTIME_ERROR << "Internal error : trace and density mismatch. Deviation: " << dev;
+      }
+      if (meas_den && time_invariance) {
+        matrix_t M = {};
+        compute_matrix_left(root, block_index, M, true, dtau_beta);
+        compute_matrix_right(root, block_index, block_index, M, true, dtau_0);
+        compute_density_matrix(root, block_index, block_index, true, dtau_beta, dtau_0);
       }
 
 #ifdef TRACE_CHECK_MATRIX_BOUNDED_BY_BOUND
@@ -422,6 +737,34 @@ namespace triqs_cthyb {
       }
     } // loop on block
 
+    if (meas_den && time_invariance) {
+      bool check = check_norm(root); // Check if one of the time-shifted configurations is 0
+      if (check) {   // Switch to conventional sampling if that's the case
+        full_trace = 0;
+        for (bl = 0; bl < n_blocks; ++bl) density_matrix[bl].is_valid = false;
+        for (bl = n_bl - 1; bl >= 0; --bl) bound_cumul[bl] = bound_cumul[bl + 1] +
+            std::exp(-to_sort_lnorm_b[bl].first) * std::sqrt(get_block_dim(to_sort_lnorm_b[bl].second));
+        for (bl = 0; bl < n_bl; ++bl) {
+          if ((bl > 0) && (bound_cumul[bl] <= std::abs(full_trace) * epsilon)) break;
+          int block_index = to_sort_lnorm_b[bl].second;
+          auto b_mat = compute_matrix(root, block_index);
+          h_scalar_t trace_partial = 0;
+          auto dim                 = get_block_dim(block_index);
+          for (int u = 0; u < dim; ++u) {
+            auto x = b_mat.second(u, u) * std::exp(-dtau * get_block_eigenval(block_index, u));
+            trace_partial += x;
+          }
+          density_matrix[block_index].is_valid = true;
+          auto &mat                            = density_matrix[block_index].mat;
+          for (int u = 0; u < dim; ++u) {
+            for (int v = 0; v < dim; ++v)
+              mat(u, v) = b_mat.second(u, v) * std::exp(-dtau_beta * get_block_eigenval(block_index, u) - dtau_0 * get_block_eigenval(block_index, v));
+          }
+          full_trace += trace_partial;
+        }
+      }
+    }
+
     double norm_trace = std::sqrt(norm_trace_sq);
     if (!isfinite(full_trace)) TRIQS_RUNTIME_ERROR << " full_trace not finite" << full_trace;
 
@@ -440,7 +783,7 @@ namespace triqs_cthyb {
     // return {weight, reweighting}
     if (!use_norm_as_weight) return {full_trace, 1};
     // else determine reweighting
-    auto rw = full_trace / norm_trace;
+    auto rw = (norm_trace == 0 ? 1 : full_trace / norm_trace);
     if (!isfinite(rw)) rw = 1;
     //FIXME if (!isfinite(rw)) TRIQS_RUNTIME_ERROR << "Atomic correlators : reweight not finite" << full_trace << " "<< norm_trace;
     return {norm_trace, rw};

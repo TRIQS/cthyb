@@ -109,7 +109,7 @@ namespace triqs_cthyb {
       std::cerr << "Weight: " << p / t_ratio << std::endl;
       TRIQS_RUNTIME_ERROR << "(remove) p not finite :" << p << " in config " << config.get_id();
     }
-    
+
     if (!isfinite(p / t_ratio)){
       TRIQS_RUNTIME_ERROR << "(remove) p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
     }
@@ -117,6 +117,11 @@ namespace triqs_cthyb {
   }
 
   mc_weight_t move_remove_c_cdag::accept() {
+
+    time_pt tau_min = std::min(tau1,tau2);
+    time_pt tau_max = std::max(tau1,tau2);
+    if (tau_min < data.imp_trace.min_tau) data.imp_trace.min_tau = tau_min;
+    if (tau_max > data.imp_trace.max_tau) data.imp_trace.max_tau = tau_max;
 
     // remove from the tree
     data.imp_trace.confirm_delete();

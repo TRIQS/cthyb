@@ -126,6 +126,7 @@ namespace triqs_cthyb {
 
     h5_write(grp, "measure_pert_order", sp.measure_pert_order);
     h5_write(grp, "measure_density_matrix", sp.measure_density_matrix);
+    h5_write(grp, "time_invariance", sp.time_invariance);
     h5_write(grp, "use_norm_as_weight", sp.use_norm_as_weight);
     h5_write(grp, "performance_analysis", sp.performance_analysis);
     h5_write(grp, "proposal_prob", sp.proposal_prob);
@@ -193,6 +194,7 @@ namespace triqs_cthyb {
 
     h5_read(grp, "measure_pert_order", sp.measure_pert_order);
     h5_read(grp, "measure_density_matrix", sp.measure_density_matrix);
+    h5_read(grp, "time_invariance", sp.time_invariance);
     h5_read(grp, "use_norm_as_weight", sp.use_norm_as_weight);
     h5_read(grp, "performance_analysis", sp.performance_analysis);
     h5_read(grp, "proposal_prob", sp.proposal_prob);

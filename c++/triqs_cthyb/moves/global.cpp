@@ -167,6 +167,16 @@ namespace triqs_cthyb {
 
   mc_weight_t move_global::accept() {
 
+    time_pt tau_min = time_pt(time_pt::Nmax,data.config.beta());
+    time_pt tau_max = time_pt(0,data.config.beta());
+    for (auto const &o : updated_ops) {
+      time_pt tau_temp = o.first;
+      if (tau_temp < tau_min) tau_min = tau_temp;
+      if (tau_temp > tau_max) tau_max = tau_temp;
+    }
+    if (tau_min < data.imp_trace.min_tau) data.imp_trace.min_tau = tau_min;
+    if (tau_max > data.imp_trace.max_tau) data.imp_trace.max_tau = tau_max;
+
     for (auto const &o : updated_ops) data.config.replace(o.first, o.second);
     config.finalize();
 

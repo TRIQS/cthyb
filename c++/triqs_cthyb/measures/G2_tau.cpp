@@ -95,7 +95,7 @@ namespace triqs_cthyb {
     // the 1/2 smaller volume of the side bins,
     // the 1/4 smaller volume of the edge bins, and
     // the 1/8 smaller volume of the corner bins.
-    
+
     for (auto &G2_tau_block : G2_tau) {
       auto _ = all_t{};
       int n  = std::get<0>(G2_tau_block.mesh().components()).size() - 1;

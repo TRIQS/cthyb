@@ -36,7 +36,7 @@ namespace triqs_cthyb {
 
     using B = G2_iw::measure_G2_iw_base<Channel>;
     using B::collect_results;
-    
+
     private:
     G2_iw::M_block_arr_t M_block_arr;
     using B::M, B::M_mesh, B::G2_measures, B::data, B::timer_M, B::accumulate_G2;

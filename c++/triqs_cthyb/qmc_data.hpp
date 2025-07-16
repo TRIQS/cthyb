@@ -73,7 +73,7 @@ namespace triqs_cthyb {
          tau_seg(beta),
          linindex(linindex),
          h_diag(h_diag),
-         imp_trace(beta, h_diag, histo_map, p.use_norm_as_weight, p.measure_density_matrix, p.performance_analysis),
+         imp_trace(beta, h_diag, histo_map, p.use_norm_as_weight, p.measure_density_matrix, p.time_invariance, p.performance_analysis),
          n_inner(n_inner),
          delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          current_sign(1),

@@ -52,7 +52,7 @@ def plot_configs(hdf_file,beta,n_configs,delta_configs):
         conf = load_configuration(hdf_file,conf_idx)
         conf.plot(beta,conf_offset)
         conf_offset += 0.01
-        
+
 def hist_pert_order(hdf_file,n_configs):
     length=[]
     for i in range(1,n_configs+1):

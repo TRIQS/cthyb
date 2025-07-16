@@ -38,7 +38,7 @@ namespace triqs_cthyb {
 
     using B = G2_iw::measure_G2_iw_base<Channel>;
     using B::collect_results;
-    
+
     private:
     std::vector<nfft_array_t<2, 2>> M_nfft;
     using B::M, B::M_mesh, B::G2_measures, B::data, B::timer_M, B::accumulate_G2;

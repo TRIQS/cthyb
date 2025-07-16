@@ -145,6 +145,15 @@ namespace triqs_cthyb {
 
   mc_weight_t move_remove_c_c_cdag_cdag::accept() {
 
+    time_pt tau_min  = std::min(tau1,tau2);
+    time_pt tau_min2 = std::min(tau3,tau4);
+    tau_min = std::min(tau_min,tau_min2);
+    time_pt tau_max  = std::max(tau1,tau2);
+    time_pt tau_max2 = std::max(tau3,tau4);
+    tau_max = std::max(tau_max,tau_max2);
+    if (tau_min < data.imp_trace.min_tau) data.imp_trace.min_tau = tau_min;
+    if (tau_max > data.imp_trace.max_tau) data.imp_trace.max_tau = tau_max;
+
     // remove from the tree
     data.imp_trace.confirm_delete();
 

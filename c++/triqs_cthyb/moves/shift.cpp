@@ -206,6 +206,11 @@ namespace triqs_cthyb {
 
   mc_weight_t move_shift_operator::accept() {
 
+    time_pt tau_min = std::min(tau_old,tau_new);
+    time_pt tau_max = std::max(tau_old,tau_new);
+    if (tau_min < data.imp_trace.min_tau) data.imp_trace.min_tau = tau_min;
+    if (tau_max > data.imp_trace.max_tau) data.imp_trace.max_tau = tau_max;
+
     // Update the tree
     data.imp_trace.confirm_shift();
 

@@ -50,10 +50,11 @@ namespace triqs_cthyb {
 
   // -------- Constructor --------
   impurity_trace::impurity_trace(double beta, atom_diag const &h_diag_, histo_map_t *hist_map, bool use_norm_as_weight, bool measure_density_matrix,
-                                 bool performance_analysis)
+                                 bool performance_analysis, bool use_bound_as_threshold)
      : beta(beta),
        use_norm_as_weight(use_norm_as_weight),
        measure_density_matrix(measure_density_matrix),
+       use_bound_as_threshold(use_bound_as_threshold),
        h_diag(&h_diag_),
        density_matrix(n_blocks),
        atomic_rho(n_blocks),
@@ -288,7 +289,7 @@ namespace triqs_cthyb {
     update_dtau(root); // recompute the dtau for modified nodes
 
     for (int b = 0; b < n_blocks; ++b) {
-      auto block_lnorm_pair = compute_block_table_and_bound(root, b, lnorm_threshold, false);
+      auto block_lnorm_pair = compute_block_table_and_bound(root, b, lnorm_threshold, use_bound_as_threshold);
 
       // Check that the final block is the same as the initial block or -1, indicating structural cancellation
       // This guarantees that the density matrix is blockwise diagonal (otherwise the code will have thrown an error).
@@ -307,15 +308,14 @@ namespace triqs_cthyb {
 
       if (block_lnorm_pair.first == b) { // final structural check B ---> returns to B.
         double lnorm    = block_lnorm_pair.second + dtau * get_block_emin(b);
-        //lnorm_threshold = std::min(lnorm_threshold, lnorm + log_epsilon0);
+        lnorm_threshold = (use_bound_as_threshold ? std::min(lnorm_threshold, lnorm + log_epsilon0) : double_max);
         init_to_sort_lnorm_b.emplace_back(lnorm, b);
       }
     }
 
     // recut since lnorm_threshold evolved in the previous loop
     for (auto const &b_b : init_to_sort_lnorm_b)
-      //if (b_b.first <= lnorm_threshold) to_sort_lnorm_b.push_back(b_b);
-      to_sort_lnorm_b.push_back(b_b);
+      if (b_b.first <= lnorm_threshold) to_sort_lnorm_b.push_back(b_b);
 
     if (histo) histo->n_block_at_root << to_sort_lnorm_b.size();
 

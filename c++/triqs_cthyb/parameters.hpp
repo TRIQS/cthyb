@@ -200,6 +200,9 @@ namespace triqs_cthyb {
     /// Analyse performance of trace computation with histograms (developers only)?
     bool performance_analysis = false;
 
+    /// Should we use the largest upper bound for the block contributions to the trace to disregard blocks with much smaller upper bounds?
+    bool use_bound_as_threshold = false;
+
     /// Operator insertion/removal probabilities for different blocks
     /// type: dict(str:float)
     /// default: {}

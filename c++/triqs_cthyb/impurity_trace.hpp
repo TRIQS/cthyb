@@ -43,11 +43,12 @@ namespace triqs_cthyb {
     double beta;
     bool use_norm_as_weight;
     bool measure_density_matrix;
+    bool use_bound_as_threshold;
 
     public:
     // construct from the config, the diagonalization of h_loc, and parameters
     impurity_trace(double beta, atom_diag const &h_diag, histo_map_t *hist_map,
-		   bool use_norm_as_weight=false, bool measure_density_matrix=false, bool performance_analysis=false);
+		   bool use_norm_as_weight=false, bool measure_density_matrix=false, bool performance_analysis=false, bool use_bound_as_threshold=false);
 
     ~impurity_trace() {
       cancel_insert_impl(); // in case of an exception, we need to remove any trial nodes before cleaning the tree!
@@ -143,7 +144,7 @@ namespace triqs_cthyb {
 
     // recursive function for tree traversal
     int compute_block_table(node n, int b);
-    std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold = true);
+    std::pair<int, double> compute_block_table_and_bound(node n, int b, double bound_threshold, bool use_threshold);
     std::pair<int, matrix_t> compute_matrix(node n, int b);
 
     void update_cache_impl(node n);

@@ -61,7 +61,7 @@ namespace triqs_cthyb {
   };
 
   solver_core::solver_core(constr_parameters_t const &p)
-     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), delta_interface(p.delta_interface), _configuration(p.beta), constr_parameters(p) {
+     : beta(p.beta), gf_struct(p.gf_struct), n_iw(p.n_iw), n_tau(p.n_tau), n_l(p.n_l), delta_interface(p.delta_interface), constr_parameters(p) {
 
     if (p.n_tau < 2 * p.n_iw)
       TRIQS_RUNTIME_ERROR
@@ -262,7 +262,7 @@ namespace triqs_cthyb {
     }
 
     // Initialise Monte Carlo quantities
-    qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map, _configuration);
+    qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
     auto qmc =
        mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, params.verbosity);
 
@@ -443,6 +443,9 @@ namespace triqs_cthyb {
        qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle,
                                  triqs::utility::clock_callback(params.max_time), sign);
     qmc.collect_results(_comm);
+
+    // set the last configuration
+    _last_configuration = data.config;
 
     if (params.verbosity >= 2) {
       std::cout << "Average sign: " << _average_sign << std::endl;

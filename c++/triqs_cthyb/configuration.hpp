@@ -78,7 +78,7 @@ namespace triqs_cthyb {
     ~configuration() { configs_hfile.close(); }
 #else
     configuration(double beta) : beta_(beta), id(0) {}
-    configuration() : beta_(double(0.)) {}
+    configuration() : configuration(0.0) {}
 #endif
 
     double beta() const { return beta_; }

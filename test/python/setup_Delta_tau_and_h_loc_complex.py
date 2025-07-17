@@ -94,7 +94,7 @@ print('Delta_iw diff =', diff)
 np.testing.assert_array_almost_equal(Delta_iw.data, Delta_iw_ref.data)
 assert( diff < 1e-7 )
 
-config = S.configuration
+config = S.last_configuration
 S.solve(
     h_int = h_int,
     length_cycle = 10,

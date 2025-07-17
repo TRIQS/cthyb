@@ -34,7 +34,7 @@ namespace triqs_cthyb {
  ***********************/
   struct qmc_data {
 
-    configuration &config; // Configuration
+    configuration config; // Configuration
     time_segment tau_seg;
     std::map<std::pair<int, int>, int> linindex; // Linear index constructed from block and inner indices
     atom_diag const &h_diag;                     // Diagonalization of the atomic problem
@@ -68,8 +68,8 @@ namespace triqs_cthyb {
 
     // Construction
     qmc_data(double beta, solve_parameters_t const &p, atom_diag const &h_diag, std::map<std::pair<int, int>, int> linindex,
-             block_gf_const_view<imtime> delta, std::vector<int> n_inner, histo_map_t *histo_map, configuration &c)
-       : config(c),
+             block_gf_const_view<imtime> delta, std::vector<int> n_inner, histo_map_t *histo_map)
+       : config(beta),
          tau_seg(beta),
          linindex(linindex),
          h_diag(h_diag),
@@ -78,7 +78,6 @@ namespace triqs_cthyb {
          delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          current_sign(1),
          old_sign(1) {
-      config.clear();
       std::vector<std::vector<std::pair<time_pt, int>>> X(delta.size()), Y(delta.size());
       for (auto const &o : p.initial_configuration) {
         auto tau = o.first;

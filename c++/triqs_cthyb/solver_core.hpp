@@ -54,7 +54,7 @@ namespace triqs_cthyb {
     double _average_order;                 // average perturbation order
     double _auto_corr_time;                // Auto-correlation time
     int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
-    configuration _configuration;          // Final configuration of the run
+    configuration _last_configuration;     // Final configuration of the run
 
     // Single-particle Green's function containers
     std::optional<G_iw_t> _G0_iw; // Non-interacting Matsubara Green's function
@@ -155,8 +155,8 @@ namespace triqs_cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
-    /// Configuration
-    configuration const &get_configuration() const { return _configuration; }
+    /// Final configuration of the last solve call.
+    configuration const &last_configuration() const { return _last_configuration; }
 
     /// is cthyb compiled with support for complex hybridization?
     bool hybridisation_is_complex() const {

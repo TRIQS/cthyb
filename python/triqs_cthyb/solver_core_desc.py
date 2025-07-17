@@ -315,8 +315,8 @@ c.add_property(name = "solve_status",
                getter = cfunction("int solve_status ()"),
                doc = r"""status of the ``solve()`` on exit.""")
 
-c.add_property(name = "configuration",
-               getter = cfunction("configuration get_configuration()"),
+c.add_property(name = "last_configuration",
+               getter = cfunction("configuration last_configuration()"),
                doc = r"""Configuration""")
 
 c.add_property(name = "hybridisation_is_complex",
@@ -661,12 +661,6 @@ c = class_(
         is_printable = True,
         hdf5 = True
 )
-
-c.add_constructor(signature = "()",
-                  doc = "Create empty configuration")
-
-c.add_constructor(signature = "(double beta)",
-                  doc = "Initialize beta")
 
 c.add_property(name = "beta",
                getter = cfunction("double beta()"),

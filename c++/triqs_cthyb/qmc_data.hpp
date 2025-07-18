@@ -47,10 +47,10 @@ namespace triqs_cthyb {
       gf<imtime, delta_target_t> delta_block; // make a copy. Needed in the real case anyway.
 
       delta_block_adaptor(gf_const_view<imtime, delta_target_t> delta_block) : delta_block(std::move(delta_block)) {}
-      delta_block_adaptor(delta_block_adaptor const &) = default;
-      delta_block_adaptor(delta_block_adaptor &&)      = default;
+      delta_block_adaptor(delta_block_adaptor const &)            = default;
+      delta_block_adaptor(delta_block_adaptor &&)                 = default;
       delta_block_adaptor &operator=(delta_block_adaptor const &) = delete;
-      delta_block_adaptor &operator=(delta_block_adaptor &&) = default;
+      delta_block_adaptor &operator=(delta_block_adaptor &&)      = default;
 
       det_scalar_t operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
         det_scalar_t res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
@@ -78,45 +78,49 @@ namespace triqs_cthyb {
          delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          current_sign(1),
          old_sign(1) {
+      // initialize configuration and impurity trace
+      if (p.initial_configuration.beta() > 0 && p.initial_configuration.beta() != beta) {
+        TRIQS_RUNTIME_ERROR << "Beta of initial configuration not equal current beta: " << p.initial_configuration.beta() << " != " << beta;
+      }
       std::vector<std::vector<std::pair<time_pt, int>>> X(delta.size()), Y(delta.size());
-      for (auto const &o : p.initial_configuration) {
-        auto tau = o.first;
-        auto op  = o.second;
-        auto block_index = op.block_index;
-        auto inner_index = op.inner_index;
-        if (block_index >= delta.size() || inner_index >= n_inner[block_index])
+      for (auto const &[tau, op] : p.initial_configuration) {
+        if (op.block_index >= delta.size() || op.inner_index >= n_inner[op.block_index]
+            || op.linear_index != linindex.at({op.block_index, op.inner_index})) {
           TRIQS_RUNTIME_ERROR << "Inconsistency in the block structure of the initial configuration";
-
-        op.linear_index = linindex[std::make_pair(block_index, inner_index)];
+        }
 
         imp_trace.try_insert(tau, op);
         imp_trace.confirm_insert();
 
-        if (op.dagger) X[block_index].push_back(std::make_pair(tau,inner_index));
-        else Y[block_index].push_back(std::make_pair(tau,inner_index));
+        if (op.dagger)
+          X[op.block_index].emplace_back(tau, op.inner_index);
+        else
+          Y[op.block_index].emplace_back(tau, op.inner_index);
 
         config.insert(tau, op);
-        config.finalize();
       }
       std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
 
+      // initialize hybridization determinants
       dets.clear();
       for (auto const &bl : range(delta.size())) {
-        if (X[bl].size() != Y[bl].size())
-          TRIQS_RUNTIME_ERROR << "In the initial config, the number of c and c_dag operators should be equal";
+        if (X[bl].empty()) {
+          dets.emplace_back(delta_block_adaptor(delta[bl]), p.det_init_size);
+        } else {
 #ifdef HYBRIDISATION_IS_COMPLEX
-        dets.emplace_back(delta_block_adaptor(delta[bl]), X[bl], Y[bl]);
+          dets.emplace_back(delta_block_adaptor(delta[bl]), X[bl], Y[bl]);
 #else
-        if (!is_gf_real(delta[bl], 1e-10)) {
-          //TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
-          if (p.verbosity >= 2) {
-            std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
-            std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
-            std::cerr << "WARNING: Dissregarding the imaginary component in the calculation.\n";
+          if (!is_gf_real(delta[bl], 1e-10)) {
+            //TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
+            if (p.verbosity >= 2) {
+              std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
+              std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
+              std::cerr << "WARNING: Dissregarding the imaginary component in the calculation.\n";
+            }
           }
-        }
-        dets.emplace_back(delta_block_adaptor(real(delta[bl])), X[bl], Y[bl]);
+          dets.emplace_back(delta_block_adaptor(real(delta[bl])), X[bl], Y[bl]);
 #endif
+        }
         dets.back().set_singular_threshold(p.det_singular_threshold);
         dets.back().set_n_operations_before_check(p.det_n_operations_before_check);
         dets.back().set_precision_warning(p.det_precision_warning);
@@ -125,7 +129,7 @@ namespace triqs_cthyb {
       update_sign();
     }
 
-    qmc_data(qmc_data const &) = delete; // Member imp_trace is not copyable
+    qmc_data(qmc_data const &)            = delete; // Member imp_trace is not copyable
     qmc_data &operator=(qmc_data const &) = delete;
 
     void update_sign() {

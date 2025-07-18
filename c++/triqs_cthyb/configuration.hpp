@@ -46,21 +46,27 @@ namespace triqs_cthyb {
       return out;
     }
 
-    friend void h5_write(h5::group g, op_desc const &op) {
-      h5_write(g, "block", op.block_index);
-      h5_write(g, "inner", op.inner_index);
-      h5_write(g, "dagger", op.dagger);
+    static std::string hdf5_format() { return "op_desc"; }
+
+    friend void h5_write(h5::group g, std::string const &name, op_desc const &op) {
+      auto gr = g.create_group(name);
+      h5::write_hdf5_format(gr, op); // NOLINT (slicing is intended)
+      h5::write(gr, "block", op.block_index);
+      h5::write(gr, "inner", op.inner_index);
+      h5::write(gr, "dagger", op.dagger);
+      h5::write(gr, "linear_index", op.linear_index);
     }
 
-    friend void h5_read(h5::group g, op_desc &op) {
-      h5_read(g, "block", op.block_index);
-      h5_read(g, "inner", op.inner_index);
-      h5_read(g, "dagger", op.dagger);
+    friend void h5_read(h5::group g, std::string const &name, op_desc &op) {
+      h5::group gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, op);
+      h5::read(g, "block", op.block_index);
+      h5::read(g, "inner", op.inner_index);
+      h5::read(g, "dagger", op.dagger);
+      h5::read(g, "linear_index", op.linear_index);
     }
 
-    bool operator==(op_desc const &op) const { return (block_index == op.block_index && inner_index == op.inner_index
-      && dagger == op.dagger && linear_index == op.linear_index);
-    }
+    bool operator==(op_desc const &op) const = default;
   };
 
   // The configuration of the Monte Carlo
@@ -82,7 +88,7 @@ namespace triqs_cthyb {
 #endif
 
     double beta() const { return beta_; }
-    int size() const { return oplist.size(); }
+    auto size() const { return oplist.size(); }
 
     void insert(time_pt tau, op_desc op) { oplist.insert({tau, op}); }
     void replace(time_pt tau, op_desc op) { oplist[tau] = op; }
@@ -102,34 +108,20 @@ namespace triqs_cthyb {
     static std::string hdf5_format() { return "Configuration"; }
 
     // Writing of configuration out to a h5 for e.g. plotting
-    friend void h5_write(h5::group conf, std::string conf_group_name, configuration const &c) {
-      auto beta = c.beta();
-      auto t1 = time_pt(1,beta);
-      h5::group conf_group = conf.create_group(conf_group_name);
-      write_hdf5_format(conf_group, c);
-      h5_write(conf_group, "beta", beta);
-      for (auto const &op : c) {
-        // create group for given tau
-        auto tau_group_name        = std::to_string(double(op.first));
-        h5::group tau_group        = conf_group.create_group(tau_group_name);
-        // in tau subgroup, write operator info
-        h5_write(tau_group, op.second);
-        h5_write(tau_group, "n", floor_div(op.first, t1));
-      }
+    friend void h5_write(h5::group g, std::string const &name, configuration const &c) {
+      h5::group gr = g.create_group(name);
+      h5::write_hdf5_format(gr, c); // NOLINT (slicing is intended)
+      h5::write(gr, "beta", c.beta_);
+      h5::write(gr, "oplist", c.oplist);
+      h5::write(gr, "id", c.id);
     }
 
-    friend void h5_read(h5::group conf, std::string conf_group_name, configuration &c) {
-      h5::group conf_group = conf.open_group(conf_group_name);
-      op_desc op;
-      uint64_t n;
-      double beta;
-      h5_read(conf_group, "beta", beta);
-      for (auto &sgrp : conf_group.get_all_subgroup_names()) {
-        auto tau_group = conf_group.open_group(sgrp);
-        h5_read(tau_group, op);
-        h5_read(tau_group, "n", n);
-        c.insert(time_pt(n,beta), op);
-      }
+    friend void h5_read(h5::group g, std::string const &name, configuration &c) {
+      h5::group gr = g.open_group(name);
+      h5::assert_hdf5_format(gr, c);
+      h5::read(gr, "beta", c.beta_);
+      h5::read(gr, "oplist", c.oplist);
+      h5::read(gr, "id", c.id);
     }
 
     long get_id() const { return id; } // Get the id of the current configuration
@@ -150,4 +142,4 @@ namespace triqs_cthyb {
     h5::file configs_hfile;
 #endif
   };
-}
+} // namespace triqs_cthyb

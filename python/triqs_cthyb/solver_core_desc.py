@@ -239,7 +239,7 @@ c.add_method("""void solve (**solve_parameters_t)""",
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | performance_analysis          | bool                                                     | false                         | Analyse performance of trace computation with histograms (developers only)?                                       |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| use_bound_as_threshold        | bool                                                     | false                         | Should we use a threshold to disregard blocks with much smaller upper bounds?                                     |
+| use_bound_as_threshold        | bool                                                     | false                         | Should we use a threshold to disregard blocks with much smaller upper bounds? (advanced --> use with care!)       |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | proposal_prob                 | dict(str:float)                                          | {}                            | Operator insertion/removal probabilities for different blocks                                                     |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
@@ -563,7 +563,7 @@ c.add_member(c_name = "performance_analysis",
 c.add_member(c_name = "use_bound_as_threshold",
              c_type = "bool",
              initializer = """ false """,
-             doc = r"""Should we use the largest upper bound for the block contribution to the trace to disregard blocks with much smaller upper bounds?""")
+             doc = r"""Should we use the largest upper bound of the block contribution to the trace to disregard blocks with much smaller upper bounds? (advanced --> use with care!)""")
 
 c.add_member(c_name = "proposal_prob",
              c_type = "std::map<std::string, double>",

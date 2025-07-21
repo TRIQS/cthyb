@@ -42,6 +42,9 @@ namespace triqs_cthyb {
 
     histogram *add_histo(std::string const &name, histo_map_t *histos);
 
+    double uniform_proposal();
+    double pauli_proposal();
+
     public:
     move_insert_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,
                        histo_map_t *histos, double pauli_prob);

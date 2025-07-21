@@ -69,7 +69,7 @@ namespace triqs_cthyb {
     bool operator==(op_desc const &op) const = default;
   };
 
-  // The configuration of the Monte Carlo
+  // Configuration of the Monte Carlo simulation.
   struct configuration {
 
     bool operator==(configuration const &config) const { return (beta_ == config.beta_ && oplist == config.oplist); }

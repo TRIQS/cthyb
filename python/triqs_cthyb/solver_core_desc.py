@@ -227,7 +227,7 @@ c.add_member(c_name = "solve_parameters",
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | use_norm_as_weight            | bool                                                     | false                         | Use the norm of the density matrix in the weight if true, otherwise use Trace                                     |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
-| initial_configuration         | Configuration                                            | {}                            | Initial configuration for the run                                                                                  |
+| initial_configuration         | Configuration                                            | {}                            | Initial configuration for the run. (advanced --> use with care!)                                                  |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | performance_analysis          | bool                                                     | false                         | Analyse performance of trace computation with histograms (developers only)?                                       |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
@@ -317,7 +317,7 @@ c.add_property(name = "solve_status",
 
 c.add_property(name = "last_configuration",
                getter = cfunction("configuration last_configuration()"),
-               doc = r"""Configuration""")
+               doc = r"""Last configuration visited in the ``solve()`` method.""")
 
 c.add_property(name = "hybridisation_is_complex",
                getter = cfunction("bool hybridisation_is_complex ()"),
@@ -546,7 +546,7 @@ c.add_member(c_name = "use_norm_as_weight",
 c.add_member(c_name = "initial_configuration",
              c_type = "triqs_cthyb::configuration",
              initializer = """ {} """,
-             doc = r"""Initial configuration for the run""")
+             doc = r"""Initial configuration for the run. (advanced --> use with care!)""")
 
 c.add_member(c_name = "performance_analysis",
              c_type = "bool",
@@ -656,7 +656,7 @@ module.add_converter(c)
 c = class_(
         py_type = "Configuration",  # name of the python class
         c_type = "triqs_cthyb::configuration",   # name of the C++ class
-        doc = r"""Core class of the cthyb configuration""",   # doc of the C++ class
+        doc = r"""Configuration of the Monte Carlo simulation""",   # doc of the C++ class
         comparisons = "==",
         is_printable = True,
         hdf5 = True

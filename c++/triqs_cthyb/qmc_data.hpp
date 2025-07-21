@@ -78,25 +78,31 @@ namespace triqs_cthyb {
          delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          current_sign(1),
          old_sign(1) {
-      // initialize configuration and impurity trace
+      // check that the current beta and beta of the initial configuration are equal
       if (p.initial_configuration.beta() > 0 && p.initial_configuration.beta() != beta) {
         TRIQS_RUNTIME_ERROR << "Beta of initial configuration not equal current beta: " << p.initial_configuration.beta() << " != " << beta;
       }
+
+      // initialize the impurity trace and configuration (we don't copy the configuration since we want its ID to be zero)
       std::vector<std::vector<std::pair<time_pt, int>>> X(delta.size()), Y(delta.size());
       for (auto const &[tau, op] : p.initial_configuration) {
+        // check that the block structure is consistent
         if (op.block_index >= delta.size() || op.inner_index >= n_inner[op.block_index]
             || op.linear_index != linindex.at({op.block_index, op.inner_index})) {
           TRIQS_RUNTIME_ERROR << "Inconsistency in the block structure of the initial configuration";
         }
 
+        // insert operators into the impurity trace
         imp_trace.try_insert(tau, op);
         imp_trace.confirm_insert();
 
+        // store tau points and inner block indices for initializing the determinants later
         if (op.dagger)
           X[op.block_index].emplace_back(tau, op.inner_index);
         else
           Y[op.block_index].emplace_back(tau, op.inner_index);
 
+        // insert the operator into the configuration
         config.insert(tau, op);
       }
       std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();

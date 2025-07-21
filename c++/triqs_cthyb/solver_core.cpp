@@ -431,6 +431,7 @@ namespace triqs_cthyb {
 
     // --------------------------------------------------------------------------
 
+    // set the correct sign in case a user-provided initial configuration is used
     mc_weight_t sign = data.current_sign * data.atomic_weight / std::abs(data.atomic_weight);
 
     for (size_t block = 0; block < _Delta_tau.size(); ++block) {

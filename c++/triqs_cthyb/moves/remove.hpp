@@ -36,6 +36,7 @@ namespace triqs_cthyb {
     double dtau;
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau1, tau2;
+    int num_c_dag, num_c;
     int Nmax;
     double pauli_prob;
     std::vector<int> vec_ind;

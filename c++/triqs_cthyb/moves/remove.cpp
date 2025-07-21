@@ -57,7 +57,7 @@ namespace triqs_cthyb {
     // Remove the operators from the traces
     int det_size = det.size();
     if (det_size == 0) return 0; // nothing to remove
-    int num_c_dag = -1, num_c = -1;
+    num_c_dag = -1, num_c = -1;
     num_c_dag = rng(det_size);
     if (pauli_prob == 0.0) num_c = rng(det_size);
 

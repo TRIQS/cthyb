@@ -431,11 +431,24 @@ namespace triqs_cthyb {
 
     // --------------------------------------------------------------------------
 
+    // set the correct sign in case a user-provided initial configuration is used
+    if (std::abs(data.atomic_weight) == 0) TRIQS_RUNTIME_ERROR << "Error: Atomic weight of initial configuration is zero";
+    mc_weight_t sign = data.current_sign * data.atomic_weight / std::abs(data.atomic_weight);
+
+    for (size_t block = 0; block < _Delta_tau.size(); ++block) {
+      auto det = data.dets[block].determinant();
+      if (std::abs(det) == 0) TRIQS_RUNTIME_ERROR << "Error: Determinant of block " << block << " is zero";
+      sign *= det / std::abs(det);
+    }
+
     // Run! The empty (starting) configuration has sign = 1
     _solve_status =
        qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle,
-                                 triqs::utility::clock_callback(params.max_time));
+                                 triqs::utility::clock_callback(params.max_time), sign);
     qmc.collect_results(_comm);
+
+    // set the last configuration
+    _last_configuration = data.config;
 
     if (params.verbosity >= 2) {
       std::cout << "Average sign: " << _average_sign << std::endl;

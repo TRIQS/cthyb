@@ -58,8 +58,8 @@ Link to all relevant solver parameters:
 .. toctree::
    :maxdepth: 1
 
-   _ref/triqs_cthyb.solver.Solver.solve_parameters.rst
-   _ref/triqs_cthyb.solver.Solver.constr_parameters.rst
+   constr_parameters
+   solve_parameters
 
 FAQs
 ----

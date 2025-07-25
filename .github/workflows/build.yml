@@ -81,8 +81,6 @@ jobs:
 
     - name: Set up virtualenv
       run: |
-        brew install ccache gcc@12 llvm boost fftw hdf5 open-mpi openblas
-        brew install wentzell/triqs/nfft
         mkdir $HOME/.venv
         python3 -m venv --system-site-packages $HOME/.venv/my_python
         source $HOME/.venv/my_python/bin/activate
@@ -94,6 +92,7 @@ jobs:
       run: |
         brew update
         brew install ccache gcc llvm boost fftw hdf5 open-mpi openblas
+        brew install wentzell/triqs/nfft
         pip install mako numpy scipy mpi4py
         pip install -r requirements.txt
         echo "PATH=$(brew --prefix llvm)/bin:$(brew --prefix gcc)/bin:$PATH" >> $GITHUB_ENV

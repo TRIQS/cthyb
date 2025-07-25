@@ -121,12 +121,12 @@ c.add_member(c_name = "perturbation_order",
 c.add_member(c_name = "constr_parameters",
              c_type = "constr_parameters_t",
              read_only= True,
-             doc = r"""""")
+             doc = r"""Parameters passed to the solver constructor (see also :ref:`constr_parameters`).""")
 
 c.add_member(c_name = "solve_parameters",
              c_type = "solve_parameters_t",
              read_only= True,
-             doc = r"""""")
+             doc = r"""Parameters passed to the solve function of the solver (see also :ref:`solve_parameters`).""")
 
 c.add_constructor("""(**constr_parameters_t)""", doc = r"""Construct a CTHYB solver
 

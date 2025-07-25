@@ -66,10 +66,10 @@ namespace triqs_cthyb {
     container_set_t const &container_set() const { return static_cast<container_set_t const &>(*this); }
 
     public:
-    // Struct containing the parameters relevant for the solver construction
+    /// Parameters passed to the solver constructor (see also :ref:`constr_parameters`).
     constr_parameters_t constr_parameters;
 
-    // Struct containing the parameters of the last call to the solve method
+    /// Parameters passed to the solve function of the solver (see also :ref:`solve_parameters`).
     solve_parameters_t solve_parameters;
 
     /**

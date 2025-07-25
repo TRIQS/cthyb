@@ -78,54 +78,66 @@ namespace triqs_cthyb {
          delta(map([](gf_const_view<imtime> d) { return real(d); }, delta)),
          current_sign(1),
          old_sign(1) {
-      // check that the current beta and beta of the initial configuration are equal
-      if (p.initial_configuration.beta() > 0 && p.initial_configuration.beta() != beta) {
-        TRIQS_RUNTIME_ERROR << "Beta of initial configuration not equal current beta: " << p.initial_configuration.beta() << " != " << beta;
-      }
 
-      // initialize the impurity trace and configuration (we don't copy the configuration since we want its ID to be zero)
       std::vector<std::vector<std::pair<time_pt, int>>> X(delta.size()), Y(delta.size());
-      for (auto const &[tau, op] : p.initial_configuration) {
-        // check that the block structure is consistent
-        if (op.block_index >= delta.size() || op.inner_index >= n_inner[op.block_index]
-            || op.linear_index != linindex.at({op.block_index, op.inner_index})) {
-          TRIQS_RUNTIME_ERROR << "Inconsistency in the block structure of the initial configuration";
+
+      // When initial_configuration is given, fill imp_trace and config accordingly
+      if (p.initial_configuration) {
+
+        // check that the current beta and beta of the initial configuration are equal
+        if (p.initial_configuration->beta() != beta) {
+          TRIQS_RUNTIME_ERROR << "Beta of initial configuration not equal current beta: " << p.initial_configuration->beta() << " != " << beta;
         }
 
-        // insert operators into the impurity trace
-        imp_trace.try_insert(tau, op);
-        imp_trace.confirm_insert();
+        for (auto const &[tau, op] : p.initial_configuration.value()) {
+          // check that the block structure is consistent
+          if (op.block_index >= delta.size() || op.inner_index >= n_inner[op.block_index]
+              || op.linear_index != linindex.at({op.block_index, op.inner_index})) {
+            TRIQS_RUNTIME_ERROR << "Inconsistency in the block structure of the initial configuration";
+          }
 
-        // store tau points and inner block indices for initializing the determinants later
-        if (op.dagger)
-          X[op.block_index].emplace_back(tau, op.inner_index);
-        else
-          Y[op.block_index].emplace_back(tau, op.inner_index);
+          // insert operators into the impurity trace
+          imp_trace.try_insert(tau, op);
+          imp_trace.confirm_insert();
 
-        // insert the operator into the configuration
-        config.insert(tau, op);
+          // store tau points and inner block indices for initializing the determinants later
+          if (op.dagger)
+            X[op.block_index].emplace_back(tau, op.inner_index);
+          else
+            Y[op.block_index].emplace_back(tau, op.inner_index);
+
+          // insert the operator into the configuration
+          config.insert(tau, op);
+        }
+
+        for (auto bl : range(delta.size())) {
+          if (X[bl].size() != Y[bl].size())
+            TRIQS_RUNTIME_ERROR << "Unequal number of c_dag and c operators in bl " << bl << " of the initial configuration";
+        }
       }
+
+      // initialize the atomic weight
       std::tie(atomic_weight, atomic_reweighting) = imp_trace.compute();
 
       // initialize hybridization determinants
       dets.clear();
       for (auto const &bl : range(delta.size())) {
-        if (X[bl].empty()) {
-          dets.emplace_back(delta_block_adaptor(delta[bl]), p.det_init_size);
-        } else {
 #ifdef HYBRIDISATION_IS_COMPLEX
-          dets.emplace_back(delta_block_adaptor(delta[bl]), X[bl], Y[bl]);
+        auto delta_functor = delta_block_adaptor(delta[bl]);
 #else
-          if (!is_gf_real(delta[bl], 1e-10)) {
-            //TRIQS_RUNTIME_ERROR << "The Delta(tau) block number " << bl << " is not real in tau space";
-            if (p.verbosity >= 2) {
-              std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
-              std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
-              std::cerr << "WARNING: Dissregarding the imaginary component in the calculation.\n";
-            }
+        if (!is_gf_real(delta[bl], 1e-10)) {
+          if (p.verbosity >= 2) {
+            std::cerr << "WARNING: The Delta(tau) block number " << bl << " is not real in tau space\n";
+            std::cerr << "WARNING: max(Im[Delta(tau)]) = " << max_element(abs(imag(delta[bl].data()))) << "\n";
+            std::cerr << "WARNING: Dissregarding the imaginary component in the calculation.\n";
           }
-          dets.emplace_back(delta_block_adaptor(real(delta[bl])), X[bl], Y[bl]);
+        }
+        auto delta_functor = delta_block_adaptor(real(delta[bl]));
 #endif
+        if (X[bl].empty()) {
+          dets.emplace_back(delta_functor, p.det_init_size);
+        } else {
+          dets.emplace_back(delta_functor, X[bl], Y[bl]);
         }
         dets.back().set_singular_threshold(p.det_singular_threshold);
         dets.back().set_n_operations_before_check(p.det_n_operations_before_check);

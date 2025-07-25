@@ -432,11 +432,11 @@ namespace triqs_cthyb {
     // --------------------------------------------------------------------------
 
     // set the correct sign in case a user-provided initial configuration is used
-    mc_weight_t sign = data.current_sign * data.atomic_weight / std::abs(data.atomic_weight);
+    mc_weight_t sign = data.current_sign * (std::signbit(data.atomic_weight) ? -1.0 : 1.0);
 
     for (size_t block = 0; block < _Delta_tau.size(); ++block) {
       auto det = data.dets[block].determinant();
-      sign *= det / std::abs(det);
+      sign *= (std::signbit(det) ? -1.0 : 1.0);
     }
 
     // Run! The empty (starting) configuration has sign = 1

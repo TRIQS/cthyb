@@ -72,61 +72,62 @@ namespace triqs_cthyb {
   // Configuration of the Monte Carlo simulation.
   struct configuration {
 
-    bool operator==(configuration const &config) const { return (beta_ == config.beta_ && oplist == config.oplist); }
+    bool operator==(configuration const &config) const { return (beta_ == config.beta_ && oplist_ == config.oplist_); }
 
     // a map associating an operator to an imaginary time
     using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
 
 #ifdef SAVE_CONFIGS
-    configuration(double beta) : beta_(beta), id(0), configs_hfile("configs.h5", exists("configs.h5") ? 'a' : 'w') {
+    configuration(double beta, long id = 0, oplist_t oplist = {})
+       : beta_(beta), id_(id), oplist_(oplist), configs_hfile("configs.h5", exists("configs.h5") ? 'a' : 'w') {
       if (NUM_CONFIGS_TO_SAVE > 0) h5_write(configs_hfile, "c_0", *this);
     }
     ~configuration() { configs_hfile.close(); }
 #else
-    configuration(double beta) : beta_(beta), id(0) {}
-    configuration() : configuration(0.0) {}
+    configuration(double beta, long id = 0, oplist_t oplist = {}) : beta_(beta), id_(id), oplist_(oplist) {}
 #endif
 
     double beta() const { return beta_; }
-    auto size() const { return oplist.size(); }
+    auto size() const { return oplist_.size(); }
 
-    void insert(time_pt tau, op_desc op) { oplist.insert({tau, op}); }
-    void replace(time_pt tau, op_desc op) { oplist[tau] = op; }
-    void erase(time_pt const &t) { oplist.erase(t); }
-    void clear() { oplist.clear(); }
+    void insert(time_pt tau, op_desc op) { oplist_.insert({tau, op}); }
+    void replace(time_pt tau, op_desc op) { oplist_[tau] = op; }
+    void erase(time_pt const &t) { oplist_.erase(t); }
+    void clear() { oplist_.clear(); }
 
-    oplist_t::iterator begin() { return oplist.begin(); }
-    oplist_t::iterator end() { return oplist.end(); }
-    oplist_t::const_iterator begin() const { return oplist.begin(); }
-    oplist_t::const_iterator end() const { return oplist.end(); }
+    oplist_t::iterator begin() { return oplist_.begin(); }
+    oplist_t::iterator end() { return oplist_.end(); }
+    oplist_t::const_iterator begin() const { return oplist_.begin(); }
+    oplist_t::const_iterator end() const { return oplist_.end(); }
 
     friend std::ostream &operator<<(std::ostream &out, configuration const &c) {
       for (auto const &op : c) out << "tau = " << op.first << " : " << op.second << std::endl;
       return out;
     }
 
-    static std::string hdf5_format() { return "Configuration"; }
+    static std::string hdf5_format() { return "CTHYB_Configuration"; }
 
     // Writing of configuration out to a h5 for e.g. plotting
     friend void h5_write(h5::group g, std::string const &name, configuration const &c) {
       h5::group gr = g.create_group(name);
       h5::write_hdf5_format(gr, c); // NOLINT (slicing is intended)
       h5::write(gr, "beta", c.beta_);
-      h5::write(gr, "oplist", c.oplist);
-      h5::write(gr, "id", c.id);
+      h5::write(gr, "id", c.id_);
+      h5::write(gr, "oplist", c.oplist_);
     }
 
-    friend void h5_read(h5::group g, std::string const &name, configuration &c) {
+    static configuration h5_read_construct(h5::group g, std::string const &name) {
       h5::group gr = g.open_group(name);
-      h5::assert_hdf5_format(gr, c);
-      h5::read(gr, "beta", c.beta_);
-      h5::read(gr, "oplist", c.oplist);
-      h5::read(gr, "id", c.id);
+      h5::assert_hdf5_format<configuration>(gr);
+      auto beta   = h5::read<double>(gr, "beta");
+      auto id     = h5::read<long>(gr, "id");
+      auto oplist = h5::read<oplist_t>(gr, "oplist");
+      return configuration(beta, id, std::move(oplist));
     }
 
-    long get_id() const { return id; } // Get the id of the current configuration
+    long get_id() const { return id_; } // Get the id of the current configuration
     void finalize() {
-      id++;
+      id_++;
 #ifdef SAVE_CONFIGS
       if (id < NUM_CONFIGS_TO_SAVE) h5_write(configs_hfile, "c_" + std::to_string(id), *this);
 #endif
@@ -134,8 +135,8 @@ namespace triqs_cthyb {
 
     private:
     double beta_;
-    long id; // configuration id, for debug purposes
-    oplist_t oplist;
+    long id_; // configuration id, for debug purposes
+    oplist_t oplist_;
 
 #ifdef SAVE_CONFIGS
     // HDF5 file to save configurations

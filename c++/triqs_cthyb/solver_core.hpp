@@ -39,34 +39,33 @@ namespace triqs_cthyb {
   /// Core class of the cthyb solver
   class solver_core : public container_set_t {
 
-    double beta;           // inverse temperature
-    atom_diag h_diag;      // diagonalization of the local problem
-    gf_struct_t gf_struct; // Block structure of the Green function
-    many_body_op_t _h_loc; // The local Hamiltonian = h_int + h0
+    double beta;            // inverse temperature
+    atom_diag h_diag;       // diagonalization of the local problem
+    gf_struct_t gf_struct;  // Block structure of the Green function
+    many_body_op_t _h_loc;  // The local Hamiltonian = h_int + h0
     many_body_op_t _h_loc0; //noninteracting part of the local Hamiltonian
     int n_iw, n_tau, n_l;
     bool delta_interface;
 
-    std::vector<matrix_t> _density_matrix; // density matrix, when used in Norm mode
-    mpi::communicator _comm;               // define the communicator, here MPI_COMM_WORLD
-    histo_map_t _performance_analysis;     // Histograms used for performance analysis
-    mc_weight_t _average_sign;             // average sign of the QMC
-    double _average_order;                 // average perturbation order
-    double _auto_corr_time;                // Auto-correlation time
-    int _solve_status;                     // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
-    configuration _last_configuration;     // Final configuration of the run
+    std::vector<matrix_t> _density_matrix;            // density matrix, when used in Norm mode
+    mpi::communicator _comm;                          // define the communicator, here MPI_COMM_WORLD
+    histo_map_t _performance_analysis;                // Histograms used for performance analysis
+    mc_weight_t _average_sign;                        // average sign of the QMC
+    double _average_order;                            // average perturbation order
+    double _auto_corr_time;                           // Auto-correlation time
+    int _solve_status;                                // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
+    std::optional<configuration> _last_configuration; // Final configuration of the run
 
     // Single-particle Green's function containers
-    std::optional<G_iw_t> _G0_iw; // Non-interacting Matsubara Green's function
-    G_tau_t _Delta_tau; // Imaginary-time Hybridization function
+    std::optional<G_iw_t> _G0_iw;                                 // Non-interacting Matsubara Green's function
+    G_tau_t _Delta_tau;                                           // Imaginary-time Hybridization function
     std::optional<std::vector<matrix<dcomplex>>> Delta_infty_vec; // Quadratic instantaneous part of G0_iw
 
     // Return reference to container_set
     container_set_t &container_set() { return static_cast<container_set_t &>(*this); }
     container_set_t const &container_set() const { return static_cast<container_set_t const &>(*this); }
- 
-    public:
 
+    public:
     // Struct containing the parameters relevant for the solver construction
     constr_parameters_t constr_parameters;
 
@@ -82,10 +81,10 @@ namespace triqs_cthyb {
     solver_core(constr_parameters_t const &p);
 
     // Delete assignement operator because of const members
-    solver_core(solver_core const &p) = default;
-    solver_core(solver_core &&p)      = default;
+    solver_core(solver_core const &p)            = default;
+    solver_core(solver_core &&p)                 = default;
     solver_core &operator=(solver_core const &p) = delete;
-    solver_core &operator=(solver_core &&p) = default;
+    solver_core &operator=(solver_core &&p)      = default;
 
     /**
      * Solve method that performs CTHYB calculation
@@ -99,7 +98,7 @@ namespace triqs_cthyb {
     many_body_op_t const &h_loc() const { return _h_loc; }
 
     /// The noninteracting part of the local Hamiltonian.
-    many_body_op_t const &h_loc0() const {return _h_loc0; }
+    many_body_op_t const &h_loc0() const { return _h_loc0; }
 
     /// Set of parameters used in the construction of the ``solver_core`` class.
     constr_parameters_t last_constr_parameters() const { return constr_parameters; }
@@ -121,7 +120,7 @@ namespace triqs_cthyb {
     void set_container_set(container_set_t &cs) { static_cast<container_set_t &>(*this) = cs; }
     container_set_t last_container_set() { return static_cast<container_set_t>(*this); }
     */
-    
+
     /// :math:`\Delta(\tau)` in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
@@ -156,7 +155,7 @@ namespace triqs_cthyb {
     int solve_status() const { return _solve_status; }
 
     /// Final configuration of the last solve call.
-    configuration const &last_configuration() const { return _last_configuration; }
+    auto const &last_configuration() const { return _last_configuration; }
 
     /// is cthyb compiled with support for complex hybridization?
     bool hybridisation_is_complex() const {

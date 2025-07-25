@@ -195,7 +195,7 @@ namespace triqs_cthyb {
     bool use_norm_as_weight = false;
 
     /// Initial configuration of the run. (advanced --> use with care!)
-    configuration initial_configuration;
+    std::optional<configuration> initial_configuration = {};
 
     /// Analyse performance of trace computation with histograms (developers only)?
     bool performance_analysis = false;

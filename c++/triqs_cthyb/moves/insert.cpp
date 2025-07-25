@@ -190,11 +190,8 @@ namespace triqs_cthyb {
   }
 
   double move_insert_c_cdag::pauli_proposal() {
-    bool pauli_move = false;
-    if (pauli_prob > 0.0) {
-      double ran = rng();
-      if (ran <= pauli_prob) pauli_move = true;
-    }
+    // do a Pauli move with probability pauli_prob
+    bool const pauli_move = rng() <= pauli_prob;
 
     // Pick up the value of alpha and choose the operators
     auto rs1 = rng(block_size);
@@ -210,112 +207,109 @@ namespace triqs_cthyb {
     if (!pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
     double t_ratio = 1.;
 
-    if (pauli_prob > 0.0) {
+    t_ratio = block_size * config.beta() / double(det_size + 1);
 
-      t_ratio = block_size * config.beta() / double(det_size + 1);
+    int ic_dagL = -1, ic_dagR = -1, ic_nodagL = -1, ic_nodagR = -1;
 
-      int ic_dagL = -1, ic_dagR = -1, ic_nodagL = -1, ic_nodagR = -1;
+    if (det_size > Nmax) {
+      while (det_size > Nmax) Nmax *= 2;
+      vec_ind.reserve(Nmax);
+    }
 
-      if (det_size > Nmax) {
-        while (det_size > Nmax) Nmax *= 2;
-        vec_ind.reserve(Nmax);
-      }
+    vec_ind.clear();
+    int j = 0, op_pos = -1;
 
-      vec_ind.clear();
-      int j = 0, op_pos = -1;
-
-      if (rs1 == rs2) {
-        // Look at position of tau1 among creation operators of the same flavor
-        for (int i = 0; i < det_size; ++i) {
-          if (det.get_x(i).first < tau1 && op_pos == -1) op_pos = j;
-          if (det.get_x(i).second != rs1) continue;
-          vec_ind.push_back(i);
-          ++j;
-        }
-      }
-
-      int size = vec_ind.size();
-
-      if (op_pos == -1) op_pos = size;
-
-      // Creation operators at the left and right of tau1
-      if (size != 0) {
-        ic_dagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
-        ic_dagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
-      }
-
-      vec_ind.clear();
-      j = 0, op_pos = -1;
-
-      // Look at position of tau1 among annihilation operators of the same flavor
+    if (rs1 == rs2) {
+      // Look at position of tau1 among creation operators of the same flavor
       for (int i = 0; i < det_size; ++i) {
-        if (det.get_y(i).first < tau1 && op_pos == -1) op_pos = j;
-        if (det.get_y(i).second != rs1) continue;
+        if (det.get_x(i).first < tau1 && op_pos == -1) op_pos = j;
+        if (det.get_x(i).second != rs1) continue;
         vec_ind.push_back(i);
         ++j;
       }
+    }
 
-      size = vec_ind.size();
+    int size = vec_ind.size();
 
-      if (op_pos == -1) op_pos = size;
+    if (op_pos == -1) op_pos = size;
 
-      time_pt tRnodag, tLnodag;
+    // Creation operators at the left and right of tau1
+    if (size != 0) {
+      ic_dagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
+      ic_dagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
+    }
 
-      // Annihilation operators at the left and right of tau1
-      if (size != 0) {
-        ic_nodagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
-        ic_nodagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
-        tRnodag   = det.get_y(ic_nodagR).first;
-        tLnodag   = det.get_y(ic_nodagL).first;
-      }
+    vec_ind.clear();
+    j = 0, op_pos = -1;
 
-      if (ic_nodagR != -1 && ic_dagR != -1) {
+    // Look at position of tau1 among annihilation operators of the same flavor
+    for (int i = 0; i < det_size; ++i) {
+      if (det.get_y(i).first < tau1 && op_pos == -1) op_pos = j;
+      if (det.get_y(i).second != rs1) continue;
+      vec_ind.push_back(i);
+      ++j;
+    }
 
-        auto tRdag = det.get_x(ic_dagR).first;
-        auto tLdag = det.get_x(ic_dagL).first;
+    size = vec_ind.size();
 
-        auto tR = ((tau1 - tRdag) > (tau1 - tRnodag) ? tRnodag : tRdag);
-        auto tL = ((tLdag - tau1) > (tLnodag - tau1) ? tLnodag : tLdag);
+    if (op_pos == -1) op_pos = size;
 
-        if (tR == tRdag) {
-          if (pauli_move) tau2 = tR + data.tau_seg.get_random_pt(rng, tau1 - tR);
-          if ((tau1 - tau2) < (tau1 - tR))
-            t_ratio /= pauli_prob / double(tau1 - tR) + (1. - pauli_prob) / (block_size * config.beta());
-          else
-            t_ratio *= block_size * config.beta() / (1. - pauli_prob);
-        } else {
-          if (pauli_move) tau2 = tau1 + data.tau_seg.get_random_pt(rng, tL - tau1);
-          if ((tau2 - tau1) < (tL - tau1))
-            t_ratio /= pauli_prob / double(tL - tau1) + (1. - pauli_prob) / (block_size * config.beta());
-          else
-            t_ratio *= block_size * config.beta() / (1. - pauli_prob);
-        }
-      } else { // if no operators of the same flavor or different flavors for insertion
-        if (pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
-        if (rs1 == rs2)
-          t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
+    time_pt tRnodag, tLnodag;
+
+    // Annihilation operators at the left and right of tau1
+    if (size != 0) {
+      ic_nodagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
+      ic_nodagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
+      tRnodag   = det.get_y(ic_nodagR).first;
+      tLnodag   = det.get_y(ic_nodagL).first;
+    }
+
+    if (ic_nodagR != -1 && ic_dagR != -1) {
+
+      auto tRdag = det.get_x(ic_dagR).first;
+      auto tLdag = det.get_x(ic_dagL).first;
+
+      auto tR = ((tau1 - tRdag) > (tau1 - tRnodag) ? tRnodag : tRdag);
+      auto tL = ((tLdag - tau1) > (tLnodag - tau1) ? tLnodag : tLdag);
+
+      if (tR == tRdag) {
+        if (pauli_move) tau2 = tR + data.tau_seg.get_random_pt(rng, tau1 - tR);
+        if ((tau1 - tau2) < (tau1 - tR))
+          t_ratio /= pauli_prob / double(tau1 - tR) + (1. - pauli_prob) / (block_size * config.beta());
+        else
+          t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+      } else {
+        if (pauli_move) tau2 = tau1 + data.tau_seg.get_random_pt(rng, tL - tau1);
+        if ((tau2 - tau1) < (tL - tau1))
+          t_ratio /= pauli_prob / double(tL - tau1) + (1. - pauli_prob) / (block_size * config.beta());
         else
           t_ratio *= block_size * config.beta() / (1. - pauli_prob);
       }
+    } else { // if no operators of the same flavor or different flavors for insertion
+      if (pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
+      if (rs1 == rs2)
+        t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
+      else
+        t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+    }
 
-      int num_pauli = size;
-      if (rs1 == rs2) ++num_pauli;
-      num_pauli = std::min(num_pauli, 2);
-      if (num_pauli == 0 || num_pauli == det_size + 1)
-        t_ratio /= double(det_size + 1);
-      else {
-        if (size == 0) { // In this case rs1 = rs2
-          tRnodag = tau2;
-          tLnodag = tau2;
-        } else {
-          if ((tau1 - tau2) < (tau1 - tRnodag) && (rs1 == rs2)) tRnodag = tau2;
-          if ((tau2 - tau1) < (tLnodag - tau1) && (rs1 == rs2)) tLnodag = tau2;
-        }
-        if (tau2 == tRnodag || tau2 == tLnodag)
-          t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size + 1);
-        else
-          t_ratio *= (1. - pauli_prob) / double(det_size + 1);
+    int num_pauli = size;
+    if (rs1 == rs2) ++num_pauli;
+    num_pauli = std::min(num_pauli, 2);
+    if (num_pauli == 0 || num_pauli == det_size + 1)
+      t_ratio /= double(det_size + 1);
+    else {
+      if (size == 0) { // In this case rs1 = rs2
+        tRnodag = tau2;
+        tLnodag = tau2;
+      } else {
+        if ((tau1 - tau2) < (tau1 - tRnodag) && (rs1 == rs2)) tRnodag = tau2;
+        if ((tau2 - tau1) < (tLnodag - tau1) && (rs1 == rs2)) tLnodag = tau2;
       }
+      if (tau2 == tRnodag || tau2 == tLnodag)
+        t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size + 1);
+      else
+        t_ratio *= (1. - pauli_prob) / double(det_size + 1);
     }
 
     return t_ratio;

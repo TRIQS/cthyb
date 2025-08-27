@@ -8,13 +8,12 @@ import triqs.utility.mpi as mpi
 filename = 'slater_five_band.h5'             # Name of file to save data to
 beta = 40.0                                  # Inverse temperature
 l = 2                                        # Angular momentum
-n_orbs = 2*l + 1                             # Number of orbitals
+n_orb = 2*l + 1                              # Number of orbitals
 U = 4.0                                      # Screened Coulomb interaction
 J = 1.0                                      # Hund's coupling
 half_bandwidth = 1.0                         # Half bandwidth
 mu = 25.0                                    # Chemical potential
 spin_names = ['up','down']                   # Outer (non-hybridizing) blocks
-orb_names = ['%s'%i for i in range(n_orbs)]  # Orbital indices
 off_diag = False                             # Include orbital off-diagonal elements?
 n_loop = 2                                   # Number of DMFT self-consistency loops
 
@@ -28,7 +27,7 @@ p["move_double"] = True          # Use four-operator moves
 # Block structure of Green's functions
 # gf_struct = [ ('up',5), ('down',5) ]
 # This can be computed using the TRIQS function as follows:
-gf_struct = op.set_operator_structure(spin_names,orb_names,off_diag=off_diag) 
+gf_struct = op.set_operator_structure(spin_names,n_orb,off_diag=off_diag) 
 
 # Construct the 4-index U matrix U_{ijkl}
 # The spherically-symmetric U matrix is parametrised by the radial integrals
@@ -40,7 +39,7 @@ U_mat = op.U_matrix(l=l, U_int=U, J_hund=J, basis='spherical')
 # Here we use the full rotationally-invariant interaction parametrised 
 # by the 4-index tensor U_{ijkl}.
 # The TRIQS library provides a function to build this Hamiltonian from the U tensor:
-H = op.h_int_slater(spin_names,orb_names,U_mat,off_diag=off_diag)
+H = op.h_int_slater(spin_names,n_orb,U_mat,off_diag=off_diag)
 
 # Construct the solver
 S = Solver(beta=beta, gf_struct=gf_struct)
@@ -57,7 +56,7 @@ for i_loop in range(n_loop):
   if i_loop > 0: 
     g_iw = GfImFreq(indices=[0], beta=beta)
     # Impose paramagnetism
-    for name, g in S.G_tau: g_iw << g_iw + (0.5/n_orbs)*Fourier(g)
+    for name, g in S.G_tau: g_iw << g_iw + (0.5/n_orb)*Fourier(g)
     # Compute S.G0_iw with the self-consistency condition
     for name, g0 in S.G0_iw: 
         g0 << inverse(iOmega_n + mu - (half_bandwidth/2.0)**2 * g_iw )

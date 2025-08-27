@@ -13,7 +13,7 @@ def setup_fig():
     axes.legend(loc='best',prop={'size':8},ncol=2)
 
 spin_names = ("up","dn")
-num_orbitals = 2
+n_orb = 2
 
 pp = PdfPages('G.pdf')
 ed_arch = HDFArchive('kanamori.ed.h5','r')
@@ -28,7 +28,7 @@ for use_qn in (True,False):
         plt.clf()
 
         name = "cthyb (QN)" if use_qn else "cthyb"
-        for o in range(num_orbitals):
+        for o in range(n_orb):
             oplot(rebinning_tau(arch['G_tau']['up_%i'%o],200), name=name+",$\uparrow%i$"%o)
             oplot(rebinning_tau(arch['G_tau']['dn_%i'%o],200), name=name+",$\downarrow%i$"%o)
             oplot(ed_arch['up-%i'%o], name="ED,$\uparrow%i$"%o)

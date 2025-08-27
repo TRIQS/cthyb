@@ -19,8 +19,9 @@ for line in open("5_plus_5.ref.dat",'r'):
 
 beta = tau[-1]
 n_tau = len(tau)
+n_orb_dat = len(data[0])
     
-g_ref = GfImTime(indices = list(range(len(data[0]))), beta=beta, n_points=n_tau)
+g_ref = GfImTime(beta=beta, n_points=n_tau, target_shape=[n_orb_dat, n_orb_dat])
 for nt, d in enumerate(data):
     for nc, val in enumerate(d):
         g_ref.data[nt,nc,nc] = val
@@ -34,14 +35,14 @@ for filename in ["5_plus_5.int.h5", "5_plus_5.h5"]:
     use_interaction = arch['use_interaction']
     spin_names = arch['spin_names']
     orb_names = arch['orb_names']
+    n_orb = len(orb_names)
     delta_params = arch['delta_params']
 
     mkind = get_mkind(False,None)
 
     # Calculate theoretical curves
     if not use_interaction:
-        #g_theor = GfImTime(indices = range(len(orb_names)), beta=beta, n_points=n_tau)
-        g_theor = GfImTime(indices = list(range(len(orb_names))), beta=beta, n_points=1000)
+        g_theor = GfImTime(beta=beta, n_points=1000, target_shape=[n_orb, n_orb])
         for nc, cn in enumerate(orb_names):
             V = delta_params[cn]['V']
             e = delta_params[cn]['e']
@@ -49,7 +50,6 @@ for filename in ["5_plus_5.int.h5", "5_plus_5.h5"]:
             e1 = e - V
             e2 = e + V
 
-            #g_theor_w = GfImFreq(indices = [0], beta=beta, n_points=1000)
             g_theor_w = Gf(mesh=MeshImFreq(beta, 'Fermion', 100), target_shape=[])
             g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
             g_theor[nc,nc] << Fourier(g_theor_w)

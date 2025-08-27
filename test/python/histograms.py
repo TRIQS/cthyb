@@ -41,7 +41,7 @@ H = U*n("up",0)*n("dn",0) -mu*(n("up",0) + n("dn",0))
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 # Set hybridization function
-delta_w = GfImFreq(indices = [0], beta=beta)
+delta_w = GfImFreq(beta=beta, target_shape=[1,1])
 delta_w << (V**2)*(inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon))
 for sn in spin_names: S.G0_iw[sn] << inverse(iOmega_n - delta_w)
 

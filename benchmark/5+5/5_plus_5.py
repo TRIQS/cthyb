@@ -19,7 +19,8 @@ def five_plus_five(use_interaction=True):
     # Block structure of GF
     L = 2 # d-orbital
     spin_names = ("up","dn")
-    orb_names = cubic_names(L)
+    orb_names = cubic_names(L)  # Get cubic harmonic names for delta_params
+    n_orb = len(orb_names)
 
     # Input parameters
     beta = 40.
@@ -81,7 +82,7 @@ def five_plus_five(use_interaction=True):
 
     mpi.report("Welcome to 5+5 (5 orbitals + 5 bath sites) test.")
 
-    gf_struct = set_operator_structure(spin_names,orb_names,False)
+    gf_struct = set_operator_structure(spin_names,n_orb,False)
     mkind = get_mkind(False,None)
 
     H = Operator()
@@ -89,7 +90,7 @@ def five_plus_five(use_interaction=True):
     if use_interaction:
         # Local Hamiltonian
         U_mat = U_matrix(L,[F0,F2,F4],basis='cubic')
-        H += h_int_slater(spin_names,orb_names,U_mat,False,H_dump=H_dump)
+        H += h_int_slater(spin_names,n_orb,U_mat,False,H_dump=H_dump)
     else:
         mu = 0.
         

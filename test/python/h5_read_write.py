@@ -17,7 +17,7 @@ solver = SolverCore(**cp)
 # Set hybridization function
 mu = 0.5
 half_bandwidth = 1.0
-delta_w = GfImFreq(indices = [0], beta=cp['beta'])
+delta_w = GfImFreq(beta=cp['beta'], target_shape=[1,1])
 delta_w << (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
 for name, g0 in solver.G0_iw:
     g0 << inverse(iOmega_n + mu - delta_w)

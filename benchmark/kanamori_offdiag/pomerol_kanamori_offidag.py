@@ -19,10 +19,10 @@ from pomerol2triqs import PomerolED
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
 
-    norb = 2
+    n_orb = 2
     spin_names = ['up', 'do']
-    imp_idxs = list(range(0, norb))
-    bath_idxs = list(range(norb, 3*norb))
+    imp_idxs = list(range(0, n_orb))
+    bath_idxs = list(range(n_orb, 3*n_orb))
     
     fop_imp = fundamental_operators_from_gf_struct(
         [ ['up', imp_idxs], ['do', imp_idxs] ])
@@ -43,10 +43,10 @@ if __name__ == '__main__':
     U = 2.0
     J = 0.2
 
-    V = 1.0*np.eye(norb) + 0.1*(np.ones((norb, norb)) - np.eye(norb))
+    V = 1.0*np.eye(n_orb) + 0.1*(np.ones((n_orb, n_orb)) - np.eye(n_orb))
     V = np.hstack([V, V])
     
-    T_imp = -mu * np.eye(norb)
+    T_imp = -mu * np.eye(n_orb)
     
     T_bath = np.diag([-2.3, -2.3, 2.3, 2.3])
  

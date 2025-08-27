@@ -20,10 +20,10 @@ for i in arch:
     n_tau = len(G_tau.mesh)
 
     for m, b in enumerate(G_tau.indices):
-        g_theor = GfImTime(indices = [0], beta=beta, n_points=n_tau)
+        g_theor = GfImTime(beta=beta, n_points=n_tau, target_shape=[1,1])
         e1 = e[m] - V[m]
         e2 = e[m] + V[m]
-        g_theor_w = GfImFreq(indices = [0], beta=beta)
+        g_theor_w = GfImFreq(beta=beta, target_shape=[1,1])
         g_theor_w << 0.5*inverse(iOmega_n - e1) + 0.5*inverse(iOmega_n - e2)
         g_theor << Fourier(g_theor_w)
 

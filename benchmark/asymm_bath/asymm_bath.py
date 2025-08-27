@@ -32,7 +32,7 @@ p["performance_analysis"] = True
 p["measure_pert_order"] = True
 
 # Block structure of GF
-gf_struct = [['up', [0]], ['dn', [0]]]
+gf_struct = [['up', 1], ['dn', 1]]
 
 # Hamiltonian
 H = U*n("up",0)*n("dn",0)

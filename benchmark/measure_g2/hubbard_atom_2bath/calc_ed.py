@@ -86,8 +86,8 @@ def make_calc(U=10):
     # ------------------------------------------------------------------
     # -- Single-particle Green's functions
 
-    d.G_tau = Gf(mesh=MeshImTime(beta, 'Fermion', ntau), target_shape=[])
-    d.G_iw = Gf(mesh=MeshImFreq(beta, 'Fermion', niw), target_shape=[])
+    d.G_tau = Gf(mesh=MeshImTime(beta, 'Fermion', ntau), target_shape=[1,1])
+    d.G_iw = Gf(mesh=MeshImFreq(beta, 'Fermion', niw), target_shape=[1,1])
     
     ed.set_g2_tau(d.G_tau, c(up,0), c_dag(up,0))
     ed.set_g2_iwn(d.G_iw, c(up,0), c_dag(up,0))
@@ -98,7 +98,7 @@ def make_calc(U=10):
     imtime = MeshImTime(beta, 'Fermion', ntau)
     prodmesh = MeshProduct(imtime, imtime, imtime)
 
-    G2opt = dict(mesh=prodmesh, target_shape=[])
+    G2opt = dict(mesh=prodmesh, target_shape=[1,1])
     G2opt_1111 = dict(mesh=prodmesh, target_shape=[1, 1, 1, 1])
 
     G02_tau = Gf(name='$G^{(2)}_0(\tau_1, \tau_2, \tau_3)$', **G2opt_1111)

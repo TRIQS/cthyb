@@ -24,7 +24,7 @@ H_mat = np.array([[-0.2  , 0.1j , 0.5 ,  0.1 ],
                   [ 0.1  , 0.5  , 0.0 ,  0.0 ]])
 corr_dim = 2
 
-G0_iw = GfImFreq(beta=10,indices=list(range(len(H_mat))),n_points=101)
+G0_iw = GfImFreq(beta=10, n_points=101, target_shape=[len(H_mat), len(H_mat)])
 G0_iw << inverse(iOmega_n - H_mat)
 
 H_int = 3*n("ud",0)*n("ud",1)

@@ -12,10 +12,10 @@ H = np.array([[0,0.1j],[-0.1j,0]])
 
 # construct the atomic GF by hand:
 #  G_tau = inverse_fourier( (iOmega - H)^(-1) )
-G_iw = GfImFreq(beta=beta,indices=[0,1])
+G_iw = GfImFreq(beta=beta, target_shape=[2,2])
 G_iw << iOmega_n - H
 G_iw.invert()
-G_tau = GfImTime(beta=beta,indices=[0,1],n_points=n_tau)
+G_tau = GfImTime(beta=beta, n_points=n_tau, target_shape=[2,2])
 G_tau.set_from_fourier(G_iw)
 
 # construct the Hamiltonian as operator

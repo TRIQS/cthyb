@@ -73,8 +73,8 @@ def make_calc(beta=2.0, h_field=0.0):
     
     ed = TriqsExactDiagonalization(p.H, fundamental_operators, p.beta)
 
-    g_tau = GfImTime(beta=beta, statistic='Fermion', n_points=400, indices=[0])
-    g_iw = GfImFreq(beta=beta, statistic='Fermion', n_points=10, indices=[0])
+    g_tau = GfImTime(beta=beta, statistic='Fermion', n_points=400, target_shape=[1,1])
+    g_iw = GfImFreq(beta=beta, statistic='Fermion', n_points=10, target_shape=[1,1])
 
     p.G_tau = BlockGf(name_list=[up,do], block_list=[g_tau]*2, make_copies=True)
     p.G_iw = BlockGf(name_list=[up,do], block_list=[g_iw]*2, make_copies=True)
@@ -87,7 +87,7 @@ def make_calc(beta=2.0, h_field=0.0):
 
     p.magnetization = ed.get_expectation_value(0.5 * mA)
 
-    p.O_tau = Gf(mesh=MeshImTime(beta, 'Fermion', 400), target_shape=[])
+    p.O_tau = Gf(mesh=MeshImTime(beta, 'Fermion', 400), target_shape=[1,1])
     ed.set_g2_tau(p.O_tau, n(up,0), n(do,0))
     p.O_tau.data[:] *= -1.
 

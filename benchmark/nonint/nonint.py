@@ -28,7 +28,7 @@ for modes in range(1,N_max+1):
     e = [-0.2]*modes
 
     #gf_struct = {str(n):[0] for n in range(0,len(V))}
-    gf_struct = [ [str(bidx), [0]] for bidx in range(0,len(V)) ]
+    gf_struct = [ [str(bidx), 1] for bidx in range(0,len(V)) ]
 
     # Local Hamiltonian
     H = Operator()

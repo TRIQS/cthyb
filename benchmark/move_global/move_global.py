@@ -10,7 +10,7 @@ import numpy as np
 
 spin_names = ("up","dn")
 mkind = lambda sn, on: (sn,on)
-gf_struct = [ ["up", [1, 2]], ["dn", [1, 2]] ]
+gf_struct = [ ["up", 2], ["dn", 2] ]
 
 # Input parameters
 beta = 100.0
@@ -36,20 +36,20 @@ p["use_norm_as_weight"] = True
 
 move_global_prob = 0.05
 
-H = U*n(*mkind("up",1))*n(*mkind("dn",1)) + U*n(*mkind("up",2))*n(*mkind("dn",2))
+H = U*n(*mkind("up",0))*n(*mkind("dn",0)) + U*n(*mkind("up",1))*n(*mkind("dn",1))
 
 # Global moves
-gm_flip_spins_1   = {'flip_spins_1' :   {mkind("up",1) : mkind("dn",1), mkind("dn",1) : mkind("up",1)}}
-gm_flip_spins_all = {'flip_spins_all' : {mkind("up",1) : mkind("dn",1), mkind("dn",1) : mkind("up",1),
-                                         mkind("up",2) : mkind("dn",2), mkind("dn",2) : mkind("up",2)}}
-gm_swap_atoms     = {'swap_atoms' :     {mkind("up",1) : mkind("up",2), mkind("dn",1) : mkind("dn",2),
-                                         mkind("up",2) : mkind("up",1), mkind("dn",2) : mkind("dn",1)}}
+gm_flip_spins_1   = {'flip_spins_0' :   {mkind("up",0) : mkind("dn",0), mkind("dn",0) : mkind("up",0)}}
+gm_flip_spins_all = {'flip_spins_all' : {mkind("up",0) : mkind("dn",0), mkind("dn",0) : mkind("up",0),
+                                         mkind("up",1) : mkind("dn",1), mkind("dn",1) : mkind("up",1)}}
+gm_swap_atoms     = {'swap_atoms' :     {mkind("up",0) : mkind("up",1), mkind("dn",0) : mkind("dn",1),
+                                         mkind("up",1) : mkind("up",0), mkind("dn",1) : mkind("dn",0)}}
 
 # Construct the solver
 S = SolverCore(beta=beta, gf_struct=gf_struct, n_tau=n_tau, n_iw=n_iw)
 
 # Set hybridization function
-delta_w = GfImFreq(indices = [1,2], beta=beta)
+delta_w = GfImFreq(beta=beta, target_shape=[2, 2])
 delta_w << (V**2)*(inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon))
 for sn in spin_names:
     S.G0_iw[sn] << inverse(iOmega_n - np.matrix([[-mu,t],[t,-mu]]) - delta_w)
@@ -59,11 +59,11 @@ if mpi.is_master_node():
     arch['beta'] = beta
     arch['move_global_prob'] = move_global_prob
 
-static_observables = {"N1_up" : n(*mkind("up",1)), "N1_dn" : n(*mkind("dn",1)),
-                      "N2_up" : n(*mkind("up",2)), "N2_dn" : n(*mkind("dn",2))}
+static_observables = {"N0_up" : n(*mkind("up",0)), "N0_dn" : n(*mkind("dn",0)),
+                      "N1_up" : n(*mkind("up",1)), "N1_dn" : n(*mkind("dn",1))}
 
 global_moves = [('none',{}),
-                ('flip_spins_1',gm_flip_spins_1),
+                ('flip_spins_0',gm_flip_spins_0),
                 ('flip_spins_all',gm_flip_spins_all),
                 ('swap_atoms',gm_swap_atoms),
                 ('swap_and_flip',dict(gm_flip_spins_all,**gm_swap_atoms))]

@@ -12,8 +12,8 @@ from pyed.TriqsExactDiagonalization import TriqsExactDiagonalization
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
 
-    orb_idxs = list(range(3))
-    gf_struct = [ ['up', orb_idxs], ['do', orb_idxs] ]
+    n_orb = 3
+    gf_struct = [ ['up',n_orb], ['do',n_orb] ]
     
     fundamental_operators = fundamental_operators_from_gf_struct(gf_struct)
 

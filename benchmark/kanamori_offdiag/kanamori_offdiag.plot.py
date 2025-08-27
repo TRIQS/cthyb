@@ -13,7 +13,7 @@ def setup_fig():
     axes.legend(loc='lower center',prop={'size':8}, ncol=1)
 
 spin_names = ("up","dn")
-num_orbitals = 2
+n_orb = 2
 
 pp = PdfPages('G.pdf')
 ed_arch = HDFArchive('kanamori_offdiag.ed.h5','r')
@@ -36,7 +36,7 @@ for use_qn in (True,False):
         ed_opt = dict(lw=2.0, alpha=1.0)
         cthyb_opt = dict(lw=1.0, alpha=1.0)
         
-        for o1, o2 in product(range(num_orbitals), repeat=2):
+        for o1, o2 in product(range(n_orb), repeat=2):
             plt.clf()
             plt.title('using_qn = ' + str(use_qn))
             oplot(ed_arch['up'][o1,o2], name="ED,$\uparrow%i%i$"%(o1,o2), **ed_opt)

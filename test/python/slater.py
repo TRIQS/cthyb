@@ -44,7 +44,7 @@ H = h_int_slater(spin_names,cubic_names,U_mat,False)
 S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=100000, n_l=50)
 
 # Set hybridization function
-delta_w = GfImFreq(indices = [0], beta=beta)
+delta_w = GfImFreq(beta=beta, target_shape=[1,1])
 delta_w << (half_bandwidth/2.0)**2 * SemiCircular(half_bandwidth)
 for name, g0 in S.G0_iw:
     g0 << inverse(iOmega_n + mu - delta_w)

@@ -10,15 +10,14 @@ import numpy as np
 
 # Input parameters
 beta = 10.0
-num_orb = 2
+n_orb = 2
 mu = 1.5
 U = 2.0
 J = 0.2
 epsilon = [-1.3, 1.3]
-V = [2.0*np.eye(num_orb) + 0.2*(np.ones((num_orb, num_orb)) - np.eye(num_orb))]*2
+V = [2.0*np.eye(n_orb) + 0.2*(np.ones((n_orb, n_orb)) - np.eye(n_orb))]*2
 
 spin_names = ("up", "dn")
-orb_names = list(range(num_orb))
 n_iw = 1024
 
 g2_n_iw = 5
@@ -62,11 +61,11 @@ p["measure_G2_n_l"] = g2_n_l
 
 mpi.report("Welcome to the measure_G2 benchmark.")
 
-gf_struct = set_operator_structure(spin_names, orb_names, True)
+gf_struct = set_operator_structure(spin_names, n_orb, True)
 mkind = get_mkind(True, None)
 
 # Hamiltonian
-H = h_int_kanamori(spin_names, orb_names,
+H = h_int_kanamori(spin_names, n_orb,
                    np.array([[0, U-3*J], [U-3*J, 0]]),
                    np.array([[U, U-2*J], [U-2*J, U]]),
                    J, off_diag=True)
@@ -79,7 +78,7 @@ S = SolverCore(beta = beta, gf_struct = gf_struct, n_iw = n_iw)
 mpi.report("Preparing the hybridization function...")
 
 # Set hybridization function
-delta_w = GfImFreq(indices = orb_names, beta = beta, n_points = n_iw)
+delta_w = GfImFreq(beta = beta, n_points = n_iw, target_shape=[n_orb, n_orb])
 delta_w_part = delta_w.copy()
 for e, v in zip(epsilon,V):
     delta_w_part << inverse(iOmega_n - e)
@@ -113,9 +112,9 @@ S.solve(h_int = H, **p)
 
 # Check shapes of g2 containers
 ref_shape_inu = (2*g2_n_iw-1, 2*g2_n_inu, 2*g2_n_inu,
-                 num_orb, num_orb, num_orb, num_orb)
+                 n_orb, n_orb, n_orb, n_orb)
 ref_shape_l = (2*g2_n_iw-1, g2_n_l, g2_n_l,
-               num_orb, num_orb, num_orb, num_orb)
+               n_orb, n_orb, n_orb, n_orb)
 for bn in g2_blocks:
     assert S.G2_iw_pp[bn].data.shape == ref_shape_inu
     assert S.G2_iw_ph[bn].data.shape == ref_shape_inu

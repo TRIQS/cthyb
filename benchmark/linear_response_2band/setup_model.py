@@ -80,7 +80,7 @@ if __name__ == '__main__':
         J = 0.2,
         beta = 1.0,
         crystal_field = 1.0,
-        num_orbitals = 2,
+        n_orb = 2,
         num_spins = 2,
         nw = 400,
         ntau = 801,
@@ -88,7 +88,6 @@ if __name__ == '__main__':
     
     up, do = '0', '1'
     p.spin_names = [up, do]
-    p.orb_names = list(range(p.num_orbitals))
 
     # -- Unitary transform
 
@@ -119,8 +118,8 @@ if __name__ == '__main__':
     p.diag_ops = [c('0_0',0), c('0_1',0), c('0_2',0), c('0_3',0)]
     p.diag_ops += [ dagger(op) for op in p.diag_ops ]
     
-    p.gf_struct = [['0', [0, 1, 2, 3]]]
-    p.gf_struct_diag = [['0_0',[0]], ['0_1',[0]], ['0_2',[0]], ['0_3',[0]]]
+    p.gf_struct = [['0', 4]]
+    p.gf_struct_diag = [['0_0',1], ['0_1',1], ['0_2',1], ['0_3',1]]
 
     p.index_converter = {
         ('0', 0) : ('loc', 0, 'up'),
@@ -188,10 +187,10 @@ if __name__ == '__main__':
     
     # -- Interaction Hamiltonian: Kanamori interaction
     
-    U_ab, UPrime_ab = U_matrix_kanamori(n_orb=p.num_orbitals, U_int=p.U, J_hund=p.J)
+    U_ab, UPrime_ab = U_matrix_kanamori(n_orb=p.n_orb, U_int=p.U, J_hund=p.J)
     
     H_int = h_int_kanamori(
-        p.spin_names, p.orb_names, U_ab, UPrime_ab, J_hund=p.J,
+        p.spin_names, p.n_orb, U_ab, UPrime_ab, J_hund=p.J,
         off_diag=True, map_operator_structure=None, H_dump=None)
 
     p.H_int = relabel_operators(H_int, p.spin_block_ops, p.org_ops)

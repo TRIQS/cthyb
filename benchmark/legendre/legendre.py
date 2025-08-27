@@ -41,11 +41,7 @@ H = U*n(*mkind("up"))*n(*mkind("dn"))
 QN = []
 for spin in spin_names: QN.append(n(*mkind(spin)))
 
-gf_struct = {}
-for spin in spin_names:
-    bn, i = mkind(spin)
-    gf_struct.setdefault(bn,[]).append(i)
-gf_struct = [ [key, value] for key, value in gf_struct.items() ]
+gf_struct = [[s, 1] for s in spin_names] 
 
 mpi.report("Constructing the solver...")
 

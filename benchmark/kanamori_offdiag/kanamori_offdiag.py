@@ -11,15 +11,14 @@ import numpy as np
 
 # Input parameters
 beta = 10.0
-num_orbitals = 2
+n_orb = 2
 mu = 1.0
 U = 2.0
 J = 0.2
 epsilon = [-2.3,2.3]
-V = [1.0*np.eye(num_orbitals) + 0.1*(np.ones((num_orbitals,num_orbitals)) - np.eye(num_orbitals))]*2
+V = [1.0*np.eye(n_orb) + 0.1*(np.ones((n_orb,n_orb)) - np.eye(n_orb))]*2
 
 spin_names = ("up","dn")
-orb_names = list(range(num_orbitals))
 
 for use_qn in (True, False):
 
@@ -41,19 +40,19 @@ for use_qn in (True, False):
 
     mpi.report("Welcome to Kanamori (off-diagonal) benchmark.")
 
-    gf_struct = set_operator_structure(spin_names,orb_names,True)
+    gf_struct = set_operator_structure(spin_names,n_orb,True)
     mkind = get_mkind(True,None)
 
     # Hamiltonian
-    H = h_int_kanamori(spin_names,orb_names,
+    H = h_int_kanamori(spin_names,n_orb,
                        np.array([[0,U-3*J],[U-3*J,0]]),
                        np.array([[U,U-2*J],[U-2*J,U]]),
                        J,off_diag=True)
 
     if use_qn:
-        QN = [sum([n(*mkind("up",o)) for o in orb_names],Operator()),
-              sum([n(*mkind("dn",o)) for o in orb_names],Operator())]
-        for o in orb_names:
+        QN = [sum([n(*mkind("up",o)) for o in range(n_orb)],Operator()),
+              sum([n(*mkind("dn",o)) for o in range(n_orb)],Operator())]
+        for o in range(n_orb):
             dn = n(*mkind("up",o)) - n(*mkind("dn",o))
             QN.append(dn*dn)
         p["partition_method"] = "quantum_numbers"
@@ -67,7 +66,7 @@ for use_qn in (True, False):
     mpi.report("Preparing the hybridization function...")
 
     # Set hybridization function
-    delta_w = GfImFreq(indices = orb_names, beta=beta, n_points=n_iw)
+    delta_w = GfImFreq(beta=beta, n_points=n_iw, target_shape=[n_orb, n_orb])
     delta_w_part = delta_w.copy()
     for e, v in zip(epsilon,V):
         delta_w_part << inverse(iOmega_n - e)

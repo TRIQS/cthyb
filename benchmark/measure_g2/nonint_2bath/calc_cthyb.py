@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     solv = Solver(
         beta=beta,
-        gf_struct=[['up', [0]], ['do', [0]]],
+        gf_struct=[['up', 1], ['do', 1]],
         n_iw=15,
         n_tau=4*128+1,
         n_l=20,

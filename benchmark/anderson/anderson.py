@@ -50,12 +50,7 @@ def anderson(use_qn=True, use_blocks=True):
         p["quantum_numbers"] = QN
         p["partition_method"] = "quantum_numbers"
 
-    gf_struct = {}
-    for spin in spin_names:
-        bn, i = mkind(spin)
-        gf_struct.setdefault(bn,[]).append(i)
-
-    gf_struct = [ [key, value] for key, value in gf_struct.items() ] # convert from dict to list of lists
+    gf_struct = [[s,1] for s in spin_names] if use_blocks else [["tot",2]]
             
     mpi.report("Constructing the solver...")
 

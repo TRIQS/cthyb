@@ -46,7 +46,7 @@ def make_calc():
 
     p.init = ParameterCollection(
         beta = p.beta,
-        gf_struct = [['up',[0]],['do',[0]]],
+        gf_struct = [['up',1],['do',1]],
         n_iw = 1000,
         n_tau = 2*1000+1,
         n_l = 20,

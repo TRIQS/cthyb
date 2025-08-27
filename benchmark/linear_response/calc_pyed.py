@@ -73,8 +73,8 @@ def make_calc(beta=2.0, h_field=0.0):
     
     ed = TriqsExactDiagonalization(p.H, fundamental_operators, p.beta)
 
-    g_tau = GfImTime(beta=beta, statistic='Fermion', n_points=40, indices=[0])
-    g_iw = GfImFreq(beta=beta, statistic='Fermion', n_points=10, indices=[0])
+    g_tau = GfImTime(beta=beta, statistic='Fermion', n_points=40, target_shape=[1,1])
+    g_iw = GfImFreq(beta=beta, statistic='Fermion', n_points=10, target_shape=[1,1])
 
     p.G_tau = BlockGf(name_list=[up,do], block_list=[g_tau]*2, make_copies=True)
     p.G_iw = BlockGf(name_list=[up,do], block_list=[g_iw]*2, make_copies=True)

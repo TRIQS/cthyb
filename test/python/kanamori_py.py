@@ -11,7 +11,7 @@ from itertools import product
 
 # H_loc parameters
 beta = 10.0
-norb = 2
+n_orb = 2
 mu = 1.0
 U = 2.0
 J = 0.2
@@ -20,20 +20,19 @@ J = 0.2
 epsilon = 2.3
 
 # Hybridization matrices
-V = 1.0 * np.eye(norb) + 0.1 * (np.ones(norb) - np.eye(norb))
+V = 1.0 * np.eye(n_orb) + 0.1 * (np.ones(n_orb) - np.eye(n_orb))
 
 # Define Hybridization Function
-delta_w = GfImFreq(target_shape=(norb, norb), beta=beta)
+delta_w = GfImFreq(target_shape=(n_orb, n_orb), beta=beta)
 delta_w << inverse(iOmega_n - epsilon) + inverse(iOmega_n + epsilon)
 delta_w.from_L_G_R(V, delta_w, V)
 
 # Block structure of GF
 spin_names = ('up','down')
-gf_struct = set_operator_structure(spin_names,norb,True)
+gf_struct = set_operator_structure(spin_names,n_orb,True)
 
 # Hamiltonian
-orb_names = list(range(norb))
-H = h_int_kanamori(spin_names,orb_names,
+H = h_int_kanamori(spin_names,n_orb,
                    np.array([[0,U-3*J],[U-3*J,0]]),
                    np.array([[U,U-2*J],[U-2*J,U]]),
                    J,off_diag=True)
@@ -89,7 +88,7 @@ S = Solver(beta=beta, gf_struct=gf_struct, n_iw=1025, n_tau=2500, n_l=50, delta_
 # Set Weiss Field
 S.Delta_tau << Fourier(delta_w)
 
-N = sum(n(sp,orb) for sp, orb in product(spin_names, range(norb)))
+N = sum(n(sp,orb) for sp, orb in product(spin_names, range(n_orb)))
 S.solve(h_int=H, h_loc0=mu*N, **sp)
 
 # Make sure that S.Delta_tau remains unchanged from the input

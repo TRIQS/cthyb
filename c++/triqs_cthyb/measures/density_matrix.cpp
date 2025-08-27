@@ -70,7 +70,7 @@ namespace triqs_cthyb {
     h_scalar_t tr = 0;
     for (auto &b : block_dm) tr += trace(b);
     if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
-    if (std::abs(tr - 1) > 1.e-13)
+    if (std::abs(tr - 1) > 1.e-10)
       std::cerr << "Warning :: Trace of the density matrix is " << std::setprecision(13) << tr << std::setprecision(6) << " instead of 1"
                 << std::endl;
 

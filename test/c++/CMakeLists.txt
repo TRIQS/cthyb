@@ -41,7 +41,7 @@ endforeach()
 # add_test with various -DXX -DYYY
 macro(add_test_defs test)
  set(t "${test}${ARGV1}")
- add_executable(${t} ${test})
+ add_executable(${t} ${test}.cpp)
  target_link_libraries(${t} PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c gtest_main)
  target_compile_definitions(${t} PRIVATE "${ARGV2}") 
  add_test(${t} ${t})

@@ -38,10 +38,7 @@ namespace triqs_cthyb {
        block_size(block_size),
        histo_proposed(add_histo("insert_length_proposed_" + block_name, histos)),
        histo_accepted(add_histo("insert_length_accepted_" + block_name, histos)),
-       pauli_prob(pauli_prob),
-       Nmax(100) {
-    if (pauli_prob > 0.0) vec_ind.reserve(Nmax);
-  }
+       pauli_prob(pauli_prob) {}
 
   mc_weight_t move_insert_c_cdag::attempt() {
 
@@ -193,123 +190,107 @@ namespace triqs_cthyb {
     // do a Pauli move with probability pauli_prob
     bool const pauli_move = rng() <= pauli_prob;
 
-    // Pick up the value of alpha and choose the operators
-    auto rs1 = rng(block_size);
-    auto rs2 = (pauli_move ? rs1 : rng(block_size));
-    op1      = op_desc{block_index, rs1, true, data.linindex[std::make_pair(block_index, rs1)]};
-    op2      = op_desc{block_index, rs2, false, data.linindex[std::make_pair(block_index, rs2)]};
+    // choose the inner indices and initialize operators to be inserted
+    auto const rs1 = rng(block_size);
+    auto const rs2 = (pauli_move ? rs1 : rng(block_size));
+    op1 = op_desc{.block_index = block_index, .inner_index = rs1, .dagger = true, .linear_index = data.linindex[std::make_pair(block_index, rs1)]};
+    op2 = op_desc{.block_index = block_index, .inner_index = rs2, .dagger = false, .linear_index = data.linindex[std::make_pair(block_index, rs2)]};
 
-    auto &det    = data.dets[block_index];
-    int det_size = det.size();
+    // block determinant and its size
+    auto const &det        = data.dets[block_index];
+    auto const det_size    = det.size();
+    auto const det_size_p1 = static_cast<double>(det_size + 1);
 
-    // Choice of times for insertion. Find the time as double and them put them on the grid.
+    // choose the tau point of c_dag and c (only for non-Pauli moves)
     tau1 = data.tau_seg.get_random_pt(rng);
     if (!pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
-    double t_ratio = 1.;
 
-    t_ratio = block_size * config.beta() / double(det_size + 1);
+    // initialize the proposal probability ratio P_removal / P_insertion
+    double t_ratio = block_size * config.beta() / det_size_p1;
 
-    int ic_dagL = -1, ic_dagR = -1, ic_nodagL = -1, ic_nodagR = -1;
+    // find operators with the same flavor as c_dag
+    c_dag_left_tau.clear(), c_dag_right_tau.clear(), c_left_tau.clear(), c_right_tau.clear();
+    for (int i = 0; i < det.size(); ++i) {
+      auto const &[tau_dag, rs_dag] = det.get_x(i);
+      if (rs_dag == rs1) tau_dag > tau1 ? c_dag_left_tau.push_back(tau_dag) : c_dag_right_tau.push_back(tau_dag);
 
-    if (det_size > Nmax) {
-      while (det_size > Nmax) Nmax *= 2;
-      vec_ind.reserve(Nmax);
+      auto const &[tau, rs] = det.get_y(i);
+      if (rs == rs1) tau > tau1 ? c_left_tau.push_back(tau) : c_right_tau.push_back(tau);
     }
 
-    vec_ind.clear();
-    int j = 0, op_pos = -1;
+    // move all creation (annihilation) ops to the right of tau1 into c_dag_right_tau (c_right_tau)
+    std::ranges::copy(c_dag_left_tau, std::back_inserter(c_dag_right_tau));
+    std::ranges::copy(c_left_tau, std::back_inserter(c_right_tau));
 
-    if (rs1 == rs2) {
-      // Look at position of tau1 among creation operators of the same flavor
-      for (int i = 0; i < det_size; ++i) {
-        if (det.get_x(i).first < tau1 && op_pos == -1) op_pos = j;
-        if (det.get_x(i).second != rs1) continue;
-        vec_ind.push_back(i);
-        ++j;
-      }
-    }
+    // choose tau point for c and update P_insertion of t_ratio
+    if (!c_dag_right_tau.empty() && !c_right_tau.empty() && rs1 == rs2) {
+      // rs1 == rs2 && at least one creation and annihilation operator with rs1 is already present
+      if (tau1 - c_dag_right_tau.front() < tau1 - c_right_tau.front()) {
+        // the closest rs1-op to the right of tau1 is a creation operator at tau_right
+        auto const tau_right = c_dag_right_tau.front();
 
-    int size = vec_ind.size();
+        // for Pauli moves, choose tau2 between tau_right and tau1
+        if (pauli_move) tau2 = tau_right + data.tau_seg.get_random_pt(rng, tau1 - tau_right);
 
-    if (op_pos == -1) op_pos = size;
-
-    // Creation operators at the left and right of tau1
-    if (size != 0) {
-      ic_dagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
-      ic_dagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
-    }
-
-    vec_ind.clear();
-    j = 0, op_pos = -1;
-
-    // Look at position of tau1 among annihilation operators of the same flavor
-    for (int i = 0; i < det_size; ++i) {
-      if (det.get_y(i).first < tau1 && op_pos == -1) op_pos = j;
-      if (det.get_y(i).second != rs1) continue;
-      vec_ind.push_back(i);
-      ++j;
-    }
-
-    size = vec_ind.size();
-
-    if (op_pos == -1) op_pos = size;
-
-    time_pt tRnodag, tLnodag;
-
-    // Annihilation operators at the left and right of tau1
-    if (size != 0) {
-      ic_nodagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
-      ic_nodagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
-      tRnodag   = det.get_y(ic_nodagR).first;
-      tLnodag   = det.get_y(ic_nodagL).first;
-    }
-
-    if (ic_nodagR != -1 && ic_dagR != -1) {
-
-      auto tRdag = det.get_x(ic_dagR).first;
-      auto tLdag = det.get_x(ic_dagL).first;
-
-      auto tR = ((tau1 - tRdag) > (tau1 - tRnodag) ? tRnodag : tRdag);
-      auto tL = ((tLdag - tau1) > (tLnodag - tau1) ? tLnodag : tLdag);
-
-      if (tR == tRdag) {
-        if (pauli_move) tau2 = tR + data.tau_seg.get_random_pt(rng, tau1 - tR);
-        if ((tau1 - tau2) < (tau1 - tR))
-          t_ratio /= pauli_prob / double(tau1 - tR) + (1. - pauli_prob) / (block_size * config.beta());
-        else
+        // update t_ratio
+        if ((tau1 - tau2) < (tau1 - tau_right)) {
+          // c is inserted between c_dag and the closest rs1-creation op to the right of tau1 (can be Pauli move or non-Pauli move)
+          t_ratio /= pauli_prob / static_cast<double>(tau1 - tau_right) + (1. - pauli_prob) / (block_size * config.beta());
+        } else {
+          // c is inserted somewhere else (can only be a non-Pauli move)
           t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+        }
       } else {
-        if (pauli_move) tau2 = tau1 + data.tau_seg.get_random_pt(rng, tL - tau1);
-        if ((tau2 - tau1) < (tL - tau1))
-          t_ratio /= pauli_prob / double(tL - tau1) + (1. - pauli_prob) / (block_size * config.beta());
-        else
+        // the closest rs1-op to the left of tau1 is at tau_left
+        auto const tau_left = (c_dag_right_tau.back() - tau1 < c_right_tau.back() - tau1 ? c_dag_right_tau.back() : c_right_tau.back());
+
+        // for Pauli moves, choose tau2 between tau1 and tau_left
+        if (pauli_move) tau2 = tau1 + data.tau_seg.get_random_pt(rng, tau_left - tau1);
+
+        // update t_ratio
+        if ((tau2 - tau1) < (tau_left - tau1)) {
+          // c is inserted between c_dag and the closest rs1-op to the left of tau1 (can be Pauli move or non-Pauli move)
+          t_ratio /= pauli_prob / static_cast<double>(tau_left - tau1) + (1. - pauli_prob) / (block_size * config.beta());
+        } else {
+          // c is inserted somewhere else (can only be a non-Pauli move)
           t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+        }
       }
-    } else { // if no operators of the same flavor or different flavors for insertion
+    } else {
+      // rs1 != rs2 || no creation or no annihilation operator with rs1 is present
+      // for Pauli moves, choose tau2 uniformly on [0, beta)
       if (pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
-      if (rs1 == rs2)
+
+      // update t_ratio
+      if (rs1 == rs2) {
+        // can be Pauli move or non-Pauli move
         t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
-      else
+      } else {
+        // can only be a non-Pauli move
         t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+      }
     }
 
-    int num_pauli = size;
-    if (rs1 == rs2) ++num_pauli;
-    num_pauli = std::min(num_pauli, 2);
-    if (num_pauli == 0 || num_pauli == det_size + 1)
-      t_ratio /= double(det_size + 1);
-    else {
-      if (size == 0) { // In this case rs1 = rs2
-        tRnodag = tau2;
-        tLnodag = tau2;
-      } else {
-        if ((tau1 - tau2) < (tau1 - tRnodag) && (rs1 == rs2)) tRnodag = tau2;
-        if ((tau2 - tau1) < (tLnodag - tau1) && (rs1 == rs2)) tLnodag = tau2;
+    // update P_removal of t_ratio
+    auto const num_pauli = std::min(c_right_tau.size() + (rs1 == rs2 ? 1 : 0), 2ul);
+    if (num_pauli == 0 || num_pauli == det_size + 1) {
+      // num_pauli == 0 only if rs1 != rs2 (only non-Pauli moves), num_pauli == det_size + 1 only if rs1 == rs2 (Pauli and non-Pauli moves)
+      t_ratio /= det_size_p1;
+    } else {
+      // find the closest rs1-annihilation operators to tau1 (can be tau2 or some existing operator)
+      auto tau_right = (c_right_tau.empty() ? tau2 : c_right_tau.front());
+      auto tau_left  = (c_right_tau.empty() ? tau2 : c_right_tau.back());
+      if (!c_right_tau.empty()) {
+        if ((tau1 - tau2) < (tau1 - tau_right) && (rs1 == rs2)) tau_right = tau2;
+        if ((tau2 - tau1) < (tau_left - tau1) && (rs1 == rs2)) tau_left = tau2;
       }
-      if (tau2 == tRnodag || tau2 == tLnodag)
-        t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size + 1);
-      else
-        t_ratio *= (1. - pauli_prob) / double(det_size + 1);
+      if (tau2 == tau_right || tau2 == tau_left) {
+        // tau2 is the right/left nearest neighbor of tau1 (can be Pauli move or non-Pauli move)
+        t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / det_size_p1;
+      } else {
+        // tau2 is not the nearest neighbor of tau1 (can only be a non-Pauli move)
+        t_ratio *= (1. - pauli_prob) / det_size_p1;
+      }
     }
 
     return t_ratio;

@@ -37,8 +37,7 @@ namespace triqs_cthyb {
     time_pt tau1, tau2;
     op_desc op1, op2;
     double pauli_prob;
-    int Nmax;
-    std::vector<int> vec_ind;
+    std::vector<time_pt> c_dag_left_tau, c_dag_right_tau, c_left_tau, c_right_tau;
 
     histogram *add_histo(std::string const &name, histo_map_t *histos);
 

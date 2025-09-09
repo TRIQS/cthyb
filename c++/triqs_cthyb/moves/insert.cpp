@@ -58,7 +58,7 @@ namespace triqs_cthyb {
 #endif
 
     // record the length of the proposed insertion
-    dtau = double(tau2 - tau1);
+    dtau = double(tau_c - tau_c_dag);
     if (histo_proposed) *histo_proposed << dtau;
 
     // Insert the operators op1 and op2 at time tau1, tau2
@@ -66,8 +66,8 @@ namespace triqs_cthyb {
     // (cf std::map doc for insert return), we reject the move.
     // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
     try {
-      data.imp_trace.try_insert(tau1, op1);
-      data.imp_trace.try_insert(tau2, op2);
+      data.imp_trace.try_insert(tau_c_dag, op_c_dag);
+      data.imp_trace.try_insert(tau_c, op_c);
     } catch (rbt_insert_error const &) {
       std::cerr << "Insert error : recovering ... " << std::endl;
       data.imp_trace.cancel_insert();
@@ -80,16 +80,16 @@ namespace triqs_cthyb {
 
     // Find the position for insertion in the determinant
     // NB : the determinant stores the C in decreasing time order.
-    int num_c_dag, num_c;
-    for (num_c_dag = 0; num_c_dag < det_size; ++num_c_dag) {
-      if (det.get_x(num_c_dag).first < tau1) break;
+    int idx_c_dag, idx_c;
+    for (idx_c_dag = 0; idx_c_dag < det_size; ++idx_c_dag) {
+      if (det.get_x(idx_c_dag).first < tau_c_dag) break;
     }
-    for (num_c = 0; num_c < det_size; ++num_c) {
-      if (det.get_y(num_c).first < tau2) break;
+    for (idx_c = 0; idx_c < det_size; ++idx_c) {
+      if (det.get_y(idx_c).first < tau_c) break;
     }
 
     // Insert in the det. Returns the ratio of dets (Cf det_manip doc).
-    auto det_ratio = det.try_insert(num_c_dag, num_c, {tau1, op1.inner_index}, {tau2, op2.inner_index});
+    auto det_ratio = det.try_insert(idx_c_dag, idx_c, {tau_c_dag, op_c_dag.inner_index}, {tau_c, op_c.inner_index});
 
     // For quick abandon
     double random_number = rng.preview();
@@ -138,8 +138,8 @@ namespace triqs_cthyb {
     data.imp_trace.confirm_insert();
 
     // insert in the configuration
-    config.insert(tau1, op1);
-    config.insert(tau2, op2);
+    config.insert(tau_c_dag, op_c_dag);
+    config.insert(tau_c, op_c);
     config.finalize();
 
     // insert in the determinant
@@ -172,14 +172,18 @@ namespace triqs_cthyb {
 
   double move_insert_c_cdag::uniform_proposal() {
     // choose the inner block indices uniformly
-    auto const rs1 = rng(block_size);
-    auto const rs2 = rng(block_size);
-    op1 = op_desc{.block_index = block_index, .inner_index = rs1, .dagger = true, .linear_index = data.linindex[std::make_pair(block_index, rs1)]};
-    op2 = op_desc{.block_index = block_index, .inner_index = rs2, .dagger = false, .linear_index = data.linindex[std::make_pair(block_index, rs2)]};
+    auto const rs_c_dag = rng(block_size);
+    auto const rs_c     = rng(block_size);
+
+    // set operators to be inserted
+    op_c_dag = op_desc{
+       .block_index = block_index, .inner_index = rs_c_dag, .dagger = true, .linear_index = data.linindex[std::make_pair(block_index, rs_c_dag)]};
+    op_c =
+       op_desc{.block_index = block_index, .inner_index = rs_c, .dagger = false, .linear_index = data.linindex[std::make_pair(block_index, rs_c)]};
 
     // choose the tau points uniformly
-    tau1 = data.tau_seg.get_random_pt(rng);
-    tau2 = data.tau_seg.get_random_pt(rng);
+    tau_c_dag = data.tau_seg.get_random_pt(rng);
+    tau_c     = data.tau_seg.get_random_pt(rng);
 
     // return the proposal probability ratio P_removal / P_insertion
     auto const det_size = static_cast<double>(data.dets[block_index].size());
@@ -195,23 +199,27 @@ namespace triqs_cthyb {
     auto const det_size    = det.size();
     auto const det_size_p1 = static_cast<double>(det_size + 1);
 
-    // choose the inner indices and initialize operators to be inserted
-    auto const rs1 = rng(block_size);
-    auto const rs2 = (pauli_move ? rs1 : rng(block_size));
-    op1 = op_desc{.block_index = block_index, .inner_index = rs1, .dagger = true, .linear_index = data.linindex[std::make_pair(block_index, rs1)]};
-    op2 = op_desc{.block_index = block_index, .inner_index = rs2, .dagger = false, .linear_index = data.linindex[std::make_pair(block_index, rs2)]};
+    // choose the inner indices
+    auto const rs_c_dag = rng(block_size);
+    auto const rs_c     = (pauli_move ? rs_c_dag : rng(block_size));
+
+    // set operators to be inserted
+    op_c_dag = op_desc{
+       .block_index = block_index, .inner_index = rs_c_dag, .dagger = true, .linear_index = data.linindex[std::make_pair(block_index, rs_c_dag)]};
+    op_c =
+       op_desc{.block_index = block_index, .inner_index = rs_c, .dagger = false, .linear_index = data.linindex[std::make_pair(block_index, rs_c)]};
 
     // choose the tau point of c_dag
-    tau1 = data.tau_seg.get_random_pt(rng);
+    tau_c_dag = data.tau_seg.get_random_pt(rng);
 
     // find operators with the same flavor as c_dag
     c_dag_left_tau.clear(), c_dag_right_tau.clear(), c_left_tau.clear(), c_right_tau.clear();
     for (int i = 0; i < det.size(); ++i) {
-      auto const &[tau_dag, rs_dag] = det.get_x(i);
-      if (rs_dag == rs1) tau_dag > tau1 ? c_dag_left_tau.push_back(tau_dag) : c_dag_right_tau.push_back(tau_dag);
+      auto const &[tau1, rs1] = det.get_x(i);
+      if (rs1 == rs_c_dag) tau1 > tau_c_dag ? c_dag_left_tau.push_back(tau1) : c_dag_right_tau.push_back(tau1);
 
-      auto const &[tau, rs] = det.get_y(i);
-      if (rs == rs1) tau > tau1 ? c_left_tau.push_back(tau) : c_right_tau.push_back(tau);
+      auto const &[tau2, rs2] = det.get_y(i);
+      if (rs2 == rs_c_dag) tau2 > tau_c_dag ? c_left_tau.push_back(tau2) : c_right_tau.push_back(tau2);
     }
 
     // move all creation (annihilation) ops to the right of tau1 into c_dag_right_tau (c_right_tau)
@@ -231,9 +239,9 @@ namespace triqs_cthyb {
     double p_c_rem = 1.0;
 
     // handle different cases how c can be inserted/removed
-    if (rs1 != rs2) {
+    if (rs_c_dag != rs_c) {
       // choose tau point of c uniformly
-      tau2 = data.tau_seg.get_random_pt(rng);
+      tau_c = data.tau_seg.get_random_pt(rng);
 
       // insertion proposal probability for c:
       // - non-Pauli insertion: uniform for rs2 and tau2
@@ -245,7 +253,7 @@ namespace triqs_cthyb {
       p_c_rem = theta(num_c == 0) / det_size_p1 + theta(num_c > 0) * (1.0 - pauli_prob) / det_size_p1;
     } else if (num_c == 0 || num_c_dag == 0) {
       // choose tau point of c uniformly
-      tau2 = data.tau_seg.get_random_pt(rng);
+      tau_c = data.tau_seg.get_random_pt(rng);
 
       // insertion proposal probability for c:
       // - Pauli insertion: uniform for tau2
@@ -261,7 +269,7 @@ namespace triqs_cthyb {
         // - Pauli removal: c can only be removed if it is a nearest neighbor of c_dag and since num_c > 0, it is chosen
         // uniformly among the left and right nearest neighbor
         // - non-Pauli removal: uniform among all annihilation operators in the block
-        bool const pauli_rem = (tau1 - tau2 < tau1 - c_right_tau.front() || tau2 - tau1 < c_right_tau.back() - tau1);
+        bool const pauli_rem = (tau_c_dag - tau_c < tau_c_dag - c_right_tau.front() || tau_c - tau_c_dag < c_right_tau.back() - tau_c_dag);
         p_c_rem              = theta(pauli_rem) * pauli_prob / 2 + (1.0 - pauli_prob) / det_size_p1;
       }
     } else {
@@ -271,34 +279,34 @@ namespace triqs_cthyb {
 
       // choose tau point of c uniformly for non-Pauli insertion
       if (!pauli_move) {
-        tau2      = data.tau_seg.get_random_pt(rng);
-        pauli_rem = (tau1 - tau2 < tau1 - c_right_tau.front() || tau2 - tau1 < c_right_tau.back() - tau1);
+        tau_c     = data.tau_seg.get_random_pt(rng);
+        pauli_rem = (tau_c_dag - tau_c < tau_c_dag - c_right_tau.front() || tau_c - tau_c_dag < c_right_tau.back() - tau_c_dag);
       }
 
       // choose tau point for c for Pauli insertion or check if non-Pauli insertion would be a valid Pauli insertion
-      if (tau1 - c_dag_right_tau.front() < tau1 - c_right_tau.front()) {
+      if (tau_c_dag - c_dag_right_tau.front() < tau_c_dag - c_right_tau.front()) {
         // the closest rs1 operator to the right of c_dag is a creation operator at tau_right
         auto const tau_right = c_dag_right_tau.front();
-        tau_interval         = static_cast<double>(tau1 - tau_right);
+        tau_interval         = static_cast<double>(tau_c_dag - tau_right);
 
         if (pauli_move) {
           // choose tau point of c uniformly between tau_right and tau1
-          tau2 = tau_right + data.tau_seg.get_random_pt(rng, tau1 - tau_right);
+          tau_c = tau_right + data.tau_seg.get_random_pt(rng, tau_c_dag - tau_right);
         } else {
           // is the non-Pauli insertion a valid Pauli insertion?
-          pauli_ins = (tau1 - tau2 < tau1 - tau_right);
+          pauli_ins = (tau_c_dag - tau_c < tau_c_dag - tau_right);
         }
       } else {
         // the closest rs1 operator to the left of c_dag is at tau_left (creation or annihilation)
-        auto const tau_left = (c_dag_right_tau.back() - tau1 < c_right_tau.back() - tau1 ? c_dag_right_tau.back() : c_right_tau.back());
-        tau_interval        = static_cast<double>(tau_left - tau1);
+        auto const tau_left = (c_dag_right_tau.back() - tau_c_dag < c_right_tau.back() - tau_c_dag ? c_dag_right_tau.back() : c_right_tau.back());
+        tau_interval        = static_cast<double>(tau_left - tau_c_dag);
 
         if (pauli_move) {
           // choose tau point of c uniformly between tau1 and tau_left
-          tau2 = tau1 + data.tau_seg.get_random_pt(rng, tau_left - tau1);
+          tau_c = tau_c_dag + data.tau_seg.get_random_pt(rng, tau_left - tau_c_dag);
         } else {
           // is the non-Pauli insertion a valid Pauli insertion?
-          pauli_ins = (tau2 - tau1 < tau_left - tau1);
+          pauli_ins = (tau_c - tau_c_dag < tau_left - tau_c_dag);
         }
       }
 

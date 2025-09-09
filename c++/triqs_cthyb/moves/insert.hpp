@@ -27,15 +27,15 @@ namespace triqs_cthyb {
   // Insertion of C, C^dagger operator
   class move_insert_c_cdag {
 
-    qmc_data &data;
-    configuration &config;
-    mc_tools::random_generator &rng;
+    qmc_data &data;                  // NOLINT (reference is okay here)
+    configuration &config;           // NOLINT (reference is okay here)
+    mc_tools::random_generator &rng; // NOLINT (reference is okay here)
     int block_index, block_size;
     histogram *histo_proposed, *histo_accepted; // Analysis histograms
-    double dtau;
+    double dtau{};
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau_c_dag, tau_c;
-    op_desc op_c_dag, op_c;
+    op_desc op_c_dag{}, op_c{};
     double pauli_prob;
     std::vector<time_pt> c_dag_left_tau, c_dag_right_tau, c_left_tau, c_right_tau;
 

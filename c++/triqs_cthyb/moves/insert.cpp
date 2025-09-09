@@ -49,7 +49,7 @@ namespace triqs_cthyb {
 #endif
 
     // propose tau points and inner block indices --> set the proposal distribution ratio
-    double t_ratio = (pauli_prob <= 0.0 ? uniform_proposal() : pauli_proposal());
+    double const t_ratio = (pauli_prob <= 0.0 ? uniform_proposal() : pauli_proposal());
 
 #ifdef EXT_DEBUG
     std::cerr << "* Proposing to insert:" << std::endl;
@@ -58,7 +58,7 @@ namespace triqs_cthyb {
 #endif
 
     // record the length of the proposed insertion
-    dtau = double(tau_c - tau_c_dag);
+    dtau = static_cast<double>(tau_c - tau_c_dag);
     if (histo_proposed) *histo_proposed << dtau;
 
     // Insert the operators op1 and op2 at time tau1, tau2
@@ -75,26 +75,28 @@ namespace triqs_cthyb {
     }
 
     // Computation of det ratio
-    auto &det    = data.dets[block_index];
-    int det_size = det.size();
+    auto &det           = data.dets[block_index];
+    auto const det_size = static_cast<int>(det.size());
 
     // Find the position for insertion in the determinant
     // NB : the determinant stores the C in decreasing time order.
-    int idx_c_dag, idx_c;
-    for (idx_c_dag = 0; idx_c_dag < det_size; ++idx_c_dag) {
+    int idx_c_dag = 0;
+    for (; idx_c_dag < det_size; ++idx_c_dag) {
       if (det.get_x(idx_c_dag).first < tau_c_dag) break;
     }
-    for (idx_c = 0; idx_c < det_size; ++idx_c) {
+
+    int idx_c = 0;
+    for (; idx_c < det_size; ++idx_c) {
       if (det.get_y(idx_c).first < tau_c) break;
     }
 
     // Insert in the det. Returns the ratio of dets (Cf det_manip doc).
-    auto det_ratio = det.try_insert(idx_c_dag, idx_c, {tau_c_dag, op_c_dag.inner_index}, {tau_c, op_c.inner_index});
+    auto const det_ratio = det.try_insert(idx_c_dag, idx_c, {tau_c_dag, op_c_dag.inner_index}, {tau_c, op_c.inner_index});
 
     // For quick abandon
-    double random_number = rng.preview();
+    double const random_number = rng.preview();
     if (random_number == 0.0) return 0;
-    double p_yee = std::abs(t_ratio * det_ratio / data.atomic_weight);
+    double const p_yee = std::abs(t_ratio * det_ratio / data.atomic_weight);
 
     // computation of the new trace after insertion
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
@@ -104,12 +106,12 @@ namespace triqs_cthyb {
 #endif
       return 0;
     }
-    auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
+    auto const atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
     if (!isfinite(atomic_weight_ratio))
       TRIQS_RUNTIME_ERROR << "(insert) trace_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " "
                           << new_atomic_weight / data.atomic_weight << " in config " << config.get_id();
 
-    mc_weight_t p = atomic_weight_ratio * det_ratio;
+    mc_weight_t const p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
     std::cerr << "Atomic ratio: " << atomic_weight_ratio << '\t';
@@ -155,7 +157,7 @@ namespace triqs_cthyb {
     check_det_sequence(data.dets[block_index], config.get_id());
 #endif
 
-    return data.current_sign / data.old_sign;
+    return static_cast<double>(data.current_sign) / data.old_sign;
   }
 
   void move_insert_c_cdag::reject() {

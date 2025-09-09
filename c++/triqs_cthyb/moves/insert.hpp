@@ -43,6 +43,7 @@ namespace triqs_cthyb {
 
     double uniform_proposal();
     double pauli_proposal();
+    double theta(bool expr) { return expr ? 1.0 : 0.0; }
 
     public:
     move_insert_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,

@@ -190,23 +190,19 @@ namespace triqs_cthyb {
     // do a Pauli move with probability pauli_prob
     bool const pauli_move = rng() <= pauli_prob;
 
+    // block determinant and its size
+    auto const &det        = data.dets[block_index];
+    auto const det_size    = det.size();
+    auto const det_size_p1 = static_cast<double>(det_size + 1);
+
     // choose the inner indices and initialize operators to be inserted
     auto const rs1 = rng(block_size);
     auto const rs2 = (pauli_move ? rs1 : rng(block_size));
     op1 = op_desc{.block_index = block_index, .inner_index = rs1, .dagger = true, .linear_index = data.linindex[std::make_pair(block_index, rs1)]};
     op2 = op_desc{.block_index = block_index, .inner_index = rs2, .dagger = false, .linear_index = data.linindex[std::make_pair(block_index, rs2)]};
 
-    // block determinant and its size
-    auto const &det        = data.dets[block_index];
-    auto const det_size    = det.size();
-    auto const det_size_p1 = static_cast<double>(det_size + 1);
-
-    // choose the tau point of c_dag and c (only for non-Pauli moves)
+    // choose the tau point of c_dag
     tau1 = data.tau_seg.get_random_pt(rng);
-    if (!pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
-
-    // initialize the proposal probability ratio P_removal / P_insertion
-    double t_ratio = block_size * config.beta() / det_size_p1;
 
     // find operators with the same flavor as c_dag
     c_dag_left_tau.clear(), c_dag_right_tau.clear(), c_left_tau.clear(), c_right_tau.clear();
@@ -221,79 +217,104 @@ namespace triqs_cthyb {
     // move all creation (annihilation) ops to the right of tau1 into c_dag_right_tau (c_right_tau)
     std::ranges::copy(c_dag_left_tau, std::back_inserter(c_dag_right_tau));
     std::ranges::copy(c_left_tau, std::back_inserter(c_right_tau));
+    auto const num_c_dag = c_dag_right_tau.size();
+    auto const num_c     = c_right_tau.size();
 
-    // choose tau point for c and update P_insertion of t_ratio
-    if (!c_dag_right_tau.empty() && !c_right_tau.empty() && rs1 == rs2) {
-      // rs1 == rs2 && at least one creation and annihilation operator with rs1 is already present
+    // insertion/removal proposal probabilities for c_dag
+    // - uniform for rs1 and tau1
+    // - uniform among all creation operators in the block
+    double const p_c_dag_ins = 1.0 / (block_size * config.beta());
+    double const p_c_dag_rem = 1.0 / det_size_p1;
+
+    // initialize insertion/removal proposal probabilities for c
+    double p_c_ins = 1.0;
+    double p_c_rem = 1.0;
+
+    // handle different cases how c can be inserted/removed
+    if (rs1 != rs2) {
+      // choose tau point of c uniformly
+      tau2 = data.tau_seg.get_random_pt(rng);
+
+      // insertion proposal probability for c:
+      // - non-Pauli insertion: uniform for rs2 and tau2
+      p_c_ins = (1.0 - pauli_prob) / (block_size * config.beta());
+
+      // removal proposal probability for c:
+      // - num_c == 0: uniform among all annihilation operators in the block
+      // - num_c > 0: uniform among all annihilation operators in the block only for non-Pauli removals
+      p_c_rem = theta(num_c == 0) / det_size_p1 + theta(num_c > 0) * (1.0 - pauli_prob) / det_size_p1;
+    } else if (num_c == 0 || num_c_dag == 0) {
+      // choose tau point of c uniformly
+      tau2 = data.tau_seg.get_random_pt(rng);
+
+      // insertion proposal probability for c:
+      // - Pauli insertion: uniform for tau2
+      // - non-Pauli insertion: uniform for rs2 and tau2
+      p_c_ins = pauli_prob / config.beta() + (1.0 - pauli_prob) / (block_size * config.beta());
+
+      // removal proposal probability for c
+      if (num_c == 0) {
+        // - Pauli removal: there is only one annihilation operator with the same flavor as c_dag
+        // - non-Pauli removal: uniform among all annihilation operators in the block
+        p_c_rem = pauli_prob + (1.0 - pauli_prob) / det_size_p1;
+      } else {
+        // - Pauli removal: c can only be removed if it is a nearest neighbor of c_dag and since num_c > 0, it is chosen
+        // uniformly among the left and right nearest neighbor
+        // - non-Pauli removal: uniform among all annihilation operators in the block
+        bool const pauli_rem = (tau1 - tau2 < tau1 - c_right_tau.front() || tau2 - tau1 < c_right_tau.back() - tau1);
+        p_c_rem              = theta(pauli_rem) * pauli_prob / 2 + (1.0 - pauli_prob) / det_size_p1;
+      }
+    } else {
+      double tau_interval = config.beta();
+      bool pauli_ins      = true;
+      bool pauli_rem      = true;
+
+      // choose tau point of c uniformly for non-Pauli insertion
+      if (!pauli_move) {
+        tau2      = data.tau_seg.get_random_pt(rng);
+        pauli_rem = (tau1 - tau2 < tau1 - c_right_tau.front() || tau2 - tau1 < c_right_tau.back() - tau1);
+      }
+
+      // choose tau point for c for Pauli insertion or check if non-Pauli insertion would be a valid Pauli insertion
       if (tau1 - c_dag_right_tau.front() < tau1 - c_right_tau.front()) {
-        // the closest rs1-op to the right of tau1 is a creation operator at tau_right
+        // the closest rs1 operator to the right of c_dag is a creation operator at tau_right
         auto const tau_right = c_dag_right_tau.front();
+        tau_interval         = static_cast<double>(tau1 - tau_right);
 
-        // for Pauli moves, choose tau2 between tau_right and tau1
-        if (pauli_move) tau2 = tau_right + data.tau_seg.get_random_pt(rng, tau1 - tau_right);
-
-        // update t_ratio
-        if ((tau1 - tau2) < (tau1 - tau_right)) {
-          // c is inserted between c_dag and the closest rs1-creation op to the right of tau1 (can be Pauli move or non-Pauli move)
-          t_ratio /= pauli_prob / static_cast<double>(tau1 - tau_right) + (1. - pauli_prob) / (block_size * config.beta());
+        if (pauli_move) {
+          // choose tau point of c uniformly between tau_right and tau1
+          tau2 = tau_right + data.tau_seg.get_random_pt(rng, tau1 - tau_right);
         } else {
-          // c is inserted somewhere else (can only be a non-Pauli move)
-          t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+          // is the non-Pauli insertion a valid Pauli insertion?
+          pauli_ins = (tau1 - tau2 < tau1 - tau_right);
         }
       } else {
-        // the closest rs1-op to the left of tau1 is at tau_left
+        // the closest rs1 operator to the left of c_dag is at tau_left (creation or annihilation)
         auto const tau_left = (c_dag_right_tau.back() - tau1 < c_right_tau.back() - tau1 ? c_dag_right_tau.back() : c_right_tau.back());
+        tau_interval        = static_cast<double>(tau_left - tau1);
 
-        // for Pauli moves, choose tau2 between tau1 and tau_left
-        if (pauli_move) tau2 = tau1 + data.tau_seg.get_random_pt(rng, tau_left - tau1);
-
-        // update t_ratio
-        if ((tau2 - tau1) < (tau_left - tau1)) {
-          // c is inserted between c_dag and the closest rs1-op to the left of tau1 (can be Pauli move or non-Pauli move)
-          t_ratio /= pauli_prob / static_cast<double>(tau_left - tau1) + (1. - pauli_prob) / (block_size * config.beta());
+        if (pauli_move) {
+          // choose tau point of c uniformly between tau1 and tau_left
+          tau2 = tau1 + data.tau_seg.get_random_pt(rng, tau_left - tau1);
         } else {
-          // c is inserted somewhere else (can only be a non-Pauli move)
-          t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+          // is the non-Pauli insertion a valid Pauli insertion?
+          pauli_ins = (tau2 - tau1 < tau_left - tau1);
         }
       }
-    } else {
-      // rs1 != rs2 || no creation or no annihilation operator with rs1 is present
-      // for Pauli moves, choose tau2 uniformly on [0, beta)
-      if (pauli_move) tau2 = data.tau_seg.get_random_pt(rng);
 
-      // update t_ratio
-      if (rs1 == rs2) {
-        // can be Pauli move or non-Pauli move
-        t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
-      } else {
-        // can only be a non-Pauli move
-        t_ratio *= block_size * config.beta() / (1. - pauli_prob);
-      }
+      // insertion proposal probability for c:
+      // - Pauli insertion: uniform for tau2 on the tau_interval (only if it a valid Pauli insertion)
+      // - non-Pauli insertion: uniform for rs2 and tau2
+      p_c_ins = theta(pauli_ins) * pauli_prob / tau_interval + (1.0 - pauli_prob) / (block_size * config.beta());
+
+      // removal proposal probability for c:
+      // - Pauli removal: c is a nearest neighbor of c_dag and num_c > 0, so it is chosen uniformly among the left and
+      // right nearest neighbor
+      // - non-Pauli removal: uniform among all annihilation operators in the block
+      p_c_rem = theta(pauli_rem) * pauli_prob / 2 + (1. - pauli_prob) / det_size_p1;
     }
 
-    // update P_removal of t_ratio
-    auto const num_pauli = std::min(c_right_tau.size() + (rs1 == rs2 ? 1 : 0), 2ul);
-    if (num_pauli == 0 || num_pauli == det_size + 1) {
-      // num_pauli == 0 only if rs1 != rs2 (only non-Pauli moves), num_pauli == det_size + 1 only if rs1 == rs2 (Pauli and non-Pauli moves)
-      t_ratio /= det_size_p1;
-    } else {
-      // find the closest rs1-annihilation operators to tau1 (can be tau2 or some existing operator)
-      auto tau_right = (c_right_tau.empty() ? tau2 : c_right_tau.front());
-      auto tau_left  = (c_right_tau.empty() ? tau2 : c_right_tau.back());
-      if (!c_right_tau.empty()) {
-        if ((tau1 - tau2) < (tau1 - tau_right) && (rs1 == rs2)) tau_right = tau2;
-        if ((tau2 - tau1) < (tau_left - tau1) && (rs1 == rs2)) tau_left = tau2;
-      }
-      if (tau2 == tau_right || tau2 == tau_left) {
-        // tau2 is the right/left nearest neighbor of tau1 (can be Pauli move or non-Pauli move)
-        t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / det_size_p1;
-      } else {
-        // tau2 is not the nearest neighbor of tau1 (can only be a non-Pauli move)
-        t_ratio *= (1. - pauli_prob) / det_size_p1;
-      }
-    }
-
-    return t_ratio;
+    return (p_c_dag_rem * p_c_rem) / (p_c_dag_ins * p_c_ins);
   }
 
 } // namespace triqs_cthyb

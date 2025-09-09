@@ -173,10 +173,8 @@ namespace triqs_cthyb {
     // Pick up a couple of C, Cdagger to remove at random
     // Remove the operators from the traces
     int det_size = det.size();
-    if (det_size == 0) return 0; // nothing to remove
     num_c_dag = -1, num_c = -1;
     num_c_dag = rng(det_size);
-    if (pauli_prob == 0.0) num_c = rng(det_size);
 
 #ifdef EXT_DEBUG
     std::cerr << "* Proposing to remove: ";
@@ -185,138 +183,128 @@ namespace triqs_cthyb {
 #endif
 
     // now mark 2 nodes for deletion
-    if (pauli_prob == 0.0) tau1 = det.get_y(num_c).first;
     tau2 = det.get_x(num_c_dag).first;
 
-    double t_ratio = 1.;
+    double t_ratio = block_size * config.beta() / double(det_size);
 
-    if (pauli_prob > 0.0) {
+    int rs_dag = det.get_x(num_c_dag).second;
 
-      t_ratio = block_size * config.beta() / double(det_size);
+    if (det_size > Nmax) {
+      while (det_size > Nmax) Nmax *= 2;
+      vec_ind.reserve(Nmax);
+    }
+    vec_ind.clear();
 
-      int rs_dag = det.get_x(num_c_dag).second;
+    // Look at position of tau2 among annihilation operators of the same flavor
+    int j = 0, op_pos = -1;
+    for (int i = 0; i < det_size; ++i) {
+      if (det.get_y(i).first < tau2 && op_pos == -1) op_pos = j;
+      if (det.get_y(i).second != rs_dag) continue;
+      vec_ind.push_back(i);
+      ++j;
+    }
 
-      if (det_size > Nmax) {
-        while (det_size > Nmax) Nmax *= 2;
-        vec_ind.reserve(Nmax);
-      }
-      vec_ind.clear();
+    int size = vec_ind.size();
 
-      // Look at position of tau2 among annihilation operators of the same flavor
-      int j = 0, op_pos = -1;
-      for (int i = 0; i < det_size; ++i) {
-        if (det.get_y(i).first < tau2 && op_pos == -1) op_pos = j;
-        if (det.get_y(i).second != rs_dag) continue;
-        vec_ind.push_back(i);
-        ++j;
-      }
+    if (op_pos == -1) op_pos = size;
 
-      int size = vec_ind.size();
+    int ic_nodagR = -1, ic_nodagL = -1, num_pauli = 0;
 
-      if (op_pos == -1) op_pos = size;
+    // Check annihilation operators before and after tau2 (of the same flavor)
+    if (size != 0) {
+      ic_nodagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
+      ic_nodagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
+      num_pauli = (ic_nodagR == ic_nodagL ? 1 : 2);
+    }
 
-      int ic_nodagR = -1, ic_nodagL = -1, num_pauli = 0;
-
-      // Check annihilation operators before and after tau2 (of the same flavor)
-      if (size != 0) {
-        ic_nodagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
-        ic_nodagL = (op_pos == 0 ? vec_ind[size - 1] : vec_ind[op_pos - 1]);
-        num_pauli = (ic_nodagR == ic_nodagL ? 1 : 2);
-      }
-
-      if (num_pauli > 0) {
-        bool pauli_move = (num_pauli == det_size);
-        if (num_pauli != det_size) {
-          double ran = rng();
-          pauli_move = (ran <= pauli_prob);
+    if (num_pauli > 0) {
+      bool const pauli_move = (num_pauli == det_size || rng() <= pauli_prob);
+      if (pauli_move) { // Choose num_c between ic_nodagR and ic_nodagL
+        if (num_pauli == 1)
+          num_c = ic_nodagR;
+        else {
+          int ran_pauli = rng(2);
+          num_c         = (ran_pauli == 0 ? ic_nodagR : ic_nodagL);
         }
-        if (pauli_move) { // Choose num_c between ic_nodagR and ic_nodagL
-          if (num_pauli == 1)
-            num_c = ic_nodagR;
-          else {
-            int ran_pauli = rng(2);
-            num_c         = (ran_pauli == 0 ? ic_nodagR : ic_nodagL);
-          }
-          if (num_pauli == det_size)
-            t_ratio /= double(det_size);
-          else
-            t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size);
-        } else { // Choose num_c uniformly
-          num_c = rng(det_size);
-          if (num_c == ic_nodagR || num_c == ic_nodagL)
-            t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size);
-          else
-            t_ratio *= (1. - pauli_prob) / double(det_size);
-        }
-      } else {
+        if (num_pauli == det_size)
+          t_ratio /= double(det_size);
+        else
+          t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size);
+      } else { // Choose num_c uniformly
         num_c = rng(det_size);
-        t_ratio /= double(det_size);
+        if (num_c == ic_nodagR || num_c == ic_nodagL)
+          t_ratio *= pauli_prob / double(num_pauli) + (1. - pauli_prob) / double(det_size);
+        else
+          t_ratio *= (1. - pauli_prob) / double(det_size);
       }
+    } else {
+      num_c = rng(det_size);
+      t_ratio /= double(det_size);
+    }
 
-      tau1 = det.get_y(num_c).first;
+    tau1 = det.get_y(num_c).first;
 
-      int rs = det.get_y(num_c).second;
+    int rs = det.get_y(num_c).second;
 
-      if (rs != rs_dag)
-        t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+    if (rs != rs_dag)
+      t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+    else {
+      if (size == 1)
+        t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
       else {
+        // Find closest annihilation operators to tau2 of the same flavor (excluding num_c)
+        for (j = 0; j < size; ++j) {
+          if (det.get_y(vec_ind[j]).first < tau2) break;
+        }
+        if (j == size) j = 0;
+        if (vec_ind[j] == num_c) j = (j == size - 1 ? 0 : j + 1);
+        ic_nodagR = vec_ind[j];
+        j         = (j == 0 ? size - 1 : j - 1);
+        if (vec_ind[j] == num_c) j = (j == 0 ? size - 1 : j - 1);
+        ic_nodagL = vec_ind[j];
+
+        auto tR_nodag = det.get_y(ic_nodagR).first;
+        auto tL_nodag = det.get_y(ic_nodagL).first;
+
+        vec_ind.clear();
+
+        // Find closest creation operators to tau2 of the same flavor
+        j      = 0;
+        op_pos = -1;
+        for (int i = 0; i < det_size; ++i) {
+          if (det.get_x(i).first < tau2 && op_pos == -1) op_pos = j;
+          if (det.get_x(i).second != rs_dag) continue;
+          vec_ind.push_back(i);
+          ++j;
+        }
+
+        size = vec_ind.size();
+
         if (size == 1)
           t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
         else {
-          // Find closest annihilation operators to tau2 of the same flavor (excluding num_c)
-          for (j = 0; j < size; ++j) {
-            if (det.get_y(vec_ind[j]).first < tau2) break;
-          }
-          if (j == size) j = 0;
-          if (vec_ind[j] == num_c) j = (j == size - 1 ? 0 : j + 1);
-          ic_nodagR = vec_ind[j];
-          j         = (j == 0 ? size - 1 : j - 1);
-          if (vec_ind[j] == num_c) j = (j == 0 ? size - 1 : j - 1);
-          ic_nodagL = vec_ind[j];
+          if (op_pos == -1) op_pos = size;
+          int ic_dagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
+          op_pos      = (op_pos == 0 ? size - 1 : op_pos - 1);
+          op_pos      = (op_pos == 0 ? size - 1 : op_pos - 1); // Go back two positions to skip num_c_dag
+          int ic_dagL = vec_ind[op_pos];
 
-          auto tR_nodag = det.get_y(ic_nodagR).first;
-          auto tL_nodag = det.get_y(ic_nodagL).first;
+          auto tR_dag = det.get_x(ic_dagR).first;
+          auto tL_dag = det.get_x(ic_dagL).first;
 
-          vec_ind.clear();
+          auto tR = ((tau2 - tR_dag) > (tau2 - tR_nodag) ? tR_nodag : tR_dag);
+          auto tL = ((tL_dag - tau2) > (tL_nodag - tau2) ? tL_nodag : tL_dag);
 
-          // Find closest creation operators to tau2 of the same flavor
-          j      = 0;
-          op_pos = -1;
-          for (int i = 0; i < det_size; ++i) {
-            if (det.get_x(i).first < tau2 && op_pos == -1) op_pos = j;
-            if (det.get_x(i).second != rs_dag) continue;
-            vec_ind.push_back(i);
-            ++j;
-          }
-
-          size = vec_ind.size();
-
-          if (size == 1)
-            t_ratio /= (pauli_prob + (1. - pauli_prob) / double(block_size)) / config.beta();
-          else {
-            if (op_pos == -1) op_pos = size;
-            int ic_dagR = (op_pos == size ? vec_ind[0] : vec_ind[op_pos]);
-            op_pos      = (op_pos == 0 ? size - 1 : op_pos - 1);
-            op_pos      = (op_pos == 0 ? size - 1 : op_pos - 1); // Go back two positions to skip num_c_dag
-            int ic_dagL = vec_ind[op_pos];
-
-            auto tR_dag = det.get_x(ic_dagR).first;
-            auto tL_dag = det.get_x(ic_dagL).first;
-
-            auto tR = ((tau2 - tR_dag) > (tau2 - tR_nodag) ? tR_nodag : tR_dag);
-            auto tL = ((tL_dag - tau2) > (tL_nodag - tau2) ? tL_nodag : tL_dag);
-
-            if (tR == tR_dag) {
-              if ((tau2 - tau1) < (tau2 - tR))
-                t_ratio /= pauli_prob / double(tau2 - tR) + (1. - pauli_prob) / (block_size * config.beta());
-              else
-                t_ratio *= block_size * config.beta() / (1. - pauli_prob);
-            } else {
-              if ((tau1 - tau2) < (tL - tau2))
-                t_ratio /= pauli_prob / double(tL - tau2) + (1. - pauli_prob) / (block_size * config.beta());
-              else
-                t_ratio *= block_size * config.beta() / (1. - pauli_prob);
-            }
+          if (tR == tR_dag) {
+            if ((tau2 - tau1) < (tau2 - tR))
+              t_ratio /= pauli_prob / double(tau2 - tR) + (1. - pauli_prob) / (block_size * config.beta());
+            else
+              t_ratio *= block_size * config.beta() / (1. - pauli_prob);
+          } else {
+            if ((tau1 - tau2) < (tL - tau2))
+              t_ratio /= pauli_prob / double(tL - tau2) + (1. - pauli_prob) / (block_size * config.beta());
+            else
+              t_ratio *= block_size * config.beta() / (1. - pauli_prob);
           }
         }
       }

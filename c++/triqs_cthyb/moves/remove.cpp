@@ -20,8 +20,20 @@
  ******************************************************************************/
 
 #include "./remove.hpp"
+#include "../config.hpp"
+#include "../qmc_data.hpp"
+#include "../types.hpp"
+
+#include <triqs/mc_tools.hpp>
+#include <triqs/stat/histograms.hpp>
+#include <triqs/utility/exceptions.hpp>
 
 #include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <iterator>
+#include <string>
+#include <tuple>
 
 namespace triqs_cthyb {
 
@@ -50,12 +62,15 @@ namespace triqs_cthyb {
     std::cerr << "* Attempt for move_remove_c_cdag (block " << block_index << ")" << std::endl;
 #endif
 
-    auto &det    = data.dets[block_index];
-    int det_size = det.size();
-    if (det_size == 0) return 0; // nothing to remove
+    // block determinant and its size
+    auto &det           = data.dets[block_index];
+    auto const det_size = static_cast<int>(det.size());
 
-    // propose creation and annihilation operators to remove --> set the proposal distribution ratio
-    double t_ratio = (pauli_prob <= 0.0 ? uniform_proposal() : pauli_proposal());
+    // early return if nothing to remove
+    if (det_size == 0) return 0;
+
+    // propose operators to remove and set the proposal distribution ratio
+    double const t_ratio = (pauli_prob <= 0.0 ? uniform_proposal() : pauli_proposal());
 
 #ifdef EXT_DEBUG
     std::cerr << "* Proposing to remove: ";
@@ -63,22 +78,23 @@ namespace triqs_cthyb {
     std::cerr << num_c << "-th C(" << block_index << ",...)" << std::endl;
 #endif
 
-    // now mark 2 nodes for deletion
+    // mark the operators for deletion in the impurity trace
     tau_c     = data.imp_trace.try_delete(idx_c, block_index, false);
     tau_c_dag = data.imp_trace.try_delete(idx_c_dag, block_index, true);
 
-    // record the length of the proposed removal
+    // gather performance statistics - record the length of the proposed removal
     dtau = double(tau_c_dag - tau_c);
     if (histo_proposed) *histo_proposed << dtau;
 
-    auto det_ratio = det.try_remove(idx_c_dag, idx_c);
+    // remove the ops from the determinant and get the determinant ratio
+    auto const det_ratio = det.try_remove(idx_c_dag, idx_c);
 
-    // For quick abandon
-    double random_number = rng.preview();
+    // for early rejection
+    double const random_number = rng.preview();
     if (random_number == 0.0) return 0;
-    double p_yee = std::abs(det_ratio / t_ratio / data.atomic_weight);
+    double const p_yee = std::abs(det_ratio / t_ratio / data.atomic_weight);
 
-    // recompute the atomic_weight
+    // computation of the new/old impurity trace
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
@@ -86,12 +102,15 @@ namespace triqs_cthyb {
 #endif
       return 0;
     }
-    auto atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
+
+    // impurity trace ratio
+    auto const atomic_weight_ratio = new_atomic_weight / data.atomic_weight;
     if (!isfinite(atomic_weight_ratio))
       TRIQS_RUNTIME_ERROR << "(remove) atomic_weight_ratio not finite " << new_atomic_weight << " " << data.atomic_weight << " "
                           << new_atomic_weight / data.atomic_weight << " in config " << config.get_id();
 
-    mc_weight_t p = atomic_weight_ratio * det_ratio;
+    // weight ratio
+    mc_weight_t const p = atomic_weight_ratio * det_ratio;
 
 #ifdef EXT_DEBUG
     std::cerr << "Trace ratio: " << atomic_weight_ratio << '\t';
@@ -112,12 +131,13 @@ namespace triqs_cthyb {
     if (!isfinite(p / t_ratio)) {
       TRIQS_RUNTIME_ERROR << "(remove) p / t_ratio not finite p : " << p << " t_ratio :  " << t_ratio << " in config " << config.get_id();
     }
+
     return p / t_ratio;
   }
 
   mc_weight_t move_remove_c_cdag::accept() {
 
-    // remove from the tree
+    // confirm the removal from the impurity trace
     data.imp_trace.confirm_delete();
 
     // remove from the configuration
@@ -125,11 +145,13 @@ namespace triqs_cthyb {
     config.erase(tau_c_dag);
     config.finalize();
 
-    // remove from the determinants
+    // complete the removal from the determinant
     data.dets[block_index].complete_operation();
     data.update_sign();
     data.atomic_weight      = new_atomic_weight;
     data.atomic_reweighting = new_atomic_reweighting;
+
+    // gather performance statistics
     if (histo_accepted) *histo_accepted << dtau;
 
 #ifdef EXT_DEBUG
@@ -138,11 +160,12 @@ namespace triqs_cthyb {
     check_det_sequence(data.dets[block_index], config.get_id());
 #endif
 
-    return data.current_sign / data.old_sign;
+    // return sign correction
+    return static_cast<double>(data.current_sign) / data.old_sign;
   }
 
   void move_remove_c_cdag::reject() {
-
+    // reject insertions into the impurity trace and determinant
     config.finalize();
     data.imp_trace.cancel_delete();
     data.dets[block_index].reject_last_try();
@@ -187,7 +210,7 @@ namespace triqs_cthyb {
       if (rs2 == rs_c_dag) tau2 > tau_c_dag ? c_left.push_back(i) : c_right.push_back(i);
     }
 
-    // move all creation (annihilation) ops to the right of c_dag into c_dag_right (c_right_tau)
+    // move all creation (annihilation) ops to the right of c_dag into c_dag_right (c_right)
     std::ranges::copy(c_dag_left, std::back_inserter(c_dag_right));
     std::ranges::copy(c_left, std::back_inserter(c_right));
     auto const num_c_dag = c_dag_right.size();
@@ -204,6 +227,7 @@ namespace triqs_cthyb {
 
     // choose a c to remove and set the removal proposal probability
     if (num_pauli > 0) {
+      // do a Pauli move with probability pauli_prob
       bool const pauli_move = (num_pauli == det_size || rng() <= pauli_prob);
 
       // choose c and check if the chosen c be removed with a Pauli removal (always true for Pauli moves)

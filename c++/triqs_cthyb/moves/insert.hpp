@@ -19,8 +19,18 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/mc_tools.hpp>
+
+#include "../config.hpp"
+#include "../configuration.hpp"
 #include "../qmc_data.hpp"
+#include "../types.hpp"
+
+#include <triqs/mc_tools.hpp>
+#include <triqs/stat/histograms.hpp>
+#include <triqs/utility/time_pt.hpp>
+
+#include <string>
+#include <vector>
 
 namespace triqs_cthyb {
 
@@ -53,4 +63,5 @@ namespace triqs_cthyb {
     mc_weight_t accept();
     void reject();
   };
+
 } // namespace triqs_cthyb

@@ -35,8 +35,8 @@ namespace triqs_cthyb {
     histogram *histo_proposed, *histo_accepted; // Analysis histograms
     double dtau;
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
-    time_pt tau1, tau2;
-    int num_c_dag, num_c;
+    time_pt tau_c, tau_c_dag;
+    int idx_c_dag, idx_c;
     int Nmax;
     double pauli_prob;
     std::vector<int> vec_ind;
@@ -54,4 +54,4 @@ namespace triqs_cthyb {
     mc_weight_t accept();
     void reject();
   };
-}
+} // namespace triqs_cthyb

@@ -37,14 +37,14 @@ namespace triqs_cthyb {
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
     time_pt tau_c, tau_c_dag;
     int idx_c_dag, idx_c;
-    int Nmax;
     double pauli_prob;
-    std::vector<int> vec_ind;
+    std::vector<int> c_dag_left, c_dag_right, c_left, c_right;
 
     histogram *add_histo(std::string const &name, histo_map_t *histos);
 
     double uniform_proposal();
     double pauli_proposal();
+    double theta(bool expr) { return expr ? 1.0 : 0.0; }
 
     public:
     move_remove_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,

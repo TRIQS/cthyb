@@ -137,6 +137,10 @@ def multiplet_analysis(rho, h_loc_diag, n_orb, spin_names=['up','down'], off_dia
                         "m_s": round(ms,1),
                         "|m_s|": abs(round(ms,1)),
                         "state": ev_state})
+
+    # sort list in descending order of probabilities
+    res = sorted(res, key=lambda item: item['prob'], reverse=True)
+
     # panda data frame from res
     res = pd.DataFrame(res, columns=res[0].keys())
 

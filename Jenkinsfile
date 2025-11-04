@@ -50,7 +50,11 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
           sh "make -C \$BUILD/${projectName} test CTEST_OUTPUT_ON_FAILURE=1"
         }
       }
-      if (!keepInstall) {
+      if (keepInstall) {
+	      docker.withRegistry("https://index.docker.io/v1/", "dockerhub") {
+	        img.push()
+	      }
+      } else {
         sh "docker rmi --no-prune ${img.imageName()}"
       }
     } } }

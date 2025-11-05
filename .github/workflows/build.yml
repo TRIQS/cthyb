@@ -109,7 +109,7 @@ jobs:
         CXX: ${{ matrix.cxx }}
         TRIQS_BRANCH: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
       run: |
-        git clone https://github.com/TRIQS/triqs --branch ${{ github.ref_name }}
+        git clone https://github.com/TRIQS/triqs --branch $TRIQS_BRANCH
         mkdir triqs/build && cd triqs/build
         cmake .. -DBuild_Tests=OFF -DCMAKE_INSTALL_PREFIX=$HOME/install
         make -j1 install VERBOSE=1

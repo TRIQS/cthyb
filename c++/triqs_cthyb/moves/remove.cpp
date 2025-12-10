@@ -62,14 +62,18 @@ namespace triqs_cthyb {
 #endif
 
     // now mark 2 nodes for deletion
+    data.timer_trace.start();
     tau1 = data.imp_trace.try_delete(num_c, block_index, false);
     tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
+    data.timer_trace.stop();
 
     // record the length of the proposed removal
     dtau = double(tau2 - tau1);
     if (histo_proposed) *histo_proposed << dtau;
 
+    data.timer_det.start();
     auto det_ratio = det.try_remove(num_c_dag, num_c);
+    data.timer_det.stop();
 
     // proposition probability
     auto t_ratio = std::pow(block_size * config.beta() / double(det_size), 2); // Size of the det before the try_delete!
@@ -80,7 +84,9 @@ namespace triqs_cthyb {
     double p_yee = std::abs(det_ratio / t_ratio / data.atomic_weight);
 
     // recompute the atomic_weight
+    data.timer_trace.start();
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+    data.timer_trace.stop();
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
       std::cerr << "atomic_weight == 0" << std::endl;
@@ -119,7 +125,9 @@ namespace triqs_cthyb {
   mc_weight_t move_remove_c_cdag::accept() {
 
     // remove from the tree
+    data.timer_trace.start();
     data.imp_trace.confirm_delete();
+    data.timer_trace.stop();
 
     // remove from the configuration
     config.erase(tau1);
@@ -127,7 +135,9 @@ namespace triqs_cthyb {
     config.finalize();
 
     // remove from the determinants
+    data.timer_det.start();
     data.dets[block_index].complete_operation();
+    data.timer_det.stop();
     data.update_sign();
     data.atomic_weight      = new_atomic_weight;
     data.atomic_reweighting = new_atomic_reweighting;

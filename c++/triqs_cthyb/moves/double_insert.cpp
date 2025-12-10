@@ -87,11 +87,14 @@ namespace triqs_cthyb {
     // (cf std::map doc for insert return), we reject the move.
     // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
     try {
+      data.timer_trace.start();
       data.imp_trace.try_insert(tau1, op1);
       data.imp_trace.try_insert(tau2, op2);
       data.imp_trace.try_insert(tau3, op3);
       data.imp_trace.try_insert(tau4, op4);
+      data.timer_trace.stop();
     } catch (rbt_insert_error const &) {
+      data.timer_trace.stop();
       std::cerr << "Insert error : recovering ... " << std::endl;
       data.imp_trace.cancel_insert();
       return 0;
@@ -121,6 +124,7 @@ namespace triqs_cthyb {
     }
 
     // Insert in the det. Returns the ratio of dets (Cf det_manip doc).
+    data.timer_det.start();
     if (block_index1 == block_index2) {
       // The determinant positions that need to be passed to det_manip are those in the *final* det of size N+2.
       // Shift the operator at the smaller time one step further in the determinant to account for the larger operator.
@@ -140,6 +144,7 @@ namespace triqs_cthyb {
       auto det_ratio2 = det2.try_insert(num_c_dag2, num_c2, {tau3, op3.inner_index}, {tau4, op4.inner_index});
       det_ratio       = det_ratio1 * det_ratio2;
     }
+    data.timer_det.stop();
 
     // proposition probability
     mc_weight_t t_ratio;
@@ -160,7 +165,9 @@ namespace triqs_cthyb {
     double p_yee = std::abs(t_ratio * det_ratio / data.atomic_weight);
 
     // computation of the new atomic_weight after insertion
+    data.timer_trace.start();
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+    data.timer_trace.stop();
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
       std::cerr << "atomic_weight == 0" << std::endl;
@@ -190,7 +197,9 @@ namespace triqs_cthyb {
   mc_weight_t move_insert_c_c_cdag_cdag::accept() {
 
     // insert in the tree
+    data.timer_trace.start();
     data.imp_trace.confirm_insert();
+    data.timer_trace.stop();
 
     // insert in the configuration
     config.insert(tau1, op1);
@@ -200,12 +209,14 @@ namespace triqs_cthyb {
     config.finalize();
 
     // insert in the determinant
+    data.timer_det.start();
     if (block_index1 == block_index2) {
       data.dets[block_index1].complete_operation();
     } else {
       data.dets[block_index1].complete_operation();
       data.dets[block_index2].complete_operation();
     }
+    data.timer_det.stop();
     data.update_sign();
 
     data.atomic_weight      = new_atomic_weight;

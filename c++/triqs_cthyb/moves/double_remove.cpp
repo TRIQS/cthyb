@@ -79,10 +79,12 @@ namespace triqs_cthyb {
 #endif
 
     // now mark 2 nodes for deletion
+    data.timer_trace.start();
     tau1 = data.imp_trace.try_delete(num_c1, block_index1, false);
     tau2 = data.imp_trace.try_delete(num_c_dag1, block_index1, true);
     tau3 = data.imp_trace.try_delete(num_c2, block_index2, false);
     tau4 = data.imp_trace.try_delete(num_c_dag2, block_index2, true);
+    data.timer_trace.stop();
 
     dtau1 = double(tau2 - tau1);
     dtau2 = double(tau4 - tau3);
@@ -91,6 +93,7 @@ namespace triqs_cthyb {
       *histo_proposed2 << dtau2;
     }
 
+    data.timer_det.start();
     if (block_index1 == block_index2) {
       det_ratio = det1.try_remove2(num_c_dag1, num_c_dag2, num_c1, num_c2);
     } else { // block_index1 != block_index2
@@ -98,6 +101,7 @@ namespace triqs_cthyb {
       auto det_ratio2 = det2.try_remove(num_c_dag2, num_c2);
       det_ratio       = det_ratio1 * det_ratio2;
     }
+    data.timer_det.stop();
 
     // proposition probability
     mc_weight_t t_ratio;
@@ -116,7 +120,9 @@ namespace triqs_cthyb {
     double p_yee = std::abs(det_ratio / t_ratio / data.atomic_weight);
 
     // recompute the trace
+    data.timer_trace.start();
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+    data.timer_trace.stop();
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
       std::cerr << "atomic_weight == 0" << std::endl;
@@ -146,7 +152,9 @@ namespace triqs_cthyb {
   mc_weight_t move_remove_c_c_cdag_cdag::accept() {
 
     // remove from the tree
+    data.timer_trace.start();
     data.imp_trace.confirm_delete();
+    data.timer_trace.stop();
 
     // remove from the configuration
     config.erase(tau1);
@@ -156,12 +164,14 @@ namespace triqs_cthyb {
     config.finalize();
 
     // remove from the determinants
+    data.timer_det.start();
     if (block_index1 == block_index2) {
       data.dets[block_index1].complete_operation();
     } else {
       data.dets[block_index1].complete_operation();
       data.dets[block_index2].complete_operation();
     }
+    data.timer_det.stop();
     data.update_sign();
 
     data.atomic_weight      = new_atomic_weight;

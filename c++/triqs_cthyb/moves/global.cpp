@@ -120,11 +120,13 @@ namespace triqs_cthyb {
     }
 
     // Try refill determinants
+    data.timer_det.start();
     mc_weight_t det_ratio = 1;
     for (auto block_index : affected_blocks) {
       auto &det                   = data.dets[block_index];
       mc_weight_t block_det_ratio = det.try_refill(x[block_index], y[block_index]);
       if (block_det_ratio == .0) {
+        data.timer_det.stop();
 #ifdef EXT_DEBUG
         std::cerr << "block_det_ratio[" << block_index << "] = 0" << std::endl;
 #endif
@@ -132,16 +134,19 @@ namespace triqs_cthyb {
       }
       det_ratio *= block_det_ratio;
     }
+    data.timer_det.stop();
 
     // For quick abandon
     double random_number = rng.preview();
     if (random_number == 0.0) return 0;
     double p_yee = std::abs(det_ratio / data.atomic_weight);
 
+    data.timer_trace.start();
     data.imp_trace.try_replace(updated_ops);
 
     // computation of the new trace after insertion
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+    data.timer_trace.stop();
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
       std::cerr << "trace == 0" << std::endl;
@@ -170,13 +175,17 @@ namespace triqs_cthyb {
     for (auto const &o : updated_ops) data.config.replace(o.first, o.second);
     config.finalize();
 
+    data.timer_det.start();
     for (auto block_index : affected_blocks) data.dets[block_index].complete_operation();
+    data.timer_det.stop();
 
     data.update_sign();
     data.atomic_weight      = new_atomic_weight;
     data.atomic_reweighting = new_atomic_reweighting;
 
+    data.timer_trace.start();
     data.imp_trace.confirm_replace();
+    data.timer_trace.stop();
 
 #ifdef EXT_DEBUG
     std::cerr << "* Move move_global '" << name << "' accepted" << std::endl;

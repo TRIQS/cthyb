@@ -71,9 +71,12 @@ namespace triqs_cthyb {
     // (cf std::map doc for insert return), we reject the move.
     // 2- If ok, we store the iterator to the inserted operators for later removal in reject if necessary
     try {
+      data.timer_trace.start();
       data.imp_trace.try_insert(tau1, op1);
       data.imp_trace.try_insert(tau2, op2);
+      data.timer_trace.stop();
     } catch (rbt_insert_error const &) {
+      data.timer_trace.stop();
       std::cerr << "Insert error : recovering ... " << std::endl;
       data.imp_trace.cancel_insert();
       return 0;
@@ -94,7 +97,9 @@ namespace triqs_cthyb {
     }
 
     // Insert in the det. Returns the ratio of dets (Cf det_manip doc).
+    data.timer_det.start();
     auto det_ratio = det.try_insert(num_c_dag, num_c, {tau1, op1.inner_index}, {tau2, op2.inner_index});
+    data.timer_det.stop();
 
     // proposition probability
     mc_weight_t t_ratio = std::pow(block_size * config.beta() / double(det.size() + 1), 2);
@@ -105,7 +110,9 @@ namespace triqs_cthyb {
     double p_yee = std::abs(t_ratio * det_ratio / data.atomic_weight);
 
     // computation of the new trace after insertion
+    data.timer_trace.start();
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+    data.timer_trace.stop();
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
       std::cerr << "atomic_weight == 0" << std::endl;
@@ -143,7 +150,9 @@ namespace triqs_cthyb {
   mc_weight_t move_insert_c_cdag::accept() {
 
     // insert in the tree
+    data.timer_trace.start();
     data.imp_trace.confirm_insert();
+    data.timer_trace.stop();
 
     // insert in the configuration
     config.insert(tau1, op1);
@@ -151,7 +160,9 @@ namespace triqs_cthyb {
     config.finalize();
 
     // insert in the determinant
+    data.timer_det.start();
     data.dets[block_index].complete_operation();
+    data.timer_det.stop();
     data.update_sign();
     data.atomic_weight      = new_atomic_weight;
     data.atomic_reweighting = new_atomic_reweighting;

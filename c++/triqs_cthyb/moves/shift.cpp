@@ -145,12 +145,17 @@ namespace triqs_cthyb {
     // --- Modify the tree
 
     // Mark the operator at original time for deletion in the tree
+    data.timer_trace.start();
     data.imp_trace.try_delete(op_pos_in_det, block_index, is_dagger);
+    data.timer_trace.stop();
 
     // Try to insert the new operator at shifted time in the tree
     try {
+      data.timer_trace.start();
       data.imp_trace.try_insert(tau_new, op_new);
+      data.timer_trace.stop();
     } catch (rbt_insert_error const &) {
+      data.timer_trace.stop();
       std::cerr << "Insert error : recovering ... " << std::endl;
       data.imp_trace.cancel_delete();
       data.imp_trace.cancel_insert();
@@ -170,8 +175,10 @@ namespace triqs_cthyb {
     }
 
     // Replace old row/column with new operator time/inner_index. Returns the ratio of dets (Cf det_manip doc).
+    data.timer_det.start();
     auto det_ratio = (is_dagger ? det.try_change_row(op_pos_in_det, {tau_new, op_new.inner_index}) :
                                   det.try_change_col(op_pos_in_det, {tau_new, op_new.inner_index}));
+    data.timer_det.stop();
 
     // for quick abandon
     double random_number = rng.preview();
@@ -179,7 +186,9 @@ namespace triqs_cthyb {
     double p_yee = std::abs(det_ratio / data.atomic_weight);
 
     // --- Compute the atomic_weight ratio
+    data.timer_trace.start();
     std::tie(new_atomic_weight, new_atomic_reweighting) = data.imp_trace.compute(p_yee, random_number);
+    data.timer_trace.stop();
     if (new_atomic_weight == 0.0) {
 #ifdef EXT_DEBUG
       std::cerr << "atomic_weight == 0" << std::endl;
@@ -207,7 +216,9 @@ namespace triqs_cthyb {
   mc_weight_t move_shift_operator::accept() {
 
     // Update the tree
+    data.timer_trace.start();
     data.imp_trace.confirm_shift();
+    data.timer_trace.stop();
 
     // Update the configuration
     config.erase(tau_old);
@@ -215,7 +226,9 @@ namespace triqs_cthyb {
     config.finalize();
 
     // Update the determinant
+    data.timer_det.start();
     data.dets[block_index].complete_operation();
+    data.timer_det.stop();
     data.update_sign();
 
     data.atomic_weight      = new_atomic_weight;

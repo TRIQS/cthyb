@@ -449,6 +449,13 @@ namespace triqs_cthyb {
                                  triqs::utility::clock_callback(params.max_time), sign);
     qmc.collect_results(_comm);
 
+    // Print MC update timing breakdown
+    if (_comm.rank() == 0 && params.verbosity >= 2) {
+      std::cout << "[Rank 0] MC update timings:\n";
+      std::cout << "  Trace calculation time: " << double(data.timer_trace) << " seconds\n";
+      std::cout << "  Det_manip time:         " << double(data.timer_det) << " seconds\n";
+    }
+
     // set the last configuration
     _last_configuration = data.config;
 

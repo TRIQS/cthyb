@@ -23,6 +23,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 #include <triqs/det_manip.hpp>
+#include <triqs/utility/timer.hpp>
 
 namespace triqs_cthyb {
   using namespace triqs::gfs;
@@ -65,6 +66,10 @@ namespace triqs_cthyb {
     int current_sign, old_sign;                                  // Permutation prefactor
     h_scalar_t atomic_weight;                                    // The current value of the trace or norm
     h_scalar_t atomic_reweighting;                               // The current value of the reweighting
+
+    // Timers for performance profiling
+    mutable triqs::utility::timer timer_trace; // Time spent in trace calculations
+    mutable triqs::utility::timer timer_det;   // Time spent in det_manip operations
 
     // Construction
     qmc_data(double beta, solve_parameters_t const &p, atom_diag const &h_diag, std::map<std::pair<int, int>, int> linindex,

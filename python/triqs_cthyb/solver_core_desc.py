@@ -245,6 +245,8 @@ c.add_method("""void solve (**solve_parameters_t)""",
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | move_global_prob              | double                                                   | 0.05                          | Overall probability of the global moves                                                                           |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
+| pauli_prob                    | double                                                   | 0.0                           | Overall proposal probability for Pauli-aware insert and remove                                                    |
++-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | imag_threshold                | double                                                   | 1.e-13                        | Threshold below which imaginary components of Delta and h_loc are set to zero                                     |
 +-------------------------------+----------------------------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------+
 | det_init_size                 | int                                                      | 100                           | The maximum size of the determinant matrix before a resize                                                        |
@@ -577,6 +579,11 @@ c.add_member(c_name = "move_global_prob",
              c_type = "double",
              initializer = """ 0.05 """,
              doc = r"""Overall probability of the global moves""")
+
+c.add_member(c_name = "pauli_prob",
+             c_type = "double",
+             initializer = """ 0. """,
+             doc = r"""Overall proposal probability for Pauli-aware insert and remove""")
 
 c.add_member(c_name = "imag_threshold",
              c_type = "double",

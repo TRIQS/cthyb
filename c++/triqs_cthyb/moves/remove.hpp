@@ -19,32 +19,49 @@
  *
  ******************************************************************************/
 #pragma once
-#include <algorithm>
-#include <triqs/mc_tools.hpp>
+
+#include "../config.hpp"
+#include "../configuration.hpp"
 #include "../qmc_data.hpp"
+#include "../types.hpp"
+
+#include <triqs/mc_tools.hpp>
+#include <triqs/stat/histograms.hpp>
+#include <triqs/utility/time_pt.hpp>
+
+#include <string>
+#include <vector>
 
 namespace triqs_cthyb {
 
   // Removal of C, C^dagger operator
   class move_remove_c_cdag {
 
-    qmc_data &data;
-    configuration &config;
-    mc_tools::random_generator &rng;
+    qmc_data &data;                  // NOLINT (reference is okay here)
+    configuration &config;           // NOLINT (reference is okay here)
+    mc_tools::random_generator &rng; // NOLINT (reference is okay here)
     int block_index, block_size;
     histogram *histo_proposed, *histo_accepted; // Analysis histograms
-    double dtau;
+    double dtau{};
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
-    time_pt tau1, tau2;
+    time_pt tau_c, tau_c_dag;
+    int idx_c_dag{}, idx_c{};
+    double pauli_prob;
+    std::vector<int> c_dag_left, c_dag_right, c_left, c_right;
 
     histogram *add_histo(std::string const &name, histo_map_t *histos);
 
+    double uniform_proposal();
+    double pauli_proposal();
+    double theta(bool expr) { return expr ? 1.0 : 0.0; }
+
     public:
     move_remove_c_cdag(int block_index, int block_size, std::string const &block_name, qmc_data &data, mc_tools::random_generator &rng,
-                       histo_map_t *histos);
+                       histo_map_t *histos, double pauli_prob);
 
     mc_weight_t attempt();
     mc_weight_t accept();
     void reject();
   };
-}
+
+} // namespace triqs_cthyb

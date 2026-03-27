@@ -21,7 +21,7 @@
 #pragma once
 
 #include <vector>
-#include <triqs/utility/time_pt.hpp>
+#include <triqs/utility/tau_t.hpp>
 #include <triqs/experimental/nfft_buf.hpp>
 
 namespace triqs {
@@ -30,7 +30,7 @@ namespace triqs {
     using namespace nda;
     using namespace triqs::gfs;
     using namespace triqs::mesh;
-    using triqs::utility::time_pt;
+    using triqs::utility::tau_t;
 
     // NFFT transform of an array-valued function of MeshRank tau arguments
     template <int MeshRank, int TargetRank> class nfft_array_t {

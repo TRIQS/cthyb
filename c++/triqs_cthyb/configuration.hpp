@@ -21,7 +21,7 @@
 #pragma once
 #include "./util.hpp"
 #include <triqs/hilbert_space/hilbert_space.hpp>
-#include <triqs/utility/time_pt.hpp>
+#include <triqs/utility/tau_t.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/utility/macros.hpp>
@@ -32,8 +32,7 @@
 
 namespace triqs_cthyb {
 
-  using triqs::utility::time_pt;
-  using triqs::utility::time_segment;
+  using triqs::utility::tau_t;
 
   /// Description of a creation/annihilation operator.
   struct op_desc {
@@ -83,7 +82,7 @@ namespace triqs_cthyb {
     bool operator==(configuration const &config) const { return (beta_ == config.beta_ && oplist_ == config.oplist_); }
 
     // a map associating an operator to an imaginary time
-    using oplist_t = std::map<time_pt, op_desc, std::greater<time_pt>>;
+    using oplist_t = std::map<tau_t, op_desc, std::greater<tau_t>>;
 
 #ifdef SAVE_CONFIGS
     configuration(double beta, long id = 0, oplist_t oplist = {})
@@ -106,7 +105,7 @@ namespace triqs_cthyb {
      * @param tau Imaginary time at which to insert the operator.
      * @param op Description of the operator to insert.
      */
-    void insert(time_pt tau, op_desc op) { oplist_.insert({tau, op}); }
+    void insert(tau_t tau, op_desc op) { oplist_.insert({tau, op}); }
 
     /**
      * @brief Replace an existing operator at a given imaginary time with a new one.
@@ -114,13 +113,13 @@ namespace triqs_cthyb {
      * @param tau Imaginary time at which to replace the operator.
      * @param op Description of the operator to insert.
      */
-    void replace(time_pt tau, op_desc op) { oplist_[tau] = op; }
+    void replace(tau_t tau, op_desc op) { oplist_[tau] = op; }
 
     /**
      * @brief Erase the operator at a given imaginary time.
      * @param tau Imaginary time at which to erase the operator.
      */
-    void erase(time_pt const &t) { oplist_.erase(t); }
+    void erase(tau_t const &t) { oplist_.erase(t); }
 
     /// Clear the configuration (remove all operators).
     void clear() { oplist_.clear(); }

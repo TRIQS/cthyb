@@ -84,7 +84,7 @@ namespace triqs_cthyb {
     // The time must fall in the range between the closest operators on the left and
     // right belonging to the same block. First determine these.
 
-    time_pt tR, tL;
+    tau_t tR, tL;
     int ic_dag = 0, ic = 0;
     int op_pos_in_det;
 
@@ -122,13 +122,13 @@ namespace triqs_cthyb {
       // Then deduce the closest one and put its distance to op_old in tL
       tL = ((tLdag - tau_old) > (tLnodag - tau_old) ? tLnodag : tLdag);
       // Choose new random time
-      tau_new = tR + data.tau_seg.get_random_pt(rng, tL - tR);
+      tau_new = tR + tau_t::random(rng, tL - tR);
 
     } else { // det_size = 1
 
       op_pos_in_det = 0;
       // Choose new random time, can be anywhere between beta and 0
-      tau_new = data.tau_seg.get_random_pt(rng);
+      tau_new = tau_t::random(rng);
     }
 
     // Record the length of the proposed shift

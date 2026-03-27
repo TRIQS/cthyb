@@ -42,7 +42,7 @@ namespace triqs_cthyb {
     double beta;
     double f;
     tilde_p_gen(double beta) : beta(beta) {}
-    void reset(time_pt const &tau1, time_pt const &tau2) {
+    void reset(tau_t const &tau1, tau_t const &tau2) {
       l_gen.reset(2 * double(tau1 - tau2) / beta - 1);
       f = tau1 > tau2 ? 1 : -1;
     }

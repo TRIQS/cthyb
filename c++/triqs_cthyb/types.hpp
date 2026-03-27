@@ -26,7 +26,7 @@
 
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
-#include <triqs/utility/time_pt.hpp>
+#include <triqs/utility/tau_t.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp> // gf_struct_t
 #include <triqs/stat/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
@@ -48,8 +48,8 @@ namespace triqs_cthyb {
   using atom_diag = triqs::atom_diag::atom_diag<is_h_scalar_complex>;
 
   using triqs::hilbert_space::gf_struct_t;
-  using triqs::utility::time_pt;
-  using op_t        = std::pair<time_pt, int>;
+  using triqs::utility::tau_t;
+  using op_t        = std::pair<tau_t, int>;
   using histo_map_t = std::map<std::string, histogram>;
 
   using indices_type = triqs::operators::indices_t;

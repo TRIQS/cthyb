@@ -98,7 +98,7 @@ namespace triqs_cthyb {
       void reset(op_desc op_new) { op = op_new; }
     };
 
-    using rb_tree_t = rb_tree<time_pt, node_data_t, std::greater<time_pt>>;
+    using rb_tree_t = rb_tree<tau_t, node_data_t, std::greater<tau_t>>;
     using node      = rb_tree_t::node;
 
 #ifdef EXT_DEBUG
@@ -165,7 +165,7 @@ namespace triqs_cthyb {
       int i;
 
       // make a new detached black node
-      node make_new_node() { return new rb_tree_t::node_t(time_pt{}, node_data_t{{}, n_blocks}, false, 1); }
+      node make_new_node() { return new rb_tree_t::node_t(tau_t{}, node_data_t{{}, n_blocks}, false, 1); }
 
       public:
       inline nodes_storage(int n_blocks, int size = 0) : n_blocks(n_blocks), i(-1) {
@@ -250,7 +250,7 @@ namespace triqs_cthyb {
 
     public:
     // Put a trial node at tau for operator op using an ordinary BST insertion (ie. not red black)
-    void try_insert(time_pt const &tau, op_desc const &op) {
+    void try_insert(tau_t const &tau, op_desc const &op) {
       if (trial_nodes.index() > 3) TRIQS_RUNTIME_ERROR << "Error : more than 4 insertions ";
       auto &root                          = tree.get_root();
       node n                              = trial_nodes.take_next(); // get the next available node
@@ -290,12 +290,12 @@ namespace triqs_cthyb {
      *************************************************************************/
     private:
     std::vector<node> removed_nodes;
-    std::vector<time_pt> removed_keys;
+    std::vector<tau_t> removed_keys;
 
     public:
     // Find and mark as deleted the nth operator with fixed dagger and block_index
     // n=0 : first operator, n=1, second, etc...
-    time_pt try_delete(int n, int block_index, bool dagger) noexcept {
+    tau_t try_delete(int n, int block_index, bool dagger) noexcept {
       // traverse the tree, looking for the nth operator of the correct dagger, block_index
       int i  = 0;
       node x = find_if(tree, [&](node no) {

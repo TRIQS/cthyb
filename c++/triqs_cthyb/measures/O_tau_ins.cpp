@@ -54,8 +54,8 @@ namespace triqs_cthyb {
     const auto prefactor = s / bare_atomic_weight / bare_atomic_reweighting / double(nsamples);
 
     for ([[maybe_unused]] int i : range(nsamples)) {
-      auto tau1 = data.tau_seg.get_random_pt(rng);
-      auto tau2 = data.tau_seg.get_random_pt(rng);
+      auto tau1 = tau_t::random(rng);
+      auto tau2 = tau_t::random(rng);
       double dtau = double(tau2 - tau1);
 
       try {

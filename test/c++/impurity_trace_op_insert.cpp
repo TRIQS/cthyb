@@ -63,7 +63,7 @@ TEST(atom_diag, op_matrix) {
 
   // -----------------------------------------------------------------------------
 
-  triqs_cthyb::time_segment tau_seg(beta);
+  triqs_cthyb::tau_t::set_beta(beta);
   triqs_cthyb::h_scalar_t new_atomic_weight, new_atomic_reweighting;
 
   // -----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ TEST(atom_diag, op_matrix) {
   {
     many_body_operator_real op = n("dn", 0) * n("up", 0);
     auto op_d                  = imp_trace.attach_aux_operator(op);
-    auto tau1                  = tau_seg.make_time_pt(0.);
+    auto tau1                  = triqs_cthyb::tau_t::from_double(0.);
 
     try {
       imp_trace.try_insert(tau1, op_d);
@@ -108,8 +108,8 @@ TEST(atom_diag, op_matrix) {
     if (tau == 0. ) eps = -1e-14; // This should not be needed FIXME
     if (tau == beta) eps = 1e-14; // This should not be needed FIXME
 
-    auto tau1 = tau_seg.make_time_pt(0.);
-    auto tau2 = tau_seg.make_time_pt(tau - eps);
+    auto tau1 = triqs_cthyb::tau_t::from_double(0.);
+    auto tau2 = triqs_cthyb::tau_t::from_double(tau - eps);
     
     try {
       imp_trace.try_insert(tau1, op1_d);

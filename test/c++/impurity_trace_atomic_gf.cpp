@@ -111,7 +111,7 @@ TEST(impurity_trace, atomic_gf) {
   auto op1        = triqs_cthyb::op_desc{block_index, oidx, true, linindex[std::make_pair(block_index, oidx)]};
   auto op2        = triqs_cthyb::op_desc{block_index, oidx, false, linindex[std::make_pair(block_index, oidx)]};
 
-  triqs_cthyb::time_segment tau_seg(beta);
+  triqs_cthyb::tau_t::set_beta(beta);
 
   triqs_cthyb::h_scalar_t new_atomic_weight, new_atomic_reweighting;
 
@@ -128,8 +128,8 @@ TEST(impurity_trace, atomic_gf) {
     if (tau == 0. ) eps = -1e-14; // This should not be needed FIXME
     if (tau == beta) eps = 1e-14; // This should not be needed FIXME
 
-    auto tau1 = tau_seg.make_time_pt(0.);
-    auto tau2 = tau_seg.make_time_pt(tau - eps);
+    auto tau1 = triqs_cthyb::tau_t::from_double(0.);
+    auto tau2 = triqs_cthyb::tau_t::from_double(tau - eps);
     
     try {
       imp_trace.try_insert(tau1, op1);

@@ -35,7 +35,7 @@ namespace triqs_cthyb {
     histogram *histo_proposed, *histo_accepted; // Analysis histograms
     double dtau;
     h_scalar_t new_atomic_weight, new_atomic_reweighting;
-    time_pt tau1, tau2;
+    tau_t tau1, tau2;
 
     histogram *add_histo(std::string const &name, histo_map_t *histos);
 

@@ -35,7 +35,6 @@ namespace triqs_cthyb {
   struct qmc_data {
 
     configuration config; // Configuration
-    time_segment tau_seg;
     std::map<std::pair<int, int>, int> linindex; // Linear index constructed from block and inner indices
     atom_diag const &h_diag;                     // Diagonalization of the atomic problem
     mutable impurity_trace imp_trace;            // Calculator of the trace
@@ -52,9 +51,9 @@ namespace triqs_cthyb {
       delta_block_adaptor &operator=(delta_block_adaptor const &) = delete;
       delta_block_adaptor &operator=(delta_block_adaptor &&)      = default;
 
-      det_scalar_t operator()(std::pair<time_pt, int> const &x, std::pair<time_pt, int> const &y) const {
+      det_scalar_t operator()(std::pair<tau_t, int> const &x, std::pair<tau_t, int> const &y) const {
         det_scalar_t res = delta_block[closest_mesh_pt(double(x.first - y.first))](x.second, y.second);
-        return (x.first >= y.first ? res : -res); // x,y first are time_pt, wrapping is automatic in the - operation, but need to
+        return (x.first >= y.first ? res : -res); // x,y first are tau_t, wrapping is automatic in the - operation, but need to
                                                   // compute the sign
       }
 
@@ -70,7 +69,6 @@ namespace triqs_cthyb {
     qmc_data(double beta, solve_parameters_t const &p, atom_diag const &h_diag, std::map<std::pair<int, int>, int> linindex,
              block_gf_const_view<imtime> delta, std::vector<int> n_inner, histo_map_t *histo_map)
        : config(beta),
-         tau_seg(beta),
          linindex(linindex),
          h_diag(h_diag),
          imp_trace(beta, h_diag, histo_map, p.use_norm_as_weight, p.measure_density_matrix, p.performance_analysis),
@@ -79,7 +77,9 @@ namespace triqs_cthyb {
          current_sign(1),
          old_sign(1) {
 
-      std::vector<std::vector<std::pair<time_pt, int>>> X(delta.size()), Y(delta.size());
+      tau_t::set_beta(beta);
+
+      std::vector<std::vector<std::pair<tau_t, int>>> X(delta.size()), Y(delta.size());
 
       // When initial_configuration is given, fill imp_trace and config accordingly
       if (p.initial_configuration) {

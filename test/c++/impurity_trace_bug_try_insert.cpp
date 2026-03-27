@@ -65,11 +65,11 @@ TEST(impurity_trace, try_insert_cancel_bug) {
   auto op1        = triqs_cthyb::op_desc{block_index, oidx, true, linindex[std::make_pair(block_index, oidx)]};
   auto op2        = triqs_cthyb::op_desc{block_index, oidx, false, linindex[std::make_pair(block_index, oidx)]};
 
-  triqs_cthyb::time_segment tau_seg(beta);
+  triqs_cthyb::tau_t::set_beta(beta);
 
   // Generate insert error by inserting at the same time  
-  auto tau1 = tau_seg.make_time_pt(0.);
-  auto tau2 = tau_seg.make_time_pt(0.);
+  auto tau1 = triqs_cthyb::tau_t::from_double(0.);
+  auto tau2 = triqs_cthyb::tau_t::from_double(0.);
 
   try {
     

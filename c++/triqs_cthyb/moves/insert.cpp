@@ -53,8 +53,8 @@ namespace triqs_cthyb {
     op2 = op_desc{block_index, rs2, false, data.linindex[std::make_pair(block_index, rs2)]};
 
     // Choice of times for insertion. Find the time as double and them put them on the grid.
-    tau1 = data.tau_seg.get_random_pt(rng);
-    tau2 = data.tau_seg.get_random_pt(rng);
+    tau1 = tau_t::random(rng);
+    tau2 = tau_t::random(rng);
 
 #ifdef EXT_DEBUG
     std::cerr << "* Proposing to insert:" << std::endl;

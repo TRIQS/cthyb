@@ -60,10 +60,10 @@ namespace triqs_cthyb {
     op4 = op_desc{block_index2, rs4, false, data.linindex[std::make_pair(block_index2, rs4)]};
 
     // Choice of times for insertion. Find the time as double and them put them on the grid.
-    tau1 = data.tau_seg.get_random_pt(rng);
-    tau2 = data.tau_seg.get_random_pt(rng);
-    tau3 = data.tau_seg.get_random_pt(rng);
-    tau4 = data.tau_seg.get_random_pt(rng);
+    tau1 = tau_t::random(rng);
+    tau2 = tau_t::random(rng);
+    tau3 = tau_t::random(rng);
+    tau4 = tau_t::random(rng);
     if ((tau1 == tau3) or (tau2 == tau4)) return 0; // trying to insert/remove two operators at exactly the same time
 
 #ifdef EXT_DEBUG

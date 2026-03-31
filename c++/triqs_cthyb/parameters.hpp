@@ -22,6 +22,7 @@
 #pragma once
 
 #include <climits>
+#include <limits>
 
 #include "./config.hpp"
 #include "./types.hpp"
@@ -82,6 +83,14 @@ namespace triqs_cthyb {
 
     /// Restrict local Hilbert space to states with at most this number of particles.
     int loc_n_max = INT_MAX;
+
+    /// Truncate the local Hilbert space to states below this energy (relative to the ground state energy).
+    /// Results will be approximate! (advanced --> use with care!)
+    double truncate_energy_cutoff = std::numeric_limits<double>::infinity();
+
+    /// Truncate the local Hilbert space to at most this many states.
+    /// Results will be approximate! (advanced --> use with care!)
+    int truncate_max_states = -1;
 
     /// Length of a single QMC cycle.
     long length_cycle = 50;

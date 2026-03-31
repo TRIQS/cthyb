@@ -147,6 +147,8 @@ static int synth_constructor_1(PyObject *self, PyObject *args, PyObject *kwargs)
   de("quantum_numbers", self_c.quantum_numbers, true);
   de("loc_n_min", self_c.loc_n_min, true);
   de("loc_n_max", self_c.loc_n_max, true);
+  de("truncate_energy_cutoff", self_c.truncate_energy_cutoff, true);
+  de("truncate_max_states", self_c.truncate_max_states, true);
   de("length_cycle", self_c.length_cycle, true);
   de("n_warmup_cycles", self_c.n_warmup_cycles, true);
   de("random_seed", self_c.random_seed, true);
@@ -216,97 +218,101 @@ loc_n_min : {par_4}, default=0
 
 loc_n_max : {par_5}, default=INT_MAX
 
-length_cycle : {par_6}, default=50
+truncate_energy_cutoff : {par_6}, default=std::numeric_limits<double>::infinity()
 
-n_warmup_cycles : {par_7}, default=5000
+truncate_max_states : {par_7}, default=-1
 
-random_seed : {par_8}, default=34788 + 928374 * mpi::communicator().rank()
+length_cycle : {par_8}, default=50
 
-random_name : {par_9}, default=""
+n_warmup_cycles : {par_9}, default=5000
 
-max_time : {par_10}, default=-1
+random_seed : {par_10}, default=34788 + 928374 * mpi::communicator().rank()
 
-verbosity : {par_11}, default== 0) ? 3 : 0)
+random_name : {par_11}, default=""
 
-move_shift : {par_12}, default=true
+max_time : {par_12}, default=-1
 
-move_double : {par_13}, default=true
+verbosity : {par_13}, default== 0) ? 3 : 0)
 
-use_trace_estimator : {par_14}, default=false
+move_shift : {par_14}, default=true
 
-measure_G_tau : {par_15}, default=true
+move_double : {par_15}, default=true
 
-measure_G_l : {par_16}, default=false
+use_trace_estimator : {par_16}, default=false
 
-measure_O_tau : {par_17}, default={}
+measure_G_tau : {par_17}, default=true
 
-measure_O_tau_min_ins : {par_18}, default=10
+measure_G_l : {par_18}, default=false
 
-measure_G2_tau : {par_19}, default=false
+measure_O_tau : {par_19}, default={}
 
-measure_G2_iw : {par_20}, default=false
+measure_O_tau_min_ins : {par_20}, default=10
 
-measure_G2_iw_nfft : {par_21}, default=false
+measure_G2_tau : {par_21}, default=false
 
-measure_G2_iw_pp : {par_22}, default=false
+measure_G2_iw : {par_22}, default=false
 
-measure_G2_iw_pp_nfft : {par_23}, default=false
+measure_G2_iw_nfft : {par_23}, default=false
 
-measure_G2_iw_ph : {par_24}, default=false
+measure_G2_iw_pp : {par_24}, default=false
 
-measure_G2_iw_ph_nfft : {par_25}, default=false
+measure_G2_iw_pp_nfft : {par_25}, default=false
 
-measure_G2_iwll_pp : {par_26}, default=false
+measure_G2_iw_ph : {par_26}, default=false
 
-measure_G2_iwll_ph : {par_27}, default=false
+measure_G2_iw_ph_nfft : {par_27}, default=false
 
-measure_G2_block_order : {par_28}, default=block_order::AABB
+measure_G2_iwll_pp : {par_28}, default=false
 
-measure_G2_blocks : {par_29}, default={}
+measure_G2_iwll_ph : {par_29}, default=false
 
-measure_G2_n_tau : {par_30}, default=10
+measure_G2_block_order : {par_30}, default=block_order::AABB
 
-measure_G2_n_bosonic : {par_31}, default=30
+measure_G2_blocks : {par_31}, default={}
 
-measure_G2_n_fermionic : {par_32}, default=30
+measure_G2_n_tau : {par_32}, default=10
 
-measure_G2_n_l : {par_33}, default=20
+measure_G2_n_bosonic : {par_33}, default=30
 
-measure_G2_iwll_nfft_buf_size : {par_34}, default=100
+measure_G2_n_fermionic : {par_34}, default=30
 
-nfft_buf_sizes : {par_35}, default={}
+measure_G2_n_l : {par_35}, default=20
 
-measure_pert_order : {par_36}, default=false
+measure_G2_iwll_nfft_buf_size : {par_36}, default=100
 
-measure_density_matrix : {par_37}, default=false
+nfft_buf_sizes : {par_37}, default={}
 
-use_norm_as_weight : {par_38}, default=false
+measure_pert_order : {par_38}, default=false
 
-initial_configuration : {par_39}, default={}
+measure_density_matrix : {par_39}, default=false
 
-performance_analysis : {par_40}, default=false
+use_norm_as_weight : {par_40}, default=false
 
-proposal_prob : {par_41}, default={}
+initial_configuration : {par_41}, default={}
 
-move_global : {par_42}, default={}
+performance_analysis : {par_42}, default=false
 
-move_global_prob : {par_43}, default=0.05
+proposal_prob : {par_43}, default={}
 
-imag_threshold : {par_44}, default=1.e-13
+move_global : {par_44}, default={}
 
-det_init_size : {par_45}, default=100
+move_global_prob : {par_45}, default=0.05
 
-det_n_operations_before_check : {par_46}, default=100
+imag_threshold : {par_46}, default=1.e-13
 
-det_precision_warning : {par_47}, default=1.e-8
+det_init_size : {par_47}, default=100
 
-det_precision_error : {par_48}, default=1.e-5
+det_n_operations_before_check : {par_48}, default=100
 
-det_singular_threshold : {par_49}, default=-1
+det_precision_warning : {par_49}, default=1.e-8
 
-off_diag_threshold : {par_50}, default=0.0
+det_precision_error : {par_50}, default=1.e-5
 
-h_loc0 : {par_51}, default={}
+det_singular_threshold : {par_51}, default=-1
+
+off_diag_threshold : {par_52}, default=0.0
+
+h_loc0 : {par_53}, default={}
 
 )DOC",
                       "par",
@@ -315,6 +321,8 @@ h_loc0 : {par_51}, default={}
                        c2py::python_typename<std::string>(),
                        c2py::python_typename<std::vector<triqs_cthyb::many_body_op_t>>(),
                        c2py::python_typename<int>(),
+                       c2py::python_typename<int>(),
+                       c2py::python_typename<double>(),
                        c2py::python_typename<int>(),
                        c2py::python_typename<long>(),
                        c2py::python_typename<long>(),
@@ -376,53 +384,57 @@ constexpr auto _c2py_doc_member_8  = R"DOC(Partition method.)DOC";
 constexpr auto _c2py_doc_member_9  = R"DOC(Quantum numbers.)DOC";
 constexpr auto _c2py_doc_member_10 = R"DOC(Restrict local Hilbert space to states with at least this number of particles.)DOC";
 constexpr auto _c2py_doc_member_11 = R"DOC(Restrict local Hilbert space to states with at most this number of particles.)DOC";
-constexpr auto _c2py_doc_member_12 = R"DOC(Length of a single QMC cycle.)DOC";
-constexpr auto _c2py_doc_member_13 = R"DOC(Number of cycles for thermalization.)DOC";
-constexpr auto _c2py_doc_member_14 = R"DOC(Seed for random number generator.)DOC";
-constexpr auto _c2py_doc_member_15 = R"DOC(Name of random number generator.)DOC";
-constexpr auto _c2py_doc_member_16 = R"DOC(Maximum runtime in seconds, use -1 to set infinite.)DOC";
-constexpr auto _c2py_doc_member_17 = R"DOC(Verbosity level.)DOC";
-constexpr auto _c2py_doc_member_18 = R"DOC(Add shifting an operator as a move?)DOC";
-constexpr auto _c2py_doc_member_19 = R"DOC(Add double insertions as a move?)DOC";
-constexpr auto _c2py_doc_member_20 = R"DOC(Calculate the full trace or use an estimate?)DOC";
-constexpr auto _c2py_doc_member_21 = R"DOC(Measure :math:`G(\tau)`? Hermiticity :math:`G_{ij}(\tau) = G_{ji}^*(\tau)` is enforced.)DOC";
-constexpr auto _c2py_doc_member_22 = R"DOC(Measure :math:`G_l` (Legendre)? No hermiticity is enforced.)DOC";
-constexpr auto _c2py_doc_member_23 = R"DOC(Measure :math:`O(\tau)` by insertion.)DOC";
-constexpr auto _c2py_doc_member_24 = R"DOC(Minimum number of operator insertions in the :math:`O(\tau)` insertion measure.)DOC";
-constexpr auto _c2py_doc_member_25 = R"DOC(Measure :math:`G^{(2)}(\tau,\tau',\tau'')` with three fermionic times.)DOC";
-constexpr auto _c2py_doc_member_26 = R"DOC(Measure :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
-constexpr auto _c2py_doc_member_27 = R"DOC(Measure :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
-constexpr auto _c2py_doc_member_28 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
-constexpr auto _c2py_doc_member_29 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
-constexpr auto _c2py_doc_member_30 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
-constexpr auto _c2py_doc_member_31 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
-constexpr auto _c2py_doc_member_32 = R"DOC(Measure :math:`G^{(2)}(i\omega,l,l')` in the particle-particle channel.)DOC";
-constexpr auto _c2py_doc_member_33 = R"DOC(Measure :math:`G^{(2)}(i\omega,l,l')` in the particle-hole channel.)DOC";
-constexpr auto _c2py_doc_member_34 = R"DOC(Order of block indices in the definition of :math:`G^{(2)}`.)DOC";
-constexpr auto _c2py_doc_member_35 = R"DOC(List of block index pairs of :math:`G^{(2)}` to measure.)DOC";
-constexpr auto _c2py_doc_member_36 = R"DOC(Number of imaginary-time slices for the :math:`G^{(2)}` measurement.)DOC";
-constexpr auto _c2py_doc_member_37 = R"DOC(Number of bosonic Matsubara frequencies for the :math:`G^{(2)}` measurement.)DOC";
-constexpr auto _c2py_doc_member_38 = R"DOC(Number of fermionic Matsubara frequencies for the :math:`G^{(2)}` measurement.)DOC";
-constexpr auto _c2py_doc_member_39 = R"DOC(Number of Legendre coefficients for the :math:`G^{(2)}(i\omega,l,l')` measurement.)DOC";
-constexpr auto _c2py_doc_member_40 = R"DOC(NFFT buffer size for the :math:`G^{(2)}(i\omega,l,l')` measurement.)DOC";
-constexpr auto _c2py_doc_member_41 = R"DOC(NFFT buffer sizes for different blocks.)DOC";
-constexpr auto _c2py_doc_member_42 = R"DOC(Measure perturbation order?)DOC";
-constexpr auto _c2py_doc_member_43 = R"DOC(Measure the reduced impurity density matrix?)DOC";
-constexpr auto _c2py_doc_member_44 = R"DOC(Use the norm of the density matrix in the weight (instead of the trace)?)DOC";
-constexpr auto _c2py_doc_member_45 = R"DOC(Initial configuration of the run (advanced, use with care).)DOC";
-constexpr auto _c2py_doc_member_46 = R"DOC(Analyse performance of the trace computation with histograms (developers only)?)DOC";
-constexpr auto _c2py_doc_member_47 = R"DOC(Operator insertion/removal probabilities for different blocks.)DOC";
-constexpr auto _c2py_doc_member_48 =
+constexpr auto _c2py_doc_member_12 = R"DOC(Truncate the local Hilbert space to states below this energy (relative to the ground state energy).
+Results will be approximate! (advanced --> use with care!))DOC";
+constexpr auto _c2py_doc_member_13 = R"DOC(Truncate the local Hilbert space to at most this many states.
+Results will be approximate! (advanced --> use with care!))DOC";
+constexpr auto _c2py_doc_member_14 = R"DOC(Length of a single QMC cycle.)DOC";
+constexpr auto _c2py_doc_member_15 = R"DOC(Number of cycles for thermalization.)DOC";
+constexpr auto _c2py_doc_member_16 = R"DOC(Seed for random number generator.)DOC";
+constexpr auto _c2py_doc_member_17 = R"DOC(Name of random number generator.)DOC";
+constexpr auto _c2py_doc_member_18 = R"DOC(Maximum runtime in seconds, use -1 to set infinite.)DOC";
+constexpr auto _c2py_doc_member_19 = R"DOC(Verbosity level.)DOC";
+constexpr auto _c2py_doc_member_20 = R"DOC(Add shifting an operator as a move?)DOC";
+constexpr auto _c2py_doc_member_21 = R"DOC(Add double insertions as a move?)DOC";
+constexpr auto _c2py_doc_member_22 = R"DOC(Calculate the full trace or use an estimate?)DOC";
+constexpr auto _c2py_doc_member_23 = R"DOC(Measure :math:`G(\tau)`? Hermiticity :math:`G_{ij}(\tau) = G_{ji}^*(\tau)` is enforced.)DOC";
+constexpr auto _c2py_doc_member_24 = R"DOC(Measure :math:`G_l` (Legendre)? No hermiticity is enforced.)DOC";
+constexpr auto _c2py_doc_member_25 = R"DOC(Measure :math:`O(\tau)` by insertion.)DOC";
+constexpr auto _c2py_doc_member_26 = R"DOC(Minimum number of operator insertions in the :math:`O(\tau)` insertion measure.)DOC";
+constexpr auto _c2py_doc_member_27 = R"DOC(Measure :math:`G^{(2)}(\tau,\tau',\tau'')` with three fermionic times.)DOC";
+constexpr auto _c2py_doc_member_28 = R"DOC(Measure :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
+constexpr auto _c2py_doc_member_29 = R"DOC(Measure :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
+constexpr auto _c2py_doc_member_30 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
+constexpr auto _c2py_doc_member_31 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
+constexpr auto _c2py_doc_member_32 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
+constexpr auto _c2py_doc_member_33 = R"DOC(Measure :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
+constexpr auto _c2py_doc_member_34 = R"DOC(Measure :math:`G^{(2)}(i\omega,l,l')` in the particle-particle channel.)DOC";
+constexpr auto _c2py_doc_member_35 = R"DOC(Measure :math:`G^{(2)}(i\omega,l,l')` in the particle-hole channel.)DOC";
+constexpr auto _c2py_doc_member_36 = R"DOC(Order of block indices in the definition of :math:`G^{(2)}`.)DOC";
+constexpr auto _c2py_doc_member_37 = R"DOC(List of block index pairs of :math:`G^{(2)}` to measure.)DOC";
+constexpr auto _c2py_doc_member_38 = R"DOC(Number of imaginary-time slices for the :math:`G^{(2)}` measurement.)DOC";
+constexpr auto _c2py_doc_member_39 = R"DOC(Number of bosonic Matsubara frequencies for the :math:`G^{(2)}` measurement.)DOC";
+constexpr auto _c2py_doc_member_40 = R"DOC(Number of fermionic Matsubara frequencies for the :math:`G^{(2)}` measurement.)DOC";
+constexpr auto _c2py_doc_member_41 = R"DOC(Number of Legendre coefficients for the :math:`G^{(2)}(i\omega,l,l')` measurement.)DOC";
+constexpr auto _c2py_doc_member_42 = R"DOC(NFFT buffer size for the :math:`G^{(2)}(i\omega,l,l')` measurement.)DOC";
+constexpr auto _c2py_doc_member_43 = R"DOC(NFFT buffer sizes for different blocks.)DOC";
+constexpr auto _c2py_doc_member_44 = R"DOC(Measure perturbation order?)DOC";
+constexpr auto _c2py_doc_member_45 = R"DOC(Measure the reduced impurity density matrix?)DOC";
+constexpr auto _c2py_doc_member_46 = R"DOC(Use the norm of the density matrix in the weight (instead of the trace)?)DOC";
+constexpr auto _c2py_doc_member_47 = R"DOC(Initial configuration of the run (advanced, use with care).)DOC";
+constexpr auto _c2py_doc_member_48 = R"DOC(Analyse performance of the trace computation with histograms (developers only)?)DOC";
+constexpr auto _c2py_doc_member_49 = R"DOC(Operator insertion/removal probabilities for different blocks.)DOC";
+constexpr auto _c2py_doc_member_50 =
    R"DOC(List of global moves (with their names). Each move is specified with an index substitution dictionary.)DOC";
-constexpr auto _c2py_doc_member_49 = R"DOC(Overall probability of the global moves.)DOC";
-constexpr auto _c2py_doc_member_50 = R"DOC(Threshold below which imaginary components of :math:`\Delta` and :math:`h_{loc}` are set to zero.)DOC";
-constexpr auto _c2py_doc_member_51 = R"DOC(The maximum size of the determinant matrix before a resize.)DOC";
-constexpr auto _c2py_doc_member_52 = R"DOC(Maximum number of operations before testing the accuracy of :math:`\det(M)` and :math:`M^{-1}`.)DOC";
-constexpr auto _c2py_doc_member_53 = R"DOC(Threshold for determinant precision warnings.)DOC";
-constexpr auto _c2py_doc_member_54 = R"DOC(Threshold for determinant precision error.)DOC";
-constexpr auto _c2py_doc_member_55 = R"DOC(Bound for the determinant matrix being singular (if :math:`< 0`, checks for subnormal numbers).)DOC";
-constexpr auto _c2py_doc_member_56 = R"DOC(Threshold below which off-diagonal components of :math:`h_{loc}` are set to zero.)DOC";
-constexpr auto _c2py_doc_member_57 = R"DOC(Quadratic part of the local Hamiltonian. Must be provided if the :math:`\Delta` interface is used.)DOC";
+constexpr auto _c2py_doc_member_51 = R"DOC(Overall probability of the global moves.)DOC";
+constexpr auto _c2py_doc_member_52 = R"DOC(Threshold below which imaginary components of :math:`\Delta` and :math:`h_{loc}` are set to zero.)DOC";
+constexpr auto _c2py_doc_member_53 = R"DOC(The maximum size of the determinant matrix before a resize.)DOC";
+constexpr auto _c2py_doc_member_54 = R"DOC(Maximum number of operations before testing the accuracy of :math:`\det(M)` and :math:`M^{-1}`.)DOC";
+constexpr auto _c2py_doc_member_55 = R"DOC(Threshold for determinant precision warnings.)DOC";
+constexpr auto _c2py_doc_member_56 = R"DOC(Threshold for determinant precision error.)DOC";
+constexpr auto _c2py_doc_member_57 = R"DOC(Bound for the determinant matrix being singular (if :math:`< 0`, checks for subnormal numbers).)DOC";
+constexpr auto _c2py_doc_member_58 = R"DOC(Threshold below which off-diagonal components of :math:`h_{loc}` are set to zero.)DOC";
+constexpr auto _c2py_doc_member_59 = R"DOC(Quadratic part of the local Hamiltonian. Must be provided if the :math:`\Delta` interface is used.)DOC";
 static PyObject *prop_get_dict_1(PyObject *self, void *) {
   auto &self_c = *(((c2py::wrap<_c2py_cls_1> *)self)->_c);
   c2py::pydict dic;
@@ -432,6 +444,8 @@ static PyObject *prop_get_dict_1(PyObject *self, void *) {
   dic["quantum_numbers"]               = self_c.quantum_numbers;
   dic["loc_n_min"]                     = self_c.loc_n_min;
   dic["loc_n_max"]                     = self_c.loc_n_max;
+  dic["truncate_energy_cutoff"]        = self_c.truncate_energy_cutoff;
+  dic["truncate_max_states"]           = self_c.truncate_max_states;
   dic["length_cycle"]                  = self_c.length_cycle;
   dic["n_warmup_cycles"]               = self_c.n_warmup_cycles;
   dic["random_seed"]                   = self_c.random_seed;
@@ -491,52 +505,54 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {
    c2py::getsetdef_from_member<&_c2py_cls_1::quantum_numbers, _c2py_cls_1>("quantum_numbers", _c2py_doc_member_9),
    c2py::getsetdef_from_member<&_c2py_cls_1::loc_n_min, _c2py_cls_1>("loc_n_min", _c2py_doc_member_10),
    c2py::getsetdef_from_member<&_c2py_cls_1::loc_n_max, _c2py_cls_1>("loc_n_max", _c2py_doc_member_11),
-   c2py::getsetdef_from_member<&_c2py_cls_1::length_cycle, _c2py_cls_1>("length_cycle", _c2py_doc_member_12),
-   c2py::getsetdef_from_member<&_c2py_cls_1::n_warmup_cycles, _c2py_cls_1>("n_warmup_cycles", _c2py_doc_member_13),
-   c2py::getsetdef_from_member<&_c2py_cls_1::random_seed, _c2py_cls_1>("random_seed", _c2py_doc_member_14),
-   c2py::getsetdef_from_member<&_c2py_cls_1::random_name, _c2py_cls_1>("random_name", _c2py_doc_member_15),
-   c2py::getsetdef_from_member<&_c2py_cls_1::max_time, _c2py_cls_1>("max_time", _c2py_doc_member_16),
-   c2py::getsetdef_from_member<&_c2py_cls_1::verbosity, _c2py_cls_1>("verbosity", _c2py_doc_member_17),
-   c2py::getsetdef_from_member<&_c2py_cls_1::move_shift, _c2py_cls_1>("move_shift", _c2py_doc_member_18),
-   c2py::getsetdef_from_member<&_c2py_cls_1::move_double, _c2py_cls_1>("move_double", _c2py_doc_member_19),
-   c2py::getsetdef_from_member<&_c2py_cls_1::use_trace_estimator, _c2py_cls_1>("use_trace_estimator", _c2py_doc_member_20),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G_tau, _c2py_cls_1>("measure_G_tau", _c2py_doc_member_21),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G_l, _c2py_cls_1>("measure_G_l", _c2py_doc_member_22),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_O_tau, _c2py_cls_1>("measure_O_tau", _c2py_doc_member_23),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_O_tau_min_ins, _c2py_cls_1>("measure_O_tau_min_ins", _c2py_doc_member_24),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_tau, _c2py_cls_1>("measure_G2_tau", _c2py_doc_member_25),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw, _c2py_cls_1>("measure_G2_iw", _c2py_doc_member_26),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_nfft, _c2py_cls_1>("measure_G2_iw_nfft", _c2py_doc_member_27),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_pp, _c2py_cls_1>("measure_G2_iw_pp", _c2py_doc_member_28),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_pp_nfft, _c2py_cls_1>("measure_G2_iw_pp_nfft", _c2py_doc_member_29),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_ph, _c2py_cls_1>("measure_G2_iw_ph", _c2py_doc_member_30),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_ph_nfft, _c2py_cls_1>("measure_G2_iw_ph_nfft", _c2py_doc_member_31),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iwll_pp, _c2py_cls_1>("measure_G2_iwll_pp", _c2py_doc_member_32),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iwll_ph, _c2py_cls_1>("measure_G2_iwll_ph", _c2py_doc_member_33),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_block_order, _c2py_cls_1>("measure_G2_block_order", _c2py_doc_member_34),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_blocks, _c2py_cls_1>("measure_G2_blocks", _c2py_doc_member_35),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_tau, _c2py_cls_1>("measure_G2_n_tau", _c2py_doc_member_36),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_bosonic, _c2py_cls_1>("measure_G2_n_bosonic", _c2py_doc_member_37),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_fermionic, _c2py_cls_1>("measure_G2_n_fermionic", _c2py_doc_member_38),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_l, _c2py_cls_1>("measure_G2_n_l", _c2py_doc_member_39),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iwll_nfft_buf_size, _c2py_cls_1>("measure_G2_iwll_nfft_buf_size", _c2py_doc_member_40),
-   c2py::getsetdef_from_member<&_c2py_cls_1::nfft_buf_sizes, _c2py_cls_1>("nfft_buf_sizes", _c2py_doc_member_41),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_pert_order, _c2py_cls_1>("measure_pert_order", _c2py_doc_member_42),
-   c2py::getsetdef_from_member<&_c2py_cls_1::measure_density_matrix, _c2py_cls_1>("measure_density_matrix", _c2py_doc_member_43),
-   c2py::getsetdef_from_member<&_c2py_cls_1::use_norm_as_weight, _c2py_cls_1>("use_norm_as_weight", _c2py_doc_member_44),
-   c2py::getsetdef_from_member<&_c2py_cls_1::initial_configuration, _c2py_cls_1>("initial_configuration", _c2py_doc_member_45),
-   c2py::getsetdef_from_member<&_c2py_cls_1::performance_analysis, _c2py_cls_1>("performance_analysis", _c2py_doc_member_46),
-   c2py::getsetdef_from_member<&_c2py_cls_1::proposal_prob, _c2py_cls_1>("proposal_prob", _c2py_doc_member_47),
-   c2py::getsetdef_from_member<&_c2py_cls_1::move_global, _c2py_cls_1>("move_global", _c2py_doc_member_48),
-   c2py::getsetdef_from_member<&_c2py_cls_1::move_global_prob, _c2py_cls_1>("move_global_prob", _c2py_doc_member_49),
-   c2py::getsetdef_from_member<&_c2py_cls_1::imag_threshold, _c2py_cls_1>("imag_threshold", _c2py_doc_member_50),
-   c2py::getsetdef_from_member<&_c2py_cls_1::det_init_size, _c2py_cls_1>("det_init_size", _c2py_doc_member_51),
-   c2py::getsetdef_from_member<&_c2py_cls_1::det_n_operations_before_check, _c2py_cls_1>("det_n_operations_before_check", _c2py_doc_member_52),
-   c2py::getsetdef_from_member<&_c2py_cls_1::det_precision_warning, _c2py_cls_1>("det_precision_warning", _c2py_doc_member_53),
-   c2py::getsetdef_from_member<&_c2py_cls_1::det_precision_error, _c2py_cls_1>("det_precision_error", _c2py_doc_member_54),
-   c2py::getsetdef_from_member<&_c2py_cls_1::det_singular_threshold, _c2py_cls_1>("det_singular_threshold", _c2py_doc_member_55),
-   c2py::getsetdef_from_member<&_c2py_cls_1::off_diag_threshold, _c2py_cls_1>("off_diag_threshold", _c2py_doc_member_56),
-   c2py::getsetdef_from_member<&_c2py_cls_1::h_loc0, _c2py_cls_1>("h_loc0", _c2py_doc_member_57),
+   c2py::getsetdef_from_member<&_c2py_cls_1::truncate_energy_cutoff, _c2py_cls_1>("truncate_energy_cutoff", _c2py_doc_member_12),
+   c2py::getsetdef_from_member<&_c2py_cls_1::truncate_max_states, _c2py_cls_1>("truncate_max_states", _c2py_doc_member_13),
+   c2py::getsetdef_from_member<&_c2py_cls_1::length_cycle, _c2py_cls_1>("length_cycle", _c2py_doc_member_14),
+   c2py::getsetdef_from_member<&_c2py_cls_1::n_warmup_cycles, _c2py_cls_1>("n_warmup_cycles", _c2py_doc_member_15),
+   c2py::getsetdef_from_member<&_c2py_cls_1::random_seed, _c2py_cls_1>("random_seed", _c2py_doc_member_16),
+   c2py::getsetdef_from_member<&_c2py_cls_1::random_name, _c2py_cls_1>("random_name", _c2py_doc_member_17),
+   c2py::getsetdef_from_member<&_c2py_cls_1::max_time, _c2py_cls_1>("max_time", _c2py_doc_member_18),
+   c2py::getsetdef_from_member<&_c2py_cls_1::verbosity, _c2py_cls_1>("verbosity", _c2py_doc_member_19),
+   c2py::getsetdef_from_member<&_c2py_cls_1::move_shift, _c2py_cls_1>("move_shift", _c2py_doc_member_20),
+   c2py::getsetdef_from_member<&_c2py_cls_1::move_double, _c2py_cls_1>("move_double", _c2py_doc_member_21),
+   c2py::getsetdef_from_member<&_c2py_cls_1::use_trace_estimator, _c2py_cls_1>("use_trace_estimator", _c2py_doc_member_22),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G_tau, _c2py_cls_1>("measure_G_tau", _c2py_doc_member_23),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G_l, _c2py_cls_1>("measure_G_l", _c2py_doc_member_24),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_O_tau, _c2py_cls_1>("measure_O_tau", _c2py_doc_member_25),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_O_tau_min_ins, _c2py_cls_1>("measure_O_tau_min_ins", _c2py_doc_member_26),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_tau, _c2py_cls_1>("measure_G2_tau", _c2py_doc_member_27),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw, _c2py_cls_1>("measure_G2_iw", _c2py_doc_member_28),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_nfft, _c2py_cls_1>("measure_G2_iw_nfft", _c2py_doc_member_29),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_pp, _c2py_cls_1>("measure_G2_iw_pp", _c2py_doc_member_30),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_pp_nfft, _c2py_cls_1>("measure_G2_iw_pp_nfft", _c2py_doc_member_31),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_ph, _c2py_cls_1>("measure_G2_iw_ph", _c2py_doc_member_32),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw_ph_nfft, _c2py_cls_1>("measure_G2_iw_ph_nfft", _c2py_doc_member_33),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iwll_pp, _c2py_cls_1>("measure_G2_iwll_pp", _c2py_doc_member_34),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iwll_ph, _c2py_cls_1>("measure_G2_iwll_ph", _c2py_doc_member_35),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_block_order, _c2py_cls_1>("measure_G2_block_order", _c2py_doc_member_36),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_blocks, _c2py_cls_1>("measure_G2_blocks", _c2py_doc_member_37),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_tau, _c2py_cls_1>("measure_G2_n_tau", _c2py_doc_member_38),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_bosonic, _c2py_cls_1>("measure_G2_n_bosonic", _c2py_doc_member_39),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_fermionic, _c2py_cls_1>("measure_G2_n_fermionic", _c2py_doc_member_40),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_n_l, _c2py_cls_1>("measure_G2_n_l", _c2py_doc_member_41),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iwll_nfft_buf_size, _c2py_cls_1>("measure_G2_iwll_nfft_buf_size", _c2py_doc_member_42),
+   c2py::getsetdef_from_member<&_c2py_cls_1::nfft_buf_sizes, _c2py_cls_1>("nfft_buf_sizes", _c2py_doc_member_43),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_pert_order, _c2py_cls_1>("measure_pert_order", _c2py_doc_member_44),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_density_matrix, _c2py_cls_1>("measure_density_matrix", _c2py_doc_member_45),
+   c2py::getsetdef_from_member<&_c2py_cls_1::use_norm_as_weight, _c2py_cls_1>("use_norm_as_weight", _c2py_doc_member_46),
+   c2py::getsetdef_from_member<&_c2py_cls_1::initial_configuration, _c2py_cls_1>("initial_configuration", _c2py_doc_member_47),
+   c2py::getsetdef_from_member<&_c2py_cls_1::performance_analysis, _c2py_cls_1>("performance_analysis", _c2py_doc_member_48),
+   c2py::getsetdef_from_member<&_c2py_cls_1::proposal_prob, _c2py_cls_1>("proposal_prob", _c2py_doc_member_49),
+   c2py::getsetdef_from_member<&_c2py_cls_1::move_global, _c2py_cls_1>("move_global", _c2py_doc_member_50),
+   c2py::getsetdef_from_member<&_c2py_cls_1::move_global_prob, _c2py_cls_1>("move_global_prob", _c2py_doc_member_51),
+   c2py::getsetdef_from_member<&_c2py_cls_1::imag_threshold, _c2py_cls_1>("imag_threshold", _c2py_doc_member_52),
+   c2py::getsetdef_from_member<&_c2py_cls_1::det_init_size, _c2py_cls_1>("det_init_size", _c2py_doc_member_53),
+   c2py::getsetdef_from_member<&_c2py_cls_1::det_n_operations_before_check, _c2py_cls_1>("det_n_operations_before_check", _c2py_doc_member_54),
+   c2py::getsetdef_from_member<&_c2py_cls_1::det_precision_warning, _c2py_cls_1>("det_precision_warning", _c2py_doc_member_55),
+   c2py::getsetdef_from_member<&_c2py_cls_1::det_precision_error, _c2py_cls_1>("det_precision_error", _c2py_doc_member_56),
+   c2py::getsetdef_from_member<&_c2py_cls_1::det_singular_threshold, _c2py_cls_1>("det_singular_threshold", _c2py_doc_member_57),
+   c2py::getsetdef_from_member<&_c2py_cls_1::off_diag_threshold, _c2py_cls_1>("off_diag_threshold", _c2py_doc_member_58),
+   c2py::getsetdef_from_member<&_c2py_cls_1::h_loc0, _c2py_cls_1>("h_loc0", _c2py_doc_member_59),
    {"__dict__", (getter)prop_get_dict_1, nullptr, "", nullptr},
    {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
@@ -583,24 +599,24 @@ PyMethodDef c2py::tp_methods<_c2py_cls_2>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-constexpr auto _c2py_doc_member_58 = R"DOC(Parameters used for constructing the solver.)DOC";
-constexpr auto _c2py_doc_member_59 = R"DOC(Parameters passed to the solve method.)DOC";
-constexpr auto _c2py_doc_member_60 = R"DOC(Single-particle Green's function :math:`G(\tau)` in imaginary time.)DOC";
-constexpr auto _c2py_doc_member_61 = R"DOC(Intermediate Green's function used to accumulate :math:`G(\tau)` (real or complex).)DOC";
-constexpr auto _c2py_doc_member_62 = R"DOC(Violation of the property :math:`G_{ij}(\tau) = G_{ji}^*(\tau)` after the measurement.)DOC";
-constexpr auto _c2py_doc_member_63 = R"DOC(Single-particle Green's function :math:`G_l` in the Legendre representation.)DOC";
-constexpr auto _c2py_doc_member_64 = R"DOC(General operator Green's function :math:`O(\tau)` in imaginary time.)DOC";
-constexpr auto _c2py_doc_member_65 = R"DOC(Two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` with three fermionic times.)DOC";
-constexpr auto _c2py_doc_member_66 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
-constexpr auto _c2py_doc_member_67 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
-constexpr auto _c2py_doc_member_68 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
-constexpr auto _c2py_doc_member_69 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
-constexpr auto _c2py_doc_member_70 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
-constexpr auto _c2py_doc_member_71 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
-constexpr auto _c2py_doc_member_72 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the particle-particle channel.)DOC";
-constexpr auto _c2py_doc_member_73 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the particle-hole channel.)DOC";
-constexpr auto _c2py_doc_member_74 = R"DOC(Histogram of the total perturbation order.)DOC";
-constexpr auto _c2py_doc_member_75 = R"DOC(Histograms of the perturbation order for each block.)DOC";
+constexpr auto _c2py_doc_member_60 = R"DOC(Parameters used for constructing the solver.)DOC";
+constexpr auto _c2py_doc_member_61 = R"DOC(Parameters passed to the solve method.)DOC";
+constexpr auto _c2py_doc_member_62 = R"DOC(Single-particle Green's function :math:`G(\tau)` in imaginary time.)DOC";
+constexpr auto _c2py_doc_member_63 = R"DOC(Intermediate Green's function used to accumulate :math:`G(\tau)` (real or complex).)DOC";
+constexpr auto _c2py_doc_member_64 = R"DOC(Violation of the property :math:`G_{ij}(\tau) = G_{ji}^*(\tau)` after the measurement.)DOC";
+constexpr auto _c2py_doc_member_65 = R"DOC(Single-particle Green's function :math:`G_l` in the Legendre representation.)DOC";
+constexpr auto _c2py_doc_member_66 = R"DOC(General operator Green's function :math:`O(\tau)` in imaginary time.)DOC";
+constexpr auto _c2py_doc_member_67 = R"DOC(Two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` with three fermionic times.)DOC";
+constexpr auto _c2py_doc_member_68 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
+constexpr auto _c2py_doc_member_69 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
+constexpr auto _c2py_doc_member_70 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
+constexpr auto _c2py_doc_member_71 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-particle channel.)DOC";
+constexpr auto _c2py_doc_member_72 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
+constexpr auto _c2py_doc_member_73 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,i\nu,i\nu')` in the particle-hole channel.)DOC";
+constexpr auto _c2py_doc_member_74 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the particle-particle channel.)DOC";
+constexpr auto _c2py_doc_member_75 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\omega,l,l')` in the particle-hole channel.)DOC";
+constexpr auto _c2py_doc_member_76 = R"DOC(Histogram of the total perturbation order.)DOC";
+constexpr auto _c2py_doc_member_77 = R"DOC(Histograms of the perturbation order for each block.)DOC";
 static constexpr auto prop_doc_0   = R"DOC(:math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara frequencies.)DOC";
 static constexpr auto prop_doc_1   = R"DOC(Hybridization function :math:`\Delta(\tau)` in imaginary time.)DOC";
 static constexpr auto prop_doc_2   = R"DOC(Non-interacting Green's function :math:`G_0(i\omega)` in Matsubara frequencies.)DOC";
@@ -624,24 +640,24 @@ static constexpr auto prop_doc_17 = R"DOC(Status of the solve on exit.)DOC";
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_2>[] = {
-   c2py::getsetdef_from_member<&_c2py_cls_2::constr_parameters, _c2py_cls_2>("constr_parameters", _c2py_doc_member_58),
-   c2py::getsetdef_from_member<&_c2py_cls_2::solve_parameters, _c2py_cls_2>("solve_parameters", _c2py_doc_member_59),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G_tau, _c2py_cls_2>("G_tau", _c2py_doc_member_60),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G_tau_accum, _c2py_cls_2>("G_tau_accum", _c2py_doc_member_61),
-   c2py::getsetdef_from_member<&_c2py_cls_2::asymmetry_G_tau, _c2py_cls_2>("asymmetry_G_tau", _c2py_doc_member_62),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G_l, _c2py_cls_2>("G_l", _c2py_doc_member_63),
-   c2py::getsetdef_from_member<&_c2py_cls_2::O_tau, _c2py_cls_2>("O_tau", _c2py_doc_member_64),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_tau, _c2py_cls_2>("G2_tau", _c2py_doc_member_65),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw, _c2py_cls_2>("G2_iw", _c2py_doc_member_66),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_nfft, _c2py_cls_2>("G2_iw_nfft", _c2py_doc_member_67),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_pp, _c2py_cls_2>("G2_iw_pp", _c2py_doc_member_68),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_pp_nfft, _c2py_cls_2>("G2_iw_pp_nfft", _c2py_doc_member_69),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_ph, _c2py_cls_2>("G2_iw_ph", _c2py_doc_member_70),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_ph_nfft, _c2py_cls_2>("G2_iw_ph_nfft", _c2py_doc_member_71),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iwll_pp, _c2py_cls_2>("G2_iwll_pp", _c2py_doc_member_72),
-   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iwll_ph, _c2py_cls_2>("G2_iwll_ph", _c2py_doc_member_73),
-   c2py::getsetdef_from_member<&_c2py_cls_2::perturbation_order_total, _c2py_cls_2>("perturbation_order_total", _c2py_doc_member_74),
-   c2py::getsetdef_from_member<&_c2py_cls_2::perturbation_order, _c2py_cls_2>("perturbation_order", _c2py_doc_member_75),
+   c2py::getsetdef_from_member<&_c2py_cls_2::constr_parameters, _c2py_cls_2>("constr_parameters", _c2py_doc_member_60),
+   c2py::getsetdef_from_member<&_c2py_cls_2::solve_parameters, _c2py_cls_2>("solve_parameters", _c2py_doc_member_61),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G_tau, _c2py_cls_2>("G_tau", _c2py_doc_member_62),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G_tau_accum, _c2py_cls_2>("G_tau_accum", _c2py_doc_member_63),
+   c2py::getsetdef_from_member<&_c2py_cls_2::asymmetry_G_tau, _c2py_cls_2>("asymmetry_G_tau", _c2py_doc_member_64),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G_l, _c2py_cls_2>("G_l", _c2py_doc_member_65),
+   c2py::getsetdef_from_member<&_c2py_cls_2::O_tau, _c2py_cls_2>("O_tau", _c2py_doc_member_66),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_tau, _c2py_cls_2>("G2_tau", _c2py_doc_member_67),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw, _c2py_cls_2>("G2_iw", _c2py_doc_member_68),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_nfft, _c2py_cls_2>("G2_iw_nfft", _c2py_doc_member_69),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_pp, _c2py_cls_2>("G2_iw_pp", _c2py_doc_member_70),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_pp_nfft, _c2py_cls_2>("G2_iw_pp_nfft", _c2py_doc_member_71),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_ph, _c2py_cls_2>("G2_iw_ph", _c2py_doc_member_72),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_ph_nfft, _c2py_cls_2>("G2_iw_ph_nfft", _c2py_doc_member_73),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iwll_pp, _c2py_cls_2>("G2_iwll_pp", _c2py_doc_member_74),
+   c2py::getsetdef_from_member<&_c2py_cls_2::G2_iwll_ph, _c2py_cls_2>("G2_iwll_ph", _c2py_doc_member_75),
+   c2py::getsetdef_from_member<&_c2py_cls_2::perturbation_order_total, _c2py_cls_2>("perturbation_order_total", _c2py_doc_member_76),
+   c2py::getsetdef_from_member<&_c2py_cls_2::perturbation_order, _c2py_cls_2>("perturbation_order", _c2py_doc_member_77),
    {"Delta_infty", c2py::getter_from_method<c2py::castm<>(&triqs_cthyb::solver_core::Delta_infty)>, nullptr, prop_doc_0, nullptr},
    {"Delta_tau", c2py::getter_from_method<c2py::castm<>(&triqs_cthyb::solver_core::Delta_tau)>, nullptr, prop_doc_1, nullptr},
    {"G0_iw", c2py::getter_from_method<c2py::castm<>(&triqs_cthyb::solver_core::G0_iw)>, nullptr, prop_doc_2, nullptr},

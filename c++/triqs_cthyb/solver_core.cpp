@@ -28,6 +28,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
 #include <fstream>
+#include <iomanip>
 #include <variant>
 
 #include "./moves/insert.hpp"
@@ -225,21 +226,18 @@ namespace triqs_cthyb {
 
     // Determine block structure
     if (params.partition_method == "autopartition") {
-      if (params.verbosity >= 2)
-        std::cout << "Using autopartition algorithm to partition the local Hilbert space"
-                  << std::endl;
-      if (params.loc_n_min == 0 && params.loc_n_max == INT_MAX)
+      if (params.verbosity >= 2) std::cout << "Using autopartition algorithm to partition the local Hilbert space" << std::endl;
+      if (params.loc_n_min == 0 && params.loc_n_max == INT_MAX) {
         h_diag = {_h_loc, fops};
-      else {
+      } else {
         if (params.verbosity >= 2)
-          std::cout << "Restricting the local Hilbert space to states with [" << params.loc_n_min
-                    << ";" << params.loc_n_max << "] particles" << std::endl;
+          std::cout << "Restricting the local Hilbert space to states with [" << params.loc_n_min << ";" << params.loc_n_max << "] particles"
+                    << std::endl;
         h_diag = {_h_loc, fops, params.loc_n_min, params.loc_n_max};
       }
     } else if (params.partition_method == "quantum_numbers") {
       if (params.quantum_numbers.empty()) TRIQS_RUNTIME_ERROR << "No quantum numbers provided.";
-      if (params.verbosity >= 2)
-        std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
+      if (params.verbosity >= 2) std::cout << "Using quantum numbers to partition the local Hilbert space" << std::endl;
       h_diag = {_h_loc, fops, params.quantum_numbers};
     } else if (params.partition_method == "none") { // give empty quantum numbers list
       std::cout << "Not partitioning the local Hilbert space" << std::endl;
@@ -247,11 +245,32 @@ namespace triqs_cthyb {
     } else
       TRIQS_RUNTIME_ERROR << "Partition method " << params.partition_method << " not recognised.";
 
+    // Apply Hilbert space truncation if requested
+    if (std::isfinite(params.truncate_energy_cutoff) || params.truncate_max_states >= 0)
+      h_diag = h_diag.truncate(params.truncate_energy_cutoff, params.truncate_max_states);
+
     // FIXME save h_loc to be able to rebuild h_diag in an analysis program.
     //if (_comm.rank() ==0) h5_write(h5::file("h_loc.h5",'w'), "h_loc", _h_loc, fops);
 
-    if (params.verbosity >= 2)
-      std::cout << "Found " << h_diag.n_subspaces() << " subspaces." << std::endl;
+    if (params.verbosity >= 2) std::cout << "Found " << h_diag.n_subspaces() << " subspaces." << std::endl;
+
+    // Report truncation if it was applied
+    if (int full_dim = h_diag.get_full_hilbert_space_dim(), retained = h_diag.get_total_eigenstate_count();
+        retained < full_dim && params.verbosity >= 1) {
+      double pct = 100.0 * retained / full_dim;
+
+      // Find maximum energy in the retained spectrum
+      double max_retained_E = 0.0;
+      for (auto const &block_energies : h_diag.get_energies())
+        if (!block_energies.empty()) max_retained_E = std::max(max_retained_E, block_energies.back());
+
+      std::cout << "\n! ======================================================================== !\n"
+                << "! WARNING: Hilbert space truncation applied - results will be approximate  !\n"
+                << "! ======================================================================== !\n"
+                << "Retained " << retained << " of " << full_dim << " states (" << std::fixed << std::setprecision(1) << pct << "%)\n"
+                << "Energy window: [0, " << std::setprecision(4) << max_retained_E << "]\n"
+                << std::defaultfloat;
+    }
 
     if (params.performance_analysis) std::ofstream("impurity_blocks.dat") << h_diag;
 

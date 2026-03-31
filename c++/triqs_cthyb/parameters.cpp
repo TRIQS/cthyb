@@ -88,6 +88,8 @@ namespace triqs_cthyb {
     h5_write(grp, "quantum_numbers", sp.quantum_numbers);
     h5_write(grp, "loc_n_min", sp.loc_n_min);
     h5_write(grp, "loc_n_max", sp.loc_n_max);
+    h5_write(grp, "truncate_energy_cutoff", sp.truncate_energy_cutoff);
+    h5_write(grp, "truncate_max_states", sp.truncate_max_states);
 
     h5_write(grp, "length_cycle", sp.length_cycle);
     h5_write(grp, "n_warmup_cycles", sp.n_warmup_cycles);
@@ -155,6 +157,8 @@ namespace triqs_cthyb {
     h5_read(grp, "quantum_numbers", sp.quantum_numbers);
     h5_read(grp, "loc_n_min", sp.loc_n_min);
     h5_read(grp, "loc_n_max", sp.loc_n_max);
+    h5::try_read(grp, "truncate_energy_cutoff", sp.truncate_energy_cutoff);
+    h5::try_read(grp, "truncate_max_states", sp.truncate_max_states);
 
     h5_read(grp, "length_cycle", sp.length_cycle);
     h5_read(grp, "n_warmup_cycles", sp.n_warmup_cycles);

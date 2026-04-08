@@ -87,6 +87,9 @@ if(Build_Tests)
   enable_testing()
 endif()
 
+# Performance-tuning flags for project targets
+option(Enable_Project_Performance_Flags "Enable additional project-local compiler tuning flags outside Debug builds" ON)
+
 # ############
 # Global Compilation Settings
 
@@ -98,6 +101,9 @@ option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
 
 # Export the list of compile-commands into compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Check whether requested compiler flags are supported before applying them
+include(CheckCXXCompilerFlag)
 
 # Disable compiler extensions
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -133,6 +139,40 @@ target_compile_options(${PROJECT_NAME}_warnings
     $<$<CXX_COMPILER_ID:AppleClang,Clang,IntelLLVM>:-Wno-c2y-extensions> # __COUNTER__ in SCOPE_EXIT
     $<$<CXX_COMPILER_ID:IntelLLVM>:-Wno-tautological-constant-compare>
 )
+
+# Create an Interface target for project-local performance tuning flags
+add_library(${PROJECT_NAME}_performance_flags INTERFACE)
+if(Enable_Project_Performance_Flags)
+  set(${PROJECT_NAME}_performance_flag_candidates
+    -funroll-loops
+    -fcx-limited-range
+    -ffp-contract=fast
+    -fno-math-errno
+    -fno-trapping-math
+    -freciprocal-math
+    -fmerge-all-constants
+    -ftree-vectorize
+    # Disabled: together these allow reordering of FP additions, breaking MC trajectory determinism
+    #-fno-signed-zeros
+    #-fassociative-math
+  )
+  set(${PROJECT_NAME}_performance_flags_supported "")
+  foreach(flag IN LISTS ${PROJECT_NAME}_performance_flag_candidates)
+    string(MAKE_C_IDENTIFIER "${flag}" flag_var_suffix)
+    check_cxx_compiler_flag("${flag}" ${PROJECT_NAME}_supports_${flag_var_suffix})
+    if(${PROJECT_NAME}_supports_${flag_var_suffix})
+      list(APPEND ${PROJECT_NAME}_performance_flags_supported "${flag}")
+    else()
+      message(STATUS "Skipping unsupported ${PROJECT_NAME} compiler flag: ${flag}")
+    endif()
+  endforeach()
+  if(${PROJECT_NAME}_performance_flags_supported)
+    target_compile_options(${PROJECT_NAME}_performance_flags
+      INTERFACE
+        $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<NOT:$<CONFIG:Debug>>>:${${PROJECT_NAME}_performance_flags_supported}>
+    )
+  endif()
+endif()
 
 # Provide GNU Installation directories
 include(GNUInstallDirs)

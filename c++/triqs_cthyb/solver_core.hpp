@@ -55,6 +55,8 @@ namespace triqs_cthyb {
     double _average_order;                            // average perturbation order
     double _auto_corr_time;                           // Auto-correlation time in units of MC cycles
     bool _auto_corr_time_converged = true;            // Whether the auto-correlation time estimate has saturated
+    std::optional<std::map<std::string, nda::array<double, 1>>> _densities;        // Per-orbital densities
+    std::optional<std::map<std::string, nda::array<double, 1>>> _densities_errors; // Density error bars
     int _solve_status;                                // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
     std::optional<configuration> _last_configuration; // Final configuration of the run
 
@@ -146,7 +148,13 @@ namespace triqs_cthyb {
     /// Whether the auto-correlation time estimate has saturated (false: it is only a lower bound, run longer).
     bool auto_corr_time_converged() const { return _auto_corr_time_converged; }
 
-    /// Status of the solve on exit.
+    /// Per-orbital densities, organized by blocks
+    std::optional<std::map<std::string, nda::array<double, 1>>> densities() const { return _densities; }
+
+    /// Error bars for per-orbital densities, organized by blocks
+    std::optional<std::map<std::string, nda::array<double, 1>>> densities_errors() const { return _densities_errors; }
+
+    /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
     /// Final configuration of the last solve call.
@@ -191,6 +199,8 @@ namespace triqs_cthyb {
       h5_write(grp, "average_order", s._average_order);
       h5_write(grp, "auto_corr_time", s._auto_corr_time);
       h5_write(grp, "auto_corr_time_converged", s._auto_corr_time_converged);
+      h5_write(grp, "densities", s._densities);
+      h5_write(grp, "densities_errors", s._densities_errors);
       h5_write(grp, "solve_status", s._solve_status);
       h5_write(grp, "Delta_infty_vec", s.Delta_infty_vec);
     }
@@ -212,6 +222,8 @@ namespace triqs_cthyb {
       h5::try_read(grp, "average_order", s._average_order);
       h5::try_read(grp, "auto_corr_time", s._auto_corr_time);
       h5::try_read(grp, "auto_corr_time_converged", s._auto_corr_time_converged);
+      h5::try_read(grp, "densities", s._densities);
+      h5::try_read(grp, "densities_errors", s._densities_errors);
       h5::try_read(grp, "solve_status", s._solve_status);
       h5::try_read(grp, "Delta_infty_vec", s.Delta_infty_vec);
 

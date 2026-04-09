@@ -43,7 +43,7 @@
 #include "./measures/density_matrix.hpp"
 #include "./measures/average_sign.hpp"
 #include "./measures/average_order.hpp"
-#include "./measures/auto_corr_time.hpp"
+#include "./measures/densities.hpp"
 #ifdef CTHYB_G2_NFFT
 #include "./measures/G2_tau.hpp"
 #include "./measures/G2_iw.hpp"
@@ -427,7 +427,8 @@ namespace triqs_cthyb {
 
     qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
     qmc.add_measure(measure_average_order{data, _average_order}, "Average order");
-    qmc.add_measure(measure_auto_corr_time{data, _auto_corr_time, _auto_corr_time_converged}, "Auto-correlation time");
+    qmc.add_measure(measure_densities{data, gf_struct, params.measure_densities, _auto_corr_time, _auto_corr_time_converged, _densities, _densities_errors},
+                    "Densities");
 
     // --------------------------------------------------------------------------
 

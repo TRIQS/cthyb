@@ -252,6 +252,52 @@ namespace triqs_cthyb {
     n->cache.dtau_l = (n->left ? double(tree.max_key(n->left) - n->key) : 0);
   }
 
+  //-------- Compute Tr[O * rho_unnorm] using cached root matrices ----------
+  h_scalar_t impurity_trace::trace_with_aux_op(int aux_op_index) {
+    auto const &op = aux_operators[aux_op_index];
+
+    if (tree_size == 0) {
+      // Atomic limit: rho = e^{-beta H}, diagonal in eigenbasis
+      h_scalar_t result = 0;
+      for (int b = 0; b < n_blocks; ++b) {
+        if (op.connection(b) != b) continue;
+        int dim = get_block_dim(b);
+        for (int u = 0; u < dim; ++u) result += op.block_mat[b](u, u) * std::exp(-beta * get_block_eigenval(b, u));
+      }
+      return result;
+    }
+
+    auto root        = tree.get_root();
+    double dtau_beta = beta - double(tree.min_key());
+    double dtau_0    = double(tree.max_key());
+
+    h_scalar_t result = 0;
+    for (int b = 0; b < n_blocks; ++b) {
+      if (op.connection(b) != b) continue;
+      if (!root->cache.matrix_norm_valid[b]) continue;
+      if (root->cache.block_table[b] != b) continue;
+
+      auto const &M = root->cache.matrices[b];
+      int dim       = get_block_dim(b);
+
+      // Precompute Boltzmann factors
+      auto exp_beta = std::vector<double>(dim);
+      auto exp_0    = std::vector<double>(dim);
+      for (int i = 0; i < dim; ++i) {
+        exp_beta[i] = std::exp(-dtau_beta * get_block_eigenval(b, i));
+        exp_0[i]    = std::exp(-dtau_0 * get_block_eigenval(b, i));
+      }
+
+      // Tr[O_b * rho_b] = sum_{u,v} O(u,v) * M(v,u) * exp_beta[v] * exp_0[u]
+      for (int u = 0; u < dim; ++u) {
+        h_scalar_t inner = 0;
+        for (int v = 0; v < dim; ++v) inner += op.block_mat[b](u, v) * M(v, u) * exp_beta[v];
+        result += inner * exp_0[u];
+      }
+    }
+    return result;
+  }
+
   //-------- Compute the full trace ------------------------------------------
   // Returns MC atomic weight and reweighting = trace/(atomic weight)
   std::pair<h_scalar_t, h_scalar_t> impurity_trace::compute(double p_yee, double u_yee) {

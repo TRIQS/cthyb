@@ -173,6 +173,9 @@ namespace triqs_cthyb {
     /// NFFT buffer sizes for different blocks.
     std::map<std::string, long> nfft_buf_sizes = {};
 
+    /// Measure per-orbital densities via trace-rho-op insertion?
+    bool measure_densities = false;
+
     /// Measure perturbation order?
     bool measure_pert_order = false;
 

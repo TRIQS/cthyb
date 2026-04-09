@@ -124,6 +124,7 @@ namespace triqs_cthyb {
     h5_write(grp, "measure_G2_iwll_nfft_buf_size", sp.measure_G2_iwll_nfft_buf_size);
     h5_write(grp, "nfft_buf_sizes", sp.nfft_buf_sizes);
 
+    h5_write(grp, "measure_densities", sp.measure_densities);
     h5_write(grp, "measure_pert_order", sp.measure_pert_order);
     h5_write(grp, "measure_density_matrix", sp.measure_density_matrix);
     h5_write(grp, "use_norm_as_weight", sp.use_norm_as_weight);
@@ -191,6 +192,7 @@ namespace triqs_cthyb {
     h5_read(grp, "measure_G2_iwll_nfft_buf_size", sp.measure_G2_iwll_nfft_buf_size);
     h5_read(grp, "nfft_buf_sizes", sp.nfft_buf_sizes);
 
+    h5::try_read(grp, "measure_densities", sp.measure_densities);
     h5_read(grp, "measure_pert_order", sp.measure_pert_order);
     h5_read(grp, "measure_density_matrix", sp.measure_density_matrix);
     h5_read(grp, "use_norm_as_weight", sp.use_norm_as_weight);

@@ -64,7 +64,7 @@ namespace triqs_cthyb {
         std::tie(atomic_weight, atomic_reweighting) = data.imp_trace.compute();
       } catch (rbt_insert_error const &) { atomic_weight = 0.; }
 
-      data.imp_trace.cancel_insert();
+      data.imp_trace.cancel_insert_and_repair_cache();
       O_tau[closest_mesh_pt(dtau)] += prefactor * atomic_weight * atomic_reweighting;
     }
   }

@@ -55,6 +55,10 @@ namespace triqs_cthyb {
 
     std::pair<h_scalar_t, h_scalar_t> compute(double p_yee = -1, double u_yee = 0);
 
+    // Compute Tr[O * rho_unnorm] for auxiliary operator aux_op_index,
+    // using root matrices cached by the last compute() call. O(d^2) per block, no tree operations.
+    h_scalar_t trace_with_aux_op(int aux_op_index);
+
     // ------- Configuration and h_loc data ----------------
 
     const configuration *config;                                  // config object does exist longer (temporally) than this object.
@@ -265,6 +269,17 @@ namespace triqs_cthyb {
       cancel_insert_impl();
       trial_nodes.reset_index();
       tree_size = tree.size();
+      tree.clear_modified();
+      check_cache_integrity();
+    }
+
+    // Remove trial nodes and repair caches.
+    // Use this instead of cancel_insert() when compute() was called between try_insert and cancel.
+    void cancel_insert_and_repair_cache() {
+      cancel_insert_impl();
+      trial_nodes.reset_index();
+      tree_size = tree.size();
+      update_cache();
       tree.clear_modified();
       check_cache_integrity();
     }

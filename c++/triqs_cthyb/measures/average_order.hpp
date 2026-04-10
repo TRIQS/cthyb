@@ -21,16 +21,22 @@
  ******************************************************************************/
 #pragma once
 #include "../qmc_data.hpp"
+#include <triqs/stat/lin_binning.hpp>
 
 namespace triqs_cthyb {
 
   /// Measure of the average perturbation order
   struct measure_average_order {
 
-    measure_average_order(qmc_data const &_data, double &_average_order) : data(_data), average_order(_average_order) { average_order = 0.0; }
+    measure_average_order(qmc_data const &_data, double &_average_order, std::optional<double> &_average_order_error)
+       : data(_data), average_order(_average_order), average_order_error(_average_order_error), order_bins_(dcomplex{0.0}, 128, 1) {
+      average_order = 0.0;
+    }
 
     void accumulate(mc_weight_t) {
-      average_order += data.config.size() / 2;
+      auto k = data.config.size() / 2;
+      average_order += k;
+      order_bins_ << dcomplex(double(k));
       ++N;
     }
 
@@ -40,6 +46,9 @@ namespace triqs_cthyb {
       // Reduce and normalize
       average_order = mpi::all_reduce(average_order, comm);
       average_order = average_order / N;
+
+      auto [m, err, tau]  = order_bins_.mean_error_and_tau(comm);
+      average_order_error = std::abs(err);
     }
 
     private:
@@ -48,6 +57,10 @@ namespace triqs_cthyb {
 
     // Reference to double for accumulation
     double &average_order;
+    std::optional<double> &average_order_error;
+
+    // Linear binning for error estimation
+    triqs::stat::lin_binning<dcomplex> order_bins_;
 
     // Accumulation counter
     long long N = 0;

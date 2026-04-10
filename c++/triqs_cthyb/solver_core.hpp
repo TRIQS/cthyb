@@ -48,18 +48,21 @@ namespace triqs_cthyb {
     int n_iw, n_tau, n_l;
     bool delta_interface;
 
-    std::vector<matrix_t> _density_matrix;            // density matrix, when used in Norm mode
-    mpi::communicator _comm;                          // define the communicator, here MPI_COMM_WORLD
-    histo_map_t _performance_analysis;                // Histograms used for performance analysis
-    mc_weight_t _average_sign;                        // average sign of the QMC
-    double _average_order;                            // average perturbation order
-    double _auto_corr_time;                           // Auto-correlation time in units of MC cycles
-    bool _auto_corr_time_converged = true;            // Whether the auto-correlation time estimate has saturated
+    std::vector<matrix_t> _density_matrix;                                  // density matrix, when used in Norm mode
+    std::optional<std::vector<nda::matrix<double>>> _density_matrix_errors; // density matrix error bars
+    mpi::communicator _comm;                                                // define the communicator, here MPI_COMM_WORLD
+    histo_map_t _performance_analysis;                                      // Histograms used for performance analysis
+    mc_weight_t _average_sign;                                              // average sign of the QMC
+    std::optional<double> _average_sign_error;                              // error bar for average sign
+    double _average_order;                                                  // average perturbation order
+    std::optional<double> _average_order_error;                             // error bar for average perturbation order
+    double _auto_corr_time;                                                 // Auto-correlation time in units of MC cycles
+    bool _auto_corr_time_converged = true;                                  // Whether the auto-correlation time estimate has saturated
     std::optional<std::map<std::string, nda::array<double, 1>>> _densities;        // Per-orbital densities
     std::optional<std::map<std::string, nda::array<double, 1>>> _densities_errors; // Density error bars
     int _solve_status;                                // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
     int64_t _warmup_cycles_done = 0;                  // Actual number of warmup cycles performed
-    int _length_cycle_used = 0;                       // Effective length_cycle (after auto-determination)
+    int _length_cycle_used      = 0;                  // Effective length_cycle (after auto-determination)
     std::optional<configuration> _last_configuration; // Final configuration of the run
 
     // Single-particle Green's function containers
@@ -141,8 +144,14 @@ namespace triqs_cthyb {
     /// Monte Carlo average sign.
     mc_weight_t average_sign() const { return _average_sign; }
 
+    /// Error bar for average sign.
+    std::optional<double> average_sign_error() const { return _average_sign_error; }
+
     /// Average perturbation order.
     double average_order() const { return _average_order; }
+
+    /// Error bar for average perturbation order.
+    std::optional<double> average_order_error() const { return _average_order_error; }
 
     /// Auto-correlation time in units of MC cycles.
     double auto_corr_time() const { return _auto_corr_time; }
@@ -155,6 +164,9 @@ namespace triqs_cthyb {
 
     /// Error bars for per-orbital densities, organized by blocks
     std::optional<std::map<std::string, nda::array<double, 1>>> densities_errors() const { return _densities_errors; }
+
+    /// Error bars for density matrix
+    std::optional<std::vector<nda::matrix<double>>> density_matrix_errors() const { return _density_matrix_errors; }
 
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
@@ -203,8 +215,11 @@ namespace triqs_cthyb {
       h5_write(grp, "h_diag", s.h_diag);
       h5_write(grp, "h_loc", s._h_loc);
       h5_write(grp, "density_matrix", s._density_matrix);
+      h5_write(grp, "density_matrix_errors", s._density_matrix_errors);
       h5_write(grp, "average_sign", s._average_sign);
+      h5_write(grp, "average_sign_error", s._average_sign_error);
       h5_write(grp, "average_order", s._average_order);
+      h5_write(grp, "average_order_error", s._average_order_error);
       h5_write(grp, "auto_corr_time", s._auto_corr_time);
       h5_write(grp, "auto_corr_time_converged", s._auto_corr_time_converged);
       h5_write(grp, "densities", s._densities);
@@ -228,8 +243,11 @@ namespace triqs_cthyb {
       h5::try_read(grp, "h_diag", s.h_diag);
       h5::try_read(grp, "h_loc", s._h_loc);
       h5::try_read(grp, "density_matrix", s._density_matrix);
+      h5::try_read(grp, "density_matrix_errors", s._density_matrix_errors);
       h5::try_read(grp, "average_sign", s._average_sign);
+      h5::try_read(grp, "average_sign_error", s._average_sign_error);
       h5::try_read(grp, "average_order", s._average_order);
+      h5::try_read(grp, "average_order_error", s._average_order_error);
       h5::try_read(grp, "auto_corr_time", s._auto_corr_time);
       h5::try_read(grp, "auto_corr_time_converged", s._auto_corr_time_converged);
       h5::try_read(grp, "densities", s._densities);

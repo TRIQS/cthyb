@@ -25,11 +25,15 @@
 
 namespace triqs_cthyb {
 
-  measure_density_matrix::measure_density_matrix(qmc_data const &data, std::vector<matrix_t> &density_matrix) : data(data), block_dm(density_matrix) {
+  measure_density_matrix::measure_density_matrix(qmc_data const &data, std::vector<matrix_t> &density_matrix,
+                                                 std::optional<std::vector<nda::matrix<double>>> &density_matrix_errors)
+     : data(data), block_dm(density_matrix), block_dm_errors(density_matrix_errors) {
     block_dm.resize(data.imp_trace.get_density_matrix().size());
     for (int i = 0; i < block_dm.size(); ++i) {
       block_dm[i]   = data.imp_trace.get_density_matrix()[i].mat;
+      auto shape    = block_dm[i].shape();
       block_dm[i]() = 0;
+      dm_bins_.emplace_back(nda::zeros<dcomplex>(shape[0], shape[1]), 128, 1);
     }
   }
   // --------------------
@@ -46,23 +50,41 @@ namespace triqs_cthyb {
 
     // Careful: there is no reweighting factor here!
     int size = block_dm.size();
-    for (int i = 0; i < size; ++i)
-      if (data.imp_trace.get_density_matrix()[i].is_valid) { block_dm[i] += s * data.imp_trace.get_density_matrix()[i].mat; }
+    for (int i = 0; i < size; ++i) {
+      if (data.imp_trace.get_density_matrix()[i].is_valid) {
+        auto const &mat = data.imp_trace.get_density_matrix()[i].mat;
+        block_dm[i] += s * mat;
+        dm_bins_[i] << nda::array<dcomplex, 2>(s * mat);
+      } else {
+        dm_bins_[i] << nda::zeros<dcomplex>(block_dm[i].shape()[0], block_dm[i].shape()[1]);
+      }
+    }
+    ++N_;
   }
 
   // ---------------------------------------------
 
   void measure_density_matrix::collect_results(mpi::communicator const &c) {
 
-    z                          = mpi::all_reduce(z, c);
-    block_dm                   = mpi::all_reduce(block_dm, c);
-    for (auto &b : block_dm){
-        // Normalize
-        b /= real(z);
-        
-        // Enforce hermiticity
-        b = make_regular(0.5*(b + dagger(b)));
+    z        = mpi::all_reduce(z, c);
+    block_dm = mpi::all_reduce(block_dm, c);
+    for (auto &b : block_dm) {
+      // Normalize
+      b /= real(z);
+
+      // Enforce hermiticity
+      b = make_regular(0.5 * (b + dagger(b)));
     }
+
+    // Compute error bars from linear binning
+    N_        = mpi::all_reduce(N_, c);
+    auto norm = std::abs(dcomplex(z) / dcomplex(N_));
+    std::vector<nda::matrix<double>> dm_errors;
+    for (int i = 0; i < block_dm.size(); ++i) {
+      auto [m, err, tau] = dm_bins_[i].mean_error_and_tau(c);
+      dm_errors.push_back(nda::matrix<double>(nda::abs(err) / norm));
+    }
+    block_dm_errors = std::move(dm_errors);
 
     if (c.rank() != 0) return;
 
@@ -73,6 +95,5 @@ namespace triqs_cthyb {
     if (std::abs(tr - 1) > 1.e-10)
       std::cerr << "Warning :: Trace of the density matrix is " << std::setprecision(13) << tr << std::setprecision(6) << " instead of 1"
                 << std::endl;
-
   }
-}
+} // namespace triqs_cthyb

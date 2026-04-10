@@ -83,11 +83,20 @@ namespace triqs_cthyb {
     /// Restrict local Hilbert space to states with at most this number of particles.
     int loc_n_max = INT_MAX;
 
-    /// Length of a single QMC cycle.
-    long length_cycle = 50;
+    /// Length of a single QMC cycle (-1: automatically determined from the autocorrelation time).
+    long length_cycle = -1;
 
-    /// Number of cycles for thermalization.
-    long n_warmup_cycles = 5000;
+    /// Maximum allowed length_cycle when auto-determined (safety cap).
+    long max_length_cycle = 5000;
+
+    /// Target autocorrelation time in units of length_cycle (used when length_cycle=-1).
+    double target_auto_corr_time = 2.0;
+
+    /// Number of cycles for thermalization (-1: automatic convergence detection).
+    long n_warmup_cycles = -1;
+
+    /// Maximum number of warmup cycles when using automatic warmup (safety cap).
+    long max_warmup_cycles = 100000;
 
     /// Seed for random number generator.
     long random_seed = 34788 + 928374 * mpi::communicator().rank();

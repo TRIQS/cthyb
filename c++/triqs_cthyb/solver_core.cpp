@@ -25,8 +25,10 @@
 
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/stat/log_binning.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
+#include <chrono>
 #include <fstream>
 #include <variant>
 
@@ -328,12 +330,207 @@ namespace triqs_cthyb {
     }
 
     // --------------------------------------------------------------------------
-    // Measurements
-    // --------------------------------------------------------------------------
+
+    // set the correct sign in case a user-provided initial configuration is used
+    if (std::abs(data.atomic_weight) == 0) TRIQS_RUNTIME_ERROR << "Error: Atomic weight of initial configuration is zero";
+    mc_weight_t sign = data.current_sign * data.atomic_weight / std::abs(data.atomic_weight);
+
+    for (size_t block = 0; block < _Delta_tau.size(); ++block) {
+      auto det = data.dets[block].determinant();
+      if (std::abs(det) == 0) TRIQS_RUNTIME_ERROR << "Error: Determinant of block " << block << " is zero";
+      sign *= det / std::abs(det);
+    }
 
     // --------------------------------------------------------------------------
+    // Phase 1: Warmup
+    // --------------------------------------------------------------------------
+
+    using run_param_t = typename decltype(qmc)::run_param_t;
+    int warmup_cycle_length = (params.length_cycle >= 0) ? params.length_cycle : 100;
+    bool auto_warmup        = (params.n_warmup_cycles < 0);
+    auto clock_cb           = triqs::utility::clock_callback(params.max_time);
+
+    if (auto_warmup) {
+      if (params.verbosity >= 2) std::cout << "\nWarming up (auto) ..." << std::endl;
+      qmc.set_verbosity(0);
+
+      // Automatic warmup: run until perturbation order stabilizes
+      double mean_k       = 0.0;
+      double prev_mean_k  = 0.0;
+      mc_weight_t sign_sum = 0.0;
+      int64_t n_acc       = 0;
+      int n_stable        = 0;
+      bool converged      = false;
+      double next_print   = 2.0;
+
+      constexpr int check_interval    = 100;
+      constexpr int min_warmup        = 100;
+      constexpr double rtol           = 0.03;
+      constexpr int n_stable_required = 3;
+
+      auto t0 = std::chrono::steady_clock::now();
+
+      auto after_duty = [&]() {
+        double k = static_cast<double>(data.config.size() / 2);
+        ++n_acc;
+        mean_k += (k - mean_k) / n_acc; // online mean
+        sign_sum += qmc.get_sign();
+      };
+
+      auto stop_cb = [&]() -> bool {
+        if (clock_cb()) return true;
+        if (n_acc < min_warmup || n_acc % check_interval != 0) return false;
+
+        // Periodic status print
+        double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+        if (elapsed > next_print) {
+          next_print = 1.25 * elapsed + 2.0;
+          if (params.verbosity >= 2)
+            std::cout << "  mean k = " << mean_k << ", sign = " << std::real(sign_sum / static_cast<double>(n_acc)) << " (" << n_acc << " cycles)\n";
+        }
+
+        double rel_change = std::abs(mean_k - prev_mean_k) / std::max(std::abs(mean_k), 1.0);
+        prev_mean_k       = mean_k;
+
+        if (rel_change < rtol)
+          ++n_stable;
+        else
+          n_stable = 0;
+
+        bool local_converged  = (n_stable >= n_stable_required);
+        int global_converged  = mpi::all_reduce(static_cast<int>(local_converged), _comm, MPI_MIN);
+        converged             = (global_converged == 1);
+        return converged;
+      };
+
+      run_param_t rp;
+      rp.ncycles          = params.max_warmup_cycles;
+      rp.cycle_length     = warmup_cycle_length;
+      rp.stop_callback    = stop_cb;
+      rp.after_cycle_duty = after_duty;
+      rp.initial_sign     = sign;
+      rp.comm             = _comm;
+      rp.enable_measures  = false;
+      qmc.run(rp);
+
+      if (!converged) {
+        if (params.verbosity >= 1)
+          std::cout << "  WARNING: warmup did not converge after " << params.max_warmup_cycles << " cycles\n";
+      } else {
+        if (params.verbosity >= 2)
+          std::cout << "  mean k = " << mean_k << " -> converged\n";
+      }
+
+      qmc.set_verbosity(params.verbosity);
+    } else if (params.n_warmup_cycles > 0) {
+      if (params.verbosity >= 2) std::cout << "\nWarming up ..." << std::endl;
+
+      run_param_t rp;
+      rp.ncycles         = params.n_warmup_cycles;
+      rp.cycle_length    = warmup_cycle_length;
+      rp.stop_callback   = clock_cb;
+      rp.initial_sign    = sign;
+      rp.comm            = _comm;
+      rp.enable_measures = false;
+      qmc.warmup(rp);
+    }
+
+    _warmup_cycles_done = qmc.get_current_cycle_number();
+
+    // --------------------------------------------------------------------------
+    // Phase 2: Length_cycle calibration (when length_cycle < 0)
+    // --------------------------------------------------------------------------
+
+    int effective_length_cycle = params.length_cycle;
+    bool auto_length_cycle     = (params.length_cycle < 0);
+
+    if (auto_length_cycle) {
+      if (params.verbosity >= 2) std::cout << "\nCalibrating length_cycle ..." << std::endl;
+      qmc.set_verbosity(0);
+
+      // Register densities measure for calibration (computes auto_corr_time via log-binning)
+      qmc.add_measure(measure_densities{data, gf_struct, false, _auto_corr_time, _auto_corr_time_converged, _densities, _densities_errors},
+                      "Calibration densities");
+
+      // Log-binning on perturbation order for convergence detection
+      triqs::stat::log_binning<dcomplex> k_acc(dcomplex{0.0}, -1);
+      int64_t calib_count = 0;
+      double prev_tau     = -1.0;
+      int n_stable        = 0;
+      double next_print   = 2.0;
+
+      constexpr int check_interval    = 500;
+      constexpr int min_calib         = 1000;
+      constexpr int max_calib         = 100000;
+      constexpr double tau_rtol       = 0.1;
+      constexpr int n_stable_required = 3;
+
+      auto t0 = std::chrono::steady_clock::now();
+
+      auto after_duty = [&]() {
+        k_acc << dcomplex(data.config.size() / 2);
+        ++calib_count;
+      };
+
+      auto stop_cb = [&]() -> bool {
+        if (clock_cb()) return true;
+        if (calib_count < min_calib || calib_count % check_interval != 0) return false;
+
+        auto [mean, errs, taus, effs] = k_acc.mean_errors_and_taus(_comm);
+        double tau = taus.empty() ? 0.0 : std::real(taus.back());
+
+        // Periodic status print
+        double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+        if (elapsed > next_print) {
+          next_print = 1.25 * elapsed + 2.0;
+          if (params.verbosity >= 2)
+            std::cout << "  tau_ac = " << tau << " (" << calib_count << " cycles)\n";
+        }
+
+        if (prev_tau >= 0) {
+          double rel_change = std::abs(tau - prev_tau) / std::max(tau, 1.0);
+          if (rel_change < tau_rtol)
+            ++n_stable;
+          else
+            n_stable = 0;
+        }
+        prev_tau = tau;
+        return (n_stable >= n_stable_required);
+      };
+
+      run_param_t rp;
+      rp.ncycles          = max_calib;
+      rp.cycle_length     = 1;
+      rp.stop_callback    = stop_cb;
+      rp.after_cycle_duty = after_duty;
+      rp.comm             = _comm;
+      rp.enable_measures  = true;
+      qmc.run(rp);
+
+      // Collect results to compute auto_corr_time from the densities measure
+      qmc.collect_results(_comm);
+      double tau_raw = _auto_corr_time;
+
+      // Set length_cycle so that effective autocorrelation ~ target_auto_corr_time
+      effective_length_cycle = std::max(1, static_cast<int>(std::ceil(tau_raw / params.target_auto_corr_time)));
+      effective_length_cycle = std::min(effective_length_cycle, static_cast<int>(params.max_length_cycle));
+
+      if (params.verbosity >= 2)
+        std::cout << "  tau_ac = " << tau_raw << " -> length_cycle = " << effective_length_cycle << "\n";
+
+      // Clean up calibration phase
+      qmc.clear_measures();
+      container_set() = container_set_t{};
+      qmc.set_verbosity(params.verbosity);
+    }
+
+    _length_cycle_used = effective_length_cycle;
+
+    // --------------------------------------------------------------------------
+    // Phase 3: Accumulation - register measurements and run
+    // --------------------------------------------------------------------------
+
     // Two-particle correlators
-
     G2_measures_t G2_measures(_Delta_tau, gf_struct, params);
 
 #ifdef CTHYB_G2_NFFT
@@ -375,7 +572,6 @@ namespace triqs_cthyb {
                       "G2_iwll_ph Legendre particle-hole measurement");
 #endif
 
-    // --------------------------------------------------------------------------
     // Single-particle correlators
 
     if (params.measure_O_tau) {
@@ -430,24 +626,16 @@ namespace triqs_cthyb {
     qmc.add_measure(measure_densities{data, gf_struct, params.measure_densities, _auto_corr_time, _auto_corr_time_converged, _densities, _densities_errors},
                     "Densities");
 
-    // --------------------------------------------------------------------------
-
-    // set the correct sign in case a user-provided initial configuration is used
-    if (std::abs(data.atomic_weight) == 0) TRIQS_RUNTIME_ERROR << "Error: Atomic weight of initial configuration is zero";
-    mc_weight_t sign = data.current_sign * data.atomic_weight / std::abs(data.atomic_weight);
-
-    for (size_t block = 0; block < _Delta_tau.size(); ++block) {
-      auto det = data.dets[block].determinant();
-      if (std::abs(det) == 0) TRIQS_RUNTIME_ERROR << "Error: Determinant of block " << block << " is zero";
-      sign *= det / std::abs(det);
+    // Run accumulation
+    {
+      run_param_t rp;
+      rp.ncycles         = params.n_cycles;
+      rp.cycle_length    = effective_length_cycle;
+      rp.stop_callback   = clock_cb;
+      rp.comm            = _comm;
+      rp.enable_measures = true;
+      _solve_status = qmc.accumulate(rp);
     }
-
-    // Run! The empty (starting) configuration has sign = 1.
-    // Note: mc_generic continues running after the requested cycles are done until all
-    // MPI ranks have finished (continue_after_ncycles_done defaults to true in triqs).
-    _solve_status =
-       qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle,
-                                 triqs::utility::clock_callback(params.max_time), sign);
     qmc.collect_results(_comm);
 
     // set the last configuration
@@ -460,6 +648,8 @@ namespace triqs_cthyb {
         std::cout << "Auto-correlation time: " << _auto_corr_time << " cycles" << std::endl;
       else
         std::cout << "Auto-correlation time: >~ " << _auto_corr_time << " cycles (not converged, run longer)" << std::endl;
+      std::cout << "Warmup cycles done: " << _warmup_cycles_done << std::endl;
+      std::cout << "Length cycle used: " << _length_cycle_used << std::endl;
     }
 
     // Copy local (real or complex) G_tau back to complex G_tau

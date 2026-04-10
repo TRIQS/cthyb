@@ -58,6 +58,8 @@ namespace triqs_cthyb {
     std::optional<std::map<std::string, nda::array<double, 1>>> _densities;        // Per-orbital densities
     std::optional<std::map<std::string, nda::array<double, 1>>> _densities_errors; // Density error bars
     int _solve_status;                                // Status of the solve upon exit: 0 for clean termination, > 0 otherwise.
+    int64_t _warmup_cycles_done = 0;                  // Actual number of warmup cycles performed
+    int _length_cycle_used = 0;                       // Effective length_cycle (after auto-determination)
     std::optional<configuration> _last_configuration; // Final configuration of the run
 
     // Single-particle Green's function containers
@@ -157,6 +159,12 @@ namespace triqs_cthyb {
     /// Status of the ``solve()`` on exit.
     int solve_status() const { return _solve_status; }
 
+    /// Number of warmup cycles actually performed (may differ from n_warmup_cycles in auto mode).
+    long warmup_cycles_done() const { return _warmup_cycles_done; }
+
+    /// Effective length_cycle used in the accumulation (may differ from length_cycle in auto mode).
+    long length_cycle_used() const { return _length_cycle_used; }
+
     /// Final configuration of the last solve call.
     std::optional<configuration> last_configuration() const { return _last_configuration; }
 
@@ -202,6 +210,8 @@ namespace triqs_cthyb {
       h5_write(grp, "densities", s._densities);
       h5_write(grp, "densities_errors", s._densities_errors);
       h5_write(grp, "solve_status", s._solve_status);
+      h5_write(grp, "warmup_cycles_done", s._warmup_cycles_done);
+      h5_write(grp, "length_cycle_used", s._length_cycle_used);
       h5_write(grp, "Delta_infty_vec", s.Delta_infty_vec);
     }
 
@@ -225,6 +235,8 @@ namespace triqs_cthyb {
       h5::try_read(grp, "densities", s._densities);
       h5::try_read(grp, "densities_errors", s._densities_errors);
       h5::try_read(grp, "solve_status", s._solve_status);
+      h5::try_read(grp, "warmup_cycles_done", s._warmup_cycles_done);
+      h5::try_read(grp, "length_cycle_used", s._length_cycle_used);
       h5::try_read(grp, "Delta_infty_vec", s.Delta_infty_vec);
 
       return s;

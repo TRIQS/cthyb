@@ -22,19 +22,22 @@
 r"""
 the triqs_cthyb solver class
 """
-from .solver_core import SolverCore, ConstrParametersT, SolveParametersT
 from triqs.gfs import *
 import triqs.utility.mpi as mpi
 import numpy as np
 from itertools import product
 from triqs.operators.util.extractors import extract_h_dict, block_matrix_from_op
+from . import variants
 from .tail_fit import tail_fit as cthyb_tail_fit
 from .tail_fit import sigma_high_frequency_moments, green_high_frequency_moments
 from .util import orbital_occupations
 
-class Solver(SolverCore):
 
-    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, delta_interface = False):
+class Solver:
+
+    def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30,
+                 delta_interface=False,
+                 hybridisation_is_complex=False, local_hamiltonian_is_complex=False):
         """
         Initialise the solver.
 
@@ -55,13 +58,21 @@ class Solver(SolverCore):
              Number of legendre polynomials to use in accumulations of the Green's functions.
         delta_interface: bool, optional
             Are Delta_tau and Delta_infty provided as input instead of G0_iw?
+        hybridisation_is_complex : bool, optional
+            Use the complex-valued hybridisation variant of the solver.
+        local_hamiltonian_is_complex : bool, optional
+            Use the complex-valued local hamiltonian variant (requires hybridisation_is_complex=True).
         """
+
+        solver_core = variants.load('solver_core', variants.select(hybridisation_is_complex, local_hamiltonian_is_complex))
+        self._solve_parameters_t = solver_core.SolveParametersT
 
         gf_struct = fix_gf_struct_type(gf_struct)
 
         # Initialise the core solver
-        SolverCore.__init__(self, ConstrParametersT(beta=beta, gf_struct=gf_struct,
-                            n_iw=n_iw, n_tau=n_tau, n_l=n_l, delta_interface=delta_interface))
+        self._core = solver_core.SolverCore(
+            solver_core.ConstrParametersT(beta=beta, gf_struct=gf_struct, n_iw=n_iw,
+                                          n_tau=n_tau, n_l=n_l, delta_interface=delta_interface))
 
         mesh = MeshImFreq(beta = beta, statistic="Fermion", n_iw = n_iw)
         self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
@@ -76,6 +87,12 @@ class Solver(SolverCore):
         self.G_moments = None
         self.Sigma_moments = None
         self.Sigma_Hartree = None
+
+    def __getattr__(self, name):
+        core = self.__dict__.get('_core')
+        if core is None:
+            raise AttributeError(name)
+        return getattr(core, name)
 
     def solve(self, **params_kw):
         r"""
@@ -120,8 +137,8 @@ class Solver(SolverCore):
             measure_g_l='measure_G_l',
             )
 
-        for key in list(depr_params.keys()):
-            if key in list(params_kw.keys()):
+        for key in depr_params:
+            if key in params_kw:
                 print('WARNING: cthyb.solve parameter %s is deprecated use %s.' % \
                     (key, depr_params[key]))
                 val = params_kw.pop(key)
@@ -149,38 +166,39 @@ class Solver(SolverCore):
             fit_known_moments = params_kw.pop("fit_known_moments", None)
 
         # Call the core solver's solve routine
-        solve_status = SolverCore.solve(self, SolveParametersT(**params_kw))
+        core         = self._core
+        solve_status = core.solve(self._solve_parameters_t(**params_kw))
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
-        if perform_post_proc and (self.last_solve_parameters.measure_G_tau == True):
+        if perform_post_proc and core.last_solve_parameters.measure_G_tau:
 
-            if self.last_solve_parameters.measure_density_matrix:
+            if core.last_solve_parameters.measure_density_matrix:
                 # we have the density matrix, so we will compute the high frequency
                 # moments and orbital occupations
 
-                self.orbital_occupations = orbital_occupations(self.density_matrix,
+                self.orbital_occupations = orbital_occupations(core.density_matrix,
                                                                self.gf_struct,
-                                                               self.h_loc_diagonalization
+                                                               core.h_loc_diagonalization
                                                                )
 
-                h_int = self.last_solve_parameters.h_int
-                self.Sigma_moments = sigma_high_frequency_moments(self.density_matrix,
-                                                 self.h_loc_diagonalization,
+                h_int = core.last_solve_parameters.h_int
+                self.Sigma_moments = sigma_high_frequency_moments(core.density_matrix,
+                                                 core.h_loc_diagonalization,
                                                  self.gf_struct,
                                                  h_int
                                                  )
 
                 self.Sigma_Hartree = {bl: sigma_bl[0] for bl, sigma_bl in self.Sigma_moments.items()}
 
-                self.G_moments = green_high_frequency_moments(self.density_matrix,
-                                                         self.h_loc_diagonalization,
+                self.G_moments = green_high_frequency_moments(core.density_matrix,
+                                                         core.h_loc_diagonalization,
                                                          self.gf_struct,
-                                                         self.h_loc
+                                                         core.h_loc
                                                          )
 
             # Fourier transform G_tau to obtain G_iw
-            for bl, g in self.G_tau:
+            for bl, g in core.G_tau:
                 bl_size = g.target_shape[0]
                 if self.G_moments is None:
                     known_moments = make_zero_tail(g, 4)
@@ -194,12 +212,12 @@ class Solver(SolverCore):
 
             if self.delta_interface:
                 G0_iw = self.G_iw.copy()
-                Delta_iw = make_gf_from_fourier(self.Delta_tau, self.n_iw)
-                h_loc0_mat = block_matrix_from_op(self.h_loc0, self.gf_struct)
-                for bl, bl_name in enumerate(self.Delta_tau.indices):
+                Delta_iw = make_gf_from_fourier(core.Delta_tau, self.n_iw)
+                h_loc0_mat = block_matrix_from_op(core.h_loc0, self.gf_struct)
+                for bl, bl_name in enumerate(core.Delta_tau.indices):
                     G0_iw[bl_name] << inverse(iOmega_n - Delta_iw[bl_name] - h_loc0_mat[bl])
             else:
-                G0_iw = self.G0_iw
+                G0_iw = core.G0_iw
 
             # Solve Dyson's eq to obtain Sigma_iw and G_iw and fit the tail
             self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)

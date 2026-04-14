@@ -25,12 +25,26 @@ DOC
 """
 # triqs::stat::histogram so that Solver.perturbation_order(_total) and performance_analysis can be used
 from triqs.stat.histograms import Histogram
+from . import variants
 from .solver import Solver
-from .solver_core import SolverCore, ConstrParametersT, SolveParametersT
-from .configuration import Configuration, OpDesc
 from .util import estimate_nfft_buf_size
 from .solve_generic import solve_generic, TailFitParams, LegendreParams, CRMParams
 
-__all__ = ['Solver', 'SolverCore', 'ConstrParametersT', 'SolveParametersT', 'Configuration', "OpDesc",
-           'estimate_nfft_buf_size',
+# Importing an extension module fixes the solver variant of the process, so the names it
+# provides are resolved on demand and kept out of __all__ (see variants.py).
+_lazy_attrs = {'SolverCore': 'solver_core', 'ConstrParametersT': 'solver_core', 'SolveParametersT': 'solver_core',
+               'Configuration': 'configuration', 'OpDesc': 'configuration'}
+
+__all__ = ['Solver', 'estimate_nfft_buf_size',
            'solve_generic', 'TailFitParams', 'LegendreParams', 'CRMParams']
+
+
+def __getattr__(name):
+    module_name = _lazy_attrs.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    return getattr(variants.load(module_name), name)
+
+
+def __dir__():
+    return sorted(__all__ + list(_lazy_attrs))

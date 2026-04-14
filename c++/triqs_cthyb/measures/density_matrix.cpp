@@ -25,7 +25,7 @@
 
 namespace triqs_cthyb {
 
-  measure_density_matrix::measure_density_matrix(qmc_data const &data, std::vector<matrix_t> &density_matrix,
+  measure_density_matrix::measure_density_matrix(qmc_data const &data, std::vector<dm_matrix_t> &density_matrix,
                                                  std::optional<std::vector<nda::matrix<double>>> &density_matrix_errors)
      : data(data), block_dm(density_matrix), block_dm_errors(density_matrix_errors) {
     block_dm.resize(data.imp_trace.get_density_matrix().size());
@@ -89,7 +89,7 @@ namespace triqs_cthyb {
     if (c.rank() != 0) return;
 
     // Check: the trace of the density matrix must be 1 by construction
-    h_scalar_t tr = 0;
+    mc_weight_t tr = 0;
     for (auto &b : block_dm) tr += trace(b);
     if (std::abs(tr - 1) > 0.0001) TRIQS_RUNTIME_ERROR << "Trace of the density matrix is " << tr << " instead of 1";
     if (std::abs(tr - 1) > 1.e-10)

@@ -48,7 +48,7 @@ namespace triqs_cthyb {
     int n_iw, n_tau, n_l;
     bool delta_interface;
 
-    std::vector<matrix_t> _density_matrix;                                  // density matrix, when used in Norm mode
+    std::vector<dm_matrix_t> _density_matrix;                               // density matrix, when used in Norm mode
     std::optional<std::vector<nda::matrix<double>>> _density_matrix_errors; // density matrix error bars
     mpi::communicator _comm;                                                // define the communicator, here MPI_COMM_WORLD
     histo_map_t _performance_analysis;                                      // Histograms used for performance analysis
@@ -133,7 +133,7 @@ namespace triqs_cthyb {
     //block_gf_view<imtime> atomic_gf() const { return ::triqs_cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }
 
     /// Accumulated density matrix.
-    std::vector<matrix_t> density_matrix() const { return _density_matrix; }
+    std::vector<dm_matrix_t> density_matrix() const { return _density_matrix; }
 
     /// Diagonalization of \f$ H_{loc} \f$.
     atom_diag const &h_loc_diagonalization() const { return h_diag; }
@@ -181,24 +181,19 @@ namespace triqs_cthyb {
     std::optional<configuration> last_configuration() const { return _last_configuration; }
 
     /// Is the solver compiled with support for complex hybridization?
-    bool hybridisation_is_complex() const {
-#ifdef HYBRIDISATION_IS_COMPLEX
-      return true;
-#else
-      return false;
-#endif
-    }
+    bool hybridisation_is_complex() const { return triqs::is_complex<det_scalar_t>::value; }
 
     /// Is the solver compiled with support for a complex local Hamiltonian?
-    bool local_hamiltonian_is_complex() const {
-#ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
-      return true;
-#else
-      return false;
-#endif
-    }
+    bool local_hamiltonian_is_complex() const { return is_h_scalar_complex; }
 
-    static std::string hdf5_format() { return "CTHYB_SolverCore"; }
+    static std::string hdf5_format() {
+      if constexpr (is_h_scalar_complex)
+        return "CTHYB_SolverCore_complex_all";
+      else if constexpr (triqs::is_complex<det_scalar_t>::value)
+        return "CTHYB_SolverCore_complex_hyb";
+      else
+        return "CTHYB_SolverCore";
+    }
 
     // Function that writes the solver_core to hdf5 file
     friend void h5_write(h5::group h5group, std::string subgroup_name, solver_core const &s) {

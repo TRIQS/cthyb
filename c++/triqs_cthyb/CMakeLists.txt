@@ -3,11 +3,6 @@ list(REMOVE_ITEM sources impurity_trace.checks.cpp)
 if(NOT MeasureG2)
   list(REMOVE_ITEM sources measures/G2_iw_acc.cpp measures/G2_iw.cpp measures/G2_iwll.cpp measures/G2_iw_nfft.cpp measures/G2_tau.cpp)
 endif()
-add_library(${PROJECT_NAME}_c ${sources})
-add_library(${PROJECT_NAME}::${PROJECT_NAME}_c ALIAS ${PROJECT_NAME}_c)
-
-# Link against triqs and enable warnings
-target_link_libraries(${PROJECT_NAME}_c PUBLIC triqs PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_warnings> $<BUILD_INTERFACE:${PROJECT_NAME}_performance_flags>)
 
 # Additional compilation options
 option(EXT_DEBUG "Enable extended debugging output [developers only]" OFF)
@@ -15,41 +10,77 @@ option(TRACE_DEBUG_CHECKS "Enable various debug checks in the impurity trace com
 option(SAVE_CONFIGS "Save visited configurations to configs.h5 [developers only]" OFF)
 set(NUM_CONFIGS_TO_SAVE 50000 CACHE STRING "Number of visited configurations to save [developers only]")
 
-# Configure target and compilation
-set_target_properties(${PROJECT_NAME}_c PROPERTIES
-  POSITION_INDEPENDENT_CODE ON
-  VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-)
-target_include_directories(${PROJECT_NAME}_c PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
-target_include_directories(${PROJECT_NAME}_c SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
-target_link_directories(${PROJECT_NAME}_c PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-target_link_directories(${PROJECT_NAME}_c INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_LIBDIR}>)
-target_compile_definitions(${PROJECT_NAME}_c PUBLIC
+# ========= Additional Dependencies ==========
+
+# 2-particle GF measurement requires NFFT
+if(MeasureG2)
+ find_package(NFFT REQUIRED)
+endif()
+
+# ========= Variant Library Function ==========
+
+function(add_cthyb_library TARGET_NAME)
+  cmake_parse_arguments(ARG "" "" "COMPILE_DEFS" ${ARGN})
+
+  add_library(${TARGET_NAME} ${sources})
+  add_library(${PROJECT_NAME}::${TARGET_NAME} ALIAS ${TARGET_NAME})
+
+  # Link against triqs and enable warnings
+  target_link_libraries(${TARGET_NAME} PUBLIC triqs PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_warnings> $<BUILD_INTERFACE:${PROJECT_NAME}_performance_flags>)
+
+  # Configure target and compilation
+  set_target_properties(${TARGET_NAME} PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+  )
+  target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
+  target_include_directories(${TARGET_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+  target_link_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+  target_link_directories(${TARGET_NAME} INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_LIBDIR}>)
+  target_compile_definitions(${TARGET_NAME} PUBLIC
 				CTHYB_GIT_HASH=${PROJECT_GIT_HASH}
 				TRIQS_GIT_HASH=${TRIQS_GIT_HASH}
 				$<$<CONFIG:Debug>:CTHYB_DEBUG>
 				$<$<CONFIG:Debug>:TRIQS_DEBUG>
 				$<$<CONFIG:Debug>:TRIQS_ARRAYS_ENFORCE_BOUNDCHECK>
-				$<$<BOOL:${Hybridisation_is_complex}>:HYBRIDISATION_IS_COMPLEX>
-				$<$<BOOL:${Local_hamiltonian_is_complex}>:LOCAL_HAMILTONIAN_IS_COMPLEX>
 				$<$<BOOL:${MeasureG2}>:CTHYB_G2_NFFT>
 				$<$<BOOL:${EXT_DEBUG}>:EXT_DEBUG>
 				$<$<BOOL:${TRACE_DEBUG_CHECKS}>:TRACE_DEBUG_CHECKS>
 				$<$<BOOL:${SAVE_CONFIGS}>:SAVE_CONFIGS>
 				$<$<BOOL:${SAVE_CONFIGS}>:NUM_CONFIGS_TO_SAVE=${NUM_CONFIGS_TO_SAVE}>
+				${ARG_COMPILE_DEFS}
 			  )
 
-# Install library and headers
-install(TARGETS ${PROJECT_NAME}_c EXPORT ${PROJECT_NAME}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  # Link NFFT if needed
+  if(MeasureG2)
+    target_link_libraries(${TARGET_NAME} PUBLIC nfft)
+  endif()
+
+  install(TARGETS ${TARGET_NAME} EXPORT ${PROJECT_NAME}-targets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endfunction()
+
+# ========= Build Library Variants ==========
+
+# Always build the real variant
+add_cthyb_library(${PROJECT_NAME}_c)
+
+# Optionally build complex hybridisation variant
+if(Hybridisation_is_complex)
+  add_cthyb_library(${PROJECT_NAME}_c_complex_hyb COMPILE_DEFS HYBRIDISATION_IS_COMPLEX)
+endif()
+
+# Optionally build complex hybridisation+hamiltonian variant
+if(Local_hamiltonian_is_complex)
+  if(NOT Hybridisation_is_complex)
+    message(FATAL_ERROR "Local_hamiltonian_is_complex requires Hybridisation_is_complex=ON")
+  endif()
+  add_cthyb_library(${PROJECT_NAME}_c_complex_all COMPILE_DEFS HYBRIDISATION_IS_COMPLEX LOCAL_HAMILTONIAN_IS_COMPLEX)
+endif()
+
+# Install headers and NFFT target (once)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
-
-# ========= Addtional Dependencies ==========
-
-# 2-particle GF measurement requires NFFT
-if(MeasureG2) 
- find_package(NFFT REQUIRED)
- target_link_libraries(${PROJECT_NAME}_c PUBLIC nfft)
- install(TARGETS nfft EXPORT ${PROJECT_NAME}-targets)
+if(MeasureG2)
+  install(TARGETS nfft EXPORT ${PROJECT_NAME}-targets)
 endif()
 
 # ========= Static Analyzer Checks ==========

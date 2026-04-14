@@ -66,7 +66,7 @@ namespace triqs_cthyb {
       G_tau_block[last] *= 2;
 
       // Enforce discontinuity in Green function
-      G_tau_block[0] = 0.5 * matrix_t(G_tau_block[0] - 1 - G_tau_block[last]);
+      G_tau_block[0]    = 0.5 * dm_matrix_t(G_tau_block[0] - 1 - G_tau_block[last]);
       G_tau_block[last] = -1 - G_tau_block[0];
     }
 

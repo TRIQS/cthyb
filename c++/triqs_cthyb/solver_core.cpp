@@ -252,7 +252,10 @@ namespace triqs_cthyb {
 
     // If one is interested only in the atomic problem
     if (params.n_warmup_cycles == 0 && params.n_cycles == 0) {
-      if (params.measure_density_matrix) _density_matrix = atomic_density_matrix(h_diag, beta);
+      if (params.measure_density_matrix) {
+        auto adm = atomic_density_matrix(h_diag, beta);
+        _density_matrix.assign(adm.begin(), adm.end());
+      }
       return;
     }
 

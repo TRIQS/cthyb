@@ -22,7 +22,8 @@ target_shape = [2, 2]
 nw = 124
 nt = 6 * nw + 1
 
-S = Solver(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt)
+S = Solver(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt,
+           hybridisation_is_complex=True, local_hamiltonian_is_complex=True)
 
 h_int = n('0', 0) * n('0', 1)
 

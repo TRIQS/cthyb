@@ -87,6 +87,10 @@ if(Build_Tests)
   enable_testing()
 endif()
 
+# Complex-valued variant modules (built in addition to the default real variant)
+option(Hybridisation_is_complex "Additionally build complex hybridisation variant" OFF)
+option(Local_hamiltonian_is_complex "Additionally build complex hybridisation+hamiltonian variant" OFF)
+
 # Performance-tuning flags for project targets
 option(Enable_Project_Performance_Flags "Enable additional project-local compiler tuning flags outside Debug builds" ON)
 

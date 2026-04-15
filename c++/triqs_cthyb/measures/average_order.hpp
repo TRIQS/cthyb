@@ -22,6 +22,7 @@
 #pragma once
 #include "../qmc_data.hpp"
 #include <triqs/stat/lin_binning.hpp>
+#include <sstream>
 
 namespace triqs_cthyb {
 
@@ -49,6 +50,12 @@ namespace triqs_cthyb {
 
       auto [m, err, tau]  = order_bins_.mean_error_and_tau(comm);
       average_order_error = std::abs(err);
+    }
+
+    std::string report() const {
+      std::ostringstream os;
+      os << "Average perturbation order: " << (N > 0 ? average_order / N : 0.0);
+      return os.str();
     }
 
     private:

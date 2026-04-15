@@ -21,6 +21,7 @@
 #pragma once
 #include "../qmc_data.hpp"
 #include <triqs/stat/lin_binning.hpp>
+#include <sstream>
 
 namespace triqs_cthyb {
 
@@ -60,6 +61,12 @@ namespace triqs_cthyb {
       auto norm          = std::abs(dcomplex(z) / dcomplex(N_));
       auto [m, err, tau] = sign_bins_.mean_error_and_tau(c);
       average_sign_error = std::abs(err) / norm;
+    }
+
+    std::string report() const {
+      std::ostringstream os;
+      os << "Average sign: " << (std::abs(z) > 0 ? std::real(sign / z) : 0.0);
+      return os.str();
     }
   };
 } // namespace triqs_cthyb

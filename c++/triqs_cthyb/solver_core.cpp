@@ -413,14 +413,25 @@ namespace triqs_cthyb {
     } else if (params.n_warmup_cycles > 0) {
       if (params.verbosity >= 2) std::cout << "\nWarming up ..." << std::endl;
 
+      // Register warmup measurements for progress display
+      qmc.add_measure(measure_average_sign{data, _average_sign, _average_sign_error}, "Average sign", /* enable_timer */ true,
+                       /* enable_report */ true);
+      qmc.add_measure(measure_average_order{data, _average_order, _average_order_error}, "Average order", /* enable_timer */ true,
+                       /* enable_report */ true);
+
       run_param_t rp;
       rp.ncycles         = params.n_warmup_cycles;
       rp.cycle_length    = warmup_cycle_length;
       rp.stop_callback   = clock_cb;
       rp.initial_sign    = sign;
       rp.comm            = _comm;
-      rp.enable_measures = false;
-      qmc.warmup(rp);
+      rp.enable_measures = true;
+      qmc.run(rp);
+      qmc.clear_measures();
+      _average_sign       = 1.0;
+      _average_order      = 0.0;
+      _average_sign_error = std::nullopt;
+      _average_order_error = std::nullopt;
     }
 
     _warmup_cycles_done = qmc.get_current_cycle_number();
@@ -592,8 +603,10 @@ namespace triqs_cthyb {
       qmc.add_measure(measure_density_matrix{data, _density_matrix, _density_matrix_errors}, "Density Matrix for local static observable");
     }
 
-    qmc.add_measure(measure_average_sign{data, _average_sign, _average_sign_error}, "Average sign");
-    qmc.add_measure(measure_average_order{data, _average_order, _average_order_error}, "Average order");
+    qmc.add_measure(measure_average_sign{data, _average_sign, _average_sign_error}, "Average sign", /* enable_timer */ true,
+                    /* enable_report */ true);
+    qmc.add_measure(measure_average_order{data, _average_order, _average_order_error}, "Average order", /* enable_timer */ true,
+                    /* enable_report */ true);
     qmc.add_measure(measure_densities{data, gf_struct, params.measure_densities, _auto_corr_time, _auto_corr_time_converged, _densities, _densities_errors},
                     "Densities");
 

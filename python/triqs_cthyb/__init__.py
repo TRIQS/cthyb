@@ -27,6 +27,8 @@ from .solver import Solver
 from .solver_core import SolverCore
 from .configuration import Configuration
 from .util import estimate_nfft_buf_size
+from .solve_generic import solve_generic, TailFitParams, LegendreParams, CRMParams
 
 __all__ = ['Solver', 'SolverCore',
-           'estimate_nfft_buf_size']
+           'estimate_nfft_buf_size',
+           'solve_generic', 'TailFitParams', 'LegendreParams', 'CRMParams']

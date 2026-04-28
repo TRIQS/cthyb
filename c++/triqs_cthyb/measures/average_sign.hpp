@@ -30,15 +30,13 @@ namespace triqs_cthyb {
     qmc_data const &data;
     mc_weight_t &average_sign;
     std::optional<double> &average_sign_error;
-    mc_weight_t sign, z;
+    mc_weight_t sign{0}, z{0};
     long N_ = 0;
     triqs::stat::lin_binning<dcomplex> sign_bins_;
 
     measure_average_sign(qmc_data const &_data, mc_weight_t &_average_sign, std::optional<double> &_average_sign_error)
        : data(_data), average_sign(_average_sign), average_sign_error(_average_sign_error), sign_bins_(dcomplex{0.0}, 128, 1) {
       average_sign = 1.0;
-      z            = 0;
-      sign         = 0;
     }
     // --------------------
 

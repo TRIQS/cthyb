@@ -420,8 +420,6 @@ def solve_generic(
 
     # Apply post-processing
     pp_result = _apply_postprocessing(S, G0_iw, postprocess)
+    pp_result['Solver'] = S
 
-    result_kwargs = {k: v for k, v in pp_result.items() if v is not None}
-    result_kwargs['Solver'] = S
-
-    return SolverResults(**result_kwargs)
+    return SolverResults(**pp_result)

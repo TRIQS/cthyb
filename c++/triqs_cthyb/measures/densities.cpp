@@ -62,7 +62,7 @@ namespace triqs_cthyb {
     log_accs_[0] << double(data.config.size() / 2);
 
     // Log-bin per-block det sizes
-    for (int b = 0; b < static_cast<int>(data.dets.size()); ++b) { log_accs_[1 + b] << double(data.dets[b].size()); }
+    for (size_t b = 0; b < data.dets.size(); ++b) log_accs_[1 + b] << double(data.dets[b].size());
 
     if (!measure_densities_) return;
 
@@ -71,18 +71,14 @@ namespace triqs_cthyb {
 
     // Compute bare trace (caches root matrices for trace_with_aux_op)
     auto [bare_w, bare_rw] = data.imp_trace.compute();
-    auto Z_cfg              = bare_w * bare_rw;
+    auto Z_cfg             = bare_w * bare_rw;
 
     // Measure per-orbital densities from cached root matrices — no tree modifications
     int op_idx = 0;
-    for (int b = 0; b < static_cast<int>(gf_struct.size()); ++b) {
+    for (size_t b = 0; b < gf_struct.size(); ++b) {
       int bl_size = gf_struct[b].second;
       auto step   = nda::array<dcomplex, 1>(bl_size);
-
-      for (int a = 0; a < bl_size; ++a) {
-        step(a) = sign * data.imp_trace.trace_with_aux_op(n_op_indices_[op_idx]) / Z_cfg;
-        ++op_idx;
-      }
+      for (int a = 0; a < bl_size; ++a) step(a) = sign * data.imp_trace.trace_with_aux_op(n_op_indices_[op_idx++]) / Z_cfg;
       dens_bins_[b] << step;
     }
   }

@@ -6,7 +6,7 @@ from triqs.operators import n, Operator
 from triqs.operators.util.op_struct import set_operator_structure, get_mkind
 from triqs.operators.util.hamiltonians import h_int_kanamori
 from triqs_cthyb import SolverCore
-from triqs.gf import GfImFreq, iOmega_n, inverse
+from triqs.gfs import GfImFreq, iOmega_n, inverse
 import numpy as np
 
 # Input parameters

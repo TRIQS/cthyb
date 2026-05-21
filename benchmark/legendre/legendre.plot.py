@@ -2,7 +2,7 @@
 
 import numpy as np
 from h5 import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.plot.mpl_interface import plt
 
 arch = HDFArchive('legendre.h5','r')

@@ -10,7 +10,7 @@ from triqs_cthyb import SolverCore
 
 from triqs.operators import n, c, c_dag, Operator
 import triqs.utility.mpi as mpi
-from triqs.gf import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
+from triqs.gfs import Gf, MeshImFreq, MeshImTime, iOmega_n, inverse, Fourier
 
 beta = 10.0
 

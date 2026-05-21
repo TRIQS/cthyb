@@ -6,8 +6,8 @@ from scipy.linalg import block_diag
 from h5 import HDFArchive
 from triqs.operators import c, c_dag, n
 
-from triqs.gf import Gf
-from triqs.gf import MeshImTime, MeshImFreq
+from triqs.gfs import Gf
+from triqs.gfs import MeshImTime, MeshImFreq
 from triqs.operators.util.hamiltonians import h_int_kanamori
 
 from pyed.OperatorUtils import get_quadratic_operator

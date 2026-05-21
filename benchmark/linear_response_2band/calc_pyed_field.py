@@ -19,8 +19,8 @@ import numpy as np
 
 from triqs.utility import mpi
 from h5 import HDFArchive
-from triqs.gf import GfImTime, GfImFreq
-from triqs.gf import MeshImTime, MeshProduct, Gf
+from triqs.gfs import GfImTime, GfImFreq
+from triqs.gfs import MeshImTime, MeshProduct, Gf
 from triqs.operators import n, c, c_dag, Operator, dagger
 
 # ----------------------------------------------------------------------

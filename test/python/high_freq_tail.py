@@ -1,6 +1,6 @@
 import numpy as np
 
-from triqs.gf import Gf, BlockGf, iOmega_n, inverse, Fourier, Wilson
+from triqs.gfs import Gf, BlockGf, iOmega_n, inverse, Fourier, Wilson
 from triqs_cthyb import Solver
 from triqs.atom_diag import trace_rho_op
 from triqs.operators import n, c, c_dag

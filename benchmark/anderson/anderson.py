@@ -6,7 +6,7 @@ from h5 import HDFArchive
 from triqs.operators import *
 from triqs_cthyb import SolverCore
 from triqs.atom_diag import trace_rho_op
-from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.gfs import Gf, MeshImFreq, iOmega_n, inverse
 
 def anderson(use_qn=True, use_blocks=True):
 

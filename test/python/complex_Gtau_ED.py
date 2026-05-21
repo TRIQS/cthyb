@@ -1,7 +1,7 @@
 import numpy as np
 from triqs.operators import *
 from triqs_cthyb import *
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import HDFArchive
 from triqs.utility.h5diff import h5diff
 

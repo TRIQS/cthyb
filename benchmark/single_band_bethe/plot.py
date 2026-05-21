@@ -1,6 +1,6 @@
 
 import numpy as np
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import HDFArchive
 from triqs.plot.mpl_interface import oplot, oplotr, oploti, plt
 

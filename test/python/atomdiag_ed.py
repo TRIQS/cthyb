@@ -1,6 +1,6 @@
 import numpy as np
 from triqs.atom_diag import AtomDiag, atomic_g_tau
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 from triqs.utility.comparison_tests import *
 from h5 import HDFArchive

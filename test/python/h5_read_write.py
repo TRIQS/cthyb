@@ -1,6 +1,6 @@
 import numpy as np
 import triqs.utility.mpi as mpi
-from triqs.gf import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
+from triqs.gfs import GfImFreq, BlockGf, SemiCircular, inverse, iOmega_n
 from triqs.operators import n, c, c_dag
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore

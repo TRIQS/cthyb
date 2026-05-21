@@ -1,5 +1,5 @@
 import triqs.utility.mpi as mpi
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 from h5 import HDFArchive
 from triqs.utility.comparison_tests import *

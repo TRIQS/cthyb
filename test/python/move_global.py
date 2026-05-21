@@ -1,6 +1,6 @@
 import numpy as np
 import triqs.utility.mpi as mpi
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators.util.hamiltonians import h_int_kanamori
 from triqs.operators.util.op_struct import set_operator_structure
 from triqs.operators.util.observables import S_op

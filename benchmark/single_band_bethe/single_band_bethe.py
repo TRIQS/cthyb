@@ -1,5 +1,5 @@
 # %load run_single_band.py
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 from h5 import *
 import triqs.utility.mpi as mpi

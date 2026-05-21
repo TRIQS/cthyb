@@ -5,7 +5,7 @@ from triqs.operators.util.op_struct import set_operator_structure, get_mkind
 from triqs.operators.util.hamiltonians import h_int_kanamori
 from triqs_cthyb import SolverCore
 from triqs_cthyb.util import estimate_nfft_buf_size
-from triqs.gf import *
+from triqs.gfs import *
 import numpy as np
 
 # Input parameters

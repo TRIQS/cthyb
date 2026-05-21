@@ -14,7 +14,7 @@ import numpy as np
 
 from triqs.operators import c, c_dag
 from h5 import HDFArchive
-from triqs.gf import GfImTime, GfImFreq, BlockGf
+from triqs.gfs import GfImTime, GfImFreq, BlockGf
 
 # ----------------------------------------------------------------------
 

@@ -12,7 +12,7 @@ Plus an h5diff regression case at the end that catches silent numerical drift.
 import numpy as np
 
 import triqs.utility.mpi as mpi
-from triqs.gf import BlockGf, Gf, MeshImFreq, MeshDLRImFreq, iOmega_n, inverse
+from triqs.gfs import BlockGf, Gf, MeshImFreq, MeshDLRImFreq, iOmega_n, inverse
 from triqs.operators import n, c, c_dag
 from triqs.operators.util import block_matrix_from_op
 from triqs.solver_utils import SolverResults

@@ -5,7 +5,7 @@ from triqs.operators.util.U_matrix import U_matrix_slater
 from triqs.operators.util.hamiltonians import h_int_slater
 from triqs.operators.util.observables import *
 from h5 import HDFArchive
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.atom_diag import quantum_number_eigenvalues
 #from atom_diag import * # quantum_number_eigenvalues
 from triqs_cthyb import *

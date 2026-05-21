@@ -4,7 +4,7 @@ from triqs.operators import *
 #from atom_diag import trace_rho_op
 from triqs.atom_diag import trace_rho_op
 from triqs_cthyb import *
-from triqs.gf import *
+from triqs.gfs import *
 import numpy as np
 
 # Input parameters

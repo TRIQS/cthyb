@@ -1,4 +1,4 @@
-from triqs.gf import *
+from triqs.gfs import *
 from h5 import *
 from triqs.plot.mpl_interface import oplot, plt
 

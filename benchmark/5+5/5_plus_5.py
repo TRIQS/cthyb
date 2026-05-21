@@ -9,7 +9,7 @@ from triqs.operators.util.U_matrix import cubic_names, U_matrix
 from triqs.operators.util.hamiltonians import h_int_slater
 from triqs_cthyb import SolverCore
 import triqs_cthyb.version as version
-from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.gfs import Gf, MeshImFreq, iOmega_n, inverse
 from itertools import product
 
 def five_plus_five(use_interaction=True):

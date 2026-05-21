@@ -5,7 +5,7 @@ from h5 import HDFArchive
 from triqs.operators import *
 from triqs_cthyb import *
 from triqs.stat.histograms import Histogram
-from triqs.gf import *
+from triqs.gfs import *
 import numpy as np
 
 spin_names = ("up","dn")

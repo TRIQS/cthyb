@@ -11,8 +11,8 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 
-from triqs.gf import Gf, BlockGf, Block2Gf
-from triqs.gf import MeshImTime, MeshImFreq, MeshProduct
+from triqs.gfs import Gf, BlockGf, Block2Gf
+from triqs.gfs import MeshImTime, MeshImFreq, MeshProduct
 
 from triqs.operators import c, c_dag
 from h5 import HDFArchive

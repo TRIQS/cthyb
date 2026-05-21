@@ -23,7 +23,7 @@ r"""
 the triqs_cthyb solver class
 """
 from .solver_core import SolverCore
-from triqs.gf import *
+from triqs.gfs import *
 import triqs.utility.mpi as mpi
 import numpy as np
 from itertools import product

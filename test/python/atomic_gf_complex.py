@@ -1,5 +1,5 @@
 import numpy as np
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 from triqs.atom_diag import AtomDiag, atomic_g_tau
 from triqs.utility.comparison_tests import *

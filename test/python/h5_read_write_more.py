@@ -6,7 +6,7 @@ Author: Hugo U.R. Strand (2019) """
 # ----------------------------------------------------------------------    
 
 import triqs.utility.mpi as mpi
-from triqs.gf import inverse, iOmega_n, SemiCircular, BlockGf
+from triqs.gfs import inverse, iOmega_n, SemiCircular, BlockGf
 from triqs.operators import n
 from h5 import HDFArchive
 

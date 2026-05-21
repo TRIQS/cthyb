@@ -1,8 +1,8 @@
 #!/bin/env python
 
 import numpy as np
-from triqs.gf import *
-from triqs.gf.gf_fnt import rebinning_tau
+from triqs.gfs import *
+from triqs.gfs.gf_fnt import rebinning_tau
 from h5 import HDFArchive
 from triqs.stat.histograms import *
 from triqs.plot.mpl_interface import plt, oplot

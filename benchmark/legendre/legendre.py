@@ -4,7 +4,7 @@ import triqs.utility.mpi as mpi
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore
 from triqs.operators import n
-from triqs.gf import Gf, iOmega_n, inverse
+from triqs.gfs import Gf, iOmega_n, inverse
 
 spin_names = ("up","dn")
 def mkind(spin): return (spin,0)

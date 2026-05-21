@@ -15,7 +15,7 @@ import numpy as np
 
 from triqs.operators import Operator
 from h5 import HDFArchive
-from triqs.gf import Gf, inverse, iOmega_n, Fourier, GfImFreq
+from triqs.gfs import Gf, inverse, iOmega_n, Fourier, GfImFreq
 
 from pyed.ParameterCollection import ParameterCollection
 from pyed.GfUtils import g2_single_particle_transform

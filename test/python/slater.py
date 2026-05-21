@@ -5,7 +5,7 @@ from triqs.operators.util.U_matrix import U_matrix_slater
 from triqs.operators.util.hamiltonians import h_int_slater
 from h5 import HDFArchive
 from triqs_cthyb import *
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.utility.comparison_tests import *
 
 beta = 100.0

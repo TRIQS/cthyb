@@ -29,14 +29,14 @@ from dataclasses import dataclass
 
 import numpy as np
 import triqs.utility.mpi as mpi
-from triqs.gf import (
+from triqs.gfs import (
     Gf, BlockGf, MeshImFreq, MeshDLRImFreq,
     make_gf_from_fourier, fit_hermitian_tail, make_hermitian,
     make_gf_imfreq, make_gf_dlr_imfreq, make_gf_imtime, make_gf_dlr_imtime,
     make_gf_dlr, fit_gf_dlr, inverse, iOmega_n,
 )
-from triqs.gf.tools import make_zero_tail
-from triqs.gf.dlr_crm_dyson_solver import minimize_dyson
+from triqs.gfs.tools import make_zero_tail
+from triqs.gfs.dlr_crm_dyson_solver import minimize_dyson
 from triqs.operators import Operator
 from triqs.operators.util import op_from_block_matrix, block_matrix_from_op
 
@@ -95,7 +95,7 @@ PostProcessParams = TailFitParams | LegendreParams | CRMParams
 
 def _legendre_filter(G_tau: BlockGf, n_l: int) -> BlockGf:
     """Fit G(tau) to Legendre polynomials to filter high-frequency noise."""
-    from triqs.gf import MeshLegendre, GfLegendre
+    from triqs.gfs import MeshLegendre, GfLegendre
 
     beta = G_tau.mesh.beta
     names, blocks = [], []

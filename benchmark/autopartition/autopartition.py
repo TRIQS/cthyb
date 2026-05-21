@@ -1,7 +1,7 @@
 #!/bin/env python
 
 import time
-from triqs.gf import iOmega_n, inverse
+from triqs.gfs import iOmega_n, inverse
 from triqs.operators import *
 from triqs.operators.util.op_struct import set_operator_structure, get_mkind
 from triqs.operators.util.U_matrix import U_matrix

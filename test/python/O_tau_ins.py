@@ -10,7 +10,7 @@ import numpy as np
 
 # ----------------------------------------------------------------------    
 
-from triqs.gf import *
+from triqs.gfs import *
 from triqs.operators import *
 from h5 import HDFArchive
 

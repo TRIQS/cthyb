@@ -3,8 +3,8 @@ import numpy as np
 from h5 import HDFArchive
 from triqs.operators import c, c_dag, n
 
-from triqs.gf import Gf
-from triqs.gf import MeshImTime, MeshImFreq
+from triqs.gfs import Gf
+from triqs.gfs import MeshImTime, MeshImFreq
 
 from pyed.OperatorUtils import fundamental_operators_from_gf_struct
 from pyed.TriqsExactDiagonalization import TriqsExactDiagonalization

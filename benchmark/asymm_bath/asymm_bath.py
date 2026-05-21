@@ -1,7 +1,7 @@
 #!/bin/env python
 
 import triqs.utility.mpi as mpi
-from triqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from triqs.gfs import Gf, MeshImFreq, iOmega_n, inverse
 from triqs.operators import n
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore

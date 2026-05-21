@@ -5,7 +5,7 @@ from h5 import HDFArchive
 from triqs.operators import n
 from triqs.atom_diag import trace_rho_op
 from triqs_cthyb import SolverCore
-from triqs.gf import GfImFreq, iOmega_n, inverse
+from triqs.gfs import GfImFreq, iOmega_n, inverse
 import numpy as np
 
 spin_names = ("up","dn")

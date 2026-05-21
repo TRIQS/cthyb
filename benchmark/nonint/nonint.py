@@ -4,7 +4,7 @@ import triqs.utility.mpi as mpi
 from h5 import HDFArchive
 from triqs_cthyb import SolverCore
 from triqs.operators import Operator, n
-from triqs.gf import Gf, inverse, iOmega_n
+from triqs.gfs import Gf, inverse, iOmega_n
 
 mpi.report("Welcome to nonint (non-interacting many-band systems) test.")
 mpi.report("This test is aimed to reveal excessive state truncation issues.")

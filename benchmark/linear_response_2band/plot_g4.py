@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from triqs.operators import Operator
 from h5 import HDFArchive
 from pyed.ParameterCollection import ParameterCollection
-from triqs.gf import Gf, inverse, iOmega_n, Fourier
+from triqs.gfs import Gf, inverse, iOmega_n, Fourier
 
 # ----------------------------------------------------------------------
 def plot_g2(g, **kwargs):

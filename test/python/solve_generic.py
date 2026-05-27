@@ -31,7 +31,7 @@ Ek    = np.array([[ 1.00, 0.75], [0.75, -1.20]])
 V_hyb = np.array([[ 1.00, 0.25], [0.25, -1.00]])
 E_loc = np.array([[ 0.20, 0.30], [0.30,  0.40]])
 
-wmesh = MeshImFreq(beta=beta, S='Fermion', n_max=n_iw)
+wmesh = MeshImFreq(beta=beta, statistic='Fermion', n_iw=n_iw)
 g_block = Gf(mesh=wmesh, target_shape=target_shape)
 g_block << inverse(iOmega_n - Ek) + inverse(iOmega_n + Ek)
 g_block.from_L_G_R(V_hyb, g_block, V_hyb)

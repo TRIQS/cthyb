@@ -26,8 +26,8 @@ S = SolverCore(beta=beta, gf_struct=gf_struct, n_iw=nw, n_tau=nt)
 
 h_int = n('0', 0) * n('0', 1)
 
-wmesh = MeshImFreq(beta=beta, S='Fermion', n_max=nw)
-tmesh = MeshImTime(beta=beta, S='Fermion', n_max=nt)
+wmesh = MeshImFreq(beta=beta, statistic='Fermion', n_iw=nw)
+tmesh = MeshImTime(beta=beta, statistic='Fermion', n_tau=nt)
 
 Delta_iw = Gf(mesh=wmesh, target_shape=target_shape)
 

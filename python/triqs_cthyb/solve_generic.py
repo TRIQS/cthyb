@@ -95,13 +95,13 @@ PostProcessParams = TailFitParams | LegendreParams | CRMParams
 
 def _legendre_filter(G_tau: BlockGf, n_l: int) -> BlockGf:
     """Fit G(tau) to Legendre polynomials to filter high-frequency noise."""
-    from triqs.gfs import MeshLegendre, GfLegendre
+    from triqs.gfs import MeshLegendre
 
     beta = G_tau.mesh.beta
     names, blocks = [], []
     for block, g_tau in G_tau:
-        mesh_l = MeshLegendre(beta=beta, S='Fermion', n_max=n_l)
-        g_l = GfLegendre(mesh=mesh_l, target_shape=g_tau.target_shape)
+        mesh_l = MeshLegendre(beta=beta, statistic='Fermion', max_n=n_l)
+        g_l = Gf(mesh=mesh_l, target_shape=g_tau.target_shape)
         g_l.set_from_imtime(g_tau)
         names.append(block)
         blocks.append(g_l)

@@ -63,7 +63,7 @@ class Solver(SolverCore):
         SolverCore.__init__(self, beta=beta, gf_struct=gf_struct,
                             n_iw=n_iw, n_tau=n_tau, n_l=n_l, delta_interface = delta_interface)
 
-        mesh = MeshImFreq(beta = beta, S="Fermion", n_max = n_iw)
+        mesh = MeshImFreq(beta = beta, statistic="Fermion", n_iw = n_iw)
         self.Sigma_iw = BlockGf(mesh = mesh, gf_struct = gf_struct)
         self.Sigma_iw.zero()
         self.Sigma_iw_raw = None

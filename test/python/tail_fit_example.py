@@ -14,7 +14,7 @@ nw = 512
 beta = 50.0
 target_shape = [2, 2]
 
-wmesh = MeshImFreq(beta=beta, S='Fermion', n_max=nw)
+wmesh = MeshImFreq(beta=beta, statistic='Fermion', n_iw=nw)
 Delta_iw = Gf(mesh=wmesh, target_shape=target_shape)
 
 Ek = np.array([

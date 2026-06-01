@@ -35,7 +35,7 @@ def plot_g2(g, **kwargs):
 
     lab = [r'0\uparrow', r'0\downarrow', r'1\uparrow', r'1\downarrow']
     ca_op = [ '$c_{%s}$' % lab[idx] for idx in range(4) ]
-    cc_op = [ '$c^\dagger_{%s}$' % lab[idx] for idx in range(4) ]
+    cc_op = [ r'$c^\dagger_{%s}$' % lab[idx] for idx in range(4) ]
     
     for i1, i2, i3, i4 in itertools.product(*[range(s) for s in shape]):         
 

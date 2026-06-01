@@ -87,7 +87,7 @@ if __name__ == '__main__':
             plt.plot(1./p.beta, p.chi, style, alpha=0.5)
 
     for (nw, nc), style in styles.items():
-        plt.plot([], [], style, alpha=0.5, label='cthyb dynamic $n_w=%i$, $\log n_c=%i$' % (nw, nc))
+        plt.plot([], [], style, alpha=0.5, label=r'cthyb dynamic $n_w=%i$, $\log n_c=%i$' % (nw, nc))
 
     # ------------------------------------------------------------------
 

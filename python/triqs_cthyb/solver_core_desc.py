@@ -313,7 +313,11 @@ c.add_property(name = "average_order",
 
 c.add_property(name = "auto_corr_time",
                getter = cfunction("double auto_corr_time ()"),
-               doc = r"""Auto-correlation time""")
+               doc = r"""Auto-correlation time in units of MC cycles""")
+
+c.add_property(name = "auto_corr_time_converged",
+               getter = cfunction("bool auto_corr_time_converged ()"),
+               doc = r"""Whether the auto-correlation time estimate has saturated (False: it is only a lower bound, run longer)""")
 
 c.add_property(name = "solve_status",
                getter = cfunction("int solve_status ()"),

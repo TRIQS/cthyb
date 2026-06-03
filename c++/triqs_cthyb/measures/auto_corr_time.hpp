@@ -21,9 +21,11 @@
  ******************************************************************************/
 #pragma once
 
-#include <triqs/stat/accumulator.hpp>
+#include <triqs/stat/log_binning.hpp>
 
 #include "../qmc_data.hpp"
+
+#include <cmath>
 
 namespace triqs_cthyb {
 
@@ -39,20 +41,16 @@ namespace triqs_cthyb {
 
     void collect_results(mpi::communicator const &comm) {
 
-      auto_corr_time = 0.0;
+      constexpr int min_samples = 32;
+      auto_corr_time            = 0.0;
 
+      // mean_errors_and_taus all-reduces internally, so every rank obtains the same result.
       for (auto &log_acc : log_accs) {
-        auto [errs, counts] = log_acc.log_bin_errors_all_reduce(comm);
-
-        // Estimate auto-correlation time
-        if (comm.rank() == 0 && errs[0] > 0) {
-          auto_corr_time = std::max(auto_corr_time, tau_estimate_from_errors(errs[int(0.7 * errs.size())], errs[0]));
-        }
-
-        // Reset the accumulator
-        log_acc = {0.0, -1, 0};
+        // The integrated autocorrelation time is the saturated (largest-bin) tau estimate.
+        auto [mean, errs, taus, effs] = log_acc.mean_errors_and_taus(comm, min_samples);
+        // tau is NaN when an observable has zero variance (e.g. sign in sign-problem-free runs).
+        if (!taus.empty() && std::isfinite(taus.back())) auto_corr_time = std::max(auto_corr_time, taus.back());
       }
-      mpi::broadcast(auto_corr_time, comm, 0);
     }
 
     private:
@@ -60,7 +58,7 @@ namespace triqs_cthyb {
     double &auto_corr_time;
 
     // Initialize one complex log accumulator for each observable to use for the autocorrelation analysis
-    std::vector<accumulator<dcomplex>> log_accs = {2, {0.0, -1, 0}};
+    std::vector<triqs::stat::log_binning<dcomplex>> log_accs = {2, {dcomplex{0.0}, -1}};
   };
 
 } // namespace triqs_cthyb

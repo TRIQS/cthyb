@@ -9,6 +9,7 @@ Packaged Versions of CTHYB
 ==========================
 
 .. _ubuntu_debian:
+
 Ubuntu Debian packages
 ----------------------
 
@@ -21,6 +22,7 @@ After the TRIQS setup the command::
 can be used to install the CTSEG package.
 
 .. _anaconda:
+
 Anaconda
 --------
 
@@ -31,6 +33,7 @@ We provide Linux and OSX packages for the `Anaconda <https://www.anaconda.com/>`
 See also `github.com/conda-forge/triqs_cthyb-feedstock <https://github.com/conda-forge/triqs_cthyb-feedstock/>`_.
 
 .. _docker:
+
 Docker
 ------
 

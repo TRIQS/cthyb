@@ -21,7 +21,7 @@ This application is a part of our scientific work and we would appreciate if
 projects using it will include a citation to the following relevant papers.  In
 order to help you, we provide a BibTeX entry for each paper.
 
-Companion paper to the CTHYB application:
+Companion paper to the CTHYB application [#cthyb]_:
 
 .. [#cthyb] `P. Seth, I. Krivenko, M. Ferrero, and O. Parcollet, Comp. Phys. Comm. 200, 274–284 (2016) <http://dx.doi.org/10.1016/j.cpc.2015.10.023>`_ (:download:`bibtex file <cthyb.bib>`)
 

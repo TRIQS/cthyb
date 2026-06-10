@@ -158,7 +158,7 @@ self-energy are correct and lead to physically sensible values. You should use
 the fitting function ``tail_fit`` (provided in ``triqs.gf``) to determine the
 optimal fitting parameters ``fit_min_n`` and ``fit_max_n``.
 This post-processing task can also be delegated to the ``Solver`` object by
-setting ``perform_tail_fit = True`` and other :ref:`solve() <ctqmc_ref>`
+setting ``perform_tail_fit = True`` and other :meth:`solve() <triqs_cthyb.solver.Solver.solve>`
 parameters related to tail fitting.
 
 If you use the Legendre expansion, you should also decide on the ideal number

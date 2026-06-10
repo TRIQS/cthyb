@@ -55,7 +55,7 @@ This just sets the parameters of the problem.
   :lines: 11-13
 
 This is the construction of the Solver object. The class is described
-in more detail in the section :ref:`ctqmc_ref`. Basically, the constructor
+in more detail in :class:`Solver <triqs_cthyb.solver.Solver>`. Basically, the constructor
 of the Solver needs two keywords:
 
 - ``beta``: the inverse temperature,

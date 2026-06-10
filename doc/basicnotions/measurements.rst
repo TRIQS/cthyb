@@ -4,7 +4,7 @@ Measurements: definitions
 =========================
 
 Here we list all the observables that can be measured by the solver along with their definitions.
-Each measurement can be turned on or off via the corresponding :ref:`solve() parameters <solve_parameters>`.
+Each measurement can be turned on or off via the corresponding :class:`solve() parameters <triqs_cthyb.solver_core.SolveParametersT>`.
 
 Green's function
 ----------------

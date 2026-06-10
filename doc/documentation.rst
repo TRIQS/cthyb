@@ -48,18 +48,17 @@ Reference manual
    :template: autosummary_module_template.rst
    :recursive:
 
+   triqs_cthyb.configuration
    triqs_cthyb.multiplet_tools
    triqs_cthyb.solver
+   triqs_cthyb.solver_core
    triqs_cthyb.tail_fit
    triqs_cthyb.util
 
-Link to all relevant solver parameters:
+Links to all relevant solver parameters: 
 
-.. toctree::
-   :maxdepth: 1
-
-   constr_parameters
-   solve_parameters
+* :doc:`Construction parameters <_ref/triqs_cthyb.solver_core.ConstrParametersT>`
+* :doc:`Solve parameters <_ref/triqs_cthyb.solver_core.SolveParametersT>`
 
 FAQs
 ----

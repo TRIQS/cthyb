@@ -1,0 +1,5 @@
+package_name = "triqs_cthyb"
+documentation = "The TRIQS cthyb solver"
+namespaces = "triqs_cthyb"
+match_names = "triqs_cthyb::(solver_core|constr_parameters_t|solve_parameters_t|block_order)"
+wrap_no_arg_methods_as_properties = true

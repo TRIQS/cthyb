@@ -82,7 +82,7 @@ TEST(CtHyb, Kanamori) {
 
   // Solve parameters
   auto n_cycles     = 5000;
-  auto p            = solve_parameters_t(H, n_cycles);
+  auto p            = solve_parameters_t{.h_int = H, .n_cycles = n_cycles};
   p.max_time        = -1;
   p.random_name     = "";
   p.random_seed     = 123 * rank + 567;
@@ -103,7 +103,7 @@ TEST(CtHyb, Kanamori) {
   filename += "_qn";
 #endif
 
-  auto & G_tau = *solver.G_tau;
+  auto &G_tau = *solver.G_tau;
 
   if (rank == 0) {
     h5::file G_file(filename + ".out.h5", 'w');

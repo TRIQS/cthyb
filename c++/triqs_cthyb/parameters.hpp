@@ -53,6 +53,8 @@ namespace triqs_cthyb {
     /// Use Delta_tau and h_loc0 as input instead of G0_iw?
     bool delta_interface = false;
 
+    bool operator==(constr_parameters_t const &) const = default;
+
     /// Write constr_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, constr_parameters_t const &sp);
 
@@ -232,9 +234,7 @@ namespace triqs_cthyb {
     /// Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
     double det_singular_threshold = -1;
 
-    solve_parameters_t() {}
-
-    solve_parameters_t(many_body_op_t h_int, long n_cycles) : h_int(h_int), n_cycles(n_cycles) {}
+    bool operator==(solve_parameters_t const &) const = default;
 
     /// Write solve_parameters_t to hdf5
     friend void h5_write(h5::group h5group, std::string subgroup_name, solve_parameters_t const &sp);
@@ -252,6 +252,6 @@ namespace triqs_cthyb {
   /// A struct combining both constr_params_t and solve_params_t
   struct params_t : constr_parameters_t, solve_parameters_t {
     params_t(constr_parameters_t constr_parameters_, solve_parameters_t solve_parameters_)
-      : constr_parameters_t(constr_parameters_), solve_parameters_t(solve_parameters_) {}
+       : constr_parameters_t(constr_parameters_), solve_parameters_t(solve_parameters_) {}
   };
-}
+} // namespace triqs_cthyb

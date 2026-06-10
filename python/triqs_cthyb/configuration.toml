@@ -1,0 +1,4 @@
+package_name = "triqs_cthyb"
+documentation = "MC configuration for triqs_cthyb."
+namespaces = "triqs_cthyb"
+match_names = "triqs_cthyb::(op_desc|configuration)"

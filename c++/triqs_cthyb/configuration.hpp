@@ -24,6 +24,7 @@
 #include <triqs/utility/time_pt.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
+#include <triqs/utility/macros.hpp>
 
 #include <h5/h5.hpp>
 
@@ -91,10 +92,12 @@ namespace triqs_cthyb {
     }
     ~configuration() { configs_hfile.close(); }
 #else
-    configuration(double beta, long id = 0, oplist_t oplist = {}) : beta_(beta), id_(id), oplist_(oplist) {}
+    configuration(double beta, long id = 0) : beta_(beta), id_(id) {}
+    C2PY_IGNORE configuration(double beta, long id, oplist_t oplist) : beta_(beta), id_(id), oplist_(oplist) {}
 #endif
 
     /// Inverse temperature \f$ \beta \f$.
+    C2PY_PROPERTY_GET(beta) double beta() const { return beta_; }
     auto size() const { return oplist_.size(); }
 
     /**
@@ -145,6 +148,7 @@ namespace triqs_cthyb {
     }
 
     /// Read a configuration from an hdf5 file.
+    C2PY_IGNORE static configuration h5_read_construct(h5::group g, std::string const &name) {
       h5::group gr = g.open_group(name);
       h5::assert_hdf5_format<configuration>(gr);
       auto beta   = h5::read<double>(gr, "beta");

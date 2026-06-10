@@ -49,8 +49,8 @@ def multiplet_analysis(rho, h_loc_diag, n_orb, spin_names=['up','down'], off_dia
     off_diag: boolean
         determines whether blocks of Gf are named up_0 (false) or just up (true)
 
-    Returns:
-    --------
+    Returns
+    -------
     res : Panda DataFrame
         containing all results structured
     """

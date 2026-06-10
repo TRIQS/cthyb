@@ -27,6 +27,7 @@
 #include <triqs/stat/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
+#include <triqs/utility/macros.hpp>
 #include <optional>
 
 #include "types.hpp"
@@ -78,7 +79,6 @@ namespace triqs_cthyb {
      *
      * @param p Parameters used for constructing the solver.
      */
-    CPP2PY_ARG_AS_DICT
     solver_core(constr_parameters_t const &p);
 
     // Delete assignement operator because of const members
@@ -92,14 +92,13 @@ namespace triqs_cthyb {
      *
      * @param p Parameters controlling the Monte Carlo simulation and measurements.
      */
-    CPP2PY_ARG_AS_DICT
     void solve(solve_parameters_t const &p);
 
     /// The local Hamiltonian \f$ H_{loc} \f$ used in the last solve.
-    many_body_op_t const &h_loc() const { return _h_loc; }
+    many_body_op_t h_loc() const { return _h_loc; }
 
     /// The noninteracting part of the local Hamiltonian.
-    many_body_op_t const &h_loc0() const { return _h_loc0; }
+    many_body_op_t h_loc0() const { return _h_loc0; }
 
     /// Parameters used for constructing the solver.
     constr_parameters_t last_constr_parameters() const { return constr_parameters; }
@@ -127,13 +126,13 @@ namespace triqs_cthyb {
     //block_gf_view<imtime> atomic_gf() const { return ::triqs_cthyb::atomic_gf(h_diag, beta, gf_struct, _Delta_tau[0].mesh().size()); }
 
     /// Accumulated density matrix.
-    std::vector<matrix_t> const &density_matrix() const { return _density_matrix; }
+    std::vector<matrix_t> density_matrix() const { return _density_matrix; }
 
     /// Diagonalization of \f$ H_{loc} \f$.
     atom_diag const &h_loc_diagonalization() const { return h_diag; }
 
     /// Histograms related to the performance analysis.
-    histo_map_t const &get_performance_analysis() const { return _performance_analysis; }
+    C2PY_PROPERTY_GET(performance_analysis) histo_map_t get_performance_analysis() const { return _performance_analysis; }
 
     /// Monte Carlo average sign.
     mc_weight_t average_sign() const { return _average_sign; }
@@ -151,7 +150,7 @@ namespace triqs_cthyb {
     int solve_status() const { return _solve_status; }
 
     /// Final configuration of the last solve call.
-    auto const &last_configuration() const { return _last_configuration; }
+    std::optional<configuration> last_configuration() const { return _last_configuration; }
 
     /// Is the solver compiled with support for complex hybridization?
     bool hybridisation_is_complex() const {
@@ -171,7 +170,6 @@ namespace triqs_cthyb {
 #endif
     }
 
-    CPP2PY_IGNORE
     static std::string hdf5_format() { return "CTHYB_SolverCore"; }
 
     // Function that writes the solver_core to hdf5 file
@@ -198,8 +196,7 @@ namespace triqs_cthyb {
     }
 
     // Function that read all containers to hdf5 file
-    CPP2PY_IGNORE
-    static solver_core h5_read_construct(h5::group h5group, std::string subgroup_name) {
+    C2PY_IGNORE static solver_core h5_read_construct(h5::group h5group, std::string subgroup_name) {
       h5::group grp          = subgroup_name.empty() ? h5group : h5group.open_group(subgroup_name);
       auto constr_parameters = h5::h5_read<constr_parameters_t>(grp, "constr_parameters");
       auto s                 = solver_core{constr_parameters};

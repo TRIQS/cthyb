@@ -48,7 +48,7 @@ TEST(CtHyb, Legendre) {
 
   // Solve parameters
   int n_cycles       = 5000;
-  auto p             = solve_parameters_t(H, n_cycles);
+  auto p             = solve_parameters_t{.h_int = H, .n_cycles = n_cycles};
   p.random_name      = "";
   p.random_seed      = 123 * rank + 567;
   p.max_time         = -1;

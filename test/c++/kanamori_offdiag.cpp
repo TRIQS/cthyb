@@ -10,11 +10,11 @@
 using namespace triqs_cthyb;
 using namespace triqs::gfs;
 using namespace triqs::mesh;
+using nda::matrix;
+using triqs::hilbert_space::gf_struct_t;
 using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::n;
-using nda::matrix;
-using triqs::hilbert_space::gf_struct_t;
 
 TEST(CtHyb, KanamoriOffDiag) {
 
@@ -83,7 +83,7 @@ TEST(CtHyb, KanamoriOffDiag) {
   gf_struct_t gf_struct{{"up", num_orbitals}, {"down", num_orbitals}};
 
   // Construct CTQMC solver
-  solver_core solver({beta, gf_struct, 1025, 2500});
+  solver_core solver({.beta = beta, .gf_struct = gf_struct, .n_iw = 1025, .n_tau = 2500});
 
   // Set G0
   auto delta_iw = gf<imfreq>{{beta, Fermion}, {num_orbitals, num_orbitals}};
@@ -109,7 +109,7 @@ TEST(CtHyb, KanamoriOffDiag) {
 
   // Solve parameters
   auto n_cycles     = 5000;
-  auto p            = solve_parameters_t(H, n_cycles);
+  auto p            = solve_parameters_t{.h_int = H, .n_cycles = n_cycles};
   p.max_time        = -1;
   p.random_name     = "";
   p.random_seed     = 123 * rank + 567;

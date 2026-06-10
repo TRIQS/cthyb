@@ -62,7 +62,7 @@ TEST(CtHyb, Spinless) {
 
   // Solve parameters
   int n_cycles      = 5000;
-  auto p            = solve_parameters_t(H, n_cycles);
+  auto p            = solve_parameters_t{.h_int = H, .n_cycles = n_cycles};
   p.random_name     = "";
   p.random_seed     = 123 * rank + 567;
   p.max_time        = -1;
@@ -83,7 +83,7 @@ TEST(CtHyb, Spinless) {
   filename += "_qn";
 #endif
 
-  auto & G_tau = *solver.G_tau;
+  auto &G_tau = *solver.G_tau;
 
   if (rank == 0) {
     h5::file G_file(filename + ".out.h5", 'w');

@@ -75,7 +75,7 @@ TEST(CtHyb, G2_measurments) {
 
   // Solve parameters
   int n_cycles      = 500;
-  auto p            = solve_parameters_t(H, n_cycles);
+  auto p            = solve_parameters_t{.h_int = H, .n_cycles = n_cycles};
   p.random_name     = "";
   p.random_seed     = 123 * rank + 567;
   p.max_time        = -1;
@@ -110,7 +110,7 @@ TEST(CtHyb, G2_measurments) {
   EXPECT_GF_NEAR((*solver.G2_iw)(0, 1), (*solver.G2_iw_nfft)(0, 1));
   EXPECT_GF_NEAR((*solver.G2_iw_ph)(0, 1), (*solver.G2_iw_ph_nfft)(0, 1));
   EXPECT_GF_NEAR((*solver.G2_iw_pp)(0, 1), (*solver.G2_iw_pp_nfft)(0, 1));
-  
+
   std::cout << "--> solver done, now writing and reading the results.\n";
 
   // Save the results

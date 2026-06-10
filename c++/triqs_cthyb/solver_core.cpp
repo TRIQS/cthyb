@@ -441,7 +441,9 @@ namespace triqs_cthyb {
       sign *= det / std::abs(det);
     }
 
-    // Run! The empty (starting) configuration has sign = 1
+    // Run! The empty (starting) configuration has sign = 1.
+    // Note: mc_generic continues running after the requested cycles are done until all
+    // MPI ranks have finished (continue_after_ncycles_done defaults to true in triqs).
     _solve_status =
        qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle,
                                  triqs::utility::clock_callback(params.max_time), sign);

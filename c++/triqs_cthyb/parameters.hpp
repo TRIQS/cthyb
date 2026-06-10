@@ -32,85 +32,73 @@ namespace triqs_cthyb {
   using namespace triqs::operators;
   using indices_map_t = std::map<triqs::operators::indices_t, triqs::operators::indices_t>;
 
-  // All the arguments of the solver_core constructor
+  /// Parameters used for constructing the solver class.
   struct constr_parameters_t {
 
-    /// Inverse temperature
+    /// Inverse temperature \f$ \beta \f$.
     double beta;
 
-    ///block structure of the gf
+    /// Structure of the Green's function (names and sizes of blocks).
     gf_struct_t gf_struct;
 
-    /// Number of Matsubara frequencies for gf<imfreq, matrix_valued>
+    /// Number of Matsubara frequencies.
     int n_iw = 1025;
 
-    /// Number of tau points for gf<imtime, matrix_valued>
+    /// Number of imaginary-time points.
     int n_tau = 10001;
 
-    /// Number of Legendre polynomials for gf<legendre, matrix_valued>
+    /// Number of Legendre polynomials.
     int n_l = 50;
 
-    /// Use Delta_tau and h_loc0 as input instead of G0_iw?
+    /// Use \f$ \Delta(\tau) \f$ and \f$ h_{loc0} \f$ as input instead of \f$ G_0(i\omega) \f$.
     bool delta_interface = false;
 
     bool operator==(constr_parameters_t const &) const = default;
 
-    /// Write constr_parameters_t to hdf5
+    /// Write constr_parameters_t to hdf5.
     friend void h5_write(h5::group h5group, std::string subgroup_name, constr_parameters_t const &sp);
 
-    /// Read constr_parameters_t from hdf5
+    /// Read constr_parameters_t from hdf5.
     friend void h5_read(h5::group h5group, std::string subgroup_name, constr_parameters_t &sp);
   };
 
-  // All the arguments of the solve function
+  /// Parameters passed to the solve method of the solver class.
   struct solve_parameters_t {
 
-    /// Interacting part of the atomic Hamiltonian
-    /// type: Operator
+    /// Interacting part of the atomic Hamiltonian.
     many_body_op_t h_int;
 
-    /// Number of QMC cycles
+    /// Number of QMC cycles.
     long n_cycles;
 
-    /// Partition method
-    /// type: str
+    /// Partition method.
     std::string partition_method = "autopartition";
 
-    /// Quantum numbers
-    /// type: list(Operator)
-    /// default: []
+    /// Quantum numbers.
     std::vector<many_body_op_t> quantum_numbers = {};
 
-    /// Restrict local Hilbert space to states with at least this number of particles
-    /// default: 0
+    /// Restrict local Hilbert space to states with at least this number of particles.
     int loc_n_min = 0;
 
-    /// Restrict local Hilbert space to states with at most this number of particles
-    /// default: INT_MAX
+    /// Restrict local Hilbert space to states with at most this number of particles.
     int loc_n_max = INT_MAX;
 
-    /// Length of a single QMC cycle
-    /// default: 50
+    /// Length of a single QMC cycle.
     long length_cycle = 50;
 
-    /// Number of cycles for thermalization
-    /// default: 5000
+    /// Number of cycles for thermalization.
     long n_warmup_cycles = 5000;
 
-    /// Seed for random number generator
-    /// default: 34788 + 928374 * MPI.rank
+    /// Seed for random number generator.
     long random_seed = 34788 + 928374 * mpi::communicator().rank();
 
-    /// Name of random number generator
-    /// type: str
+    /// Name of random number generator.
     std::string random_name = "";
 
-    /// Maximum runtime in seconds, use -1 to set infinite
-    /// default: -1 = infinite
+    /// Maximum runtime in seconds, use -1 to set infinite.
     long max_time = -1;
 
-    /// Verbosity level
-    /// default: 3 on MPI rank 0, 0 otherwise.
+    /// Verbosity level.
     int verbosity = ((mpi::communicator().rank() == 0) ? 3 : 0); // silence the slave nodes
 
     /// Add shifting an operator as a move?
@@ -122,69 +110,67 @@ namespace triqs_cthyb {
     /// Calculate the full trace or use an estimate?
     bool use_trace_estimator = false;
 
-    /// Measure G(tau)? :math:`G_{ij}(\tau)=G_{ji}^*(\tau)` is enforced for the resulting G(tau)
+    /// Measure \f$ G(\tau) \f$? Hermiticity \f$ G_{ij}(\tau) = G_{ji}^*(\tau) \f$ is enforced.
     bool measure_G_tau = true;
 
-    /// Measure G_l (Legendre)? Note, no hermiticity in G_l is ensured
+    /// Measure \f$ G_l \f$ (Legendre)? No hermiticity is enforced.
     bool measure_G_l = false;
 
-    /// Measure O_tau by insertion
+    /// Measure \f$ O(\tau) \f$ by insertion.
     std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = {};
 
-    /// Minumum of operator insertions in: O_tau by insertion measure
+    /// Minimum number of operator insertions in the \f$ O(\tau) \f$ insertion measure.
     int measure_O_tau_min_ins = 10;
 
-    /// Measure G^4(tau,tau',tau'') with three fermionic times.
+    /// Measure \f$ G^{(2)}(\tau,\tau',\tau'') \f$ with three fermionic times.
     bool measure_G2_tau = false;
 
-    /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
+    /// Measure \f$ G^{(2)}(i\nu,i\nu',i\nu'') \f$ with three fermionic frequencies.
     bool measure_G2_iw = false;
 
-    /// Measure G^4(inu,inu',inu'') with three fermionic frequencies.
+    /// Measure \f$ G^{(2)}(i\nu,i\nu',i\nu'') \f$ with three fermionic frequencies.
     bool measure_G2_iw_nfft = false;
 
-    /// Measure G^4(iomega,inu,inu') within the particle-particle channel.
+    /// Measure \f$ G^{(2)}(i\omega,i\nu,i\nu') \f$ in the particle-particle channel.
     bool measure_G2_iw_pp = false;
 
-    /// Measure G^4(iomega,inu,inu') within the particle-particle channel.
+    /// Measure \f$ G^{(2)}(i\omega,i\nu,i\nu') \f$ in the particle-particle channel.
     bool measure_G2_iw_pp_nfft = false;
 
-    /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
+    /// Measure \f$ G^{(2)}(i\omega,i\nu,i\nu') \f$ in the particle-hole channel.
     bool measure_G2_iw_ph = false;
 
-    /// Measure G^4(iomega,inu,inu') within the particle-hole channel.
+    /// Measure \f$ G^{(2)}(i\omega,i\nu,i\nu') \f$ in the particle-hole channel.
     bool measure_G2_iw_ph_nfft = false;
 
-    /// Measure G^2(iomega,l,l') within the particle-particle channel.
+    /// Measure \f$ G^{(2)}(i\omega,l,l') \f$ in the particle-particle channel.
     bool measure_G2_iwll_pp = false;
 
-    /// Measure G^2(iomega,l,l') within the particle-hole channel.
+    /// Measure \f$ G^{(2)}(i\omega,l,l') \f$ in the particle-hole channel.
     bool measure_G2_iwll_ph = false;
 
-    /// Order of block indices in the definition of G^2.
+    /// Order of block indices in the definition of \f$ G^{(2)} \f$.
     block_order measure_G2_block_order = block_order::AABB;
 
-    /// List of block index pairs of G^2 to measure.
-    /// default: measure all blocks
+    /// List of block index pairs of \f$ G^{(2)} \f$ to measure.
     std::set<std::pair<std::string, std::string>> measure_G2_blocks = {};
 
-    /// Number of imaginary time slices for G^4 measurement.
+    /// Number of imaginary-time slices for the \f$ G^{(2)} \f$ measurement.
     int measure_G2_n_tau = 10;
 
-    /// Number of bosonic Matsubara frequencies for G^4 measurement.
+    /// Number of bosonic Matsubara frequencies for the \f$ G^{(2)} \f$ measurement.
     int measure_G2_n_bosonic = 30;
 
-    /// Number of fermionic Matsubara frequencies for G^4 measurement.
+    /// Number of fermionic Matsubara frequencies for the \f$ G^{(2)} \f$ measurement.
     int measure_G2_n_fermionic = 30;
 
-    /// Number of Legendre coefficients for G^4(iomega,l,l') measurement.
+    /// Number of Legendre coefficients for the \f$ G^{(2)}(i\omega,l,l') \f$ measurement.
     int measure_G2_n_l = 20;
 
-    /// NFFT buffer size for G^4(iomega,l,l') measurement.
+    /// NFFT buffer size for the \f$ G^{(2)}(i\omega,l,l') \f$ measurement.
     int measure_G2_iwll_nfft_buf_size = 100;
 
-    /// NFFT buffer sizes for different blocks
-    /// default: 100 for every block
+    /// NFFT buffer sizes for different blocks.
     std::map<std::string, long> nfft_buf_sizes = {};
 
     /// Measure perturbation order?
@@ -193,45 +179,40 @@ namespace triqs_cthyb {
     /// Measure the reduced impurity density matrix?
     bool measure_density_matrix = false;
 
-    /// Use the norm of the density matrix in the weight if true, otherwise use Trace
+    /// Use the norm of the density matrix in the weight (instead of the trace)?
     bool use_norm_as_weight = false;
 
-    /// Initial configuration of the run. (advanced --> use with care!)
+    /// Initial configuration of the run (advanced, use with care).
     std::optional<configuration> initial_configuration = {};
 
-    /// Analyse performance of trace computation with histograms (developers only)?
+    /// Analyse performance of the trace computation with histograms (developers only)?
     bool performance_analysis = false;
 
-    /// Operator insertion/removal probabilities for different blocks
-    /// type: dict(str:float)
-    /// default: {}
+    /// Operator insertion/removal probabilities for different blocks.
     std::map<std::string, double> proposal_prob = {};
 
-    /// List of global moves (with their names).
-    /// Each move is specified with an index substitution dictionary.
-    /// type: dict(str : dict(indices : indices))
-    /// default: {}
+    /// List of global moves (with their names). Each move is specified with an index substitution dictionary.
     std::map<std::string, indices_map_t> move_global = {};
 
-    /// Overall probability of the global moves
+    /// Overall probability of the global moves.
     double move_global_prob = 0.05;
 
-    /// Threshold below which imaginary components of Delta and h_loc are set to zero
+    /// Threshold below which imaginary components of \f$ \Delta \f$ and \f$ h_{loc} \f$ are set to zero.
     double imag_threshold = 1.e-13;
 
-    /// The maximum size of the determinant matrix before a resize
+    /// The maximum size of the determinant matrix before a resize.
     int det_init_size = 100;
 
-    /// Max number of ops before the test of deviation of the det, M^-1 is performed.
+    /// Maximum number of operations before testing the accuracy of \f$ \det(M) \f$ and \f$ M^{-1} \f$.
     int det_n_operations_before_check = 100;
 
-    /// Threshold for determinant precision warnings
+    /// Threshold for determinant precision warnings.
     double det_precision_warning = 1.e-8;
 
-    /// Threshold for determinant precision error
+    /// Threshold for determinant precision error.
     double det_precision_error = 1.e-5;
 
-    /// Bound for the determinant matrix being singular, abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
+    /// Bound for the determinant matrix being singular (if \f$ < 0 \f$, checks for subnormal numbers).
     double det_singular_threshold = -1;
 
     bool operator==(solve_parameters_t const &) const = default;
@@ -242,10 +223,10 @@ namespace triqs_cthyb {
     /// Read solve_parameters_t from hdf5
     friend void h5_read(h5::group h5group, std::string subgroup_name, solve_parameters_t &sp);
 
-    /// Threshold below which which off diagonal components of hloc are set to 0
+    /// Threshold below which off-diagonal components of \f$ h_{loc} \f$ are set to zero.
     double off_diag_threshold = 0.0;
 
-    /// Quadratic part of the local Hamiltonian. Must be provided if the Delta interface is used
+    /// Quadratic part of the local Hamiltonian. Must be provided if the \f$ \Delta \f$ interface is used.
     std::optional<many_body_op_t> h_loc0 = {};
   };
 

@@ -36,7 +36,7 @@
 
 namespace triqs_cthyb {
 
-  /// Core class of the cthyb solver
+  /// Continuous-time hybridization-expansion quantum Monte Carlo solver.
   class solver_core : public container_set_t {
 
     double beta;            // inverse temperature
@@ -67,16 +67,16 @@ namespace triqs_cthyb {
     container_set_t const &container_set() const { return static_cast<container_set_t const &>(*this); }
 
     public:
-    /// Parameters passed to the solver constructor (see also :ref:`constr_parameters`).
+    /// Parameters used for constructing the solver.
     constr_parameters_t constr_parameters;
 
-    /// Parameters passed to the solve function of the solver (see also :ref:`solve_parameters`).
+    /// Parameters passed to the solve method.
     solve_parameters_t solve_parameters;
 
     /**
-     * Construct a CTHYB solver
+     * Construct a CTHYB solver.
      *
-     * @param p Set of parameters specific to the CTHYB solver
+     * @param p Parameters used for constructing the solver.
      */
     CPP2PY_ARG_AS_DICT
     solver_core(constr_parameters_t const &p);
@@ -88,44 +88,36 @@ namespace triqs_cthyb {
     solver_core &operator=(solver_core &&p)      = default;
 
     /**
-     * Solve method that performs CTHYB calculation
+     * Solve the impurity problem.
      *
-     * @param p Set of parameters for the CTHYB calculation
+     * @param p Parameters controlling the Monte Carlo simulation and measurements.
      */
     CPP2PY_ARG_AS_DICT
     void solve(solve_parameters_t const &p);
 
-    /// The local Hamiltonian of the problem: :math:`H_{loc}` used in the last call to ``solve()``.
+    /// The local Hamiltonian \f$ H_{loc} \f$ used in the last solve.
     many_body_op_t const &h_loc() const { return _h_loc; }
 
     /// The noninteracting part of the local Hamiltonian.
     many_body_op_t const &h_loc0() const { return _h_loc0; }
 
-    /// Set of parameters used in the construction of the ``solver_core`` class.
+    /// Parameters used for constructing the solver.
     constr_parameters_t last_constr_parameters() const { return constr_parameters; }
 
-    /// Set of parameters used in the last call to ``solve()``.
+    /// Parameters used in the last solve.
     solve_parameters_t last_solve_parameters() const { return solve_parameters; }
 
-    /// :math:`G_0^{-1}(i\omega_n = \infty)` in Matsubara Frequency.
+    /// \f$ G_0^{-1}(i\omega_n = \infty) \f$ in Matsubara frequencies.
     [[deprecated("Use h_loc0() instead.")]]
     std::vector<matrix<dcomplex>> Delta_infty() {
       if (delta_interface) TRIQS_RUNTIME_ERROR << "Delta_infty cannot be accessed when using the Delta interface";
       return Delta_infty_vec.value();
     }
 
-    /// Get a copy of the last container set.
-    // HACK TO GET CPP2PY TO WRAP THE container_set_t struct.
-    /*
-    CPP2PY_ARG_AS_DICT
-    void set_container_set(container_set_t &cs) { static_cast<container_set_t &>(*this) = cs; }
-    container_set_t last_container_set() { return static_cast<container_set_t>(*this); }
-    */
-
-    /// :math:`\Delta(\tau)` in imaginary time.
+    /// Hybridization function \f$ \Delta(\tau) \f$ in imaginary time.
     block_gf_view<imtime> Delta_tau() { return _Delta_tau; }
 
-    /// :math:`G_0(i\omega)` in imaginary frequencies.
+    /// Non-interacting Green's function \f$ G_0(i\omega) \f$ in Matsubara frequencies.
     block_gf_view<imfreq> G0_iw() {
       if (delta_interface) TRIQS_RUNTIME_ERROR << "G0_iw cannot be accessed when using the Delta interface";
       return _G0_iw.value();
@@ -137,7 +129,7 @@ namespace triqs_cthyb {
     /// Accumulated density matrix.
     std::vector<matrix_t> const &density_matrix() const { return _density_matrix; }
 
-    /// Diagonalization of :math:`H_{loc}`.
+    /// Diagonalization of \f$ H_{loc} \f$.
     atom_diag const &h_loc_diagonalization() const { return h_diag; }
 
     /// Histograms related to the performance analysis.
@@ -146,22 +138,22 @@ namespace triqs_cthyb {
     /// Monte Carlo average sign.
     mc_weight_t average_sign() const { return _average_sign; }
 
-    /// Average perturbation order
+    /// Average perturbation order.
     double average_order() const { return _average_order; }
 
-    /// Auto-correlation time in units of MC cycles
+    /// Auto-correlation time in units of MC cycles.
     double auto_corr_time() const { return _auto_corr_time; }
 
-    /// Whether the auto-correlation time estimate has saturated (false: it is only a lower bound, run longer)
+    /// Whether the auto-correlation time estimate has saturated (false: it is only a lower bound, run longer).
     bool auto_corr_time_converged() const { return _auto_corr_time_converged; }
 
-    /// Status of the ``solve()`` on exit.
+    /// Status of the solve on exit.
     int solve_status() const { return _solve_status; }
 
     /// Final configuration of the last solve call.
     auto const &last_configuration() const { return _last_configuration; }
 
-    /// is cthyb compiled with support for complex hybridization?
+    /// Is the solver compiled with support for complex hybridization?
     bool hybridisation_is_complex() const {
 #ifdef HYBRIDISATION_IS_COMPLEX
       return true;
@@ -170,7 +162,7 @@ namespace triqs_cthyb {
 #endif
     }
 
-    /// is cthyb compiled with support for complex local Hamiltonian
+    /// Is the solver compiled with support for a complex local Hamiltonian?
     bool local_hamiltonian_is_complex() const {
 #ifdef LOCAL_HAMILTONIAN_IS_COMPLEX
       return true;

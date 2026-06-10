@@ -14,3 +14,5 @@
 #include <triqs_cthyb/solver_core.hpp>
 
 #include "./configuration.wrap.hxx"
+
+#include "solver_core.wrap.cxx"

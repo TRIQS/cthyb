@@ -23,6 +23,8 @@ r"""
 DOC
 
 """
+# triqs::stat::histogram so that Solver.perturbation_order(_total) and performance_analysis can be used
+from triqs.stat.histograms import Histogram
 from .solver import Solver
 from .solver_core import SolverCore, ConstrParametersT, SolveParametersT
 from .configuration import Configuration, OpDesc

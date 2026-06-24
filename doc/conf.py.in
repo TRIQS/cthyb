@@ -14,7 +14,7 @@ if sys.platform == 'darwin':
     urllib.request.getproxies = urllib.request.getproxies_environment
 
 # exclude these folders from scanning by sphinx
-exclude_patterns = ['_templates']
+exclude_patterns = ['_templates', 'doxygen']
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
@@ -48,11 +48,14 @@ myst_enable_extensions = [
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-source_suffix = '.rst'
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 # Turn on sphinx.ext.autosummary
 autosummary_generate = True
-autosummary_imported_members=False
+autosummary_imported_members = False
 
 project = 'TRIQS Hybridization Expansion Solver'
 version = '@PROJECT_VERSION@'

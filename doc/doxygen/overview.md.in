@@ -1,0 +1,23 @@
+@mainpage Overview
+
+[TOC]
+
+> This is the homepage of **TRIQS/@PROJECT_NAME@ v@PROJECT_VERSION@**. The source code can be found on [GitHub](https://github.com/TRIQS/cthyb).
+
+An example application using [c2py](https://github.com/flatironinstitute/c2py)/[clair](https://github.com/flatironinstitute/clair) and [TRIQS](https://github.com/TRIQS/triqs).
+
+This documentation is generated based on [doxygen](https://www.doxygen.nl/)
+and the comments in the sources and headers.
+
+@section start Where to start?
+
+The @ref installation section tells you how to get the library and make it available on your system.
+
+@ref integration explains how to integrate **cthyb** in your own C++ code.
+
+Then, you can start with the @ref examples section to get an overview of the library's features and how
+**cthyb** can be used in practice.
+
+Furthermore, we provide a detailed reference @ref documentation to answer your questions.
+
+If you experience any problem with the library, you can post an [issue](../issues.html) on GitHub.

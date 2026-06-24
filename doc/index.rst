@@ -22,8 +22,8 @@ Hamiltonian of the problem has the form
 .. sidebar:: cthyb |PROJECT_VERSION|
 
    This is the homepage of cthyb Version |PROJECT_VERSION|.
-   For changes see the :ref:`changelog page <changelog>`. 
-   
+   For changes see the :doc:`changelog page <ChangeLog>`.
+
       .. image:: _static/logo_github.png
          :width: 65%
          :align: center
@@ -78,5 +78,5 @@ problem. Learn how to use it in the :ref:`documentation`.
    install
    documentation
    issues
-   ChangeLog.md
+   ChangeLog
    about

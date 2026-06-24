@@ -26,10 +26,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-24.04, cxx: clang++-20 }
-          - { os: ubuntu-24.04, cxx: g++-14 }
-          - { os: macos-15,     cxx: clang++ }
-          - { os: macos-15,     cxx: g++-15 }
+          - { os: ubuntu-24.04, cxx: clang++-20, clang_cxx: clang++-20 }
+          - { os: ubuntu-24.04, cxx: g++-14, clang_cxx: clang++-20 }
+          - { os: macos-15, cxx: clang++, clang_cxx: clang++ }
+          - { os: macos-15, cxx: g++, clang_cxx: clang++ }
 
     runs-on: ${{ matrix.os }}
 
@@ -43,10 +43,7 @@ jobs:
         restore-keys: |
           ccache-${{ matrix.os }}-${{ matrix.cxx }}-
 
-    - name: Set compiler
-      run: echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
-
-    - name: Install ubuntu dependencies
+    - name: Set up Linux environment
       if: ${{ contains(matrix.os, 'ubuntu') }}
       run: >
         sudo apt-get update &&
@@ -76,7 +73,6 @@ jobs:
         openmpi-bin
         openmpi-common
         openmpi-doc
-        python3-clang-20
         python3-dev
         python3-mako
         python3-matplotlib
@@ -84,7 +80,8 @@ jobs:
         python3-numpy
         python3-pip
         python3-scipy
-        python3-ipython
+        python3-ipython &&
+        echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
 
     - name: Set up Python venv
       run: |
@@ -93,12 +90,18 @@ jobs:
         echo "VIRTUAL_ENV=$HOME/.venv/my_python" >> $GITHUB_ENV
         echo "$HOME/.venv/my_python/bin"         >> $GITHUB_PATH
 
-    - name: Install homebrew dependencies
+    - name: Set up macOS environment
       if: ${{ contains(matrix.os, 'macos') }}
       run: |
         brew update
         brew install ccache gcc llvm libomp boost fftw hdf5 open-mpi openblas
         brew install wentzell/triqs/nfft
+        # Set CXX from the matrix; for gcc, resolve unversioned 'g++' to whatever g++-NN Homebrew installed
+        CXX=${{ matrix.cxx }}
+        if [[ $CXX == g++ ]]; then
+          CXX=$(basename "$(ls $(brew --prefix)/bin/g++-* | sort -V | tail -1)")
+        fi
+        echo "CXX=$CXX" >> $GITHUB_ENV
         pip install mako numpy scipy mpi4py
         pip install -r requirements.txt
         echo "PATH=$(brew --prefix llvm)/bin:$(brew --prefix gcc)/bin:$PATH" >> $GITHUB_ENV
@@ -111,6 +114,18 @@ jobs:
       if: ${{ contains(matrix.cxx, 'clang') }}
       run: |
         echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
+
+    - name: Build & Install clair
+      env:
+        CXX: ${{ matrix.clang_cxx }}
+        CXXFLAGS: ""
+      run: |
+        git clone https://github.com/flatironinstitute/clair --branch unstable
+        cmake -S clair -B clair/build -G Ninja \
+          -DPython_EXECUTABLE=$VIRTUAL_ENV/bin/python \
+          -DBuild_Tests=OFF \
+          -DCMAKE_INSTALL_PREFIX=$HOME/install
+        cmake --build clair/build --target install --verbose
 
     - name: Build & Install TRIQS
       env:

@@ -47,6 +47,16 @@ else()
   endif()
 endif()
 
+# -- c2py --
+if(PythonSupport OR (NOT IS_SUBPROJECT AND Build_Documentation))
+  external_dependency(c2py
+    GIT_REPO https://github.com/flatironinstitute/c2py
+    GIT_TAG unstable
+    BUILD_ALWAYS
+    EXCLUDE_FROM_ALL
+  )
+endif()
+
 # -- GTest --
 external_dependency(GTest
   GIT_REPO https://github.com/google/googletest

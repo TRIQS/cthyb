@@ -4,7 +4,7 @@ def dockerName = projectName.toLowerCase();
 /* which platform to build documentation on */
 def documentationPlatform = "ubuntu-clang"
 /* depend on triqs upstream branch/project */
-def triqsBranch = env.CHANGE_TARGET ?: env.BRANCH_NAME
+def triqsBranch = "unstable"
 def triqsProject = '/TRIQS/triqs/' + triqsBranch.replaceAll('/', '%2F')
 /* whether to keep and publish the results */
 def keepInstall = !env.BRANCH_NAME.startsWith("PR-")
@@ -26,6 +26,9 @@ def platforms = [:]
 /****************** linux builds (in docker) */
 /* Each platform must have a corresponding Dockerfile.PLATFORM in triqs/packaging */
 def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "ubuntu-intel", "sanitize"]
+/* Platforms that regenerate the Python bindings via clair-c2py.
+   All others use the default (OFF) from c2py. */
+def regenPlatforms = ["ubuntu-clang"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
   def platform = dockerPlatforms[i]
@@ -39,11 +42,13 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       """
       archiveArtifacts(artifacts: "Dockerfile.${env.STAGE_NAME}")
       /* build and tag */
-      def args = '-DTRACE_DEBUG_CHECKS=ON'
+      def regen = regenPlatforms.contains(platform)
+      def args = regen ? '-DUpdate_Python_Bindings=ON' : ''
+      args += ' -DTRACE_DEBUG_CHECKS=ON'
       if (platform == documentationPlatform)
-        args = "-DBuild_Documentation=1 ${args}"
+        args += ' -DBuild_Documentation=ON'
       else if (platform == "sanitize")
-        args = '-DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
+        args += ' -DASAN=ON -DUBSAN=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo'
       def img = docker.build("flatironjenkins/${dockerName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg APPNAME=${projectName} --build-arg BUILD_ID=${env.BUILD_TAG} --build-arg CMAKE_ARGS='${args}' .")
       catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
         img.inside("--shm-size=4gb") {

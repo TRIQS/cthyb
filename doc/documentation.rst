@@ -55,10 +55,12 @@ Reference manual
    triqs_cthyb.tail_fit
    triqs_cthyb.util
 
-Links to all relevant solver parameters: 
+Links to all relevant solver parameters:
 
 * :doc:`Construction parameters <_ref/triqs_cthyb.solver_core.ConstrParametersT>`
 * :doc:`Solve parameters <_ref/triqs_cthyb.solver_core.SolveParametersT>`
+
+The C++ reference manual can be found `here <./doxygen/index.html>`_.
 
 FAQs
 ----

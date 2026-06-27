@@ -6,7 +6,7 @@ def documentationPlatform = "ubuntu-clang"
    All others use the default (OFF) from c2py. */
 def regenPlatforms = ["ubuntu-clang"]
 /* depend on triqs upstream branch/project */
-def triqsBranch = env.BRANCH_NAME == "jenkins" ? "jenkins" : "unstable"
+def triqsBranch = env.CHANGE_TARGET ?: env.BRANCH_NAME
 def triqsProject = '/CCQ/TRIQS/triqs/' + triqsBranch.replaceAll('/', '%2F')
 /* whether to keep and publish the results */
 def keepInstall = !env.BRANCH_NAME.startsWith("PR-")

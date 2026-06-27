@@ -74,7 +74,7 @@ if __name__ == '__main__':
         chi_dissconn = p.chi_dissconn[i1, i2, i3, i4]
         chi_tau.data[:] -= chi_dissconn        
         
-        p.chi[i1, i2, i3, i4] = np.trapz(chi_tau.data, x=tau) / m.beta
+        p.chi[i1, i2, i3, i4] = np.trapezoid(chi_tau.data, x=tau) / m.beta
 
     # ------------------------------------------------------------------
     # -- Store to hdf5

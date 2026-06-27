@@ -24,7 +24,7 @@ using namespace triqs_cthyb;
 
 //-------------------- Cache integrity check --------------------------------
 
-void impurity_trace::check_cache_integrity(bool print) {
+void impurity_trace::check_cache_integrity([[maybe_unused]] bool print) {
 #ifdef TRACE_CHECK_CACHE
   static int check_counter = 0;
   ++check_counter;

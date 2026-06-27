@@ -53,7 +53,7 @@ namespace triqs_cthyb {
     auto [bare_atomic_weight, bare_atomic_reweighting] = data.imp_trace.compute();
     const auto prefactor = s / bare_atomic_weight / bare_atomic_reweighting / double(nsamples);
 
-    for (int i : range(nsamples)) {
+    for ([[maybe_unused]] int i : range(nsamples)) {
       auto tau1 = data.tau_seg.get_random_pt(rng);
       auto tau2 = data.tau_seg.get_random_pt(rng);
       double dtau = double(tau2 - tau1);

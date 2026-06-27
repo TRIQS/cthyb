@@ -1,5 +1,48 @@
 # Changelog
 
+## Version 4.0.0
+
+CTHYB version 4.0.0 is a compatibility release for TRIQS version 4.0.0 including an update to the latest app4triqs skeleton.
+The major change in this release is the migration of the Python bindings from cpp2py to the new clair + c2py framework.
+It further introduces a `solve_generic()` functional interface and several new features and bug fixes (see below for details).
+
+As this is a TRIQS major release with API changes, please run the `port_to_triqs4` script on your project to update
+the renamed Python module imports (`triqs.gf` -> `triqs.gfs`) and other affected interfaces.
+
+We thank all contributors: Emmanuel Castiel, Jennifer Coulter, Thomas Hahn, Alexander Hampel, Harrison LaBollita, Henri Menke, Dylan Simon, Nils Wentzell
+
+Find below an itemized list of changes in this release.
+
+### General
+* Migrate the Python bindings from cpp2py to the clair + c2py framework
+* Run `port_to_triqs4` script for the TRIQS 4.0 Python module renaming (`triqs.gf` -> `triqs.gfs`)
+* Update deprecated mesh constructor arguments for TRIQS 4.0
+* Add `solve_generic()` functional interface for cthyb
+* Add possibility of starting the run from a user provided configuration (#180)
+* Deprecate `solver_core::Delta_infty()` in favor of `h_loc0()`
+* Continue accumulating until all MPI ranks finish their cycles
+* Migrate the `auto_corr_time` measure from accumulator to log_binning and flag whether its estimate has saturated
+* Sort states in descending order of probability in the multiplet analysis
+* Fix use of `gf_struct` and `n_orb` vs `orb_names` in various places
+* Raise threshold for warnings about the density matrix not being one
+* Fix formula for the upper bound in `impurity_trace`
+* Bug fix in `qmc_data`
+* Fix invalid escape sequences in string literals
+
+### doc
+* Add CRM DLR Dyson solver tutorial (#174)
+* Update the doxygen API documentation in `parameters.hpp`, `container_set.hpp`, `configuration.hpp` and `solver_core.hpp`
+* Add FI support notice to README.md
+* Synchronize install page with ctseg and tprf
+
+### cmake
+* Add option `TRACE_DEBUG_CHECKS` and enable it for CI builds
+* Bump debian package triqs requirement to 3.3
+
+### jenkins
+* Push cthyb docker image to dockerhub registry
+
+
 ## Version 3.3.0
 
 CTHYB version 3.3.0 is a compatibility release for TRIQS version 3.3.0 including an update to the latest app4triqs skeleton.

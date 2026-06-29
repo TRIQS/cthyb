@@ -51,7 +51,7 @@ endif()
 if(PythonSupport OR (NOT IS_SUBPROJECT AND Build_Documentation))
   external_dependency(c2py
     GIT_REPO https://github.com/flatironinstitute/c2py
-    GIT_TAG unstable
+    GIT_TAG 0.9.x
     BUILD_ALWAYS
     EXCLUDE_FROM_ALL
   )

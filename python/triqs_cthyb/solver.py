@@ -113,6 +113,11 @@ class Solver(SolverCore):
         self.F_tau_raw = None
         self.F_moments = None
         self.Sigma_iw_improved = None
+        self.F_iw_partition = None
+        self.F_tau_partition_raw = None
+        self.F_moments_partition = None
+        self.F_tail_moments_partition = None
+        self.Sigma_iw_improved_partition = None
 
     def solve(self, **params_kw):
         r"""
@@ -191,6 +196,9 @@ class Solver(SolverCore):
         if (perform_post_proc and self.last_solve_parameters.measure_F_tau
                 and not self.last_solve_parameters.measure_G_tau):
             raise RuntimeError("measure_F_tau post-processing requires measure_G_tau=True")
+        if (perform_post_proc and self.last_solve_parameters.measure_F_tau_partition
+                and not self.last_solve_parameters.measure_G_tau):
+            raise RuntimeError("measure_F_tau_partition post-processing requires measure_G_tau=True")
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
@@ -299,5 +307,39 @@ class Solver(SolverCore):
 
                 for bl, f_iw in self.F_iw:
                     self.Sigma_iw_improved[bl] << f_iw * inverse(self.G_iw[bl])
+
+            if self.last_solve_parameters.measure_F_tau_partition:
+                self.F_tau_partition_raw = self.F_tau_partition.copy()
+                F_tau_partition_for_fourier = self.F_tau_partition.copy()
+
+                if self.Sigma_moments is not None:
+                    self.F_tail_moments_partition = _F_iw_tail_moments_from_sigma_and_g(self.Sigma_moments, self.G_moments)
+                    self.F_moments_partition = {bl: f_tail[1] for bl, f_tail in self.F_tail_moments_partition.items()}
+                else:
+                    self.F_moments_partition = _F_tau_first_moment_from_G_tau(
+                        self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
+                    self.F_tail_moments_partition = {}
+                    for bl, f1 in self.F_moments_partition.items():
+                        f_tail = np.zeros((2,) + f1.shape, dtype=complex)
+                        f_tail[1] = f1
+                        self.F_tail_moments_partition[bl] = f_tail
+
+                self.F_iw_partition = self.G_iw.copy()
+                self.F_iw_partition.zero()
+
+                for bl, f_tau in F_tau_partition_for_fourier:
+                    known_moments = self.F_tail_moments_partition[bl]
+                    f1 = known_moments[1]
+                    f_tau.data[0, :, :] = 0.5 * (f_tau.data[0, :, :] - f1 - f_tau.data[-1, :, :])
+                    f_tau.data[-1, :, :] = -f1 - f_tau.data[0, :, :]
+
+                    self.F_iw_partition[bl].set_from_fourier(f_tau, known_moments)
+
+                self.F_tau_partition = F_tau_partition_for_fourier
+                self.Sigma_iw_improved_partition = self.Sigma_iw.copy()
+                self.Sigma_iw_improved_partition.zero()
+
+                for bl, f_iw in self.F_iw_partition:
+                    self.Sigma_iw_improved_partition[bl] << f_iw * inverse(self.G_iw[bl])
 
         return solve_status

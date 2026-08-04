@@ -1,5 +1,5 @@
 [![build](https://github.com/TRIQS/cthyb/workflows/build/badge.svg)](https://github.com/TRIQS/cthyb/actions?query=workflow%3Abuild)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21690767.svg)](https://doi.org/10.5281/zenodo.21690767)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21690767-blue.svg)](https://doi.org/10.5281/zenodo.21690767)
 
 ## TRIQS continuous-time hybridization-expansion solver
 

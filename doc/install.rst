@@ -19,7 +19,7 @@ After the TRIQS setup the command::
 
      sudo apt-get install -y triqs_cthyb
 
-can be used to install the CTSEG package.
+can be used to install the CTHYB package.
 
 .. _anaconda:
 

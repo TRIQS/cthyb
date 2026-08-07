@@ -120,7 +120,7 @@ jobs:
         CXX: ${{ matrix.clang_cxx }}
         CXXFLAGS: ""
       run: |
-        git clone https://github.com/flatironinstitute/clair --branch unstable
+        git clone https://github.com/flatironinstitute/clair --branch 0.9.x
         cmake -S clair -B clair/build -G Ninja \
           -DPython_EXECUTABLE=$VIRTUAL_ENV/bin/python \
           -DBuild_Tests=OFF \

@@ -241,7 +241,9 @@ TEST(WormF, HubbardAtomStochasticEstimatorSmoke) {
   p.random_name       = "";
   p.verbosity         = 0;
   p.move_double       = false;
+  p.use_norm_as_weight = true;
   p.measure_G_tau     = false;
+  p.measure_density_matrix = true;
   p.measure_F_tau_worm = true;
   p.worm_eta          = 0.1;
   p.worm_prob         = 10.0;
@@ -252,6 +254,7 @@ TEST(WormF, HubbardAtomStochasticEstimatorSmoke) {
   EXPECT_EQ(solver.average_sign(), solver.average_sign_partition());
   EXPECT_NEAR(real(solver.average_sign_worm()), -1.0, 1e-12);
 
+  EXPECT_FALSE(solver.density_matrix().empty());
   ASSERT_TRUE(solver.F_tau.has_value());
   auto const &F_up = (*solver.F_tau)[0];
 

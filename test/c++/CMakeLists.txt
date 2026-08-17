@@ -5,7 +5,7 @@ foreach(file ${all_h5_ref_files})
 endforeach()
 
 # List of all tests
-set(all_tests anderson.cpp spinless.cpp kanamori.cpp kanamori_offdiag.cpp legendre.cpp rbt.cpp impurity_trace_atomic_gf.cpp impurity_trace_bug_try_insert.cpp impurity_trace_op_insert.cpp)
+set(all_tests anderson.cpp spinless.cpp kanamori.cpp kanamori_offdiag.cpp legendre.cpp rbt.cpp impurity_trace_atomic_gf.cpp impurity_trace_bug_try_insert.cpp impurity_trace_op_insert.cpp worm_F_atomic.cpp)
 if(MeasureG2)
   list(APPEND all_tests G2.cpp)
 endif()

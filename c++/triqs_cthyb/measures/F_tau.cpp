@@ -42,9 +42,8 @@ namespace triqs_cthyb {
     }
 
     auto const &worm = data.worm;
-    auto val         = (worm.tau_Q >= worm.tau_cdag ? s : -s);
     double dtau      = double(worm.tau_Q - worm.tau_cdag);
-    F_tau[worm.block][closest_mesh_pt(dtau)](worm.inner_Q, worm.inner_cdag) += val;
+    F_tau[worm.block][closest_mesh_pt(dtau)](worm.inner_Q, worm.inner_cdag) += s;
   }
 
   void measure_F_tau::collect_results(mpi::communicator const &c) {

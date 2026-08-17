@@ -286,8 +286,8 @@ class Solver(SolverCore):
 
                 for bl, f_tau in F_tau_for_fourier:
                     f1 = self.F_moments[bl]
-                    f_tau.data[0, :, :] = 0.5 * (f_tau.data[0, :, :] - f1 - f_tau.data[-1, :, :])
-                    f_tau.data[-1, :, :] = -f1 - f_tau.data[0, :, :]
+                    f_tau.data[0, :, :] = 0.5 * (f_tau.data[0, :, :] + f1 - f_tau.data[-1, :, :])
+                    f_tau.data[-1, :, :] = f1 - f_tau.data[0, :, :]
 
                     known_moments = make_zero_tail(f_tau, 2)
                     known_moments[1] = f1

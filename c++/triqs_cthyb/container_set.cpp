@@ -33,6 +33,8 @@ namespace triqs_cthyb {
     h5_write(grp, "asymmetry_G_tau", c.asymmetry_G_tau);
     h5_write(grp, "G_l", c.G_l);
     h5_write(grp, "O_tau", c.O_tau);
+    h5_write(grp, "F_tau", c.F_tau);
+    h5_write(grp, "F_tau_accum", c.F_tau_accum);
     h5_write(grp, "perturbation_order", c.perturbation_order);
     h5_write(grp, "perturbation_order_total", c.perturbation_order_total);
 
@@ -57,6 +59,8 @@ namespace triqs_cthyb {
     h5_read(grp, "asymmetry_G_tau", c.asymmetry_G_tau);
     h5_read(grp, "G_l", c.G_l);
     h5::try_read(grp, "O_tau", c.O_tau);
+    h5::try_read(grp, "F_tau", c.F_tau);
+    h5::try_read(grp, "F_tau_accum", c.F_tau_accum);
     h5::try_read(grp, "perturbation_order", c.perturbation_order);
     h5::try_read(grp, "perturbation_order_total", c.perturbation_order_total);
 

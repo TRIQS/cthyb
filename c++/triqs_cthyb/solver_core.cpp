@@ -38,6 +38,7 @@
 #include "./moves/global.hpp"
 #include "./moves/worm_F.hpp"
 #include "./measures/G_tau.hpp"
+#include "./measures/F_tau.hpp"
 #include "./measures/G_l.hpp"
 #include "./measures/O_tau_ins.hpp"
 #include "./measures/perturbation_hist.hpp"
@@ -459,6 +460,11 @@ namespace triqs_cthyb {
       qmc.add_measure(measure_G_tau{data, n_tau, gf_struct, container_set()}, "G_tau measure");
     }
 
+    if (params.measure_F_tau) {
+      F_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
+      qmc.add_measure(measure_F_tau{data, n_tau, gf_struct, container_set(), params.worm_eta}, "F_tau measure");
+    }
+
     if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");
 
     // Other measurements
@@ -518,5 +524,6 @@ namespace triqs_cthyb {
 
     // Copy local (real or complex) G_tau back to complex G_tau
     if (G_tau && G_tau_accum) *G_tau = *G_tau_accum;
+    if (F_tau && F_tau_accum) *F_tau = *F_tau_accum;
   }
 } // namespace triqs_cthyb

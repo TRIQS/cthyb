@@ -27,10 +27,43 @@ from triqs.gfs import *
 import triqs.utility.mpi as mpi
 import numpy as np
 from itertools import product
+from triqs.operators import c, c_dag
 from triqs.operators.util.extractors import extract_h_dict, block_matrix_from_op
 from .tail_fit import tail_fit as cthyb_tail_fit
 from .tail_fit import sigma_high_frequency_moments, green_high_frequency_moments
 from .util import orbital_occupations
+
+
+def _commutator(A, B):
+    return A * B - B * A
+
+
+def _anticommutator(A, B):
+    return A * B + B * A
+
+
+def _occupations_from_G_tau(G_tau):
+    return {bl: -np.asarray(g.data[-1]).T for bl, g in G_tau}
+
+
+def _F_tau_first_moment_from_G_tau(h_int, gf_struct, G_tau):
+    r"""Compute F_1 = -<{[H_int,c], c^\dagger}> from G(tau=beta^-)."""
+    occupations = _occupations_from_G_tau(G_tau)
+    moments = {bl: np.zeros((bl_size, bl_size), dtype=complex) for bl, bl_size in gf_struct}
+
+    for bl, bl_size in gf_struct:
+        for a in range(bl_size):
+            for b in range(bl_size):
+                op = _anticommutator(_commutator(h_int, c(bl, a)), c_dag(bl, b))
+                for (idx_cdag, idx_c), coef in extract_h_dict(op).items():
+                    bl_cdag, i = idx_cdag
+                    bl_c, j = idx_c
+                    if bl_cdag != bl_c:
+                        raise RuntimeError("measure_F_tau v1 requires block-diagonal one-body F moments")
+                    moments[bl][a, b] -= coef * occupations[bl_cdag][i, j]
+
+    return moments
+
 
 class Solver(SolverCore):
 
@@ -76,6 +109,10 @@ class Solver(SolverCore):
         self.G_moments = None
         self.Sigma_moments = None
         self.Sigma_Hartree = None
+        self.F_iw = None
+        self.F_tau_raw = None
+        self.F_moments = None
+        self.Sigma_iw_improved = None
 
     def solve(self, **params_kw):
         r"""
@@ -150,6 +187,10 @@ class Solver(SolverCore):
 
         # Call the core solver's solve routine
         solve_status = SolverCore.solve(self, SolveParametersT(**params_kw))
+
+        if (perform_post_proc and self.last_solve_parameters.measure_F_tau
+                and not self.last_solve_parameters.measure_G_tau):
+            raise RuntimeError("measure_F_tau post-processing requires measure_G_tau=True")
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
@@ -234,5 +275,29 @@ class Solver(SolverCore):
                     g.replace_by_tail_in_fit_window(tail)
 
                 self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)
+
+            if self.last_solve_parameters.measure_F_tau:
+                self.F_tau_raw = self.F_tau.copy()
+                F_tau_for_fourier = self.F_tau.copy()
+                self.F_moments = _F_tau_first_moment_from_G_tau(
+                    self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
+                self.F_iw = self.G_iw.copy()
+                self.F_iw.zero()
+
+                for bl, f_tau in F_tau_for_fourier:
+                    f1 = self.F_moments[bl]
+                    f_tau.data[0, :, :] = 0.5 * (f_tau.data[0, :, :] - f1 - f_tau.data[-1, :, :])
+                    f_tau.data[-1, :, :] = -f1 - f_tau.data[0, :, :]
+
+                    known_moments = make_zero_tail(f_tau, 2)
+                    known_moments[1] = f1
+                    self.F_iw[bl].set_from_fourier(f_tau, known_moments)
+
+                self.F_tau = F_tau_for_fourier
+                self.Sigma_iw_improved = self.Sigma_iw.copy()
+                self.Sigma_iw_improved.zero()
+
+                for bl, f_iw in self.F_iw:
+                    self.Sigma_iw_improved[bl] << f_iw * inverse(self.G_iw[bl])
 
         return solve_status

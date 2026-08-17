@@ -159,6 +159,9 @@ static int synth_constructor_1(PyObject *self, PyObject *args, PyObject *kwargs)
   de("measure_G_tau", self_c.measure_G_tau, true);
   de("measure_G_l", self_c.measure_G_l, true);
   de("measure_O_tau", self_c.measure_O_tau, true);
+  de("measure_F_tau", self_c.measure_F_tau, true);
+  de("worm_eta", self_c.worm_eta, true);
+  de("worm_prob", self_c.worm_prob, true);
   de("measure_O_tau_min_ins", self_c.measure_O_tau_min_ins, true);
   de("measure_G2_tau", self_c.measure_G2_tau, true);
   de("measure_G2_iw", self_c.measure_G2_iw, true);
@@ -308,6 +311,12 @@ off_diag_threshold : {par_50}, default=0.0
 
 h_loc0 : {par_51}, default={}
 
+measure_F_tau : {par_52}, default=false
+
+worm_eta : {par_53}, default=1.0
+
+worm_prob : {par_54}, default=0.3
+
 )DOC",
                       "par",
                       {c2py::python_typename<triqs_cthyb::many_body_op_t>(),
@@ -361,7 +370,10 @@ h_loc0 : {par_51}, default={}
                        c2py::python_typename<double>(),
                        c2py::python_typename<double>(),
                        c2py::python_typename<double>(),
-                       c2py::python_typename<std::optional<triqs_cthyb::many_body_op_t>>()});
+                       c2py::python_typename<std::optional<triqs_cthyb::many_body_op_t>>(),
+                       c2py::python_typename<bool>(),
+                       c2py::python_typename<double>(),
+                       c2py::python_typename<double>()});
 
 // ----- Method table ----
 template <>
@@ -388,6 +400,9 @@ constexpr auto _c2py_doc_member_20 = R"DOC(Calculate the full trace or use an es
 constexpr auto _c2py_doc_member_21 = R"DOC(Measure :math:`G(\tau)`? Hermiticity :math:`G_{ij}(\tau) = G_{ji}^*(\tau)` is enforced.)DOC";
 constexpr auto _c2py_doc_member_22 = R"DOC(Measure :math:`G_l` (Legendre)? No hermiticity is enforced.)DOC";
 constexpr auto _c2py_doc_member_23 = R"DOC(Measure :math:`O(\tau)` by insertion.)DOC";
+constexpr auto _c2py_doc_member_76 = R"DOC(Measure the improved-estimator correlator :math:`F(\tau)` by worm sampling.)DOC";
+constexpr auto _c2py_doc_member_77 = R"DOC(Extended-ensemble weight for the :math:`F(\tau)` worm sector.)DOC";
+constexpr auto _c2py_doc_member_78 = R"DOC(Relative proposal weight for :math:`F(\tau)` worm insert/remove/shift moves.)DOC";
 constexpr auto _c2py_doc_member_24 = R"DOC(Minimum number of operator insertions in the :math:`O(\tau)` insertion measure.)DOC";
 constexpr auto _c2py_doc_member_25 = R"DOC(Measure :math:`G^{(2)}(\tau,\tau',\tau'')` with three fermionic times.)DOC";
 constexpr auto _c2py_doc_member_26 = R"DOC(Measure :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
@@ -444,6 +459,9 @@ static PyObject *prop_get_dict_1(PyObject *self, void *) {
   dic["measure_G_tau"]                 = self_c.measure_G_tau;
   dic["measure_G_l"]                   = self_c.measure_G_l;
   dic["measure_O_tau"]                 = self_c.measure_O_tau;
+  dic["measure_F_tau"]                 = self_c.measure_F_tau;
+  dic["worm_eta"]                      = self_c.worm_eta;
+  dic["worm_prob"]                     = self_c.worm_prob;
   dic["measure_O_tau_min_ins"]         = self_c.measure_O_tau_min_ins;
   dic["measure_G2_tau"]                = self_c.measure_G2_tau;
   dic["measure_G2_iw"]                 = self_c.measure_G2_iw;
@@ -503,6 +521,9 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {
    c2py::getsetdef_from_member<&_c2py_cls_1::measure_G_tau, _c2py_cls_1>("measure_G_tau", _c2py_doc_member_21),
    c2py::getsetdef_from_member<&_c2py_cls_1::measure_G_l, _c2py_cls_1>("measure_G_l", _c2py_doc_member_22),
    c2py::getsetdef_from_member<&_c2py_cls_1::measure_O_tau, _c2py_cls_1>("measure_O_tau", _c2py_doc_member_23),
+   c2py::getsetdef_from_member<&_c2py_cls_1::measure_F_tau, _c2py_cls_1>("measure_F_tau", _c2py_doc_member_76),
+   c2py::getsetdef_from_member<&_c2py_cls_1::worm_eta, _c2py_cls_1>("worm_eta", _c2py_doc_member_77),
+   c2py::getsetdef_from_member<&_c2py_cls_1::worm_prob, _c2py_cls_1>("worm_prob", _c2py_doc_member_78),
    c2py::getsetdef_from_member<&_c2py_cls_1::measure_O_tau_min_ins, _c2py_cls_1>("measure_O_tau_min_ins", _c2py_doc_member_24),
    c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_tau, _c2py_cls_1>("measure_G2_tau", _c2py_doc_member_25),
    c2py::getsetdef_from_member<&_c2py_cls_1::measure_G2_iw, _c2py_cls_1>("measure_G2_iw", _c2py_doc_member_26),
@@ -590,6 +611,8 @@ constexpr auto _c2py_doc_member_61 = R"DOC(Intermediate Green's function used to
 constexpr auto _c2py_doc_member_62 = R"DOC(Violation of the property :math:`G_{ij}(\tau) = G_{ji}^*(\tau)` after the measurement.)DOC";
 constexpr auto _c2py_doc_member_63 = R"DOC(Single-particle Green's function :math:`G_l` in the Legendre representation.)DOC";
 constexpr auto _c2py_doc_member_64 = R"DOC(General operator Green's function :math:`O(\tau)` in imaginary time.)DOC";
+constexpr auto _c2py_doc_member_79 = R"DOC(Improved-estimator correlator :math:`F(\tau)` in imaginary time.)DOC";
+constexpr auto _c2py_doc_member_80 = R"DOC(Intermediate Green's function used to accumulate :math:`F(\tau)` (real or complex).)DOC";
 constexpr auto _c2py_doc_member_65 = R"DOC(Two-particle Green's function :math:`G^{(2)}(\tau_1,\tau_2,\tau_3)` with three fermionic times.)DOC";
 constexpr auto _c2py_doc_member_66 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
 constexpr auto _c2py_doc_member_67 = R"DOC(Two-particle Green's function :math:`G^{(2)}(i\nu,i\nu',i\nu'')` with three fermionic frequencies.)DOC";
@@ -631,6 +654,8 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_2>[] = {
    c2py::getsetdef_from_member<&_c2py_cls_2::asymmetry_G_tau, _c2py_cls_2>("asymmetry_G_tau", _c2py_doc_member_62),
    c2py::getsetdef_from_member<&_c2py_cls_2::G_l, _c2py_cls_2>("G_l", _c2py_doc_member_63),
    c2py::getsetdef_from_member<&_c2py_cls_2::O_tau, _c2py_cls_2>("O_tau", _c2py_doc_member_64),
+   c2py::getsetdef_from_member<&_c2py_cls_2::F_tau, _c2py_cls_2>("F_tau", _c2py_doc_member_79),
+   c2py::getsetdef_from_member<&_c2py_cls_2::F_tau_accum, _c2py_cls_2>("F_tau_accum", _c2py_doc_member_80),
    c2py::getsetdef_from_member<&_c2py_cls_2::G2_tau, _c2py_cls_2>("G2_tau", _c2py_doc_member_65),
    c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw, _c2py_cls_2>("G2_iw", _c2py_doc_member_66),
    c2py::getsetdef_from_member<&_c2py_cls_2::G2_iw_nfft, _c2py_cls_2>("G2_iw_nfft", _c2py_doc_member_67),

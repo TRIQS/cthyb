@@ -47,6 +47,12 @@ namespace triqs_cthyb {
     /// General operator Green's function \f$ O(\tau) \f$ in imaginary time.
     std::optional<gf<imtime, scalar_valued>> O_tau;
 
+    /// Improved-estimator correlator \f$ F(\tau) = -\langle T Q(\tau)c^\dagger(0)\rangle \f$ in imaginary time.
+    std::optional<G_tau_t> F_tau;
+
+    /// Intermediate Green's function used to accumulate \f$ F(\tau) \f$ (real or complex).
+    std::optional<G_tau_G_target_t> F_tau_accum;
+
     // -- Two-particle Green's functions
 
     /// Two-particle Green's function \f$ G^{(2)}(\tau_1,\tau_2,\tau_3) \f$ with three fermionic times.

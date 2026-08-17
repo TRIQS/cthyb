@@ -78,6 +78,210 @@ namespace triqs_cthyb {
     }
   }
 
+  // -------- Attach an auxiliary operator --------
+  // The trace bound assumes operator matrices of norm <= 1 (true for c/c_dag).
+  // Aux operators (e.g. Q = [H_int, c]) can have larger norms; record them so that
+  // compute_block_table_and_bound keeps returning a true upper bound.
+  op_desc impurity_trace::attach_aux_operator(many_body_op_t const &op) {
+    aux_operators.push_back(h_diag->get_op_mat(op));
+    auto const &op_mat = aux_operators.back();
+
+    std::vector<double> log_norms(n_blocks, 0.0);
+    for (int b = 0; b < n_blocks; ++b) {
+      if (op_mat.connection(b) < 0) continue;
+      log_norms[b] = std::log(frobenius_norm2(op_mat.block_mat[b]));
+    }
+    aux_log_norms.push_back(std::move(log_norms));
+
+    op_desc operator_desc{-1, 0, true, -static_cast<int>(aux_operators.size())};
+    return operator_desc;
+  }
+
+  std::vector<h_scalar_t>
+  impurity_trace::compute_single_replacement_traces(std::span<single_replacement_request const> requests) const {
+    last_replacement_path_counts = {};
+    if (requests.empty()) return {};
+    auto _ = arrays::range::all;
+
+    if (!trial_nodes.is_index_reset() || !removed_nodes.empty() || !backup_nodes.is_index_reset() || tree_size != tree.size())
+      TRIQS_RUNTIME_ERROR << "impurity_trace: compute_single_replacement_traces() requires a committed configuration";
+
+    std::vector<std::size_t> request_order;
+    request_order.reserve(requests.size());
+    for (std::size_t i = 0; i < requests.size(); ++i) {
+      auto const &[key, replacement] = requests[i];
+      if (replacement.linear_index >= n_orbitals || replacement.linear_index < -static_cast<long>(aux_operators.size()))
+        TRIQS_RUNTIME_ERROR << "impurity_trace: invalid replacement operator at tau = " << key;
+      request_order.push_back(i);
+    }
+    std::sort(request_order.begin(), request_order.end(), [&](std::size_t lhs, std::size_t rhs) { return requests[lhs].key < requests[rhs].key; });
+    for (std::size_t i = 1; i < request_order.size(); ++i)
+      if (requests[request_order[i - 1]].key == requests[request_order[i]].key)
+        TRIQS_RUNTIME_ERROR << "impurity_trace: duplicate replacement request at tau = " << requests[request_order[i]].key;
+
+    std::vector<node> nodes;
+    nodes.reserve(tree.size());
+    foreach_reverse(tree, [&](node n) {
+      if (n->modified || n->delete_flag)
+        TRIQS_RUNTIME_ERROR << "impurity_trace: compute_single_replacement_traces() found an uncommitted tree node";
+      nodes.push_back(n);
+    }); // numeric tau order: 0 -> beta
+
+    auto const n_nodes = nodes.size();
+    std::vector<std::size_t> request_at_node(n_nodes, requests.size());
+    for (auto request_index : request_order) {
+      auto const key = requests[request_index].key;
+      auto node_it   = std::lower_bound(nodes.begin(), nodes.end(), key, [](node n, time_pt const &candidate) { return n->key < candidate; });
+      if (node_it == nodes.end() || (*node_it)->key != key)
+        TRIQS_RUNTIME_ERROR << "No operator at tau = " << key << " in impurity_trace::compute_single_replacement_traces";
+      request_at_node[std::distance(nodes.begin(), node_it)] = request_index;
+    }
+
+    replacement_suffix_scratch.resize(n_nodes);
+    for (auto &by_block : replacement_suffix_scratch) {
+      by_block.resize(n_blocks);
+      for (auto &product : by_block) product.output_block = -1;
+    }
+    auto &suffix = replacement_suffix_scratch;
+
+    auto const last_tau = double(nodes.back()->key);
+    for (int b = 0; b < n_blocks; ++b) {
+      auto dim                        = get_block_dim(b);
+      suffix.back()[b].output_block  = b;
+      suffix.back()[b].matrix        = nda::eye<h_scalar_t>(dim);
+      for (int u = 0; u < dim; ++u) suffix.back()[b].matrix(u, u) *= std::exp(-(beta - last_tau) * get_block_eigenval(b, u));
+    }
+
+    for (std::size_t j = n_nodes - 1; j-- > 0;) {
+      auto const &next_op = nodes[j + 1]->op;
+      double dtau         = double(nodes[j + 1]->key - nodes[j]->key);
+      for (int b = 0; b < n_blocks; ++b) {
+        int b_after_op = get_op_block_map(next_op, b);
+        if (b_after_op < 0) continue;
+        auto const &tail = suffix[j + 1][b_after_op];
+        if (tail.output_block < 0) continue;
+
+        matrix_t op_with_evolution = get_op_block_matrix(next_op, b);
+        for (int u = 0; u < get_block_dim(b); ++u)
+          op_with_evolution(_, u) *= std::exp(-dtau * get_block_eigenval(b, u));
+        suffix[j][b].output_block = tail.output_block;
+        suffix[j][b].matrix       = tail.matrix * op_with_evolution;
+      }
+    }
+
+    replacement_prefix_scratch.resize(n_blocks);
+    replacement_next_prefix_scratch.resize(n_blocks);
+    for (auto &product : replacement_prefix_scratch) product.output_block = -1;
+    auto &prefix = replacement_prefix_scratch;
+    auto const first_tau = double(nodes.front()->key);
+    for (int b = 0; b < n_blocks; ++b) {
+      auto dim                 = get_block_dim(b);
+      prefix[b].output_block   = b;
+      prefix[b].matrix         = nda::eye<h_scalar_t>(dim);
+      for (int u = 0; u < dim; ++u) prefix[b].matrix(u, u) *= std::exp(-first_tau * get_block_eigenval(b, u));
+    }
+
+    std::vector<h_scalar_t> committed_block_traces(n_blocks, h_scalar_t{0});
+    auto const &first_op = nodes.front()->op;
+    for (int initial_block = 0; initial_block < n_blocks; ++initial_block) {
+      auto const &left = prefix[initial_block];
+      int original_output = get_op_block_map(first_op, left.output_block);
+      if (original_output < 0) continue;
+      auto const &right = suffix.front()[original_output];
+      if (right.output_block != initial_block) continue;
+      matrix_t product = right.matrix * get_op_block_matrix(first_op, left.output_block) * left.matrix;
+      for (int u = 0; u < get_block_dim(initial_block); ++u) committed_block_traces[initial_block] += product(u, u);
+    }
+
+    std::vector<h_scalar_t> result(requests.size(), h_scalar_t{0});
+    for (std::size_t j = 0; j < n_nodes; ++j) {
+      auto request_index = request_at_node[j];
+      if (request_index != requests.size()) {
+        auto const &replacement = requests[request_index].replacement;
+        auto const &original    = nodes[j]->op;
+        h_scalar_t replacement_trace{0};
+        for (int initial_block = 0; initial_block < n_blocks; ++initial_block) {
+          auto const &left = prefix[initial_block];
+          if (left.output_block < 0) {
+            ++last_replacement_path_counts.structural_zero;
+            continue;
+          }
+          int replacement_output = get_op_block_map(replacement, left.output_block);
+          if (replacement_output < 0) {
+            ++last_replacement_path_counts.structural_zero;
+            continue;
+          }
+          auto const &right = suffix[j][replacement_output];
+          if (right.output_block != initial_block) {
+            ++last_replacement_path_counts.structural_zero;
+            continue;
+          }
+
+          bool is_proportional = get_op_block_map(original, left.output_block) == replacement_output;
+          h_scalar_t scale{0};
+          if (is_proportional) {
+            auto const &original_matrix    = get_op_block_matrix(original, left.output_block);
+            auto const &replacement_matrix = get_op_block_matrix(replacement, left.output_block);
+            double largest_original        = 0;
+            int pivot_row = 0, pivot_col = 0;
+            for (int row = 0; row < original_matrix.shape()[0]; ++row)
+              for (int col = 0; col < original_matrix.shape()[1]; ++col)
+                if (auto magnitude = std::abs(original_matrix(row, col)); magnitude > largest_original) {
+                  largest_original = magnitude;
+                  pivot_row        = row;
+                  pivot_col        = col;
+                }
+            if (largest_original == 0) {
+              for (int row = 0; row < replacement_matrix.shape()[0]; ++row)
+                for (int col = 0; col < replacement_matrix.shape()[1]; ++col)
+                  is_proportional = is_proportional && std::abs(replacement_matrix(row, col)) == 0;
+            } else {
+              scale        = replacement_matrix(pivot_row, pivot_col) / original_matrix(pivot_row, pivot_col);
+              double scale_reference = std::max(1.0, std::abs(scale) * largest_original);
+              for (int row = 0; row < original_matrix.shape()[0]; ++row)
+                for (int col = 0; col < original_matrix.shape()[1]; ++col)
+                  is_proportional = is_proportional &&
+                     std::abs(replacement_matrix(row, col) - scale * original_matrix(row, col)) <= 1.e-13 * scale_reference;
+            }
+          }
+
+          if (is_proportional) {
+            ++last_replacement_path_counts.proportional;
+            replacement_trace += scale * committed_block_traces[initial_block];
+          } else {
+            ++last_replacement_path_counts.general;
+            matrix_t product = right.matrix * get_op_block_matrix(replacement, left.output_block) * left.matrix;
+            for (int u = 0; u < get_block_dim(initial_block); ++u) replacement_trace += product(u, u);
+          }
+        }
+        if (!isfinite(replacement_trace))
+          TRIQS_RUNTIME_ERROR << "impurity_trace: non-finite single-replacement trace at tau = " << requests[request_index].key;
+        result[request_index] = replacement_trace;
+      }
+
+      if (j + 1 == n_nodes) continue;
+      auto const &op = nodes[j]->op;
+      double dtau    = double(nodes[j + 1]->key - nodes[j]->key);
+      auto &next_prefix = replacement_next_prefix_scratch;
+      for (auto &product : next_prefix) product.output_block = -1;
+      for (int initial_block = 0; initial_block < n_blocks; ++initial_block) {
+        auto const &current = prefix[initial_block];
+        if (current.output_block < 0) continue;
+        int b_after_op = get_op_block_map(op, current.output_block);
+        if (b_after_op < 0) continue;
+
+        matrix_t evolved = get_op_block_matrix(op, current.output_block) * current.matrix;
+        for (int u = 0; u < get_block_dim(b_after_op); ++u)
+          evolved(u, _) *= std::exp(-dtau * get_block_eigenval(b_after_op, u));
+        next_prefix[initial_block].output_block = b_after_op;
+        next_prefix[initial_block].matrix       = std::move(evolved);
+      }
+      prefix.swap(next_prefix);
+    }
+
+    return result;
+  }
+
   //====== Recursive operations ======
 
   // For all recursive operations, the cache on the current node is updated as follows:
@@ -133,6 +337,7 @@ namespace triqs_cthyb {
 
     int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1));
     if (b2 < 0) return {b2, 0};
+    if (!n->delete_flag && n->op.linear_index < 0) lnorm -= aux_log_norms[-n->op.linear_index - 1][b1];
 
     int b3 = b2;
     if (n->left) {

@@ -119,6 +119,27 @@ namespace triqs_cthyb {
     /// Measure \f$ O(\tau) \f$ by insertion.
     std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = {};
 
+    /// Measure the improved-estimator correlator \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$ with \f$Q=[H_{int},c]\f$ using worm sampling?
+    bool measure_F_tau_worm = false;
+
+    /// Measure \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$ with a Z-sector hybridization-line replacement estimator?
+    bool measure_F_tau_partition = false;
+
+    /// Measure \f$ F_l \f$ in the Legendre representation using worm sampling?
+    bool measure_F_l_worm = false;
+
+    /// Measure \f$ F_l \f$ in the Legendre representation with a Z-sector hybridization-line replacement estimator?
+    bool measure_F_l_partition = false;
+
+    /// Measure the Z-sector partition-space \f$ F \f$ estimators once every this many accumulation events.
+    long measure_F_partition_stride = 1;
+
+    /// Extended-ensemble weight for the \f$ F(\tau) \f$ worm sector.
+    double worm_eta = 1.0;
+
+    /// Relative proposal weight for \f$ F(\tau) \f$ worm insert/remove/shift moves.
+    double worm_prob = 0.3;
+
     /// Minimum number of operator insertions in the \f$ O(\tau) \f$ insertion measure.
     int measure_O_tau_min_ins = 10;
 

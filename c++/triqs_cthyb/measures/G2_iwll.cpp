@@ -61,6 +61,7 @@ namespace triqs_cthyb {
   }
 
   template <G2_channel Channel> void measure_G2_iwll<Channel>::accumulate(mc_weight_t s) {
+    if (!data.worm.in_Z()) return;
 
     s *= data.atomic_reweighting;
     average_sign += s;

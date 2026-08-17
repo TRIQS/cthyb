@@ -24,6 +24,7 @@
 #include "triqs/utility/rbt.hpp"
 #include <triqs/stat/histograms.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
+#include <span>
 
 //#define PRINT_CONF_DEBUG
 
@@ -45,6 +46,17 @@ namespace triqs_cthyb {
     bool measure_density_matrix;
 
     public:
+    struct single_replacement_request {
+      time_pt key;
+      op_desc replacement;
+    };
+
+    struct single_replacement_path_counts {
+      std::size_t structural_zero = 0;
+      std::size_t proportional    = 0;
+      std::size_t general         = 0;
+    };
+
     // construct from the config, the diagonalization of h_loc, and parameters
     impurity_trace(double beta, atom_diag const &h_diag, histo_map_t *hist_map,
 		   bool use_norm_as_weight=false, bool measure_density_matrix=false, bool performance_analysis=false);
@@ -107,7 +119,21 @@ namespace triqs_cthyb {
     rb_tree_t tree; // the red black tree and its nodes
 
     std::vector<atom_diag::op_block_mat_t> aux_operators;
-    
+    std::vector<std::vector<double>> aux_log_norms; // log ||block_mat[b]|| per aux operator, enters the trace bound
+
+    private:
+    struct replacement_block_product {
+      int output_block = -1;
+      matrix_t matrix;
+    };
+    mutable std::vector<std::vector<replacement_block_product>> replacement_suffix_scratch;
+    mutable std::vector<replacement_block_product> replacement_prefix_scratch;
+    mutable std::vector<replacement_block_product> replacement_next_prefix_scratch;
+    mutable single_replacement_path_counts last_replacement_path_counts;
+
+    public:
+    [[nodiscard]] single_replacement_path_counts get_last_single_replacement_path_counts() const { return last_replacement_path_counts; }
+
     // ---------------- Cache machinery ----------------
     void update_cache();
 
@@ -121,25 +147,35 @@ namespace triqs_cthyb {
     // the minimal eigenvalue of the block b
     double get_block_emin(int b) const { return get_block_eigenval(b, 0); }
 
-    // node, block -> image of the block by n->op (the operator)
-    int get_op_block_map(node n, int b) const {
-      if( n->op.linear_index >= 0 )
-	return (n->op.dagger ? h_diag->cdag_connection(n->op.linear_index, b) : h_diag->c_connection(n->op.linear_index, b));
+    // operator, block -> image of the block by the operator
+    int get_op_block_map(op_desc const &op, int b) const {
+      if (op.linear_index >= 0)
+        return (op.dagger ? h_diag->cdag_connection(op.linear_index, b) : h_diag->c_connection(op.linear_index, b));
       else {
-	int aux_idx = -n->op.linear_index - 1;
-	return aux_operators[aux_idx].connection(b);
+        int aux_idx = -op.linear_index - 1;
+        if (aux_idx < 0 || aux_idx >= static_cast<int>(aux_operators.size()))
+          TRIQS_RUNTIME_ERROR << "impurity_trace: invalid auxiliary operator index";
+        return aux_operators[aux_idx].connection(b);
+      }
+    }
+
+    // node, block -> image of the block by n->op (the operator)
+    int get_op_block_map(node n, int b) const { return get_op_block_map(n->op, b); }
+
+    // the matrix of op, from block b to its image
+    matrix<h_scalar_t> const &get_op_block_matrix(op_desc const &op, int b) const {
+      if (op.linear_index >= 0)
+        return (op.dagger ? h_diag->cdag_matrix(op.linear_index, b) : h_diag->c_matrix(op.linear_index, b));
+      else {
+        int aux_idx = -op.linear_index - 1;
+        if (aux_idx < 0 || aux_idx >= static_cast<int>(aux_operators.size()))
+          TRIQS_RUNTIME_ERROR << "impurity_trace: invalid auxiliary operator index";
+        return aux_operators[aux_idx].block_mat[b];
       }
     }
 
     // the matrix of n->op, from block b to its image
-    matrix<h_scalar_t> const &get_op_block_matrix(node n, int b) const {
-      if( n->op.linear_index >= 0 )
-	return (n->op.dagger ? h_diag->cdag_matrix(n->op.linear_index, b) : h_diag->c_matrix(n->op.linear_index, b));
-      else {
-	int aux_idx = -n->op.linear_index - 1;
-	return aux_operators[aux_idx].block_mat[b];
-      }
-    }
+    matrix<h_scalar_t> const &get_op_block_matrix(node n, int b) const { return get_op_block_matrix(n->op, b); }
 
     // recursive function for tree traversal
     int compute_block_table(node n, int b);
@@ -202,12 +238,12 @@ namespace triqs_cthyb {
     public:
 
     // attach auxiliary operators
-    op_desc attach_aux_operator(many_body_op_t const &op) {
-      aux_operators.push_back(h_diag->get_op_mat(op));
-      op_desc operator_desc{0, 0, true, -static_cast<int>(aux_operators.size())};
-      return operator_desc;
-    }
-    
+    op_desc attach_aux_operator(many_body_op_t const &op);
+
+    // Compute the physical trace for each independent single-node replacement without changing the tree or its caches.
+    [[nodiscard]] std::vector<h_scalar_t>
+    compute_single_replacement_traces(std::span<single_replacement_request const> requests) const;
+
     /*************************************************************************
      *  Ordinary binary search tree (BST) insertion of the trial nodes
      *************************************************************************/
@@ -293,21 +329,15 @@ namespace triqs_cthyb {
     std::vector<time_pt> removed_keys;
 
     public:
-    // Find and mark as deleted the nth operator with fixed dagger and block_index
-    // n=0 : first operator, n=1, second, etc...
-    time_pt try_delete(int n, int block_index, bool dagger) noexcept {
-      // traverse the tree, looking for the nth operator of the correct dagger, block_index
-      int i  = 0;
-      node x = find_if(tree, [&](node no) {
-        if (no->op.dagger == dagger && no->op.block_index == block_index) ++i;
-        return i == n + 1;
-      });
+    // Find and mark as deleted the operator at a specific imaginary-time key.
+    void try_delete(time_pt tau) {
+      node x = find_if(tree, [&](node no) { return no->key == tau; });
+      if (x == nullptr) TRIQS_RUNTIME_ERROR << "No operator at tau = " << tau << " in impurity_trace::try_delete";
       removed_nodes.push_back(x);             // store the node
       removed_keys.push_back(x->key);         // store the key
       tree.set_modified_from_root_to(x->key); // mark all nodes on path from node to root as modified
       x->delete_flag = true;                  // mark the node for deletion
       tree_size--;
-      return x->key;
     }
 
     // Clean all the delete flags
@@ -417,11 +447,36 @@ namespace triqs_cthyb {
       return new_node;
     }
 
+    node try_replace_impl(node n, time_pt const &tau, op_desc const &replacement) {
+
+      node new_left = n->left, new_right = n->right;
+      if (tau != n->key) {
+        if (tree.get_comparator()(tau, n->key))
+          new_left = try_replace_impl(n->left, tau, replacement);
+        else
+          new_right = try_replace_impl(n->right, tau, replacement);
+      }
+
+      auto key   = n->key;
+      auto color = n->color;
+      auto N     = n->N;
+
+      node new_node = backup_nodes.swap_next(n);
+      new_node->reset(key, tau == key ? replacement : n->op);
+      new_node->left     = new_left;
+      new_node->right    = new_right;
+      new_node->color    = color;
+      new_node->N        = N;
+      new_node->modified = true;
+      return new_node;
+    }
+
     node cancel_replace_impl(node n) {
+      if (n == nullptr || !n->modified) return n;
       node n_in_tree = n;
-      if (n_in_tree && n_in_tree->modified) n= backup_nodes.swap_prev(n);
-      if (n_in_tree->right) cancel_replace_impl(n_in_tree->right);
-      if (n_in_tree->left) cancel_replace_impl(n_in_tree->left);
+      n              = backup_nodes.swap_prev(n);
+      if (n_in_tree->right && n_in_tree->right->modified) cancel_replace_impl(n_in_tree->right);
+      if (n_in_tree->left && n_in_tree->left->modified) cancel_replace_impl(n_in_tree->left);
       return n;
     }
 
@@ -435,6 +490,24 @@ namespace triqs_cthyb {
       root       = try_replace_impl(root, updated_ops);
     }
 
+    // Replace exactly one known node by cloning only its root-to-node search path.
+    void try_replace(time_pt const &tau, op_desc const &replacement) {
+      if (!backup_nodes.is_index_reset()) TRIQS_RUNTIME_ERROR << "impurity_trace: improper use of try_replace()";
+      if (!trial_nodes.is_index_reset() || !removed_nodes.empty() || tree_size != tree.size())
+        TRIQS_RUNTIME_ERROR << "impurity_trace: single-node try_replace() requires a committed configuration";
+      if (replacement.linear_index >= n_orbitals || replacement.linear_index < -static_cast<long>(aux_operators.size()))
+        TRIQS_RUNTIME_ERROR << "impurity_trace: invalid replacement operator at tau = " << tau;
+
+      node n = tree.get_root();
+      while (n != nullptr && n->key != tau)
+        n = tree.get_comparator()(tau, n->key) ? n->left : n->right;
+      if (n == nullptr) TRIQS_RUNTIME_ERROR << "No operator at tau = " << tau << " in impurity_trace::try_replace";
+
+      backup_nodes.reserve(tree.size());
+      auto &root = tree.get_root();
+      root       = try_replace_impl(root, tau, replacement);
+    }
+
     void confirm_replace() {
       backup_nodes.reset_index();
       update_cache();
@@ -443,9 +516,10 @@ namespace triqs_cthyb {
     }
 
     void cancel_replace() {
-      if (tree_size == 0 || backup_nodes.is_index_reset()) return;
+      if (backup_nodes.is_index_reset()) return;
       auto &root = tree.get_root();
       root       = cancel_replace_impl(root);
+      tree.clear_modified();
       check_cache_integrity();
     }
 

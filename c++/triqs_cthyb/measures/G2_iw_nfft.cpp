@@ -52,6 +52,7 @@ namespace triqs_cthyb {
   }
 
   template <G2_channel Channel> void measure_G2_iw_nfft<Channel>::accumulate(mc_weight_t s) {
+    if (!data.worm.in_Z()) return;
 
     auto nfft_fill = [this](det_type const &det, nfft_array_t<2, 2> &nfft_matrix) {
       const double beta = this->data.config.beta();

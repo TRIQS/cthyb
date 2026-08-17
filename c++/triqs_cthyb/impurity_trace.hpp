@@ -107,7 +107,8 @@ namespace triqs_cthyb {
     rb_tree_t tree; // the red black tree and its nodes
 
     std::vector<atom_diag::op_block_mat_t> aux_operators;
-    
+    std::vector<std::vector<double>> aux_log_norms; // log ||block_mat[b]|| per aux operator, enters the trace bound
+
     // ---------------- Cache machinery ----------------
     void update_cache();
 
@@ -202,12 +203,8 @@ namespace triqs_cthyb {
     public:
 
     // attach auxiliary operators
-    op_desc attach_aux_operator(many_body_op_t const &op) {
-      aux_operators.push_back(h_diag->get_op_mat(op));
-      op_desc operator_desc{-1, 0, true, -static_cast<int>(aux_operators.size())};
-      return operator_desc;
-    }
-    
+    op_desc attach_aux_operator(many_body_op_t const &op);
+
     /*************************************************************************
      *  Ordinary binary search tree (BST) insertion of the trial nodes
      *************************************************************************/

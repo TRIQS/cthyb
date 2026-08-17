@@ -26,6 +26,23 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
   using namespace triqs::mesh;
 
+  namespace {
+
+    int worm_time_order_sign(qmc_data const &data) {
+      auto const &worm = data.worm;
+      int exponent     = 0;
+
+      for (auto const &[tau, op] : data.config) {
+        auto in_interval = (worm.tau_Q >= worm.tau_cdag) ? (tau > worm.tau_cdag && tau <= worm.tau_Q)
+                                                         : (tau > worm.tau_cdag || tau <= worm.tau_Q);
+        if (in_interval) ++exponent;
+      }
+
+      return (exponent % 2 == 0 ? 1 : -1);
+    }
+
+  } // namespace
+
   measure_F_tau::measure_F_tau(qmc_data const &data, int n_tau, gf_struct_t const &gf_struct, container_set_t &results, double worm_eta)
      : data(data), worm_eta(worm_eta), sign_Z(0) {
     results.F_tau_accum = block_gf<imtime, G_target_t>({data.config.beta(), Fermion, n_tau}, gf_struct);
@@ -43,7 +60,7 @@ namespace triqs_cthyb {
 
     auto const &worm = data.worm;
     double dtau      = double(worm.tau_Q - worm.tau_cdag);
-    F_tau[worm.block][closest_mesh_pt(dtau)](worm.inner_Q, worm.inner_cdag) += s;
+    F_tau[worm.block][closest_mesh_pt(dtau)](worm.inner_Q, worm.inner_cdag) += worm_time_order_sign(data) * s;
   }
 
   void measure_F_tau::collect_results(mpi::communicator const &c) {

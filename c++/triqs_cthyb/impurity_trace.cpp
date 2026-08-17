@@ -78,6 +78,25 @@ namespace triqs_cthyb {
     }
   }
 
+  // -------- Attach an auxiliary operator --------
+  // The trace bound assumes operator matrices of norm <= 1 (true for c/c_dag).
+  // Aux operators (e.g. Q = [H_int, c]) can have larger norms; record them so that
+  // compute_block_table_and_bound keeps returning a true upper bound.
+  op_desc impurity_trace::attach_aux_operator(many_body_op_t const &op) {
+    aux_operators.push_back(h_diag->get_op_mat(op));
+    auto const &op_mat = aux_operators.back();
+
+    std::vector<double> log_norms(n_blocks, 0.0);
+    for (int b = 0; b < n_blocks; ++b) {
+      if (op_mat.connection(b) < 0) continue;
+      log_norms[b] = std::log(frobenius_norm2(op_mat.block_mat[b]));
+    }
+    aux_log_norms.push_back(std::move(log_norms));
+
+    op_desc operator_desc{-1, 0, true, -static_cast<int>(aux_operators.size())};
+    return operator_desc;
+  }
+
   //====== Recursive operations ======
 
   // For all recursive operations, the cache on the current node is updated as follows:
@@ -133,6 +152,7 @@ namespace triqs_cthyb {
 
     int b2 = (n->delete_flag ? b1 : get_op_block_map(n, b1));
     if (b2 < 0) return {b2, 0};
+    if (!n->delete_flag && n->op.linear_index < 0) lnorm -= aux_log_norms[-n->op.linear_index - 1][b1];
 
     int b3 = b2;
     if (n->left) {

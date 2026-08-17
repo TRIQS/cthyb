@@ -1,5 +1,7 @@
 // -----------------------------------------------------------------------------
 
+#include <cmath>
+
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/gfs/block/gf_struct.hpp>
@@ -135,6 +137,69 @@ TEST(atom_diag, op_matrix) {
     h5_write(fd, "g", g);
   }  
   
+}
+
+TEST(impurity_trace, delete_by_time_key) {
+
+  gf_struct_t gf_struct{{"up", 1}, {"dn", 1}};
+  fundamental_operator_set fops(gf_struct);
+
+  double U  = 1.0;
+  double mu = 0.1 * U;
+
+  many_body_operator_real H;
+  H += -mu * (n("up", 0) + n("dn", 0)) + U * n("up", 0) * n("dn", 0);
+
+  auto ad = triqs::atom_diag::atom_diag<triqs_cthyb::is_h_scalar_complex>(H, fops);
+
+  double beta = 2.0;
+  triqs_cthyb::time_segment tau_seg(beta);
+  auto tau_up = tau_seg.make_time_pt(0.4);
+  auto tau_dn = tau_seg.make_time_pt(1.3);
+
+  triqs_cthyb::impurity_trace imp_trace(beta, ad, nullptr);
+  auto n_up = imp_trace.attach_aux_operator(n("up", 0));
+  auto n_dn = imp_trace.attach_aux_operator(n("dn", 0));
+  EXPECT_EQ(n_up.block_index, -1);
+  EXPECT_EQ(n_dn.block_index, -1);
+
+  imp_trace.try_insert(tau_up, n_up);
+  imp_trace.try_insert(tau_dn, n_dn);
+  imp_trace.confirm_insert();
+  auto [both_weight, both_reweighting] = imp_trace.compute();
+
+  triqs_cthyb::impurity_trace ref_both(beta, ad, nullptr);
+  auto ref_n_up = ref_both.attach_aux_operator(n("up", 0));
+  auto ref_n_dn = ref_both.attach_aux_operator(n("dn", 0));
+  ref_both.try_insert(tau_up, ref_n_up);
+  ref_both.try_insert(tau_dn, ref_n_dn);
+  ref_both.confirm_insert();
+  auto [ref_both_weight, ref_both_reweighting] = ref_both.compute();
+
+  EXPECT_LT(std::abs(both_weight - ref_both_weight), 1e-12);
+  EXPECT_LT(std::abs(both_reweighting - ref_both_reweighting), 1e-12);
+
+  triqs_cthyb::impurity_trace ref_deleted(beta, ad, nullptr);
+  auto ref_deleted_n_dn = ref_deleted.attach_aux_operator(n("dn", 0));
+  ref_deleted.try_insert(tau_dn, ref_deleted_n_dn);
+  ref_deleted.confirm_insert();
+  auto [ref_deleted_weight, ref_deleted_reweighting] = ref_deleted.compute();
+
+  imp_trace.try_delete(tau_up);
+  auto [trial_weight, trial_reweighting] = imp_trace.compute();
+  EXPECT_LT(std::abs(trial_weight - ref_deleted_weight), 1e-12);
+  EXPECT_LT(std::abs(trial_reweighting - ref_deleted_reweighting), 1e-12);
+
+  imp_trace.cancel_delete();
+  auto [cancel_weight, cancel_reweighting] = imp_trace.compute();
+  EXPECT_LT(std::abs(cancel_weight - ref_both_weight), 1e-12);
+  EXPECT_LT(std::abs(cancel_reweighting - ref_both_reweighting), 1e-12);
+
+  imp_trace.try_delete(tau_up);
+  imp_trace.confirm_delete();
+  auto [deleted_weight, deleted_reweighting] = imp_trace.compute();
+  EXPECT_LT(std::abs(deleted_weight - ref_deleted_weight), 1e-12);
+  EXPECT_LT(std::abs(deleted_reweighting - ref_deleted_reweighting), 1e-12);
 }
 
 MAKE_MAIN;

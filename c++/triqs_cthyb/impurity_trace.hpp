@@ -204,7 +204,7 @@ namespace triqs_cthyb {
     // attach auxiliary operators
     op_desc attach_aux_operator(many_body_op_t const &op) {
       aux_operators.push_back(h_diag->get_op_mat(op));
-      op_desc operator_desc{0, 0, true, -static_cast<int>(aux_operators.size())};
+      op_desc operator_desc{-1, 0, true, -static_cast<int>(aux_operators.size())};
       return operator_desc;
     }
     
@@ -293,21 +293,15 @@ namespace triqs_cthyb {
     std::vector<time_pt> removed_keys;
 
     public:
-    // Find and mark as deleted the nth operator with fixed dagger and block_index
-    // n=0 : first operator, n=1, second, etc...
-    time_pt try_delete(int n, int block_index, bool dagger) noexcept {
-      // traverse the tree, looking for the nth operator of the correct dagger, block_index
-      int i  = 0;
-      node x = find_if(tree, [&](node no) {
-        if (no->op.dagger == dagger && no->op.block_index == block_index) ++i;
-        return i == n + 1;
-      });
+    // Find and mark as deleted the operator at a specific imaginary-time key.
+    void try_delete(time_pt tau) {
+      node x = find_if(tree, [&](node no) { return no->key == tau; });
+      if (x == nullptr) TRIQS_RUNTIME_ERROR << "No operator at tau = " << tau << " in impurity_trace::try_delete";
       removed_nodes.push_back(x);             // store the node
       removed_keys.push_back(x->key);         // store the key
       tree.set_modified_from_root_to(x->key); // mark all nodes on path from node to root as modified
       x->delete_flag = true;                  // mark the node for deletion
       tree_size--;
-      return x->key;
     }
 
     // Clean all the delete flags

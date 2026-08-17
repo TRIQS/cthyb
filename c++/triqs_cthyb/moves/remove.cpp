@@ -62,8 +62,10 @@ namespace triqs_cthyb {
 #endif
 
     // now mark 2 nodes for deletion
-    tau1 = data.imp_trace.try_delete(num_c, block_index, false);
-    tau2 = data.imp_trace.try_delete(num_c_dag, block_index, true);
+    tau1 = det.get_y(num_c).first;
+    tau2 = det.get_x(num_c_dag).first;
+    data.imp_trace.try_delete(tau1);
+    data.imp_trace.try_delete(tau2);
 
     // record the length of the proposed removal
     dtau = double(tau2 - tau1);

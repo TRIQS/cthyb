@@ -65,6 +65,67 @@ def _F_tau_first_moment_from_G_tau(h_int, gf_struct, G_tau):
     return moments
 
 
+def _F_iw_tail_moments_from_sigma_and_g(sigma_moments, green_moments):
+    r"""Build F(iw) moments from F(iw) = Sigma(iw) G(iw)."""
+    moments = {}
+
+    for bl, sigma_tail in sigma_moments.items():
+        sigma0 = sigma_tail[0]
+        f_tail = np.zeros((3,) + sigma0.shape, dtype=complex)
+        f_tail[1] = sigma0
+
+        if len(sigma_tail) > 1 and green_moments is not None and len(green_moments[bl]) > 2:
+            f_tail[2] = sigma0 @ green_moments[bl][2] + sigma_tail[1]
+
+        moments[bl] = f_tail
+
+    return moments
+
+
+def _F_moments_for_postprocessing(sigma_moments, green_moments, h_int, gf_struct, G_tau):
+    if sigma_moments is not None:
+        f_tail_moments = _F_iw_tail_moments_from_sigma_and_g(sigma_moments, green_moments)
+        f_moments = {bl: f_tail[1] for bl, f_tail in f_tail_moments.items()}
+    else:
+        f_moments = _F_tau_first_moment_from_G_tau(h_int, gf_struct, G_tau)
+        f_tail_moments = {}
+        for bl, f1 in f_moments.items():
+            f_tail = np.zeros((2,) + f1.shape, dtype=complex)
+            f_tail[1] = f1
+            f_tail_moments[bl] = f_tail
+
+    return f_moments, f_tail_moments
+
+
+def _postprocess_F_from_legendre(F_l, G_iw, Sigma_iw, f_tail_moments):
+    F_l_for_fourier = F_l.copy()
+    F_iw = G_iw.copy()
+    F_iw.zero()
+
+    for bl, f_l in F_l_for_fourier:
+        _enforce_legendre_discontinuity(f_l, f_tail_moments[bl][1])
+        F_iw[bl].set_from_legendre(f_l)
+
+    Sigma_iw_improved = Sigma_iw.copy()
+    Sigma_iw_improved.zero()
+
+    for bl, f_iw in F_iw:
+        Sigma_iw_improved[bl] << f_iw * inverse(G_iw[bl])
+
+    return F_l_for_fourier, F_iw, Sigma_iw_improved
+
+
+def _enforce_legendre_discontinuity(g_l, discontinuity):
+    r"""Complex-valued equivalent of ``GfLegendre.enforce_discontinuity``."""
+    beta = g_l.mesh.beta
+    l = np.arange(g_l.data.shape[0])
+    t = np.zeros_like(l, dtype=float)
+    even_l = (l % 2) == 0
+    t[even_l] = -2.0 * np.sqrt(2.0 * l[even_l] + 1.0) / beta
+
+    norm = np.dot(t, t)
+    correction = np.asarray(discontinuity, dtype=complex) - np.tensordot(t, g_l.data, axes=(0, 0))
+    g_l.data[:] += correction[None, :, :] * (t / norm)[:, None, None]
 class Solver(SolverCore):
 
     def __init__(self, beta, gf_struct, n_iw=1025, n_tau=10001, n_l=30, delta_interface = False):
@@ -118,6 +179,16 @@ class Solver(SolverCore):
         self.F_moments_partition = None
         self.F_tail_moments_partition = None
         self.Sigma_iw_improved_partition = None
+        self.F_iw_worm_l = None
+        self.F_l_worm_raw = None
+        self.F_moments_worm_l = None
+        self.F_tail_moments_worm_l = None
+        self.Sigma_iw_improved_worm_l = None
+        self.F_iw_partition_l = None
+        self.F_l_partition_raw = None
+        self.F_moments_partition_l = None
+        self.F_tail_moments_partition_l = None
+        self.Sigma_iw_improved_partition_l = None
 
     def solve(self, **params_kw):
         r"""
@@ -199,6 +270,12 @@ class Solver(SolverCore):
         if (perform_post_proc and self.last_solve_parameters.measure_F_tau_partition
                 and not self.last_solve_parameters.measure_G_tau):
             raise RuntimeError("measure_F_tau_partition post-processing requires measure_G_tau=True")
+        if (perform_post_proc and self.last_solve_parameters.measure_F_l_worm
+                and not self.last_solve_parameters.measure_G_tau):
+            raise RuntimeError("measure_F_l_worm post-processing requires measure_G_tau=True")
+        if (perform_post_proc and self.last_solve_parameters.measure_F_l_partition
+                and not self.last_solve_parameters.measure_G_tau):
+            raise RuntimeError("measure_F_l_partition post-processing requires measure_G_tau=True")
 
         # Post-processing:
         # (only supported for G_tau, to permit compatibility with dft_tools)
@@ -287,8 +364,10 @@ class Solver(SolverCore):
             if self.last_solve_parameters.measure_F_tau:
                 self.F_tau_raw = self.F_tau.copy()
                 F_tau_for_fourier = self.F_tau.copy()
-                self.F_moments = _F_tau_first_moment_from_G_tau(
-                    self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
+
+                self.F_moments, self.F_tail_moments = _F_moments_for_postprocessing(
+                    self.Sigma_moments, self.G_moments, self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
+
                 self.F_iw = self.G_iw.copy()
                 self.F_iw.zero()
 
@@ -312,17 +391,8 @@ class Solver(SolverCore):
                 self.F_tau_partition_raw = self.F_tau_partition.copy()
                 F_tau_partition_for_fourier = self.F_tau_partition.copy()
 
-                if self.Sigma_moments is not None:
-                    self.F_tail_moments_partition = _F_iw_tail_moments_from_sigma_and_g(self.Sigma_moments, self.G_moments)
-                    self.F_moments_partition = {bl: f_tail[1] for bl, f_tail in self.F_tail_moments_partition.items()}
-                else:
-                    self.F_moments_partition = _F_tau_first_moment_from_G_tau(
-                        self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
-                    self.F_tail_moments_partition = {}
-                    for bl, f1 in self.F_moments_partition.items():
-                        f_tail = np.zeros((2,) + f1.shape, dtype=complex)
-                        f_tail[1] = f1
-                        self.F_tail_moments_partition[bl] = f_tail
+                self.F_moments_partition, self.F_tail_moments_partition = _F_moments_for_postprocessing(
+                    self.Sigma_moments, self.G_moments, self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
 
                 self.F_iw_partition = self.G_iw.copy()
                 self.F_iw_partition.zero()
@@ -341,5 +411,19 @@ class Solver(SolverCore):
 
                 for bl, f_iw in self.F_iw_partition:
                     self.Sigma_iw_improved_partition[bl] << f_iw * inverse(self.G_iw[bl])
+
+            if self.last_solve_parameters.measure_F_l_worm:
+                self.F_l_worm_raw = self.F_l_worm.copy()
+                self.F_moments_worm_l, self.F_tail_moments_worm_l = _F_moments_for_postprocessing(
+                    self.Sigma_moments, self.G_moments, self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
+                self.F_l_worm, self.F_iw_worm_l, self.Sigma_iw_improved_worm_l = _postprocess_F_from_legendre(
+                    self.F_l_worm, self.G_iw, self.Sigma_iw, self.F_tail_moments_worm_l)
+
+            if self.last_solve_parameters.measure_F_l_partition:
+                self.F_l_partition_raw = self.F_l_partition.copy()
+                self.F_moments_partition_l, self.F_tail_moments_partition_l = _F_moments_for_postprocessing(
+                    self.Sigma_moments, self.G_moments, self.last_solve_parameters.h_int, self.gf_struct, self.G_tau)
+                self.F_l_partition, self.F_iw_partition_l, self.Sigma_iw_improved_partition_l = _postprocess_F_from_legendre(
+                    self.F_l_partition, self.G_iw, self.Sigma_iw, self.F_tail_moments_partition_l)
 
         return solve_status

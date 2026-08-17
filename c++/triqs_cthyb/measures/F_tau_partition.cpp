@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include "./F_tau_partition.hpp"
+#include "./F_partition_common.hpp"
 
 #include <map>
 
@@ -38,18 +39,15 @@ namespace triqs_cthyb {
   void measure_F_tau_partition::accumulate(mc_weight_t s) {
     if (!data.worm.in_Z()) return;
 
-    s *= data.atomic_reweighting;
-    average_sign += s;
-
-    auto [w0, rw0] = data.imp_trace.compute();
-    auto trace0    = w0 * rw0;
+    auto const context = detail::make_partition_measurement_context(data, s);
+    average_sign += context.average_sign_contribution;
 
     for (auto block_idx : range(F_tau_partition.size())) {
       auto const &det = data.dets[block_idx];
       long n          = det.size();
       if (n == 0) continue;
 
-      std::map<time_pt, mc_weight_t> trace_ratio;
+      std::map<time_pt, h_scalar_t> replacement_trace_over_weight;
       for (long j = 0; j < n; ++j) {
         auto y             = det.get_y(j);
         auto const &Q_desc = data.worm.Q_ops[block_idx][y.second];
@@ -59,8 +57,7 @@ namespace triqs_cthyb {
         updated_ops.emplace(y.first, *Q_desc);
         try {
           data.imp_trace.try_replace(updated_ops);
-          auto [wQ, rwQ]      = data.imp_trace.compute();
-          trace_ratio[y.first] = (wQ * rwQ) / trace0;
+          replacement_trace_over_weight[y.first] = detail::replacement_trace_over_atomic_weight(data, context.atomic_weight);
         } catch (...) {
           data.imp_trace.cancel_replace();
           throw;
@@ -68,11 +65,11 @@ namespace triqs_cthyb {
         data.imp_trace.cancel_replace();
       }
 
-      foreach (det, [this, s, block_idx, &trace_ratio](op_t const &x, op_t const &y, det_scalar_t M) {
-        auto ratio_it = trace_ratio.find(y.first);
-        if (ratio_it == trace_ratio.end()) return;
+      foreach (det, [this, context, block_idx, &replacement_trace_over_weight](op_t const &x, op_t const &y, det_scalar_t M) {
+        auto weight_it = replacement_trace_over_weight.find(y.first);
+        if (weight_it == replacement_trace_over_weight.end()) return;
 
-        auto val    = (y.first >= x.first ? s : -s) * M * ratio_it->second;
+        auto val    = (y.first >= x.first ? context.mc_sign : -context.mc_sign) * M * weight_it->second;
         double dtau = double(y.first - x.first);
         this->F_tau_partition[block_idx][closest_mesh_pt(dtau)](y.second, x.second) += val;
       });

@@ -272,4 +272,17 @@ factor equals 1, and our definition of the average sign coincides with the usual
 fermionic QMC algorithms. Otherwise, the denominator ensures the correct normalization
 of the observable.
 
-Result of this measurement is always available as ``average_sign`` attribute of the solver.
+For ordinary partition-space sampling, the result of this measurement is available as
+the ``average_sign`` attribute of the solver.
+
+When an extended partition-plus-worm ensemble is sampled, signs from the two sectors
+must not be pooled. The partition-sector result is available as both ``average_sign``
+and ``average_sign_partition``; the F-worm-sector result is available separately as
+``average_sign_worm``. The latter is NaN when no F-worm configuration was measured.
+
+Partition-space improved estimators remain well-defined with
+``use_norm_as_weight = True`` even when an accepted configuration has a vanishing
+atomic trace but a nonzero Frobenius-norm Monte Carlo weight. Their replacement
+contribution is evaluated in the algebraically reduced form
+:math:`\mathrm{Tr}_Q/W_{at}` instead of forming the singular intermediate ratio
+:math:`\mathrm{Tr}_Q/\mathrm{Tr}_0`.

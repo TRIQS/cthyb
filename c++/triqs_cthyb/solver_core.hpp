@@ -28,6 +28,7 @@
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/utility/macros.hpp>
+#include <limits>
 #include <optional>
 
 #include "types.hpp"
@@ -51,7 +52,8 @@ namespace triqs_cthyb {
     std::vector<matrix_t> _density_matrix;            // density matrix, when used in Norm mode
     mpi::communicator _comm;                          // define the communicator, here MPI_COMM_WORLD
     histo_map_t _performance_analysis;                // Histograms used for performance analysis
-    mc_weight_t _average_sign;                        // average sign of the QMC
+    mc_weight_t _average_sign = 1.0;                  // average sign in the partition sector
+    mc_weight_t _average_sign_worm = std::numeric_limits<double>::quiet_NaN(); // average sign in the F-worm sector
     double _average_order;                            // average perturbation order
     double _auto_corr_time;                           // Auto-correlation time in units of MC cycles
     bool _auto_corr_time_converged = true;            // Whether the auto-correlation time estimate has saturated
@@ -134,8 +136,14 @@ namespace triqs_cthyb {
     /// Histograms related to the performance analysis.
     C2PY_PROPERTY_GET(performance_analysis) histo_map_t get_performance_analysis() const { return _performance_analysis; }
 
-    /// Monte Carlo average sign.
+    /// Monte Carlo average sign in the partition sector.
     mc_weight_t average_sign() const { return _average_sign; }
+
+    /// Monte Carlo average sign in the partition sector.
+    mc_weight_t average_sign_partition() const { return _average_sign; }
+
+    /// Monte Carlo average sign in the F-worm sector.
+    mc_weight_t average_sign_worm() const { return _average_sign_worm; }
 
     /// Average perturbation order.
     double average_order() const { return _average_order; }
@@ -188,6 +196,8 @@ namespace triqs_cthyb {
       h5_write(grp, "h_loc", s._h_loc);
       h5_write(grp, "density_matrix", s._density_matrix);
       h5_write(grp, "average_sign", s._average_sign);
+      h5_write(grp, "average_sign_partition", s._average_sign);
+      h5_write(grp, "average_sign_worm", s._average_sign_worm);
       h5_write(grp, "average_order", s._average_order);
       h5_write(grp, "auto_corr_time", s._auto_corr_time);
       h5_write(grp, "auto_corr_time_converged", s._auto_corr_time_converged);
@@ -209,6 +219,8 @@ namespace triqs_cthyb {
       h5::try_read(grp, "h_loc", s._h_loc);
       h5::try_read(grp, "density_matrix", s._density_matrix);
       h5::try_read(grp, "average_sign", s._average_sign);
+      h5::try_read(grp, "average_sign_partition", s._average_sign);
+      h5::try_read(grp, "average_sign_worm", s._average_sign_worm);
       h5::try_read(grp, "average_order", s._average_order);
       h5::try_read(grp, "auto_corr_time", s._auto_corr_time);
       h5::try_read(grp, "auto_corr_time_converged", s._auto_corr_time_converged);

@@ -5,6 +5,8 @@ Author: Hugo U.R. Strand (2019) """
 
 # ----------------------------------------------------------------------    
 
+import cmath
+
 import triqs.utility.mpi as mpi
 from triqs.gfs import inverse, iOmega_n, SemiCircular, BlockGf
 from triqs.operators import n
@@ -36,7 +38,7 @@ if __name__ == '__main__':
 
 
         cf_attr = [
-            'Delta_infty', 'Delta_tau', 'F_l_partition', 'F_l_worm', 'F_tau', 'F_tau_accum', 'F_tau_partition', 'F_tau_partition_accum', 'G0_iw', 'G2_iw', 'G2_iw_nfft', 'G2_iw_ph', 'G2_iw_ph_nfft', 'G2_iw_pp', 'G2_iw_pp_nfft', 'G2_iwll_ph', 'G2_iwll_pp', 'G2_tau', 'G_l', 'G_tau', 'G_tau_accum', 'O_tau', 'average_sign', 'constr_parameters', 'density_matrix', 'h_loc', 'last_constr_parameters', 'last_solve_parameters', 'performance_analysis', 'solve_parameters'
+            'Delta_infty', 'Delta_tau', 'F_l_partition', 'F_l_worm', 'F_tau', 'F_tau_accum', 'F_tau_partition', 'F_tau_partition_accum', 'G0_iw', 'G2_iw', 'G2_iw_nfft', 'G2_iw_ph', 'G2_iw_ph_nfft', 'G2_iw_pp', 'G2_iw_pp_nfft', 'G2_iwll_ph', 'G2_iwll_pp', 'G2_tau', 'G_l', 'G_tau', 'G_tau_accum', 'O_tau', 'average_sign', 'average_sign_partition', 'constr_parameters', 'density_matrix', 'h_loc', 'last_constr_parameters', 'last_solve_parameters', 'performance_analysis', 'solve_parameters'
             ]
 
         success = True
@@ -63,5 +65,8 @@ if __name__ == '__main__':
                     print('-'*72)
 
                     success = False
+
+        assert cmath.isnan(solv.average_sign_worm)
+        assert cmath.isnan(ref_solv.average_sign_worm)
 
         assert( success )

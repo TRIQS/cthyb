@@ -510,7 +510,7 @@ namespace triqs_cthyb {
                       "Density Matrix for local static observable");
     }
 
-    qmc.add_measure(measure_average_sign{data, _average_sign}, "Average sign");
+    qmc.add_measure(measure_average_sign{data, _average_sign, _average_sign_worm}, "Average sign");
     qmc.add_measure(measure_average_order{data, _average_order}, "Average order");
     qmc.add_measure(measure_auto_corr_time{data, _auto_corr_time, _auto_corr_time_converged}, "Auto-correlation time");
 
@@ -538,7 +538,8 @@ namespace triqs_cthyb {
     _last_configuration = data.config;
 
     if (params.verbosity >= 2) {
-      std::cout << "Average sign: " << _average_sign << std::endl;
+      std::cout << "Average sign (partition sector): " << _average_sign << std::endl;
+      if (measure_F_worm) std::cout << "Average sign (F-worm sector): " << _average_sign_worm << std::endl;
       std::cout << "Average order: " << _average_order << std::endl;
       if (_auto_corr_time_converged)
         std::cout << "Auto-correlation time: " << _auto_corr_time << " cycles" << std::endl;

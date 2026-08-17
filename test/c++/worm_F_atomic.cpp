@@ -160,6 +160,10 @@ TEST(WormF, HubbardAtomStochasticEstimatorSmoke) {
 
   solver.solve(p);
 
+  EXPECT_NEAR(real(solver.average_sign()), 1.0, 1e-12);
+  EXPECT_EQ(solver.average_sign(), solver.average_sign_partition());
+  EXPECT_NEAR(real(solver.average_sign_worm()), -1.0, 1e-12);
+
   ASSERT_TRUE(solver.F_tau.has_value());
   auto const &F_up = (*solver.F_tau)[0];
 
@@ -180,6 +184,61 @@ TEST(WormF, HubbardAtomStochasticEstimatorSmoke) {
   EXPECT_LT(f05, f125);
   EXPECT_LT(f125, f25);
   EXPECT_LT(f25, 0.0);
+}
+
+TEST(PartitionF, NormReweightingZeroTraceConfigurationsStayFinite) {
+  double beta = 5.0;
+  double U    = 2.0;
+  double mu   = 1.0;
+  int n_iw    = 40;
+  int n_tau   = 101;
+  int n_l     = 20;
+
+  gf_struct_t gf_struct{{"tot", 2}};
+  auto h_int = U * n("tot", 0) * n("tot", 1);
+
+  solver_core solver({.beta = beta, .gf_struct = gf_struct, .n_iw = n_iw, .n_tau = n_tau, .n_l = n_l});
+
+  nda::clef::placeholder<0> om_;
+  auto delta_iw = gf<imfreq>{{beta, Fermion, n_iw}, {2, 2}};
+  nda::matrix<dcomplex> bath_coupling(2, 2);
+  bath_coupling(0, 0) = 1.0;
+  bath_coupling(0, 1) = 1.0;
+  bath_coupling(1, 0) = 1.0;
+  bath_coupling(1, 1) = 1.0;
+  delta_iw(om_) << bath_coupling * (1.0 / (om_ - 2.0) + 1.0 / (om_ + 2.0));
+
+  auto g0_iw = gf<imfreq>{{beta, Fermion, n_iw}, {2, 2}};
+  g0_iw(om_) << om_ + mu - delta_iw(om_);
+  solver.G0_iw()[0] = triqs::gfs::inverse(g0_iw);
+
+  auto p                    = solve_parameters_t{.h_int = h_int, .n_cycles = 50000};
+  p.length_cycle            = 10;
+  p.n_warmup_cycles         = 5000;
+  p.random_seed             = 8675309;
+  p.random_name             = "";
+  p.verbosity               = 0;
+  p.move_double             = false;
+  p.partition_method        = "none";
+  p.use_norm_as_weight      = true;
+  p.measure_G_tau           = false;
+  p.measure_F_tau_partition = true;
+  p.measure_F_l_partition   = true;
+
+  solver.solve(p);
+
+  auto count_nonfinite = [](auto const &block_gf) {
+    long count = 0;
+    for (auto const &block : block_gf)
+      for (auto const &value : block.data()) count += !isfinite(value);
+    return count;
+  };
+
+  ASSERT_TRUE(solver.F_tau_partition.has_value());
+  EXPECT_EQ(count_nonfinite(*solver.F_tau_partition), 0);
+
+  ASSERT_TRUE(solver.F_l_partition.has_value());
+  EXPECT_EQ(count_nonfinite(*solver.F_l_partition), 0);
 }
 
 MAKE_MAIN;

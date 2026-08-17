@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include "./F_l_partition.hpp"
+#include "./F_partition_common.hpp"
 
 #include <map>
 
@@ -28,8 +29,7 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
   using namespace triqs::mesh;
 
-  measure_F_l_partition::measure_F_l_partition(std::optional<G_l_t> &F_l_partition_opt, qmc_data const &data, int n_l,
-                                               gf_struct_t const &gf_struct)
+  measure_F_l_partition::measure_F_l_partition(std::optional<G_l_t> &F_l_partition_opt, qmc_data const &data, int n_l, gf_struct_t const &gf_struct)
      : data(data), average_sign(0) {
     F_l_partition_opt = block_gf<legendre>{{data.config.beta(), Fermion, n_l}, gf_struct};
     F_l_partition.rebind(*F_l_partition_opt);
@@ -39,19 +39,16 @@ namespace triqs_cthyb {
   void measure_F_l_partition::accumulate(mc_weight_t s) {
     if (!data.worm.in_Z()) return;
 
-    s *= data.atomic_reweighting;
-    average_sign += s;
-
-    auto [w0, rw0] = data.imp_trace.compute();
-    auto trace0    = w0 * rw0;
-    double beta    = data.config.beta();
+    auto const context = detail::make_partition_measurement_context(data, s);
+    average_sign += context.average_sign_contribution;
+    double beta = data.config.beta();
 
     for (auto block_idx : range(F_l_partition.size())) {
       auto const &det = data.dets[block_idx];
       long n          = det.size();
       if (n == 0) continue;
 
-      std::map<time_pt, mc_weight_t> trace_ratio;
+      std::map<time_pt, h_scalar_t> replacement_trace_over_weight;
       for (long j = 0; j < n; ++j) {
         auto y             = det.get_y(j);
         auto const &Q_desc = data.worm.Q_ops[block_idx][y.second];
@@ -61,8 +58,7 @@ namespace triqs_cthyb {
         updated_ops.emplace(y.first, *Q_desc);
         try {
           data.imp_trace.try_replace(updated_ops);
-          auto [wQ, rwQ]      = data.imp_trace.compute();
-          trace_ratio[y.first] = (wQ * rwQ) / trace0;
+          replacement_trace_over_weight[y.first] = detail::replacement_trace_over_atomic_weight(data, context.atomic_weight);
         } catch (...) {
           data.imp_trace.cancel_replace();
           throw;
@@ -70,17 +66,16 @@ namespace triqs_cthyb {
         data.imp_trace.cancel_replace();
       }
 
-      foreach (det, [this, s, block_idx, beta, &trace_ratio](op_t const &x, op_t const &y, det_scalar_t M) {
-        auto ratio_it = trace_ratio.find(y.first);
-        if (ratio_it == trace_ratio.end()) return;
+      foreach (det, [this, context, block_idx, beta, &replacement_trace_over_weight](op_t const &x, op_t const &y, det_scalar_t M) {
+        auto weight_it = replacement_trace_over_weight.find(y.first);
+        if (weight_it == replacement_trace_over_weight.end()) return;
 
         double poly_arg = 2 * double(y.first - x.first) / beta - 1.0;
         auto Tn         = triqs::utility::legendre_generator();
         Tn.reset(poly_arg);
 
-        auto val = (y.first >= x.first ? s : -s) * M * ratio_it->second;
-        for (auto l : this->F_l_partition[block_idx].mesh())
-          this->F_l_partition[block_idx][l](y.second, x.second) += val * Tn.next();
+        auto val = (y.first >= x.first ? context.mc_sign : -context.mc_sign) * M * weight_it->second;
+        for (auto l : this->F_l_partition[block_idx].mesh()) this->F_l_partition[block_idx][l](y.second, x.second) += val * Tn.next();
       });
     }
   }

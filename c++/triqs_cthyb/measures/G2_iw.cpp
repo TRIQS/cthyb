@@ -44,6 +44,7 @@ namespace triqs_cthyb {
   }
 
   template <G2_channel Channel> void measure_G2_iw<Channel>::accumulate(mc_weight_t s) {
+    if (!data.worm.in_Z()) return;
 
     if (true)
       accumulate_M_opt(); // FLOPS Optimized scattering matrix accumulation

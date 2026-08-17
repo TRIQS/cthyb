@@ -44,6 +44,7 @@ namespace triqs_cthyb {
   }
 
   void measure_G2_tau::accumulate(mc_weight_t sign) {
+    if (!data.worm.in_Z()) return;
 
     sign *= data.atomic_reweighting;
     average_sign += sign;

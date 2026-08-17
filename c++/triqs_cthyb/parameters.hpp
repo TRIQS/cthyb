@@ -119,6 +119,15 @@ namespace triqs_cthyb {
     /// Measure \f$ O(\tau) \f$ by insertion.
     std::optional<std::pair<many_body_op_t, many_body_op_t>> measure_O_tau = {};
 
+    /// Measure the improved-estimator correlator \f$ F(\tau) = -\langle T Q(\tau)c^\dagger(0)\rangle \f$ using worm sampling?
+    bool measure_F_tau = false;
+
+    /// Extended-ensemble weight for the \f$ F(\tau) \f$ worm sector.
+    double worm_eta = 1.0;
+
+    /// Relative proposal weight for \f$ F(\tau) \f$ worm insert/remove/shift moves.
+    double worm_prob = 0.3;
+
     /// Minimum number of operator insertions in the \f$ O(\tau) \f$ insertion measure.
     int measure_O_tau_min_ins = 10;
 

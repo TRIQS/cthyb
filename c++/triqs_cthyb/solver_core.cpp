@@ -36,6 +36,7 @@
 #include "./moves/double_remove.hpp"
 #include "./moves/shift.hpp"
 #include "./moves/global.hpp"
+#include "./moves/worm_F.hpp"
 #include "./measures/G_tau.hpp"
 #include "./measures/G_l.hpp"
 #include "./measures/O_tau_ins.hpp"
@@ -79,6 +80,13 @@ namespace triqs_cthyb {
 
     solve_parameters = solve_parameters_;
     solve_parameters_t params(solve_parameters_);
+
+    if (params.measure_F_tau) {
+      if (params.measure_density_matrix)
+        TRIQS_RUNTIME_ERROR << "measure_F_tau cannot be combined with measure_density_matrix in the v1 worm estimator implementation";
+      if (params.worm_eta <= 0.0) TRIQS_RUNTIME_ERROR << "measure_F_tau requires worm_eta > 0";
+      if (params.worm_prob <= 0.0) TRIQS_RUNTIME_ERROR << "measure_F_tau requires worm_prob > 0";
+    }
 
     // Merge constr_params and solve_params
     //params_t params(constr_parameters, solve_parameters);
@@ -263,6 +271,47 @@ namespace triqs_cthyb {
 
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
+
+    if (params.measure_F_tau) {
+      data.worm.Q_ops.resize(gf_struct.size());
+      data.worm.cdag_ops.resize(gf_struct.size());
+
+      for (size_t block = 0; block < gf_struct.size(); ++block) {
+        auto const &block_name = gf_struct[block].first;
+        data.worm.Q_ops[block].resize(n_inner[block]);
+        data.worm.cdag_ops[block].resize(n_inner[block]);
+
+        for (int inner = 0; inner < n_inner[block]; ++inner) {
+          auto c_op = c<h_scalar_t>(block_name, inner);
+          auto Q_op = params.h_int * c_op - c_op * params.h_int;
+          if (!Q_op.is_zero()) {
+            try {
+              data.worm.Q_ops[block][inner] = data.imp_trace.attach_aux_operator(Q_op);
+            } catch (std::exception const &e) {
+              TRIQS_RUNTIME_ERROR << "Could not project Q = [H_int, c] for F_tau worm component (block " << block_name
+                                  << ", inner " << inner << ") into the atom_diag block basis: " << e.what();
+            }
+          }
+
+          try {
+            data.worm.cdag_ops[block][inner] = data.imp_trace.attach_aux_operator(c_dag<h_scalar_t>(block_name, inner));
+          } catch (std::exception const &e) {
+            TRIQS_RUNTIME_ERROR << "Could not project c_dag for F_tau worm component (block " << block_name
+                                << ", inner " << inner << ") into the atom_diag block basis: " << e.what();
+          }
+        }
+
+        for (int inner_Q = 0; inner_Q < n_inner[block]; ++inner_Q) {
+          if (!data.worm.Q_ops[block][inner_Q]) continue;
+          for (int inner_cdag = 0; inner_cdag < n_inner[block]; ++inner_cdag)
+            data.worm.components.push_back({int(block), inner_Q, inner_cdag});
+        }
+      }
+
+      if (data.worm.components.empty()) TRIQS_RUNTIME_ERROR << "measure_F_tau found no non-zero same-block Q=[H_int,c] worm components";
+      if (params.verbosity >= 2) std::cout << "F_tau worm components: " << data.worm.n_components() << std::endl;
+    }
+
     auto qmc =
        mc_tools::mc_generic<mc_weight_t>(params.random_name, params.random_seed, params.verbosity);
 
@@ -316,6 +365,12 @@ namespace triqs_cthyb {
 
     if (params.move_shift)
       qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
+
+    if (params.measure_F_tau) {
+      qmc.add_move(move_worm_insert_F(data, qmc.get_rng(), params.worm_eta), "Insert F worm", params.worm_prob);
+      qmc.add_move(move_worm_remove_F(data, qmc.get_rng(), params.worm_eta), "Remove F worm", params.worm_prob);
+      qmc.add_move(move_worm_shift_F(data, qmc.get_rng()), "Shift F worm", params.worm_prob);
+    }
 
     if (params.move_global.size()) {
       move_set_type global(qmc.get_rng());

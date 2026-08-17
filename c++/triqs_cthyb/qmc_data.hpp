@@ -34,6 +34,28 @@ namespace triqs_cthyb {
  ***********************/
   struct qmc_data {
 
+    struct worm_data_t {
+      enum class sector_t { Z, F };
+
+      struct component_t {
+        int block = -1;
+        int inner_Q = -1;
+        int inner_cdag = -1;
+      };
+
+      sector_t sector = sector_t::Z;
+      int component_index = -1;
+      int block = -1, inner_Q = -1, inner_cdag = -1;
+      time_pt tau_Q, tau_cdag;
+      std::vector<std::vector<std::optional<op_desc>>> Q_ops;
+      std::vector<std::vector<op_desc>> cdag_ops;
+      std::vector<component_t> components;
+
+      bool in_Z() const { return sector == sector_t::Z; }
+      bool in_F() const { return sector == sector_t::F; }
+      int n_components() const { return components.size(); }
+    };
+
     configuration config; // Configuration
     time_segment tau_seg;
     std::map<std::pair<int, int>, int> linindex; // Linear index constructed from block and inner indices
@@ -65,6 +87,7 @@ namespace triqs_cthyb {
     int current_sign, old_sign;                                  // Permutation prefactor
     h_scalar_t atomic_weight;                                    // The current value of the trace or norm
     h_scalar_t atomic_reweighting;                               // The current value of the reweighting
+    worm_data_t worm;                                            // Auxiliary worm-sector operators and state
 
     // Construction
     qmc_data(double beta, solve_parameters_t const &p, atom_diag const &h_diag, std::map<std::pair<int, int>, int> linindex,

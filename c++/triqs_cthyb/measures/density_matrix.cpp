@@ -35,6 +35,8 @@ namespace triqs_cthyb {
   // --------------------
 
   void measure_density_matrix::accumulate(mc_weight_t s) {
+    if (!data.worm.in_Z()) return;
+
     // we assume here that we are in "Norm" mode, i.e. qmc weight is norm, not trace
 
     // We need to recompute since the density_matrix in the trace is changed at each computatation,

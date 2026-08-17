@@ -2,6 +2,7 @@
 
 #include <triqs_cthyb/solver_core.hpp>
 #include <triqs_cthyb/impurity_trace.hpp>
+#include <triqs_cthyb/measures/F_partition.hpp>
 
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
@@ -9,6 +10,8 @@
 #include <triqs/mesh.hpp>
 
 #include <cmath>
+#include <cstdio>
+#include <string>
 #include <utility>
 
 using namespace triqs_cthyb;
@@ -89,7 +92,92 @@ namespace {
     return -U * std::exp(-beta * e_down) * std::exp(tau * (e_down - e_double)) / z;
   }
 
+  struct partition_outputs {
+    std::optional<G_tau_t> tau;
+    std::optional<G_l_t> legendre;
+  };
+
+  partition_outputs run_partition_outputs(bool measure_tau, bool measure_l, long stride) {
+    double const beta = 5.0;
+    double const U    = 2.0;
+    double const mu   = 1.0;
+    int const n_iw    = 20;
+    int const n_tau   = 41;
+    int const n_l     = 8;
+
+    gf_struct_t gf_struct{{"tot", 2}};
+    auto h_int = U * n("tot", 0) * n("tot", 1);
+    solver_core solver({.beta = beta, .gf_struct = gf_struct, .n_iw = n_iw, .n_tau = n_tau, .n_l = n_l});
+
+    nda::clef::placeholder<0> om_;
+    auto delta_iw = gf<imfreq>{{beta, Fermion, n_iw}, {2, 2}};
+    nda::matrix<dcomplex> bath_coupling(2, 2);
+    bath_coupling()  = 0.0;
+    bath_coupling(0, 0) = 1.0;
+    bath_coupling(1, 1) = 0.7;
+    delta_iw(om_) << bath_coupling * (1.0 / (om_ - 2.0) + 1.0 / (om_ + 2.0));
+
+    auto g0_iw = gf<imfreq>{{beta, Fermion, n_iw}, {2, 2}};
+    g0_iw(om_) << om_ + mu - delta_iw(om_);
+    solver.G0_iw()[0] = triqs::gfs::inverse(g0_iw);
+
+    auto p                       = solve_parameters_t{.h_int = h_int, .n_cycles = 1200};
+    p.length_cycle               = 5;
+    p.n_warmup_cycles            = 100;
+    p.random_seed                = 24680;
+    p.random_name                = "";
+    p.verbosity                  = 0;
+    p.move_double                = false;
+    p.partition_method           = "none";
+    p.measure_G_tau              = false;
+    p.measure_F_tau_partition    = measure_tau;
+    p.measure_F_l_partition      = measure_l;
+    p.measure_F_partition_stride = stride;
+    solver.solve(p);
+
+    return {solver.F_tau_partition, solver.F_l_partition};
+  }
+
 } // namespace
+
+TEST(PartitionF, StrideScheduleAndHdfRoundTrip) {
+  triqs_cthyb::detail::partition_measurement_schedule schedule(3);
+  for (int event = 0; event < 10; ++event) EXPECT_EQ(schedule.select_next(), event % 3 == 0);
+  EXPECT_ANY_THROW(triqs_cthyb::detail::partition_measurement_schedule(0));
+  EXPECT_ANY_THROW(triqs_cthyb::detail::partition_measurement_schedule(-1));
+
+  solve_parameters_t parameters;
+  EXPECT_EQ(parameters.measure_F_partition_stride, 1);
+  parameters.measure_F_partition_stride = 7;
+  auto const filename = "partition_stride." + std::to_string(mpi::communicator().rank()) + ".h5";
+  {
+    h5::file file(filename, 'w');
+    h5_write(file, "parameters", parameters);
+  }
+  solve_parameters_t restored;
+  {
+    h5::file file(filename, 'r');
+    h5_read(file, "parameters", restored);
+  }
+  std::remove(filename.c_str());
+  EXPECT_EQ(restored.measure_F_partition_stride, 7);
+}
+
+TEST(PartitionF, FusedOptionalOutputsMatchSingleOutputMeasures) {
+  auto tau_only = run_partition_outputs(true, false, 3);
+  auto l_only   = run_partition_outputs(false, true, 3);
+  auto both     = run_partition_outputs(true, true, 3);
+
+  ASSERT_TRUE(tau_only.tau.has_value());
+  EXPECT_FALSE(tau_only.legendre.has_value());
+  EXPECT_FALSE(l_only.tau.has_value());
+  ASSERT_TRUE(l_only.legendre.has_value());
+  ASSERT_TRUE(both.tau.has_value());
+  ASSERT_TRUE(both.legendre.has_value());
+
+  EXPECT_BLOCK_GF_NEAR(*both.tau, *tau_only.tau, 1e-14);
+  EXPECT_BLOCK_GF_NEAR(*both.legendre, *l_only.legendre, 1e-14);
+}
 
 TEST(WormF, HubbardAtomExactTrace) {
   double beta = 5.0;
@@ -224,6 +312,7 @@ TEST(PartitionF, NormReweightingZeroTraceConfigurationsStayFinite) {
   p.measure_G_tau           = false;
   p.measure_F_tau_partition = true;
   p.measure_F_l_partition   = true;
+  p.measure_F_partition_stride = 3;
 
   solver.solve(p);
 

@@ -39,9 +39,8 @@
 #include "./moves/worm_F.hpp"
 #include "./measures/G_tau.hpp"
 #include "./measures/F_tau.hpp"
-#include "./measures/F_tau_partition.hpp"
+#include "./measures/F_partition.hpp"
 #include "./measures/F_l_worm.hpp"
-#include "./measures/F_l_partition.hpp"
 #include "./measures/G_l.hpp"
 #include "./measures/O_tau_ins.hpp"
 #include "./measures/perturbation_hist.hpp"
@@ -86,7 +85,10 @@ namespace triqs_cthyb {
     solve_parameters_t params(solve_parameters_);
 
     bool measure_F_worm      = params.measure_F_tau_worm || params.measure_F_l_worm;
-    bool measure_F_partition = params.measure_F_tau_partition || params.measure_F_l_partition;
+    bool measure_partition_F = params.measure_F_tau_partition || params.measure_F_l_partition;
+
+    if (params.measure_F_partition_stride < 1)
+      TRIQS_RUNTIME_ERROR << "measure_F_partition_stride must be at least 1, got " << params.measure_F_partition_stride;
 
     if (measure_F_worm) {
       if (params.worm_eta <= 0.0) TRIQS_RUNTIME_ERROR << "Worm F measurements require worm_eta > 0";
@@ -277,7 +279,7 @@ namespace triqs_cthyb {
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
 
-    if (measure_F_worm || measure_F_partition) {
+    if (measure_F_worm || measure_partition_F) {
       bool has_Q_ops = false;
       data.worm.Q_ops.resize(gf_struct.size());
       if (measure_F_worm) data.worm.cdag_ops.resize(gf_struct.size());
@@ -321,7 +323,7 @@ namespace triqs_cthyb {
 
       if (measure_F_worm && data.worm.components.empty())
         TRIQS_RUNTIME_ERROR << "Worm F measurements found no non-zero same-block Q=[H_int,c] worm components";
-      if (measure_F_partition && !has_Q_ops)
+      if (measure_partition_F && !has_Q_ops)
         TRIQS_RUNTIME_ERROR << "Partition F measurements found no non-zero Q=[H_int,c] partition components";
       if (measure_F_worm && params.verbosity >= 2) std::cout << "F worm components: " << data.worm.n_components() << std::endl;
     }
@@ -478,16 +480,15 @@ namespace triqs_cthyb {
       qmc.add_measure(measure_F_tau{data, n_tau, gf_struct, container_set(), params.worm_eta}, "F_tau measure");
     }
 
-    if (params.measure_F_tau_partition) {
-      F_tau_partition = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
-      qmc.add_measure(measure_F_tau_partition{data, n_tau, gf_struct, container_set()}, "F_tau_partition measure");
-    }
-
     if (params.measure_F_l_worm)
       qmc.add_measure(measure_F_l_worm{F_l_worm, data, n_l, gf_struct, params.worm_eta}, "F_l_worm measure");
 
-    if (params.measure_F_l_partition)
-      qmc.add_measure(measure_F_l_partition{F_l_partition, data, n_l, gf_struct}, "F_l_partition measure");
+    if (measure_partition_F) {
+      if (params.measure_F_tau_partition) F_tau_partition = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
+      qmc.add_measure(measure_F_partition{data, n_tau, n_l, gf_struct, container_set(), params.measure_F_tau_partition,
+                                         params.measure_F_l_partition, params.measure_F_partition_stride},
+                      "F_partition measure");
+    }
 
     if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");
 

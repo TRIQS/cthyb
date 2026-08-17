@@ -20,8 +20,11 @@
  ******************************************************************************/
 #pragma once
 
+#include <cstdint>
+
 #include <triqs/gfs.hpp>
 #include <triqs/mesh.hpp>
+#include <triqs/utility/legendre.hpp>
 
 #include "../container_set.hpp"
 #include "../qmc_data.hpp"
@@ -31,16 +34,40 @@ namespace triqs_cthyb {
   using namespace triqs::gfs;
   using namespace triqs::mesh;
 
-  class measure_F_tau_partition {
+  namespace detail {
+
+    /// Per-rank cadence over all accumulation events, including events in non-Z sectors.
+    class partition_measurement_schedule {
+      public:
+      explicit partition_measurement_schedule(long stride) : stride(stride) {
+        if (stride < 1) TRIQS_RUNTIME_ERROR << "measure_F_partition_stride must be at least 1, got " << stride;
+      }
+
+      bool select_next() { return event_index++ % stride == 0; }
+
+      private:
+      std::uint64_t event_index = 0;
+      std::uint64_t stride;
+    };
+
+  } // namespace detail
+
+  /// Fused Z-sector hybridization-line replacement estimator for optional imaginary-time and Legendre outputs.
+  class measure_F_partition {
     public:
-    measure_F_tau_partition(qmc_data const &data, int n_tau, gf_struct_t const &gf_struct, container_set_t &results);
+    measure_F_partition(qmc_data const &data, int n_tau, int n_l, gf_struct_t const &gf_struct, container_set_t &results, bool measure_tau,
+                        bool measure_l, long stride);
     void accumulate(mc_weight_t s);
     void collect_results(mpi::communicator const &c);
 
     private:
     qmc_data const &data;
-    mc_weight_t average_sign;
-    G_tau_G_target_t::view_type F_tau_partition;
+    G_tau_G_target_t *F_tau_partition = nullptr;
+    G_l_t *F_l_partition              = nullptr;
+    mc_weight_t Z_normalization       = 0;
+    double absolute_normalization     = 0;
+    long selected_Z_events            = 0;
+    detail::partition_measurement_schedule schedule;
   };
 
 } // namespace triqs_cthyb

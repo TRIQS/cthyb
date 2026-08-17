@@ -131,6 +131,9 @@ namespace triqs_cthyb {
     /// Measure \f$ F_l \f$ in the Legendre representation with a Z-sector hybridization-line replacement estimator?
     bool measure_F_l_partition = false;
 
+    /// Measure the Z-sector partition-space \f$ F \f$ estimators once every this many accumulation events.
+    long measure_F_partition_stride = 1;
+
     /// Extended-ensemble weight for the \f$ F(\tau) \f$ worm sector.
     double worm_eta = 1.0;
 

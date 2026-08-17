@@ -85,7 +85,7 @@ namespace triqs_cthyb {
     solve_parameters = solve_parameters_;
     solve_parameters_t params(solve_parameters_);
 
-    bool measure_F_worm      = params.measure_F_tau || params.measure_F_l_worm;
+    bool measure_F_worm      = params.measure_F_tau_worm || params.measure_F_l_worm;
     bool measure_F_partition = params.measure_F_tau_partition || params.measure_F_l_partition;
 
     if (measure_F_worm) {
@@ -473,7 +473,7 @@ namespace triqs_cthyb {
       qmc.add_measure(measure_G_tau{data, n_tau, gf_struct, container_set()}, "G_tau measure");
     }
 
-    if (params.measure_F_tau) {
+    if (params.measure_F_tau_worm) {
       F_tau = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
       qmc.add_measure(measure_F_tau{data, n_tau, gf_struct, container_set(), params.worm_eta}, "F_tau measure");
     }

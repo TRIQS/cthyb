@@ -154,7 +154,7 @@ TEST(WormF, HubbardAtomStochasticEstimatorSmoke) {
   p.verbosity         = 0;
   p.move_double       = false;
   p.measure_G_tau     = false;
-  p.measure_F_tau     = true;
+  p.measure_F_tau_worm = true;
   p.worm_eta          = 0.1;
   p.worm_prob         = 10.0;
 

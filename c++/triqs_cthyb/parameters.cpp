@@ -103,7 +103,7 @@ namespace triqs_cthyb {
     h5_write(grp, "measure_G_tau", sp.measure_G_tau);
     h5_write(grp, "measure_G_l", sp.measure_G_l);
     h5_write(grp, "measure_O_tau", sp.measure_O_tau);
-    h5_write(grp, "measure_F_tau", sp.measure_F_tau);
+    h5_write(grp, "measure_F_tau_worm", sp.measure_F_tau_worm);
     h5_write(grp, "measure_F_tau_partition", sp.measure_F_tau_partition);
     h5_write(grp, "measure_F_l_worm", sp.measure_F_l_worm);
     h5_write(grp, "measure_F_l_partition", sp.measure_F_l_partition);
@@ -176,7 +176,7 @@ namespace triqs_cthyb {
     h5_read(grp, "measure_G_tau", sp.measure_G_tau);
     h5_read(grp, "measure_G_l", sp.measure_G_l);
     if( grp.has_key("measure_O_tau") ) h5_read(grp, "measure_O_tau", sp.measure_O_tau);
-    h5::try_read(grp, "measure_F_tau", sp.measure_F_tau);
+    h5::try_read(grp, "measure_F_tau_worm", sp.measure_F_tau_worm);
     h5::try_read(grp, "measure_F_tau_partition", sp.measure_F_tau_partition);
     h5::try_read(grp, "measure_F_l_worm", sp.measure_F_l_worm);
     h5::try_read(grp, "measure_F_l_partition", sp.measure_F_l_partition);

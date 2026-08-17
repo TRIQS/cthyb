@@ -59,7 +59,7 @@ def _F_tau_first_moment_from_G_tau(h_int, gf_struct, G_tau):
                     bl_cdag, i = idx_cdag
                     bl_c, j = idx_c
                     if bl_cdag != bl_c:
-                        raise RuntimeError("measure_F_tau v1 requires block-diagonal one-body F moments")
+                        raise RuntimeError("measure_F_tau_worm v1 requires block-diagonal one-body F moments")
                     moments[bl][a, b] -= coef * occupations[bl_cdag][i, j]
 
     return moments
@@ -264,9 +264,9 @@ class Solver(SolverCore):
         # Call the core solver's solve routine
         solve_status = SolverCore.solve(self, SolveParametersT(**params_kw))
 
-        if (perform_post_proc and self.last_solve_parameters.measure_F_tau
+        if (perform_post_proc and self.last_solve_parameters.measure_F_tau_worm
                 and not self.last_solve_parameters.measure_G_tau):
-            raise RuntimeError("measure_F_tau post-processing requires measure_G_tau=True")
+            raise RuntimeError("measure_F_tau_worm post-processing requires measure_G_tau=True")
         if (perform_post_proc and self.last_solve_parameters.measure_F_tau_partition
                 and not self.last_solve_parameters.measure_G_tau):
             raise RuntimeError("measure_F_tau_partition post-processing requires measure_G_tau=True")
@@ -361,7 +361,7 @@ class Solver(SolverCore):
 
                 self.Sigma_iw = dyson(G0_iw=G0_iw, G_iw=self.G_iw)
 
-            if self.last_solve_parameters.measure_F_tau:
+            if self.last_solve_parameters.measure_F_tau_worm:
                 self.F_tau_raw = self.F_tau.copy()
                 F_tau_for_fourier = self.F_tau.copy()
 

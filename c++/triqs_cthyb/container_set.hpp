@@ -53,6 +53,12 @@ namespace triqs_cthyb {
     /// Intermediate Green's function used to accumulate \f$ F(\tau) \f$ (real or complex).
     std::optional<G_tau_G_target_t> F_tau_accum;
 
+    /// Z-sector partition-space estimator of \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$.
+    std::optional<G_tau_t> F_tau_partition;
+
+    /// Intermediate Green's function used to accumulate the Z-sector partition-space \f$ F(\tau) \f$ estimator.
+    std::optional<G_tau_G_target_t> F_tau_partition_accum;
+
     // -- Two-particle Green's functions
 
     /// Two-particle Green's function \f$ G^{(2)}(\tau_1,\tau_2,\tau_3) \f$ with three fermionic times.

@@ -39,6 +39,7 @@
 #include "./moves/worm_F.hpp"
 #include "./measures/G_tau.hpp"
 #include "./measures/F_tau.hpp"
+#include "./measures/F_tau_partition.hpp"
 #include "./measures/G_l.hpp"
 #include "./measures/O_tau_ins.hpp"
 #include "./measures/perturbation_hist.hpp"
@@ -273,14 +274,15 @@ namespace triqs_cthyb {
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
 
-    if (params.measure_F_tau) {
+    if (params.measure_F_tau || params.measure_F_tau_partition) {
+      bool has_Q_ops = false;
       data.worm.Q_ops.resize(gf_struct.size());
-      data.worm.cdag_ops.resize(gf_struct.size());
+      if (params.measure_F_tau) data.worm.cdag_ops.resize(gf_struct.size());
 
       for (size_t block = 0; block < gf_struct.size(); ++block) {
         auto const &block_name = gf_struct[block].first;
         data.worm.Q_ops[block].resize(n_inner[block]);
-        data.worm.cdag_ops[block].resize(n_inner[block]);
+        if (params.measure_F_tau) data.worm.cdag_ops[block].resize(n_inner[block]);
 
         for (int inner = 0; inner < n_inner[block]; ++inner) {
           auto c_op = c<h_scalar_t>(block_name, inner);
@@ -288,29 +290,37 @@ namespace triqs_cthyb {
           if (!Q_op.is_zero()) {
             try {
               data.worm.Q_ops[block][inner] = data.imp_trace.attach_aux_operator(Q_op);
+              has_Q_ops = true;
             } catch (std::exception const &e) {
-              TRIQS_RUNTIME_ERROR << "Could not project Q = [H_int, c] for F_tau worm component (block " << block_name
+              TRIQS_RUNTIME_ERROR << "Could not project Q = [H_int, c] for F_tau estimator (block " << block_name
                                   << ", inner " << inner << ") into the atom_diag block basis: " << e.what();
             }
           }
 
-          try {
-            data.worm.cdag_ops[block][inner] = data.imp_trace.attach_aux_operator(c_dag<h_scalar_t>(block_name, inner));
-          } catch (std::exception const &e) {
-            TRIQS_RUNTIME_ERROR << "Could not project c_dag for F_tau worm component (block " << block_name
-                                << ", inner " << inner << ") into the atom_diag block basis: " << e.what();
+          if (params.measure_F_tau) {
+            try {
+              data.worm.cdag_ops[block][inner] = data.imp_trace.attach_aux_operator(c_dag<h_scalar_t>(block_name, inner));
+            } catch (std::exception const &e) {
+              TRIQS_RUNTIME_ERROR << "Could not project c_dag for F_tau worm component (block " << block_name
+                                  << ", inner " << inner << ") into the atom_diag block basis: " << e.what();
+            }
           }
         }
 
-        for (int inner_Q = 0; inner_Q < n_inner[block]; ++inner_Q) {
-          if (!data.worm.Q_ops[block][inner_Q]) continue;
-          for (int inner_cdag = 0; inner_cdag < n_inner[block]; ++inner_cdag)
-            data.worm.components.push_back({int(block), inner_Q, inner_cdag});
+        if (params.measure_F_tau) {
+          for (int inner_Q = 0; inner_Q < n_inner[block]; ++inner_Q) {
+            if (!data.worm.Q_ops[block][inner_Q]) continue;
+            for (int inner_cdag = 0; inner_cdag < n_inner[block]; ++inner_cdag)
+              data.worm.components.push_back({int(block), inner_Q, inner_cdag});
+          }
         }
       }
 
-      if (data.worm.components.empty()) TRIQS_RUNTIME_ERROR << "measure_F_tau found no non-zero same-block Q=[H_int,c] worm components";
-      if (params.verbosity >= 2) std::cout << "F_tau worm components: " << data.worm.n_components() << std::endl;
+      if (params.measure_F_tau && data.worm.components.empty())
+        TRIQS_RUNTIME_ERROR << "measure_F_tau found no non-zero same-block Q=[H_int,c] worm components";
+      if (params.measure_F_tau_partition && !has_Q_ops)
+        TRIQS_RUNTIME_ERROR << "measure_F_tau_partition found no non-zero Q=[H_int,c] partition components";
+      if (params.measure_F_tau && params.verbosity >= 2) std::cout << "F_tau worm components: " << data.worm.n_components() << std::endl;
     }
 
     auto qmc =
@@ -465,6 +475,11 @@ namespace triqs_cthyb {
       qmc.add_measure(measure_F_tau{data, n_tau, gf_struct, container_set(), params.worm_eta}, "F_tau measure");
     }
 
+    if (params.measure_F_tau_partition) {
+      F_tau_partition = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
+      qmc.add_measure(measure_F_tau_partition{data, n_tau, gf_struct, container_set()}, "F_tau_partition measure");
+    }
+
     if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");
 
     // Other measurements
@@ -525,5 +540,6 @@ namespace triqs_cthyb {
     // Copy local (real or complex) G_tau back to complex G_tau
     if (G_tau && G_tau_accum) *G_tau = *G_tau_accum;
     if (F_tau && F_tau_accum) *F_tau = *F_tau_accum;
+    if (F_tau_partition && F_tau_partition_accum) *F_tau_partition = *F_tau_partition_accum;
   }
 } // namespace triqs_cthyb

@@ -122,6 +122,9 @@ namespace triqs_cthyb {
     /// Measure the improved-estimator correlator \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$ with \f$Q=[H_{int},c]\f$ using worm sampling?
     bool measure_F_tau = false;
 
+    /// Measure \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$ with a Z-sector hybridization-line replacement estimator?
+    bool measure_F_tau_partition = false;
+
     /// Extended-ensemble weight for the \f$ F(\tau) \f$ worm sector.
     double worm_eta = 1.0;
 

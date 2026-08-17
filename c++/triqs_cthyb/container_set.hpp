@@ -47,7 +47,7 @@ namespace triqs_cthyb {
     /// General operator Green's function \f$ O(\tau) \f$ in imaginary time.
     std::optional<gf<imtime, scalar_valued>> O_tau;
 
-    /// Improved-estimator correlator \f$ F(\tau) = -\langle T Q(\tau)c^\dagger(0)\rangle \f$ in imaginary time.
+    /// Improved-estimator correlator \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$ with \f$Q=[H_{int},c]\f$.
     std::optional<G_tau_t> F_tau;
 
     /// Intermediate Green's function used to accumulate \f$ F(\tau) \f$ (real or complex).

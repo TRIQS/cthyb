@@ -55,7 +55,7 @@ namespace {
       imp_trace.cancel_insert();
     }
 
-    F_tau_ex /= -atomic_z;
+    F_tau_ex /= atomic_z;
     return F_tau_ex;
   }
 
@@ -79,14 +79,14 @@ namespace {
     auto [atomic_weight, atomic_reweighting] = imp_trace.compute();
     imp_trace.cancel_insert();
 
-    return atomic_weight / -atomic_z;
+    return atomic_weight / atomic_z;
   }
 
   double hubbard_atom_F_tau(double beta, double U, double mu, double tau) {
     double e_down   = -mu;
     double e_double = -2.0 * mu + U;
     double z        = 1.0 + 2.0 * std::exp(-beta * e_down) + std::exp(-beta * e_double);
-    return U * std::exp(-beta * e_down) * std::exp(tau * (e_down - e_double)) / z;
+    return -U * std::exp(-beta * e_down) * std::exp(tau * (e_down - e_double)) / z;
   }
 
 } // namespace
@@ -172,14 +172,14 @@ TEST(WormF, HubbardAtomStochasticEstimatorSmoke) {
   auto f25  = sample(2.50);
   auto fb   = sample(beta);
 
-  EXPECT_NEAR(f0 + fb, 1.0, 0.40);
+  EXPECT_NEAR(f0 + fb, -1.0, 0.40);
   EXPECT_NEAR(f025, hubbard_atom_F_tau(beta, U, mu, 0.25), 0.25);
   EXPECT_NEAR(f05, hubbard_atom_F_tau(beta, U, mu, 0.50), 0.20);
   EXPECT_NEAR(f125, hubbard_atom_F_tau(beta, U, mu, 1.25), 0.18);
-  EXPECT_GT(f025, f05);
-  EXPECT_GT(f05, f125);
-  EXPECT_GT(f125, f25);
-  EXPECT_GT(f25, 0.0);
+  EXPECT_LT(f025, f05);
+  EXPECT_LT(f05, f125);
+  EXPECT_LT(f125, f25);
+  EXPECT_LT(f25, 0.0);
 }
 
 MAKE_MAIN;

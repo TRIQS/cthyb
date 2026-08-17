@@ -52,7 +52,7 @@ namespace triqs_cthyb {
 
     for (auto &F_tau_block : F_tau) {
       double beta = F_tau_block.mesh().beta();
-      F_tau_block /= -real(sign_Z) * beta * F_tau_block.mesh().delta() * worm_eta;
+      F_tau_block /= real(sign_Z) * beta * F_tau_block.mesh().delta() * worm_eta;
 
       int last = F_tau_block.mesh().size() - 1;
       F_tau_block[0] *= 2;

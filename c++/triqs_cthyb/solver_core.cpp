@@ -40,6 +40,8 @@
 #include "./measures/G_tau.hpp"
 #include "./measures/F_tau.hpp"
 #include "./measures/F_tau_partition.hpp"
+#include "./measures/F_l_worm.hpp"
+#include "./measures/F_l_partition.hpp"
 #include "./measures/G_l.hpp"
 #include "./measures/O_tau_ins.hpp"
 #include "./measures/perturbation_hist.hpp"
@@ -83,11 +85,12 @@ namespace triqs_cthyb {
     solve_parameters = solve_parameters_;
     solve_parameters_t params(solve_parameters_);
 
-    if (params.measure_F_tau) {
-      if (params.measure_density_matrix)
-        TRIQS_RUNTIME_ERROR << "measure_F_tau cannot be combined with measure_density_matrix in the v1 worm estimator implementation";
-      if (params.worm_eta <= 0.0) TRIQS_RUNTIME_ERROR << "measure_F_tau requires worm_eta > 0";
-      if (params.worm_prob <= 0.0) TRIQS_RUNTIME_ERROR << "measure_F_tau requires worm_prob > 0";
+    bool measure_F_worm      = params.measure_F_tau || params.measure_F_l_worm;
+    bool measure_F_partition = params.measure_F_tau_partition || params.measure_F_l_partition;
+
+    if (measure_F_worm) {
+      if (params.worm_eta <= 0.0) TRIQS_RUNTIME_ERROR << "Worm F measurements require worm_eta > 0";
+      if (params.worm_prob <= 0.0) TRIQS_RUNTIME_ERROR << "Worm F measurements require worm_prob > 0";
     }
 
     // Merge constr_params and solve_params
@@ -274,15 +277,15 @@ namespace triqs_cthyb {
     // Initialise Monte Carlo quantities
     qmc_data data(beta, params, h_diag, linindex, _Delta_tau, n_inner, histo_map);
 
-    if (params.measure_F_tau || params.measure_F_tau_partition) {
+    if (measure_F_worm || measure_F_partition) {
       bool has_Q_ops = false;
       data.worm.Q_ops.resize(gf_struct.size());
-      if (params.measure_F_tau) data.worm.cdag_ops.resize(gf_struct.size());
+      if (measure_F_worm) data.worm.cdag_ops.resize(gf_struct.size());
 
       for (size_t block = 0; block < gf_struct.size(); ++block) {
         auto const &block_name = gf_struct[block].first;
         data.worm.Q_ops[block].resize(n_inner[block]);
-        if (params.measure_F_tau) data.worm.cdag_ops[block].resize(n_inner[block]);
+        if (measure_F_worm) data.worm.cdag_ops[block].resize(n_inner[block]);
 
         for (int inner = 0; inner < n_inner[block]; ++inner) {
           auto c_op = c<h_scalar_t>(block_name, inner);
@@ -297,7 +300,7 @@ namespace triqs_cthyb {
             }
           }
 
-          if (params.measure_F_tau) {
+          if (measure_F_worm) {
             try {
               data.worm.cdag_ops[block][inner] = data.imp_trace.attach_aux_operator(c_dag<h_scalar_t>(block_name, inner));
             } catch (std::exception const &e) {
@@ -307,7 +310,7 @@ namespace triqs_cthyb {
           }
         }
 
-        if (params.measure_F_tau) {
+        if (measure_F_worm) {
           for (int inner_Q = 0; inner_Q < n_inner[block]; ++inner_Q) {
             if (!data.worm.Q_ops[block][inner_Q]) continue;
             for (int inner_cdag = 0; inner_cdag < n_inner[block]; ++inner_cdag)
@@ -316,11 +319,11 @@ namespace triqs_cthyb {
         }
       }
 
-      if (params.measure_F_tau && data.worm.components.empty())
-        TRIQS_RUNTIME_ERROR << "measure_F_tau found no non-zero same-block Q=[H_int,c] worm components";
-      if (params.measure_F_tau_partition && !has_Q_ops)
-        TRIQS_RUNTIME_ERROR << "measure_F_tau_partition found no non-zero Q=[H_int,c] partition components";
-      if (params.measure_F_tau && params.verbosity >= 2) std::cout << "F_tau worm components: " << data.worm.n_components() << std::endl;
+      if (measure_F_worm && data.worm.components.empty())
+        TRIQS_RUNTIME_ERROR << "Worm F measurements found no non-zero same-block Q=[H_int,c] worm components";
+      if (measure_F_partition && !has_Q_ops)
+        TRIQS_RUNTIME_ERROR << "Partition F measurements found no non-zero Q=[H_int,c] partition components";
+      if (measure_F_worm && params.verbosity >= 2) std::cout << "F worm components: " << data.worm.n_components() << std::endl;
     }
 
     auto qmc =
@@ -377,7 +380,7 @@ namespace triqs_cthyb {
     if (params.move_shift)
       qmc.add_move(move_shift_operator(data, qmc.get_rng(), histo_map), "Shift one operator", 1.0);
 
-    if (params.measure_F_tau) {
+    if (measure_F_worm) {
       qmc.add_move(move_worm_insert_F(data, qmc.get_rng(), params.worm_eta), "Insert F worm", params.worm_prob);
       qmc.add_move(move_worm_remove_F(data, qmc.get_rng(), params.worm_eta), "Remove F worm", params.worm_prob);
       qmc.add_move(move_worm_shift_F(data, qmc.get_rng()), "Shift F worm", params.worm_prob);
@@ -479,6 +482,12 @@ namespace triqs_cthyb {
       F_tau_partition = block_gf<imtime>{{beta, Fermion, n_tau}, gf_struct};
       qmc.add_measure(measure_F_tau_partition{data, n_tau, gf_struct, container_set()}, "F_tau_partition measure");
     }
+
+    if (params.measure_F_l_worm)
+      qmc.add_measure(measure_F_l_worm{F_l_worm, data, n_l, gf_struct, params.worm_eta}, "F_l_worm measure");
+
+    if (params.measure_F_l_partition)
+      qmc.add_measure(measure_F_l_partition{F_l_partition, data, n_l, gf_struct}, "F_l_partition measure");
 
     if (params.measure_G_l) qmc.add_measure(measure_G_l{G_l, data, n_l, gf_struct}, "G_l measure");
 

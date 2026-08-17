@@ -37,6 +37,8 @@ namespace triqs_cthyb {
     h5_write(grp, "F_tau_accum", c.F_tau_accum);
     h5_write(grp, "F_tau_partition", c.F_tau_partition);
     h5_write(grp, "F_tau_partition_accum", c.F_tau_partition_accum);
+    h5_write(grp, "F_l_worm", c.F_l_worm);
+    h5_write(grp, "F_l_partition", c.F_l_partition);
     h5_write(grp, "perturbation_order", c.perturbation_order);
     h5_write(grp, "perturbation_order_total", c.perturbation_order_total);
 
@@ -65,6 +67,8 @@ namespace triqs_cthyb {
     h5::try_read(grp, "F_tau_accum", c.F_tau_accum);
     h5::try_read(grp, "F_tau_partition", c.F_tau_partition);
     h5::try_read(grp, "F_tau_partition_accum", c.F_tau_partition_accum);
+    h5::try_read(grp, "F_l_worm", c.F_l_worm);
+    h5::try_read(grp, "F_l_partition", c.F_l_partition);
     h5::try_read(grp, "perturbation_order", c.perturbation_order);
     h5::try_read(grp, "perturbation_order_total", c.perturbation_order_total);
 

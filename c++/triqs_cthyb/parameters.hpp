@@ -125,6 +125,12 @@ namespace triqs_cthyb {
     /// Measure \f$ F(\tau) = \langle T Q(\tau)c^\dagger(0)\rangle \f$ with a Z-sector hybridization-line replacement estimator?
     bool measure_F_tau_partition = false;
 
+    /// Measure \f$ F_l \f$ in the Legendre representation using worm sampling?
+    bool measure_F_l_worm = false;
+
+    /// Measure \f$ F_l \f$ in the Legendre representation with a Z-sector hybridization-line replacement estimator?
+    bool measure_F_l_partition = false;
+
     /// Extended-ensemble weight for the \f$ F(\tau) \f$ worm sector.
     double worm_eta = 1.0;
 

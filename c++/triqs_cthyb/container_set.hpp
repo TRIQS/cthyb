@@ -59,6 +59,12 @@ namespace triqs_cthyb {
     /// Intermediate Green's function used to accumulate the Z-sector partition-space \f$ F(\tau) \f$ estimator.
     std::optional<G_tau_G_target_t> F_tau_partition_accum;
 
+    /// Improved-estimator correlator \f$ F_l \f$ in the Legendre representation, measured with worm sampling.
+    std::optional<G_l_t> F_l_worm;
+
+    /// Z-sector partition-space estimator of \f$ F_l \f$ in the Legendre representation.
+    std::optional<G_l_t> F_l_partition;
+
     // -- Two-particle Green's functions
 
     /// Two-particle Green's function \f$ G^{(2)}(\tau_1,\tau_2,\tau_3) \f$ with three fermionic times.

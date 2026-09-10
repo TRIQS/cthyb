@@ -10,6 +10,6 @@ template <> constexpr bool c2py::is_wrapped<triqs_cthyb::solver_core>           
 template <> inline constexpr auto c2py::tp_name<triqs_cthyb::solver_core>         = "triqs_cthyb.solver_core.SolverCore";
 template <> constexpr bool c2py::is_wrapped<triqs_cthyb::block_order>             = true;
 template <>
-const std::map<triqs_cthyb::block_order, str_t> c2py::enum_to_string<triqs_cthyb::block_order> = {{triqs_cthyb::block_order::AABB, "AABB"},
-                                                                                                  {triqs_cthyb::block_order::ABBA, "ABBA"}};
+const std::map<triqs_cthyb::block_order, std::string> c2py::enum_to_string<triqs_cthyb::block_order> = {{triqs_cthyb::block_order::AABB, "AABB"},
+                                                                                                        {triqs_cthyb::block_order::ABBA, "ABBA"}};
 #endif

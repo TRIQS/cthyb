@@ -442,11 +442,19 @@ namespace triqs_cthyb {
     }
 
     // Run! The empty (starting) configuration has sign = 1.
-    // Note: mc_generic continues running after the requested cycles are done until all
-    // MPI ranks have finished (continue_after_ncycles_done defaults to true in triqs).
-    _solve_status =
-       qmc.warmup_and_accumulate(params.n_warmup_cycles, params.n_cycles, params.length_cycle,
-                                 triqs::utility::clock_callback(params.max_time), sign);
+    // With continue_after_ncycles_done, ranks that finished their cycles keep running (warmup and
+    // accumulation) until all MPI ranks are done, so the statistics depend on timing.
+    auto stop_callback = triqs::utility::clock_callback(params.max_time);
+    _solve_status      = qmc.warmup({.ncycles                     = params.n_warmup_cycles,
+                                     .cycle_length                = params.length_cycle,
+                                     .stop_callback               = stop_callback,
+                                     .initial_sign                = sign,
+                                     .continue_after_ncycles_done = params.continue_after_ncycles_done});
+    if (_solve_status == 0)
+      _solve_status = qmc.accumulate({.ncycles                     = params.n_cycles,
+                                      .cycle_length                = params.length_cycle,
+                                      .stop_callback               = stop_callback,
+                                      .continue_after_ncycles_done = params.continue_after_ncycles_done});
     qmc.collect_results(_comm);
 
     // set the last configuration

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unstable
+
+### cthyb
+* Add solve parameter `continue_after_ncycles_done` (default `true`), forwarded to the warmup and accumulation
+  phases of `mc_generic`. Set it to `false` to stop every MPI rank after exactly its requested cycles, which makes runs
+  with a fixed `random_seed` reproducible under an MPI launcher (#193)
+
 ## Version 4.0.1
 
 CTHYB version 4.0.1 is a patch release that pins the c2py build dependency to

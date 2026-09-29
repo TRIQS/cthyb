@@ -228,6 +228,9 @@ namespace triqs_cthyb {
 
     /// Quadratic part of the local Hamiltonian. Must be provided if the \f$ \Delta \f$ interface is used.
     std::optional<many_body_op_t> h_loc0 = {};
+
+    /// Keep running on ranks that finished their cycles until all MPI ranks are done? Set to false for reproducible runs with a fixed seed.
+    bool continue_after_ncycles_done = true;
   };
 
   /// A struct combining both constr_params_t and solve_params_t

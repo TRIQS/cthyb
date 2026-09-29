@@ -21,3 +21,15 @@ foreach(test ${all_tests})
     "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python")
   set_property(TEST Py_${test_name} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
 endforeach()
+
+# Tests that need an MPI launcher, so that mc_generic sees an MPI environment (mpi::has_env)
+set(mpi_tests continue_after_ncycles_done)
+foreach(test ${mpi_tests})
+  add_test(NAME Py_${test}_np2
+    COMMAND ${TRIQS_MPIEXEC_EXECUTABLE} ${TRIQS_MPIEXEC_NUMPROC_FLAG} 2 ${TRIQS_MPIEXEC_PREFLAGS}
+            ${TRIQS_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py ${TRIQS_MPIEXEC_POSTFLAGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_property(TEST Py_${test}_np2 APPEND PROPERTY ENVIRONMENT_MODIFICATION
+    "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python")
+  set_property(TEST Py_${test}_np2 APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
+endforeach()

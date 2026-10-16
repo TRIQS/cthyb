@@ -1,5 +1,13 @@
 # Changelog
 
+## Unstable
+
+### fix
+* Fix the first high-frequency moment of the self-energy in
+  `sigma_high_frequency_moments`: subtract the matrix product
+  Sigma_0 Sigma_0 instead of the element-wise square, which was wrong
+  whenever Sigma_0 has off-diagonal elements (#196)
+
 ## Version 4.0.1
 
 CTHYB version 4.0.1 is a patch release that pins the c2py build dependency to

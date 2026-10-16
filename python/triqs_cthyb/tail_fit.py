@@ -39,8 +39,9 @@ def sigma_high_frequency_moments(density_matrix,
     Calculate the first and second high frequency moment of Sigma_iw
     following Rev. Mod. Phys. 83, 349 (2011). They read
     (0) Sigma_0       = -<{[Hint,c],c+}> (Hartree shift)
-    (1) Sigma_1       =  <{[Hint,[Hint,c]],c+}> - Sigma_0^2,
-    where Hint is the interaction Hamiltonian
+    (1) Sigma_1       =  <{[Hint,[Hint,c]],c+}> - Sigma_0 Sigma_0,
+    where Hint is the interaction Hamiltonian and Sigma_0 Sigma_0 is a
+    matrix product over the orbitals of each block.
 
     Parameters
     ----------
@@ -70,9 +71,11 @@ def sigma_high_frequency_moments(density_matrix,
                 op_HF = -_anticomm(_comm(h_int, c(bl,orb1)), c_dag(bl,orb2))
                 sigma_moments[bl][0,orb1,orb2] = trace_rho_op(density_matrix, op_HF, ad_imp)
 
-                # Sigma_1/iwn term
+                # Sigma_1/iwn term without the Sigma_0 Sigma_0 part
                 op_iw = _anticomm(_comm(h_int, _comm(h_int, c(bl,orb1))), c_dag(bl,orb2))
-                sigma_moments[bl][1,orb1,orb2] = trace_rho_op(density_matrix, op_iw, ad_imp) - sigma_moments[bl][0,orb1,orb2]**2
+                sigma_moments[bl][1,orb1,orb2] = trace_rho_op(density_matrix, op_iw, ad_imp)
+
+        sigma_moments[bl][1] -= sigma_moments[bl][0] @ sigma_moments[bl][0]
 
     return sigma_moments
 
